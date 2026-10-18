@@ -1,0 +1,41 @@
+@import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+@theme {
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --color-brand-orange: #E05216;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-display);
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Custom scrollbar for HUD panels */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.7);
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* MapLibre canvas styles */
+.maplibregl-canvas {
+  outline: none;
+}
+
+
