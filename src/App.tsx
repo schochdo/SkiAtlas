@@ -1971,6 +1971,9 @@ export default function App() {
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
+    const initialLeftPad = leftDockOpen ? (typeof window !== 'undefined' && window.innerWidth >= 768 ? 404 : 340) : 20;
+    const initialRightPad = selectedResortId ? (typeof window !== 'undefined' && window.innerWidth >= 768 ? 384 : 336) : 0;
+
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       attributionControl: false,
@@ -2115,6 +2118,9 @@ export default function App() {
       maxPitch: 85,
       dragRotate: false,
     });
+
+    // Apply viewport padding synchronously before first render so globe never slides on start
+    map.setPadding({ left: initialLeftPad, right: initialRightPad, top: 52, bottom: 0 });
 
     mapRef.current = map;
 
@@ -2615,6 +2621,20 @@ export default function App() {
     if (isProgrammaticFlightActive) return;
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = selectedResortId ? (window.innerWidth >= 768 ? 384 : 336) : 0;
+
+    try {
+      const curPad = mapRef.current.getPadding();
+      if (
+        curPad &&
+        Math.abs((curPad.left ?? 0) - leftPad) < 2 &&
+        Math.abs((curPad.right ?? 0) - rightPad) < 2 &&
+        Math.abs((curPad.top ?? 0) - 52) < 2 &&
+        Math.abs((curPad.bottom ?? 0) - 0) < 2
+      ) {
+        return; // Already at target padding, prevent unwanted sliding on start
+      }
+    } catch (_) {}
+
     mapRef.current.easeTo({
       padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
       duration: 300,
