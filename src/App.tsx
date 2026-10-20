@@ -2499,7 +2499,7 @@ export default function App() {
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': 11,
         },
         paint: {
