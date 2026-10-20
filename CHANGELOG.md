@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-19
 
+### `94cd046` fix: smooth European cross-globe flights and calibrate zoom closer for crisp trail viewing
+- **European Flight Hang Fix**: When flying from North America to European resorts (>100° longitude span), the globe zoom-out listener (`curPitch > maxAllowedPitch`) was conflicting mid-flight with the programmatic camera animation, causing it to freeze/stall. Added a guard check (`if (isProgrammaticFlightActive) return;`) so transcontinental flights execute cleanly.
+- **Dynamic Flight Duration**: Jumps across >40° distance scale to 2800ms so MapLibre can arc across the globe smoothly without snapping or aborting.
+- **Closer Zoom Calibration**: US resorts now land closer (Jackson Hole ~12.8, Vail/Snowbird ~13.0, small resorts ~14.0, European domains ~12.4–12.6) so piste runs and trail details are immediately legible upon selection.
+
+### `2e9f470` fix: right-click orbit reverts to stable center-locked approach with 0.35deg/px sensitivity
+- Reverted the unproject-based mouse-pivot math which became unstable at oblique pitches near the horizon, causing sudden camera fling.
+- Preserved center-locked rotation with responsive 0.35°/pixel bearing sensitivity and 0.25°/pixel pitch sensitivity.
+
+### `bfd6f2f` fix: zoom on card click scales from vertical drop with 45° pitch
+- Switched zoom calculation to vertical drop height instead of acreage.
+- Set oblique pitch to 45° for full base-to-summit mountain framing.
+
 ### `067f535` feat: split trail overlay into separate Alpine and Nordic/XC toggles; alpine on by default, nordic off
 - Replaced single `showTrails` boolean with two independent booleans: `showAlpineTrails` (default `true`) and `showNordicTrails` (default `false`)
 - Map visibility `useEffect` now builds a `piste:type` filter expression so each toggle only shows its respective trail type
