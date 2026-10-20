@@ -2399,11 +2399,12 @@ export default function App() {
         data: { type: 'FeatureCollection', features: curatedFeatures as any },
       });
 
-      // Curated Outer Ring
+      // Curated Outer Ring (Hidden when zoomed out so clusters cleanly represent regions)
       map.addLayer({
         id: 'resorts-outer-ring',
         type: 'circle',
         source: 'resorts-source',
+        minzoom: 8.0,
         paint: {
           'circle-radius': 9,
           'circle-color': ['get', 'pass_color'],
@@ -2418,23 +2419,26 @@ export default function App() {
         id: 'resorts-inner-dot',
         type: 'circle',
         source: 'resorts-source',
+        minzoom: 8.0,
         paint: {
           'circle-radius': 3.5,
           'circle-color': ['get', 'pass_color'],
         },
       });
 
-      // Curated Single Label
+      // Curated Single Label (Hidden until zoomed in to avoid map clutter & cluster collisions)
       map.addLayer({
         id: 'resorts-labels',
         type: 'symbol',
         source: 'resorts-source',
+        minzoom: 8.5,
         layout: {
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': 11,
           'text-offset': [0, 1.2],
           'text-anchor': 'top',
+          'text-optional': true,
         },
         paint: {
           'text-color': '#1C1B18',
@@ -2452,15 +2456,39 @@ export default function App() {
         clusterRadius: 40,
       });
 
+      // Color-coded cluster badges: High-contrast mineral progression (Blue -> Amber -> Vermilion -> Crimson)
+      // Eliminates murky green-on-green clashing over satellite and terrain basemaps
       map.addLayer({
         id: 'global-clusters',
         type: 'circle',
         source: 'global-ski-areas-source',
         filter: ['has', 'point_count'],
         paint: {
-          'circle-color': '#2E5A44',
-          'circle-opacity': 0.8,
-          'circle-radius': ['step', ['get', 'point_count'], 14, 20, 18, 50, 22],
+          'circle-color': [
+            'step',
+            ['get', 'point_count'],
+            '#0284C7', // Sky Blue / Glacier Indigo (< 15 resorts)
+            15,
+            '#D97706', // Warm Ochre / Amber (15 - 49 resorts)
+            50,
+            '#E05216', // Terracotta Vermilion (50 - 99 resorts)
+            100,
+            '#B91C1C', // Crimson Carmine (100+ resorts)
+          ],
+          'circle-opacity': 0.88,
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            14,
+            15,
+            18,
+            50,
+            22,
+            100,
+            26,
+          ],
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
         },
       });
 
@@ -2471,10 +2499,14 @@ export default function App() {
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
           'text-size': 11,
         },
-        paint: { 'text-color': '#FAF8F3' },
+        paint: {
+          'text-color': '#FFFFFF',
+          'text-halo-color': '#1C1B18',
+          'text-halo-width': 0.8,
+        },
       });
 
       map.addLayer({
@@ -2485,7 +2517,7 @@ export default function App() {
         paint: {
           'circle-color': '#3B627E',
           'circle-radius': 4.5,
-          'circle-stroke-width': 1,
+          'circle-stroke-width': 1.2,
           'circle-stroke-color': '#FAF8F3',
         },
       });
@@ -2502,9 +2534,10 @@ export default function App() {
           'text-size': 10,
           'text-offset': [0, 1.2],
           'text-anchor': 'top',
+          'text-optional': true,
         },
         paint: {
-          'text-color': '#5C5852',
+          'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
           'text-halo-width': 1.5,
         },
