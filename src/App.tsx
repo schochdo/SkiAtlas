@@ -1743,6 +1743,14 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
 
+  // Basemap & Layer Overlays State
+  const [showLifts, setShowLifts] = useState(true);
+  const [showResortMarkers, setShowResortMarkers] = useState(true);
+  const [show3DTerrain, setShow3DTerrain] = useState(true);
+  const [showHillshade, setShowHillshade] = useState(true);
+  const basemapMenuRef = useRef<HTMLDivElement | null>(null);
+  const mapLegendRef = useRef<HTMLDivElement | null>(null);
+
   // Category Individual Toggles (Default: Downhill only)
   const [showDownhill, setShowDownhill] = useState(true);
   const [showNordic, setShowNordic] = useState(false);
@@ -2455,6 +2463,126 @@ export default function App() {
   }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, mapLoaded]);
 
   /* =========================================================================
+     OUTSIDE-CLICK DISMISSAL FOR BASEMAP & MAP KEY FLOATING PANELS
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapMenuOpen) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (basemapMenuRef.current && !basemapMenuRef.current.contains(e.target as Node)) {
+        setMapMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMapMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handleOutsideClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mapMenuOpen]);
+
+  useEffect(() => {
+    if (!mapLegendOpen) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (mapLegendRef.current && !mapLegendRef.current.contains(e.target as Node)) {
+        setMapLegendOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMapLegendOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handleOutsideClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mapLegendOpen]);
+
+  /* =========================================================================
+     AERIALWAYS & LIFTS VISIBILITY TOGGLE
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    if (map.getLayer('live-pistes-lifts')) {
+      map.setLayoutProperty('live-pistes-lifts', 'visibility', showLifts ? 'visible' : 'none');
+    }
+  }, [showLifts, mapLoaded]);
+
+  /* =========================================================================
+     RESORT PINS & LABELS VISIBILITY TOGGLE
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    const markerLayers = [
+      'resorts-outer-ring',
+      'resorts-inner-dot',
+      'resorts-labels',
+      'global-clusters',
+      'global-cluster-count',
+      'global-unclustered-point',
+      'global-unclustered-label',
+    ];
+    markerLayers.forEach((id) => {
+      if (map.getLayer(id)) {
+        map.setLayoutProperty(id, 'visibility', showResortMarkers ? 'visible' : 'none');
+      }
+    });
+  }, [showResortMarkers, mapLoaded]);
+
+  /* =========================================================================
+     3D TERRAIN ELEVATION MESH TOGGLE
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    try {
+      if (show3DTerrain) {
+        map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 });
+      } else {
+        map.setTerrain(null);
+      }
+    } catch (err) {
+      console.warn('SetTerrain toggle error:', err);
+    }
+  }, [show3DTerrain, mapLoaded]);
+
+  /* =========================================================================
+     HILLSHADE RELIEF TOGGLE
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    if (map.getLayer('alpine-painted-hillshade')) {
+      map.setLayoutProperty(
+        'alpine-painted-hillshade',
+        'visibility',
+        basemapMode === 'topo' && showHillshade ? 'visible' : 'none'
+      );
+    }
+    if (map.getLayer('hillshade-relief')) {
+      map.setLayoutProperty(
+        'hillshade-relief',
+        'visibility',
+        basemapMode === 'osm' && showHillshade ? 'visible' : 'none'
+      );
+    }
+  }, [showHillshade, basemapMode, mapLoaded]);
+
+  /* =========================================================================
      BASEMAP STYLE TOGGLE
      ========================================================================= */
 
@@ -2471,7 +2599,7 @@ export default function App() {
       map.setLayoutProperty('basemap-osm', 'visibility', basemapMode === 'osm' ? 'visible' : 'none');
     }
     if (map.getLayer('hillshade-relief')) {
-      map.setLayoutProperty('hillshade-relief', 'visibility', basemapMode === 'osm' ? 'visible' : 'none');
+      map.setLayoutProperty('hillshade-relief', 'visibility', basemapMode === 'osm' && showHillshade ? 'visible' : 'none');
     }
     // Alpine Topo
     if (map.getLayer('basemap-physical')) {
@@ -2481,9 +2609,9 @@ export default function App() {
       map.setLayoutProperty('basemap-topo', 'visibility', basemapMode === 'topo' ? 'visible' : 'none');
     }
     if (map.getLayer('alpine-painted-hillshade')) {
-      map.setLayoutProperty('alpine-painted-hillshade', 'visibility', basemapMode === 'topo' ? 'visible' : 'none');
+      map.setLayoutProperty('alpine-painted-hillshade', 'visibility', basemapMode === 'topo' && showHillshade ? 'visible' : 'none');
     }
-  }, [basemapMode, mapLoaded]);
+  }, [basemapMode, showHillshade, mapLoaded]);
 
   /* =========================================================================
      60 FPS KEYBOARD CAMERA FLIGHT ENGINE (WASD + QE + ARROW KEYS)
@@ -3422,46 +3550,190 @@ export default function App() {
       </div>
 
       {/* BASEMAP & OVERLAYS POPOVER (ARCHIVAL PAPER) */}
-      <div className="absolute top-16 right-4 z-20">
+      <div ref={basemapMenuRef} className="absolute top-16 right-4 z-20">
         <button
           onClick={() => setMapMenuOpen(!mapMenuOpen)}
           className={`flex items-center gap-2 px-3 py-1.5 rounded-[2px] border text-xs font-mono transition-all cursor-pointer ${
             mapMenuOpen
-              ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#2C2A27]'
-              : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
+              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 shadow-xs font-semibold'
+              : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4] shadow-xs'
           }`}
+          title="Basemap Styles & Layer Overlays"
         >
-          <Menu className="w-3.5 h-3.5 text-[#2E5A44]" />
+          <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
           <span className="font-mono text-[11px] font-semibold">Basemap & Layers</span>
         </button>
 
         {mapMenuOpen && (
-          <div className="absolute right-0 top-10 w-72 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3 space-y-3 z-30 text-xs font-mono shadow-2xl animate-in fade-in duration-150">
+          <div className="absolute right-0 top-10 w-80 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3 space-y-3 z-30 text-xs font-mono shadow-2xl animate-in fade-in duration-150 max-h-[calc(100vh-5.5rem)] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-1.5">
+              <div className="flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
+                <span className="font-serif text-xs font-bold text-[#1C1B18] tracking-tight">
+                  Cartographic Controls
+                </span>
+              </div>
+              <button
+                onClick={() => setMapMenuOpen(false)}
+                className="p-0.5 text-[#8A847C] hover:text-[#1C1B18] cursor-pointer"
+                title="Close"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* BASEMAP STYLE SELECTION */}
             <div>
-              <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5">
-                Cartographic Base
+              <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Cartographic Base</span>
+                <span className="text-[9px] text-[#5C5852] font-normal">Select style</span>
               </div>
               <div className="space-y-1">
                 {[
                   { id: 'satellite', label: 'Satellite 3D', desc: 'High-resolution aerial satellite imagery' },
                   { id: 'osm', label: 'OpenStreetMap', desc: 'Detailed vector roads, towns & trails' },
                   { id: 'topo', label: 'Alpine Topo (Berann)', desc: 'Painted relief zooming to detailed topo contours' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setBasemapMode(item.id as BasemapMode)}
-                    className={`w-full text-left p-2 rounded-[2px] border transition-all cursor-pointer ${
-                      basemapMode === item.id
-                        ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#2C2A27]'
-                        : 'bg-[#F7F4ED] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
-                    }`}
-                  >
-                    <div className="text-[11px] font-bold">{item.label}</div>
-                    <div className={`text-[9px] ${basemapMode === item.id ? 'text-[#8A847C]' : 'text-[#8A847C]'}`}>
-                      {item.desc}
+                ].map((item) => {
+                  const isSelected = basemapMode === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setBasemapMode(item.id as BasemapMode)}
+                      className={`w-full text-left p-2 rounded-[2px] border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30'
+                          : 'bg-[#F7F4ED] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-[#1C1B18]">{item.label}</span>
+                        {isSelected && (
+                          <span className="text-[8.5px] font-mono uppercase font-bold px-1.5 py-0.2 rounded-[2px] bg-[#2E5A44] text-[#FAF8F3]">
+                            Active
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[9.5px] text-[#5C5852] mt-0.5 leading-tight">
+                        {item.desc}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* MAP OVERLAYS & FEATURE TOGGLES */}
+            <div className="pt-2 border-t border-[#D6D0C2]">
+              <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Map Overlays</span>
+                <span className="text-[9px] text-[#5C5852] font-normal">Toggle visibility</span>
+              </div>
+              <div className="space-y-1">
+                {/* 1. Downhill Trails */}
+                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
+                  <div className="pr-2">
+                    <div className="text-[11px] font-bold text-[#1C1B18]">Downhill Ski Trails</div>
+                    <div className="text-[9px] text-[#5C5852] leading-tight">
+                      Colored piste runs & difficulty lines
                     </div>
-                  </button>
-                ))}
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                    <span className={`text-[8.5px] font-mono font-bold ${showTrails ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
+                      {showTrails ? 'ON' : 'OFF'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={showTrails}
+                      onChange={(e) => setShowTrails(e.target.checked)}
+                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
+                    />
+                  </div>
+                </label>
+
+                {/* 2. Ski Lifts */}
+                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
+                  <div className="pr-2">
+                    <div className="text-[11px] font-bold text-[#1C1B18]">Aerialway Lifts</div>
+                    <div className="text-[9px] text-[#5C5852] leading-tight">
+                      Trams, chairlifts, gondolas & tows
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                    <span className={`text-[8.5px] font-mono font-bold ${showLifts ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
+                      {showLifts ? 'ON' : 'OFF'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={showLifts}
+                      onChange={(e) => setShowLifts(e.target.checked)}
+                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
+                    />
+                  </div>
+                </label>
+
+                {/* 3. Resort Markers & Labels */}
+                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
+                  <div className="pr-2">
+                    <div className="text-[11px] font-bold text-[#1C1B18]">Resort Pins & Labels</div>
+                    <div className="text-[9px] text-[#5C5852] leading-tight">
+                      Worldwide ski areas, cluster pins & titles
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                    <span className={`text-[8.5px] font-mono font-bold ${showResortMarkers ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
+                      {showResortMarkers ? 'ON' : 'OFF'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={showResortMarkers}
+                      onChange={(e) => setShowResortMarkers(e.target.checked)}
+                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
+                    />
+                  </div>
+                </label>
+
+                {/* 4. 3D Terrain Elevation */}
+                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
+                  <div className="pr-2">
+                    <div className="text-[11px] font-bold text-[#1C1B18]">3D Topographic Terrain</div>
+                    <div className="text-[9px] text-[#5C5852] leading-tight">
+                      DEM elevation mesh (0.7x vertical relief)
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                    <span className={`text-[8.5px] font-mono font-bold ${show3DTerrain ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
+                      {show3DTerrain ? 'ON' : 'OFF'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={show3DTerrain}
+                      onChange={(e) => setShow3DTerrain(e.target.checked)}
+                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
+                    />
+                  </div>
+                </label>
+
+                {/* 5. Hillshade Relief */}
+                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
+                  <div className="pr-2">
+                    <div className="text-[11px] font-bold text-[#1C1B18]">Hillshade Relief</div>
+                    <div className="text-[9px] text-[#5C5852] leading-tight">
+                      Sun-angled slope shadows (Topo & OSM)
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                    <span className={`text-[8.5px] font-mono font-bold ${showHillshade ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
+                      {showHillshade ? 'ON' : 'OFF'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={showHillshade}
+                      onChange={(e) => setShowHillshade(e.target.checked)}
+                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
+                    />
+                  </div>
+                </label>
               </div>
             </div>
           </div>
@@ -3469,7 +3741,7 @@ export default function App() {
       </div>
 
       {/* CARTOGRAPHIC MAP FURNITURE: ALTERNATING BAR SCALE & LEGEND */}
-      <div className={`absolute bottom-5 ${leftDockOpen ? 'left-88 md:left-106' : 'left-8'} z-20 transition-all duration-300 select-none`}>
+      <div ref={mapLegendRef} className={`absolute bottom-5 ${leftDockOpen ? 'left-88 md:left-106' : 'left-8'} z-20 transition-all duration-300 select-none`}>
         {mapLegendOpen && (
           <div className="absolute bottom-11 left-0 w-72 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3.5 space-y-3 z-30 text-xs animate-in fade-in duration-150">
             <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
