@@ -3594,13 +3594,16 @@ export default function App() {
     // Bearing: use resort's default_bearing (fall-line / valley-up direction)
     const bearing = resort.default_bearing ?? 0;
 
-    // Zoom: derive from skiable acreage so the full resort fits in frame
-    // ~500 ac → z13.2, ~2500 ac → z12.2, ~5000 ac → z11.6
-    const acres = resort.skiable_acres || 500;
-    const zoom = Math.max(10.5, Math.min(13.4, 14.2 - Math.log2(acres / 100) * 0.72));
+    // Zoom: scale with vertical drop — taller mountains need to pull back more.
+    // 500ft vert  → z13.5 (tight on a small hill)
+    // 2000ft vert → z12.1 (mid-size alpine)
+    // 4139ft vert → z11.4 (Jackson Hole — full mountain visible)
+    // 6000ft vert → z11.0 (giant like Whistler)
+    const vert = resort.vertical_drop_ft || 1500;
+    const zoom = Math.max(10.0, Math.min(13.5, 13.5 - Math.log2(vert / 500) * 0.75));
 
-    // Pitch: oblique aerial — high enough for terrain relief, low enough to see the full ski area
-    const pitch = 52;
+    // Pitch: 45° — oblique enough to show terrain depth, shallow enough to frame the full run top-to-bottom
+    const pitch = 45;
 
     safeFlyTo(mapRef.current, {
       center: [resort.lng, resort.lat],
