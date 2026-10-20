@@ -2089,9 +2089,101 @@ export default function App() {
       pitch: 50,
       bearing: 180,
       maxPitch: 85,
+      dragRotate: false,
     });
 
     mapRef.current = map;
+
+    // Disable built-in jerky dragRotate and ground-clamping in favor of smooth, center-locked orbit
+    try {
+      map.dragRotate.disable();
+      (map as any).setCenterClampedToGround?.(false);
+    } catch (_) {}
+
+    // Smooth Center-Locked Right-Click Orbit Controller
+    // 1. Keeps current view center strictly locked so the camera orbits the mountain without drifting
+    // 2. Calibrated smooth sensitivity (0.16 deg/px) eliminates wild, jerky spins
+    const canvas = map.getCanvas();
+    let isRightDragging = false;
+    let rightStartX = 0;
+    let rightStartY = 0;
+    let rightStartBearing = 0;
+    let rightStartPitch = 0;
+    let lockedOrbitCenter: [number, number] | null = null;
+    let lockedOrbitElev: number | null = null;
+
+    const onRightContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    const onRightMouseMove = (e: MouseEvent) => {
+      if (!isRightDragging || !lockedOrbitCenter) return;
+
+      const dx = e.clientX - rightStartX;
+      const dy = e.clientY - rightStartY;
+
+      // Smooth, controlled sensitivity (0.16 deg per pixel)
+      const SENSITIVITY = 0.16;
+
+      // Horizontal drag smoothly orbits camera bearing around the center
+      const nextBearing = (rightStartBearing + dx * SENSITIVITY) % 360;
+      const normalizedBearing = nextBearing < 0 ? nextBearing + 360 : nextBearing;
+
+      // Vertical drag smoothly tilts pitch (moving up increases pitch toward horizon, moving down decreases to nadir)
+      const nextPitch = Math.max(0, Math.min(85, rightStartPitch - dy * SENSITIVITY));
+
+      const jumpOpts: any = {
+        center: lockedOrbitCenter, // View remains strictly centered!
+        bearing: normalizedBearing,
+        pitch: nextPitch,
+      };
+      if (lockedOrbitElev !== null && Number.isFinite(lockedOrbitElev)) {
+        jumpOpts.elevation = lockedOrbitElev;
+      }
+      map.jumpTo(jumpOpts);
+
+      setMapBearing(Math.round(normalizedBearing));
+      setMapPitch(Math.round(nextPitch));
+      setIs3D(nextPitch > 10);
+    };
+
+    const onRightMouseUp = (e: MouseEvent) => {
+      if (e.button === 2 || e.button === 1 || (e.button === 0 && !e.ctrlKey) || e.buttons === 0) {
+        isRightDragging = false;
+        lockedOrbitCenter = null;
+        lockedOrbitElev = null;
+        window.removeEventListener('mousemove', onRightMouseMove);
+        window.removeEventListener('mouseup', onRightMouseUp);
+      }
+    };
+
+    const onRightMouseDown = (e: MouseEvent) => {
+      if (e.button === 2 || e.button === 1 || (e.button === 0 && e.ctrlKey)) {
+        e.preventDefault();
+        isRightDragging = true;
+        isProgrammaticFlightActive = false;
+        rightStartX = e.clientX;
+        rightStartY = e.clientY;
+        rightStartBearing = map.getBearing();
+        rightStartPitch = map.getPitch();
+
+        const c = map.getCenter();
+        lockedOrbitCenter = [c.lng, c.lat];
+        try {
+          (map as any).setCenterClampedToGround?.(false);
+          const ele = map.getCenterElevation();
+          lockedOrbitElev = Number.isFinite(ele) ? ele : null;
+        } catch (_) {
+          lockedOrbitElev = null;
+        }
+
+        window.addEventListener('mousemove', onRightMouseMove);
+        window.addEventListener('mouseup', onRightMouseUp);
+      }
+    };
+
+    canvas.addEventListener('contextmenu', onRightContextMenu);
+    canvas.addEventListener('mousedown', onRightMouseDown);
 
     map.on('rotate', () => setMapBearing(Math.round(map.getBearing())));
     map.on('pitch', () => {
@@ -2434,6 +2526,10 @@ export default function App() {
     });
 
     return () => {
+      canvas.removeEventListener('contextmenu', onRightContextMenu);
+      canvas.removeEventListener('mousedown', onRightMouseDown);
+      window.removeEventListener('mousemove', onRightMouseMove);
+      window.removeEventListener('mouseup', onRightMouseUp);
       map.remove();
     };
   }, []);
