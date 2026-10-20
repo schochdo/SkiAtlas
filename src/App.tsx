@@ -39,6 +39,8 @@ export type PassNetwork = 'Ikon' | 'Epic' | 'Indy' | 'Mountain Collective' | 'In
 // Only genuine ski categories: Downhill, Nordic, Cat/Heli (No novelty / wild / touring clutter)
 export type SkiActivityCategory = 'downhill' | 'nordic' | 'heli_cat';
 
+export type EarthProjectionMode = 'globe' | 'mercator';
+
 export interface DailyForecast {
   date: string;
   snowfall_in: number;
@@ -1735,6 +1737,7 @@ export default function App() {
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const [is3D, setIs3D] = useState(true);
+  const [earthProjection, setEarthProjection] = useState<EarthProjectionMode>('globe');
   const [basemapMode, setBasemapMode] = useState<BasemapMode>('satellite');
   const [unitsMetric, setUnitsMetric] = useState(false);
   const [leftDockOpen, setLeftDockOpen] = useState(true);
@@ -1807,9 +1810,8 @@ export default function App() {
     if (minVertical !== 500) count++;
     if (minAcreage !== 100) count++;
     if (!showDownhill || showNordic || showHeliCat) count++;
-    if (showTrails) count++;
     return count;
-  }, [selectedPasses, minVertical, minAcreage, showDownhill, showNordic, showHeliCat, showTrails]);
+  }, [selectedPasses, minVertical, minAcreage, showDownhill, showNordic, showHeliCat]);
 
   const handleResetFilters = () => {
     setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent']);
@@ -1949,8 +1951,10 @@ export default function App() {
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       attributionControl: false,
+      renderWorldCopies: false,
       style: {
         version: 8,
+        projection: { type: earthProjection },
         glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
         sources: {
           // 1. Esri World Imagery Satellite (Crisp 3D photo terrain)
@@ -2239,6 +2243,9 @@ export default function App() {
           category: r.category || 'downhill',
           primary_pass: r.pass_networks[0] || 'Independent',
           pass_color: PASS_COLORS[r.pass_networks[0] || 'Independent'],
+          vertical_ft: r.vertical_drop_ft || 0,
+          vertical_drop_ft: r.vertical_drop_ft || 0,
+          skiable_acres: r.skiable_acres || 0,
         },
       }));
 
@@ -2294,7 +2301,7 @@ export default function App() {
       // 3. Global OpenSkiData Points Source
       map.addSource('global-ski-areas-source', {
         type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
+        data: { type: 'FeatureCollection', features: allGlobalFeaturesRef.current },
         cluster: true,
         clusterMaxZoom: 10,
         clusterRadius: 40,
@@ -2378,10 +2385,28 @@ export default function App() {
       };
 
       map.on('click', 'global-unclustered-point', onGlobalClick);
-      map.on('click', 'global-labels', onGlobalClick);
+      map.on('click', 'global-unclustered-label', onGlobalClick);
+
+      // Click on cluster to zoom in
+      map.on('click', 'global-clusters', (e) => {
+        const feats = map.queryRenderedFeatures(e.point, { layers: ['global-clusters'] });
+        const clusterId = feats[0]?.properties?.cluster_id;
+        const source = map.getSource('global-ski-areas-source') as any;
+        if (source && clusterId != null) {
+          source.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
+            if (err || zoom == null) return;
+            const geom = feats[0].geometry as any;
+            safeEaseTo(map, {
+              center: geom.coordinates,
+              zoom: Math.min(zoom + 0.5, 14),
+              duration: 600,
+            });
+          });
+        }
+      });
 
       // Pointer cursor
-      ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels', 'global-unclustered-point', 'global-labels'].forEach((layerId) => {
+      ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels', 'global-clusters', 'global-unclustered-point', 'global-unclustered-label'].forEach((layerId) => {
         map.on('mouseenter', layerId, () => {
           map.getCanvas().style.cursor = 'pointer';
         });
@@ -2455,12 +2480,47 @@ export default function App() {
       filterExpr.push(['>=', ['coalesce', ['get', 'skiable_acres'], 0], minAcreage]);
     }
 
-    ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels', 'global-unclustered-point', 'global-labels'].forEach((layerId) => {
+    // Curated layers
+    ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels'].forEach((layerId) => {
       if (map.getLayer(layerId)) {
         map.setFilter(layerId, filterExpr as any);
       }
     });
+
+    // Unclustered global points & labels (must retain ['!', ['has', 'point_count']])
+    const unclusteredFilter: any = ['all', ['!', ['has', 'point_count']], filterExpr];
+    if (map.getLayer('global-unclustered-point')) {
+      map.setFilter('global-unclustered-point', unclusteredFilter);
+    }
+    if (map.getLayer('global-unclustered-label')) {
+      map.setFilter('global-unclustered-label', unclusteredFilter);
+    }
   }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, mapLoaded]);
+
+  /* =========================================================================
+     GLOBAL SKI AREAS SOURCE SYNC
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const src = mapRef.current.getSource('global-ski-areas-source') as GeoJSONSource;
+    if (src && allGlobalFeaturesRef.current.length > 0) {
+      src.setData({ type: 'FeatureCollection', features: allGlobalFeaturesRef.current });
+    }
+  }, [mapLoaded, resorts]);
+
+  /* =========================================================================
+     EARTH PROJECTION TOGGLE (3D Spherical Globe vs 2D Planar Mercator)
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    try {
+      mapRef.current.setProjection({ type: earthProjection });
+    } catch (err) {
+      console.warn('Projection transition error:', err);
+    }
+  }, [earthProjection, mapLoaded]);
 
   /* =========================================================================
      OUTSIDE-CLICK DISMISSAL FOR BASEMAP & MAP KEY FLOATING PANELS
@@ -3393,23 +3453,6 @@ export default function App() {
                   className="w-full tufte-slider cursor-pointer"
                 />
               </div>
-
-              {/* 3D Terrain Trail Overlay Toggle (Lifts only by default for speed!) */}
-              <button
-                onClick={() => setShowTrails(!showTrails)}
-                className={`w-full py-1.5 px-2 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-between ${
-                  showTrails
-                    ? 'bg-[#2E5A44] text-[#FAF8F3] border-[#2E5A44] font-bold shadow-xs'
-                    : 'bg-[#FAF8F3] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
-                }`}
-                title="Only lifts are drawn by default for speed. Toggle on to stroke full ski run vectors."
-              >
-                <div className="flex items-center gap-1.5">
-                  <span>🎿</span>
-                  <span>Slope Trails Layer (Lifts only by default)</span>
-                </div>
-                <span className="font-bold">{showTrails ? 'ON' : 'OFF'}</span>
-              </button>
             </div>
 
             {/* Sort Controls Row */}
@@ -3549,46 +3592,111 @@ export default function App() {
         </button>
       </div>
 
-      {/* BASEMAP & OVERLAYS POPOVER (ARCHIVAL PAPER) */}
-      <div ref={basemapMenuRef} className="absolute top-16 right-4 z-20">
+      {/* FLOATING TOP-RIGHT CARTO CONTROLS: GLOBE & BASEMAP POPOVER */}
+      <div
+        ref={basemapMenuRef}
+        className={`absolute top-16 ${
+          selectedResort ? 'right-88 md:right-100' : 'right-4'
+        } z-20 flex items-center gap-2 transition-all duration-300`}
+      >
+        {/* Globe Mode Quick Toggle */}
         <button
-          onClick={() => setMapMenuOpen(!mapMenuOpen)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-[2px] border text-xs font-mono transition-all cursor-pointer ${
-            mapMenuOpen
-              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 shadow-xs font-semibold'
-              : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4] shadow-xs'
+          onClick={() => setEarthProjection((prev) => (prev === 'globe' ? 'mercator' : 'globe'))}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] border text-xs font-mono transition-all cursor-pointer shadow-xs ${
+            earthProjection === 'globe'
+              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-semibold'
+              : 'bg-[#FAF8F3] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
           }`}
-          title="Basemap Styles & Layer Overlays"
+          title={earthProjection === 'globe' ? 'Switch to 2D Mercator Flat Map' : 'Switch to 3D Spherical Globe'}
         >
-          <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
-          <span className="font-mono text-[11px] font-semibold">Basemap & Layers</span>
+          <Globe className={`w-3.5 h-3.5 ${earthProjection === 'globe' ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`} />
+          <span className="font-mono text-[11px] font-semibold">
+            {earthProjection === 'globe' ? 'Globe 3D' : 'Flat Map'}
+          </span>
         </button>
 
-        {mapMenuOpen && (
-          <div className="absolute right-0 top-10 w-80 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3 space-y-3 z-30 text-xs font-mono shadow-2xl animate-in fade-in duration-150 max-h-[calc(100vh-5.5rem)] overflow-y-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-1.5">
-              <div className="flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
-                <span className="font-serif text-xs font-bold text-[#1C1B18] tracking-tight">
-                  Cartographic Controls
-                </span>
-              </div>
-              <button
-                onClick={() => setMapMenuOpen(false)}
-                className="p-0.5 text-[#8A847C] hover:text-[#1C1B18] cursor-pointer"
-                title="Close"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
+        {/* Basemap & Layers Dropdown Anchor */}
+        <div className="relative">
+          <button
+            onClick={() => setMapMenuOpen(!mapMenuOpen)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] border text-xs font-mono transition-all cursor-pointer shadow-xs ${
+              mapMenuOpen
+                ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-semibold'
+                : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
+            }`}
+            title="Basemap Styles & Layer Overlays"
+          >
+            <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
+            <span className="font-mono text-[11px] font-semibold">Basemap & Layers</span>
+          </button>
 
-            {/* BASEMAP STYLE SELECTION */}
-            <div>
-              <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
-                <span>Cartographic Base</span>
-                <span className="text-[9px] text-[#5C5852] font-normal">Select style</span>
+          {mapMenuOpen && (
+            <div className="absolute right-0 top-10 w-80 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3 space-y-3 z-30 text-xs font-mono shadow-2xl animate-in fade-in duration-150 max-h-[calc(100vh-5.5rem)] overflow-y-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
+                  <span className="font-serif text-xs font-bold text-[#1C1B18] tracking-tight">
+                    Cartographic Controls
+                  </span>
+                </div>
+                <button
+                  onClick={() => setMapMenuOpen(false)}
+                  className="p-0.5 text-[#8A847C] hover:text-[#1C1B18] cursor-pointer"
+                  title="Close"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
+
+              {/* EARTH PROJECTION SELECTION */}
+              <div>
+                <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Earth Projection</span>
+                  <span className="text-[9px] text-[#5C5852] font-normal">Geometry</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => setEarthProjection('globe')}
+                    className={`p-2 rounded-[2px] border text-left transition-all cursor-pointer ${
+                      earthProjection === 'globe'
+                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-bold'
+                        : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-[#2E5A44]" />
+                      <span className="text-[11px]">3D Globe</span>
+                    </div>
+                    <div className="text-[9px] text-[#5C5852] mt-0.5 font-normal leading-tight">
+                      Spherical Earth
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setEarthProjection('mercator')}
+                    className={`p-2 rounded-[2px] border text-left transition-all cursor-pointer ${
+                      earthProjection === 'mercator'
+                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-bold'
+                        : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-[#3B627E]" />
+                      <span className="text-[11px]">Flat Map</span>
+                    </div>
+                    <div className="text-[9px] text-[#5C5852] mt-0.5 font-normal leading-tight">
+                      Planar Mercator
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* BASEMAP STYLE SELECTION */}
+              <div>
+                <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Cartographic Base</span>
+                  <span className="text-[9px] text-[#5C5852] font-normal">Select style</span>
+                </div>
               <div className="space-y-1">
                 {[
                   { id: 'satellite', label: 'Satellite 3D', desc: 'High-resolution aerial satellite imagery' },
@@ -3738,6 +3846,7 @@ export default function App() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* CARTOGRAPHIC MAP FURNITURE: ALTERNATING BAR SCALE & LEGEND */}
