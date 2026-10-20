@@ -1744,16 +1744,17 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
 
-  // Category Individual Toggles (Downhill, Nordic, Cat/Heli)
+  // Category Individual Toggles (Default: Downhill only)
   const [showDownhill, setShowDownhill] = useState(true);
-  const [showNordic, setShowNordic] = useState(true);
-  const [showHeliCat, setShowHeliCat] = useState(true);
+  const [showNordic, setShowNordic] = useState(false);
+  const [showHeliCat, setShowHeliCat] = useState(false);
 
-  // Filter Drawer & Sliders
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
-  const [minVertical, setMinVertical] = useState(0);
-  const [minAcreage, setMinAcreage] = useState(0);
-  const [selectedRegionFilter, setSelectedRegionFilter] = useState<string>('All');
+  // Filter Sliders (Default: 500' vertical, 100 acres)
+  const [minVertical, setMinVertical] = useState(500);
+  const [minAcreage, setMinAcreage] = useState(100);
+
+  // Pistes & Trails Toggle (Default: False -> Lifts only for speed & clarity)
+  const [showTrails, setShowTrails] = useState(false);
 
   // Navigation Instrument (Compass/Gyro HUD)
   const [mapBearing, setMapBearing] = useState(0);
@@ -1796,103 +1797,47 @@ export default function App() {
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (selectedPasses.length < 5) count++;
-    if (selectedRegionFilter !== 'All') count++;
-    if (minVertical > 0) count++;
-    if (minAcreage > 0) count++;
-    if (!showDownhill || !showNordic || !showHeliCat) count++;
+    if (minVertical !== 500) count++;
+    if (minAcreage !== 100) count++;
+    if (!showDownhill || showNordic || showHeliCat) count++;
+    if (showTrails) count++;
     return count;
-  }, [selectedPasses, selectedRegionFilter, minVertical, minAcreage, showDownhill, showNordic, showHeliCat]);
+  }, [selectedPasses, minVertical, minAcreage, showDownhill, showNordic, showHeliCat, showTrails]);
 
   const handleResetFilters = () => {
     setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent']);
-    setSelectedRegionFilter('All');
-    setMinVertical(0);
-    setMinAcreage(0);
+    setMinVertical(500);
+    setMinAcreage(100);
     setShowDownhill(true);
-    setShowNordic(true);
-    setShowHeliCat(true);
+    setShowNordic(false);
+    setShowHeliCat(false);
+    setShowTrails(false);
   };
 
-  // Filtered Curated Resorts
+  // Filtered Resorts across entire world dataset
   const filteredResorts = useMemo(() => {
-    return resorts.filter((r) => {
+    const list = resorts.filter((r) => {
       const cat = r.category || 'downhill';
       if (cat === 'downhill' && !showDownhill) return false;
       if (cat === 'nordic' && !showNordic) return false;
       if (cat === 'heli_cat' && !showHeliCat) return false;
 
-      const passMatch = r.pass_networks.some((p) => selectedPasses.includes(p));
+      const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
       if (!passMatch) return false;
 
-      if (minVertical > 0 && (r.vertical_drop_ft === null || r.vertical_drop_ft < minVertical)) return false;
-      if (minAcreage > 0 && r.skiable_acres < minAcreage) return false;
-
-      if (selectedRegionFilter !== 'All') {
-        if (selectedRegionFilter === 'Rockies' && !['Wyoming', 'Utah', 'Colorado', 'Montana', 'Idaho'].includes(r.region)) return false;
-        if (selectedRegionFilter === 'Pacific NW' && !['Washington', 'California', 'British Columbia'].includes(r.region)) return false;
-        if (selectedRegionFilter === 'US East' && !['Vermont', 'New York', 'Maine', 'New Hampshire'].includes(r.region)) return false;
-        if (selectedRegionFilter === 'Alps' && !['France', 'Switzerland', 'Austria', 'Italy'].includes(r.country)) return false;
-        if (selectedRegionFilter === 'Japan' && r.country !== 'Japan') return false;
-      }
+      if (minVertical > 0 && (r.vertical_drop_ft === null || r.vertical_drop_ft === undefined || r.vertical_drop_ft < minVertical)) return false;
+      if (minAcreage > 0 && (r.skiable_acres === null || r.skiable_acres === undefined || r.skiable_acres < minAcreage)) return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = r.name.toLowerCase().includes(q);
-        const matchesRegion = r.region.toLowerCase().includes(q);
-        const matchesCountry = r.country.toLowerCase().includes(q);
+        const matchesRegion = (r.region || '').toLowerCase().includes(q);
+        const matchesCountry = (r.country || '').toLowerCase().includes(q);
         if (!matchesName && !matchesRegion && !matchesCountry) return false;
       }
 
       return true;
     });
-  }, [resorts, selectedPasses, minVertical, minAcreage, selectedRegionFilter, searchQuery, showDownhill, showNordic, showHeliCat]);
-
-  // Unified Ski Areas Directory (No confusing 'Featured' or 'In View' tabs)
-  const displayedResorts = useMemo(() => {
-    let list = [...filteredResorts];
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const globalMatches = (allGlobalFeaturesRef.current || [])
-        .filter((f) => {
-          const p = f.properties;
-          if (!p || !p.name) return false;
-          const cat = p.category || 'downhill';
-          if (cat === 'downhill' && !showDownhill) return false;
-          if (cat === 'nordic' && !showNordic) return false;
-          if (cat === 'heli_cat' && !showHeliCat) return false;
-          const matchName = p.name.toLowerCase().includes(q);
-          const matchRegion = (p.region || '').toLowerCase().includes(q);
-          const matchCountry = (p.country || '').toLowerCase().includes(q);
-          return matchName || matchRegion || matchCountry;
-        })
-        .slice(0, 60)
-        .map((f) => {
-          const p = f.properties;
-          return {
-            id: p.id,
-            name: p.name,
-            region: p.region || '',
-            country: p.country || '',
-            lat: p.lat,
-            lng: p.lng,
-            vertical_drop_ft: p.vertical_ft || 0,
-            skiable_acres: p.skiable_acres || 0,
-            pass_networks: ['Independent'] as PassNetwork[],
-            infrastructure: p.infrastructure || 'Local ski center',
-            summary: p.summary || '',
-            category: p.category,
-            archetype: p.archetype,
-          } as SkiResort;
-        });
-
-      const existingIds = new Set(list.map((r) => r.id));
-      for (const gm of globalMatches) {
-        if (!existingIds.has(gm.id)) {
-          list.push(gm);
-        }
-      }
-    }
 
     const multiplier = sortOrder === 'asc' ? 1 : -1;
     list.sort((a, b) => {
@@ -1911,7 +1856,24 @@ export default function App() {
     });
 
     return list;
-  }, [filteredResorts, searchQuery, sortBy, sortOrder, showDownhill, showNordic, showHeliCat]);
+  }, [resorts, selectedPasses, minVertical, minAcreage, searchQuery, showDownhill, showNordic, showHeliCat, sortBy, sortOrder]);
+
+  // Resorts in current map viewport bounds
+  const inViewResorts = useMemo(() => {
+    if (!viewportBounds) return filteredResorts;
+    const [west, south, east, north] = viewportBounds;
+    return filteredResorts.filter((r) => {
+      const inLng = west <= east ? r.lng >= west && r.lng <= east : r.lng >= west || r.lng <= east;
+      const inLat = r.lat >= south && r.lat <= north;
+      return inLng && inLat;
+    });
+  }, [filteredResorts, viewportBounds]);
+
+  // Unified Ski Areas Directory: Prioritize areas in current map frame, slice top 100 for 60fps
+  const displayedResorts = useMemo(() => {
+    const source = inViewResorts.length > 0 ? inViewResorts : filteredResorts;
+    return source.slice(0, 100);
+  }, [inViewResorts, filteredResorts]);
 
   const selectedResort = useMemo(() => {
     if (!selectedResortId) return null;
@@ -2190,11 +2152,12 @@ export default function App() {
         data: { type: 'FeatureCollection', features: [] },
       });
 
-      // Outer Casing line (makes trails pop cleanly over terrain)
+      // Outer Casing line (Off by default for speed; toggled via showTrails)
       map.addLayer({
         id: 'live-pistes-casing',
         type: 'line',
         source: 'live-pistes-vector',
+        layout: { visibility: 'none' },
         paint: {
           'line-color': '#FAF8F3',
           'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2.5, 14, 4.5, 17, 7],
@@ -2202,11 +2165,12 @@ export default function App() {
         },
       });
 
-      // Color lines (coded by difficulty)
+      // Color lines (Off by default for speed; toggled via showTrails)
       map.addLayer({
         id: 'live-pistes-lines',
         type: 'line',
         source: 'live-pistes-vector',
+        layout: { visibility: 'none' },
         paint: {
           'line-color': [
             'match',
@@ -2235,13 +2199,14 @@ export default function App() {
         },
       });
 
-      // Upright 3D Trail & Lift Names
+      // Upright 3D Trail & Lift Names (Off by default for speed; toggled via showTrails)
       map.addLayer({
         id: 'live-pistes-labels',
         type: 'symbol',
         source: 'live-pistes-vector',
         minzoom: 12.5,
         layout: {
+          'visibility': 'none',
           'symbol-placement': 'line-center',
           'text-field': ['get', 'name'],
           'text-size': 11,
@@ -2443,6 +2408,52 @@ export default function App() {
       duration: 300,
     });
   }, [leftDockOpen, mapLoaded]);
+
+  /* =========================================================================
+     TRAILS OVERLAY VISIBILITY TOGGLE (Lifts shown by default; trails toggleable)
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    ['live-pistes-casing', 'live-pistes-lines', 'live-pistes-labels'].forEach((id) => {
+      if (map.getLayer(id)) {
+        map.setLayoutProperty(id, 'visibility', showTrails ? 'visible' : 'none');
+      }
+    });
+  }, [showTrails, mapLoaded]);
+
+  /* =========================================================================
+     MAP POINTS GPU FILTERING (Keeps map markers strictly in sync with filters)
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+
+    const allowedCats: string[] = [];
+    if (showDownhill) allowedCats.push('downhill');
+    if (showNordic) allowedCats.push('nordic');
+    if (showHeliCat) allowedCats.push('heli_cat');
+
+    const filterExpr: any[] = [
+      'all',
+      ['in', ['get', 'category'], ['literal', allowedCats]],
+    ];
+
+    if (minVertical > 0) {
+      filterExpr.push(['>=', ['coalesce', ['get', 'vertical_ft'], ['get', 'vertical_drop_ft'], 0], minVertical]);
+    }
+    if (minAcreage > 0) {
+      filterExpr.push(['>=', ['coalesce', ['get', 'skiable_acres'], 0], minAcreage]);
+    }
+
+    ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels', 'global-unclustered-point', 'global-labels'].forEach((layerId) => {
+      if (map.getLayer(layerId)) {
+        map.setFilter(layerId, filterExpr as any);
+      }
+    });
+  }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, mapLoaded]);
 
   /* =========================================================================
      BASEMAP STYLE TOGGLE
@@ -2723,9 +2734,12 @@ export default function App() {
           if (isDuplicate) continue;
 
           const place = p.places?.[0]?.localized?.en;
-          const country = place?.country || '';
-          const region = place?.region || '';
+          const country = place?.country || p.country || '';
+          const region = place?.region || p.region || '';
           const classified = classifySkiFeature(p, pt);
+
+          const rVert = p.vertical_ft || classified.cleanedVertFt || 0;
+          const rAcres = p.skiable_acres || 0;
 
           if (classified.category === 'downhill') dhTotal++;
           else if (classified.category === 'nordic') nordTotal++;
@@ -2734,6 +2748,7 @@ export default function App() {
             type: 'Feature',
             geometry: { type: 'Point', coordinates: pt },
             properties: {
+              ...p,
               id: p.id,
               name: p.name,
               country,
@@ -2742,11 +2757,12 @@ export default function App() {
               lat: pt[1],
               category: classified.category,
               archetype: classified.archetype,
-              infrastructure: classified.infrastructure,
-              vertical_ft: classified.cleanedVertFt,
-              summit_elev_ft: classified.cleanedSummitFt,
-              base_elev_ft: classified.cleanedBaseFt,
-              skiable_acres: 0,
+              infrastructure: p.infrastructure || classified.infrastructure || 'Ski area',
+              vertical_drop_ft: rVert,
+              vertical_ft: rVert,
+              summit_elev_ft: p.summit_elev_ft || classified.cleanedSummitFt || 0,
+              base_elev_ft: p.base_elev_ft || classified.cleanedBaseFt || 0,
+              skiable_acres: rAcres,
             },
           });
         }
@@ -2754,6 +2770,38 @@ export default function App() {
         allGlobalFeaturesRef.current = features;
         globalFeaturesRef.current = features;
         setCategoryCounts({ downhill: dhTotal, nordic: nordTotal, heli_cat: HELI_CAT_OPERATIONS.length });
+
+        // Populate master resorts dataset with ALL 6,592 worldwide ski areas!
+        const globalResortItems: SkiResort[] = features.map((f) => {
+          const props = f.properties;
+          return {
+            id: props.id,
+            name: props.name,
+            country: props.country,
+            region: props.region,
+            lng: props.lng,
+            lat: props.lat,
+            default_bearing: props.default_bearing || (props.lat < 0 ? 0 : 180),
+            category: props.category,
+            archetype: props.archetype,
+            infrastructure: props.infrastructure,
+            vertical_drop_ft: props.vertical_ft || 0,
+            summit_elev_ft: props.summit_elev_ft || 0,
+            base_elev_ft: props.base_elev_ft || 0,
+            skiable_acres: props.skiable_acres || 0,
+            pass_networks: (props.pass_networks && props.pass_networks.length > 0 ? props.pass_networks : ['Independent']) as PassNetwork[],
+            summary: props.summary || '',
+            website: props.website || '',
+            lift_count: props.lift_count || null,
+            run_count: props.run_count || null,
+          };
+        });
+
+        setResorts([
+          ...GLOBAL_SKI_ATLAS.map((r) => ({ ...r, weather: getNeutralWeather(r) })),
+          ...HELI_CAT_OPERATIONS.map((r) => ({ ...r, weather: getNeutralWeather(r) })),
+          ...globalResortItems,
+        ]);
 
         // Update GeoJSON source on map
         if (mapRef.current) {
@@ -3120,17 +3168,17 @@ export default function App() {
             </button>
           </div>
 
-          {/* Search, Categories, Sort & Collapsible Filters */}
+          {/* CLEARLY DEFINED TERRAIN & INFRASTRUCTURE FILTERS CARD */}
           <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-2.5 shrink-0">
             {/* Search Input */}
             <div className="relative flex items-center">
               <Search className="absolute left-2.5 w-3.5 h-3.5 text-[#8A847C] pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search alpine resorts, peaks, regions..."
+                placeholder="Search alpine resorts, peaks, countries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-[2px] pl-8 pr-7 py-1 text-xs text-[#1C1B18] placeholder-[#8A847C] font-mono focus:outline-none focus:border-[#2C2A27]"
+                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-[2px] pl-8 pr-7 py-1.5 text-xs text-[#1C1B18] placeholder-[#8A847C] font-mono focus:outline-none focus:border-[#2C2A27]"
               />
               {searchQuery && (
                 <button
@@ -3142,179 +3190,159 @@ export default function App() {
               )}
             </div>
 
-            {/* Curated Categories: Downhill, Nordic, Cat/Heli (No novelty / wild / touring clutter!) */}
-            <div className="grid grid-cols-3 gap-1">
+            {/* Framed Filter Box */}
+            <div className="border border-[#D6D0C2] rounded-[2px] bg-[#F7F4ED] p-2.5 space-y-2.5">
+              <div className="flex items-center justify-between text-[10px] font-mono border-b border-[#D6D0C2] pb-1.5">
+                <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[9px]">
+                  Terrain Filters
+                </span>
+                {activeFiltersCount > 0 && (
+                  <button
+                    onClick={handleResetFilters}
+                    className="text-[#B84A39] hover:underline cursor-pointer text-[9px]"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+
+              {/* Categories (Downhill default ON, Nordic/Cat-Heli default OFF) */}
+              <div className="grid grid-cols-3 gap-1">
+                <button
+                  onClick={() => setShowDownhill(!showDownhill)}
+                  className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    showDownhill
+                      ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] font-bold shadow-xs'
+                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
+                  }`}
+                >
+                  <span>⛷️ Downhill</span>
+                </button>
+                <button
+                  onClick={() => setShowNordic(!showNordic)}
+                  className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    showNordic
+                      ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] font-bold shadow-xs'
+                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
+                  }`}
+                >
+                  <span>🎿 Nordic</span>
+                </button>
+                <button
+                  onClick={() => setShowHeliCat(!showHeliCat)}
+                  className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    showHeliCat
+                      ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] font-bold shadow-xs'
+                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
+                  }`}
+                >
+                  <span>🚁 Cat/Heli</span>
+                </button>
+              </div>
+
+              {/* Min Vertical Slider (Default 500') */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-[10px] font-mono">
+                  <span className="text-[#5C5852]">Min Vertical Drop</span>
+                  <span className="text-[#1C1B18] font-bold">{minVertical > 0 ? formatVert(minVertical) : 'Any'}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="4000"
+                  step="100"
+                  value={minVertical}
+                  onChange={(e) => setMinVertical(Number(e.target.value))}
+                  className="w-full tufte-slider cursor-pointer"
+                />
+              </div>
+
+              {/* Min Acreage Slider (Default 100 ac) */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-[10px] font-mono">
+                  <span className="text-[#5C5852]">Min Skiable Acres</span>
+                  <span className="text-[#2E5A44] font-bold">{minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="3000"
+                  step="100"
+                  value={minAcreage}
+                  onChange={(e) => setMinAcreage(Number(e.target.value))}
+                  className="w-full tufte-slider cursor-pointer"
+                />
+              </div>
+
+              {/* 3D Terrain Trail Overlay Toggle (Lifts only by default for speed!) */}
               <button
-                onClick={() => setShowDownhill(!showDownhill)}
-                className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                  showDownhill
-                    ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] font-bold'
-                    : 'bg-[#F7F4ED] border-[#D6D0C2] text-[#8A847C] opacity-50'
+                onClick={() => setShowTrails(!showTrails)}
+                className={`w-full py-1.5 px-2 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-between ${
+                  showTrails
+                    ? 'bg-[#2E5A44] text-[#FAF8F3] border-[#2E5A44] font-bold shadow-xs'
+                    : 'bg-[#FAF8F3] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
                 }`}
+                title="Only lifts are drawn by default for speed. Toggle on to stroke full ski run vectors."
               >
-                <span>⛷️ Downhill</span>
-              </button>
-              <button
-                onClick={() => setShowNordic(!showNordic)}
-                className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                  showNordic
-                    ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] font-bold'
-                    : 'bg-[#F7F4ED] border-[#D6D0C2] text-[#8A847C] opacity-50'
-                }`}
-              >
-                <span>🎿 Nordic</span>
-              </button>
-              <button
-                onClick={() => setShowHeliCat(!showHeliCat)}
-                className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                  showHeliCat
-                    ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] font-bold'
-                    : 'bg-[#F7F4ED] border-[#D6D0C2] text-[#8A847C] opacity-50'
-                }`}
-              >
-                <span>🚁 Cat/Heli</span>
+                <div className="flex items-center gap-1.5">
+                  <span>🎿</span>
+                  <span>Slope Trails Layer (Lifts only by default)</span>
+                </div>
+                <span className="font-bold">{showTrails ? 'ON' : 'OFF'}</span>
               </button>
             </div>
 
-            {/* Sort Row */}
-            <div className="flex items-center justify-between gap-1 text-[10px] font-mono">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-[#8A847C] uppercase tracking-wider font-semibold text-[9px] shrink-0">Sort:</span>
-                <div className="flex items-center gap-0.5 bg-[#FAF8F3] p-0.5 rounded-[2px] border border-[#D6D0C2]">
-                  <button
-                    onClick={() => handleSortClick('vert')}
-                    className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
-                      sortBy === 'vert' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
-                    }`}
-                  >
-                    <span>Vert</span>
-                    {sortBy === 'vert' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
-                  </button>
-                  <button
-                    onClick={() => handleSortClick('acres')}
-                    className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
-                      sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#2E5A44] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
-                    }`}
-                  >
-                    <span>Acres</span>
-                    {sortBy === 'acres' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
-                  </button>
-                  <button
-                    onClick={() => handleSortClick('name')}
-                    className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
-                      sortBy === 'name' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
-                    }`}
-                  >
-                    <span>A-Z</span>
-                    {sortBy === 'name' && <span className="text-[8px] ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                  </button>
-                  <button
-                    onClick={() => handleSortClick('snow')}
-                    className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
-                      sortBy === 'snow' ? 'bg-[#F7F4ED] text-[#3B627E] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
-                    }`}
-                  >
-                    <span>Snow</span>
-                    {sortBy === 'snow' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
-                  </button>
-                </div>
+            {/* Sort Controls Row */}
+            <div className="flex items-center justify-between gap-1 text-[10px] font-mono pt-0.5">
+              <span className="text-[#8A847C] uppercase tracking-wider font-semibold text-[9px] shrink-0">Sort:</span>
+              <div className="flex items-center gap-0.5 bg-[#FAF8F3] p-0.5 rounded-[2px] border border-[#D6D0C2]">
+                <button
+                  onClick={() => handleSortClick('vert')}
+                  className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                    sortBy === 'vert' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                  }`}
+                >
+                  <span>Vert</span>
+                  {sortBy === 'vert' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                </button>
+                <button
+                  onClick={() => handleSortClick('acres')}
+                  className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                    sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#2E5A44] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                  }`}
+                >
+                  <span>Acres</span>
+                  {sortBy === 'acres' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                </button>
+                <button
+                  onClick={() => handleSortClick('name')}
+                  className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                    sortBy === 'name' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                  }`}
+                >
+                  <span>A-Z</span>
+                  {sortBy === 'name' && <span className="text-[8px] ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                </button>
+                <button
+                  onClick={() => handleSortClick('snow')}
+                  className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                    sortBy === 'snow' ? 'bg-[#F7F4ED] text-[#3B627E] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                  }`}
+                >
+                  <span>Snow</span>
+                  {sortBy === 'snow' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                </button>
               </div>
-
-              {/* Filters Toggle */}
-              <button
-                onClick={() => setFiltersExpanded(!filtersExpanded)}
-                className={`flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] border text-[10px] transition-all cursor-pointer ${
-                  filtersExpanded || activeFiltersCount > 0
-                    ? 'bg-[#F7F4ED] border-[#2C2A27] text-[#1C1B18] font-bold'
-                    : 'bg-[#F7F4ED] border-[#D6D0C2] text-[#5C5852]'
-                }`}
-              >
-                <Sliders className="w-3 h-3 text-[#2E5A44]" />
-                <span>Filters</span>
-                {activeFiltersCount > 0 && <span>({activeFiltersCount})</span>}
-              </button>
             </div>
-
-            {/* Collapsible Tufte Range Sliders & Regions */}
-            {filtersExpanded && (
-              <div className="pt-2 border-t border-[#D6D0C2] space-y-2">
-                {/* Min Vertical Drop Slider */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-[10px] font-mono">
-                    <span className="text-[#5C5852]">Min Vertical</span>
-                    <span className="text-[#1C1B18] font-bold">{minVertical > 0 ? formatVert(minVertical) : 'Any'}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="4500"
-                    step="250"
-                    value={minVertical}
-                    onChange={(e) => setMinVertical(Number(e.target.value))}
-                    className="w-full tufte-slider cursor-pointer"
-                  />
-                </div>
-
-                {/* Min Acreage Slider */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-[10px] font-mono">
-                    <span className="text-[#5C5852]">Min Acreage</span>
-                    <span className="text-[#2E5A44] font-bold">{minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="6000"
-                    step="250"
-                    value={minAcreage}
-                    onChange={(e) => setMinAcreage(Number(e.target.value))}
-                    className="w-full tufte-slider cursor-pointer"
-                  />
-                </div>
-
-                {/* Region Jump Pills */}
-                <div className="grid grid-cols-3 gap-1 pt-1">
-                  {[
-                    { label: 'All', value: 'All' },
-                    { label: 'Rockies', value: 'Rockies' },
-                    { label: 'Pacific NW', value: 'Pacific NW' },
-                    { label: 'US East', value: 'US East' },
-                    { label: 'Alps', value: 'Alps' },
-                    { label: 'Japan', value: 'Japan' },
-                  ].map((reg) => (
-                    <button
-                      key={reg.value}
-                      onClick={() => {
-                        setSelectedRegionFilter(reg.value);
-                        if (mapRef.current) {
-                          if (reg.value === 'Rockies') safeFlyTo(mapRef.current, { center: [-110.84, 43.59], zoom: 7, bearing: 180 });
-                          if (reg.value === 'Pacific NW') safeFlyTo(mapRef.current, { center: [-122.9, 50.1], zoom: 7, bearing: 180 });
-                          if (reg.value === 'US East') safeFlyTo(mapRef.current, { center: [-72.8, 44.1], zoom: 7.5, bearing: 180 });
-                          if (reg.value === 'Alps') safeFlyTo(mapRef.current, { center: [7.5, 46.0], zoom: 7, bearing: 180 });
-                          if (reg.value === 'Japan') safeFlyTo(mapRef.current, { center: [140.7, 42.8], zoom: 7, bearing: 180 });
-                        }
-                      }}
-                      className={`px-1.5 py-0.5 text-[9px] font-mono rounded-[2px] border text-center transition-colors cursor-pointer ${
-                        selectedRegionFilter === reg.value
-                          ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#2C2A27]'
-                          : 'bg-[#FAF8F3] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
-                      }`}
-                    >
-                      {reg.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Directory Count Subheader */}
-          <div className="px-3.5 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center justify-between text-[11px] font-mono shrink-0">
+          {/* Directory Count Subheader (In Frame vs Worldwide) */}
+          <div className="px-3.5 py-2 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center justify-between text-[11px] font-mono shrink-0">
             <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[10px]">
-              Ski Area Directory
+              {inViewResorts.length.toLocaleString()} IN FRAME
             </span>
             <span className="text-[#8A847C] text-[10px]">
-              {displayedResorts.length} areas
+              {filteredResorts.length.toLocaleString()} worldwide
             </span>
           </div>
 
@@ -3354,28 +3382,19 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Live Weather Display: Snowfall & Temperature kept completely separate */}
+                      {/* Live Upcoming Snowfall Forecast Chip (NO TEMPERATURE) */}
                       {r.weather?.is_live && (
-                        <div className="shrink-0 flex items-center gap-1.5 font-mono text-[10px]">
-                          {/* Snowfall chip */}
+                        <div className="shrink-0 flex items-center font-mono text-[10px]">
                           <span
                             className={`px-1.5 py-0.5 rounded-[2px] border flex items-center gap-1 ${
                               snow72 > 0
                                 ? 'bg-[#3B627E]/10 border-[#3B627E]/40 text-[#3B627E] font-bold'
                                 : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C]'
                             }`}
-                            title="72-hour forecast snowfall"
+                            title="Upcoming 72h forecast snowfall"
                           >
                             <Snowflake className="w-2.5 h-2.5 text-[#3B627E]" />
                             <span>{formatSnow(snow72)}</span>
-                          </span>
-
-                          {/* Temperature chip */}
-                          <span
-                            className="px-1.5 py-0.5 rounded-[2px] border border-[#D6D0C2] bg-[#FAF8F3] text-[#5C5852]"
-                            title="Summit current temperature"
-                          >
-                            {Math.round(unitsMetric ? r.weather.current_temp_c : r.weather.current_temp_f)}°
                           </span>
                         </div>
                       )}
@@ -3802,9 +3821,18 @@ export default function App() {
                   </div>
                 </div>
                 <div className="bg-[#F7F4ED] p-2 border border-[#D6D0C2] rounded-[2px]">
-                  <div className="text-[9px] text-[#5C5852] uppercase">Summit Temp</div>
-                  <div className="text-base font-bold text-[#1C1B18] mt-0.5">
-                    {selectedResort.weather ? `${Math.round(unitsMetric ? selectedResort.weather.current_temp_c : selectedResort.weather.current_temp_f)}°` : '—'}
+                  <div className="text-[9px] text-[#5C5852] uppercase">7-Day Snow</div>
+                  <div className="text-base font-bold text-[#3B627E] mt-0.5">
+                    {selectedResort.weather?.daily_forecast
+                      ? formatSnow(
+                          Math.round(
+                            selectedResort.weather.daily_forecast.reduce(
+                              (sum, d) => sum + (unitsMetric ? d.snowfall_cm / 2.54 : d.snowfall_in),
+                              0
+                            ) * 10
+                          ) / 10
+                        )
+                      : '—'}
                   </div>
                 </div>
               </div>
