@@ -6,6 +6,10 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-19
 
+### `e535e72` style: position north arrow below +/- buttons with minimal cartographic needle matching zoom control aesthetic
+- Moved the North Arrow button below the `+` and `-` zoom controls.
+- Replaced the previous decorative needle and floating serif "N" with a clean, minimal cartographic directional needle matching the stroke and color palette (`#1C1B18` ink and neutral stone tones) of the zoom controls.
+
 ### `94cd046` fix: smooth European cross-globe flights and calibrate zoom closer for crisp trail viewing
 - **European Flight Hang Fix**: When flying from North America to European resorts (>100° longitude span), the globe zoom-out listener (`curPitch > maxAllowedPitch`) was conflicting mid-flight with the programmatic camera animation, causing it to freeze/stall. Added a guard check (`if (isProgrammaticFlightActive) return;`) so transcontinental flights execute cleanly.
 - **Dynamic Flight Duration**: Jumps across >40° distance scale to 2800ms so MapLibre can arc across the globe smoothly without snapping or aborting.
