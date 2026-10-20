@@ -1777,7 +1777,8 @@ export default function App() {
   const didDragTiltRef = useRef(false);
   const [isTiltDragging, setIsTiltDragging] = useState(false);
 
-  // Mountain Directory Sorting
+  // Mountain Directory Scope & Sorting
+  const [directoryScope, setDirectoryScope] = useState<'in_frame' | 'all'>('in_frame');
   const [sortBy, setSortBy] = useState<'vert' | 'acres' | 'name' | 'snow'>('vert');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -1878,11 +1879,11 @@ export default function App() {
     });
   }, [filteredResorts, viewportBounds]);
 
-  // Unified Ski Areas Directory: Prioritize areas in current map frame, slice top 100 for 60fps
+  // Ski Areas Directory: In Frame vs All Matching Filters
   const displayedResorts = useMemo(() => {
-    const source = inViewResorts.length > 0 ? inViewResorts : filteredResorts;
-    return source.slice(0, 100);
-  }, [inViewResorts, filteredResorts]);
+    const source = directoryScope === 'in_frame' ? inViewResorts : filteredResorts;
+    return source.slice(0, 200);
+  }, [directoryScope, inViewResorts, filteredResorts]);
 
   const selectedResort = useMemo(() => {
     if (!selectedResortId) return null;
@@ -3666,21 +3667,49 @@ export default function App() {
             </div>
           </div>
 
-          {/* Directory Count Subheader (In Frame vs Worldwide) */}
-          <div className="px-3.5 py-2 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center justify-between text-[11px] font-mono shrink-0">
-            <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[10px]">
-              {inViewResorts.length.toLocaleString()} IN FRAME
-            </span>
-            <span className="text-[#8A847C] text-[10px]">
-              {filteredResorts.length.toLocaleString()} worldwide
-            </span>
+          {/* Directory Scope Category Tabs: In Frame vs All Matching Filters */}
+          <div className="px-3 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center gap-1.5 text-[10.5px] font-mono shrink-0">
+            <button
+              onClick={() => setDirectoryScope('in_frame')}
+              className={`flex-1 py-1 px-2 rounded-[2px] border text-center transition-all cursor-pointer font-bold tracking-tight ${
+                directoryScope === 'in_frame'
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2C2A27] shadow-2xs'
+                  : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
+              }`}
+              title="Show only ski areas currently inside the map view frame"
+            >
+              <span>{inViewResorts.length.toLocaleString()} IN FRAME</span>
+            </button>
+            <button
+              onClick={() => setDirectoryScope('all')}
+              className={`flex-1 py-1 px-2 rounded-[2px] border text-center transition-all cursor-pointer font-bold tracking-tight ${
+                directoryScope === 'all'
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] shadow-2xs ring-1 ring-[#2E5A44]/30'
+                  : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
+              }`}
+              title="Show all ski areas matching current filters worldwide"
+            >
+              <span>{filteredResorts.length.toLocaleString()} ALL MATCHING</span>
+            </button>
           </div>
 
           {/* Directory Cards List (Engraved Ledger Cards) */}
           <div className="flex-1 overflow-y-auto divide-y divide-[#D6D0C2] bg-[#F7F4ED]">
             {displayedResorts.length === 0 ? (
-              <div className="p-4 text-center text-xs font-mono text-[#8A847C]">
-                No ski areas match current filters.
+              <div className="p-4 text-center text-xs font-mono text-[#8A847C] space-y-2">
+                <div>
+                  {directoryScope === 'in_frame'
+                    ? '0 ski areas in current map view frame.'
+                    : 'No ski areas match current filters.'}
+                </div>
+                {directoryScope === 'in_frame' && filteredResorts.length > 0 && (
+                  <button
+                    onClick={() => setDirectoryScope('all')}
+                    className="inline-block px-2.5 py-1 text-[11px] font-mono font-bold text-[#2E5A44] bg-[#FAF8F3] border border-[#2E5A44] rounded-[2px] hover:bg-[#EAE5D9] transition-colors cursor-pointer"
+                  >
+                    View all {filteredResorts.length.toLocaleString()} matching areas →
+                  </button>
+                )}
               </div>
             ) : (
               displayedResorts.map((r) => {
