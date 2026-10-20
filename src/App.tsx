@@ -1765,8 +1765,9 @@ export default function App() {
   const [minVertical, setMinVertical] = useState(500);
   const [minAcreage, setMinAcreage] = useState(100);
 
-  // Pistes & Trails Toggle (Default: False -> Lifts only for speed & clarity)
-  const [showTrails, setShowTrails] = useState(false);
+  // Piste trail toggles — alpine on by default, nordic off by default
+  const [showAlpineTrails, setShowAlpineTrails] = useState(true);
+  const [showNordicTrails, setShowNordicTrails] = useState(false);
 
   // Navigation Instrument (Compass/Gyro HUD)
   const [mapBearing, setMapBearing] = useState(0);
@@ -2679,18 +2680,34 @@ export default function App() {
   }, [leftDockOpen, selectedResortId, mapLoaded]);
 
   /* =========================================================================
-     TRAILS OVERLAY VISIBILITY TOGGLE (Lifts shown by default; trails toggleable)
+     TRAILS OVERLAY VISIBILITY TOGGLE (alpine/nordic individually controlled)
      ========================================================================= */
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
+
+    const anyTrails = showAlpineTrails || showNordicTrails;
+
+    // Build a piste:type filter for the feature lines
+    let pisteFilter: any;
+    if (showAlpineTrails && showNordicTrails) {
+      pisteFilter = ['!=', ['get', 'kind'], 'lift']; // all pistes
+    } else if (showAlpineTrails) {
+      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], ['!=', ['get', 'piste:type'], 'nordic']];
+    } else if (showNordicTrails) {
+      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], ['==', ['get', 'piste:type'], 'nordic']];
+    } else {
+      pisteFilter = ['==', '1', '0']; // match nothing
+    }
+
     ['live-pistes-casing', 'live-pistes-lines', 'live-pistes-labels'].forEach((id) => {
       if (map.getLayer(id)) {
-        map.setLayoutProperty(id, 'visibility', showTrails ? 'visible' : 'none');
+        map.setLayoutProperty(id, 'visibility', anyTrails ? 'visible' : 'none');
+        if (anyTrails) map.setFilter(id, pisteFilter);
       }
     });
-  }, [showTrails, mapLoaded]);
+  }, [showAlpineTrails, showNordicTrails, mapLoaded]);
 
   /* =========================================================================
      MAP POINTS GPU FILTERING (Keeps map markers strictly in sync with filters)
@@ -4196,22 +4213,43 @@ export default function App() {
                 <span className="text-[9px] text-[#5C5852] font-normal">Toggle visibility</span>
               </div>
               <div className="space-y-1">
-                {/* 1. Downhill Trails */}
+                {/* 1. Alpine Ski Trails */}
                 <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
                   <div className="pr-2">
-                    <div className="text-[11px] font-bold text-[#1C1B18]">Downhill Ski Trails</div>
+                    <div className="text-[11px] font-bold text-[#1C1B18]">Alpine Ski Trails</div>
                     <div className="text-[9px] text-[#5C5852] leading-tight">
-                      Colored piste runs & difficulty lines
+                      Colored downhill piste runs &amp; difficulty grades
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span className={`text-[8.5px] font-mono font-bold ${showTrails ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
-                      {showTrails ? 'ON' : 'OFF'}
+                    <span className={`text-[8.5px] font-mono font-bold ${showAlpineTrails ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
+                      {showAlpineTrails ? 'ON' : 'OFF'}
                     </span>
                     <input
                       type="checkbox"
-                      checked={showTrails}
-                      onChange={(e) => setShowTrails(e.target.checked)}
+                      checked={showAlpineTrails}
+                      onChange={(e) => setShowAlpineTrails(e.target.checked)}
+                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
+                    />
+                  </div>
+                </label>
+
+                {/* 1b. Nordic / XC Trails */}
+                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
+                  <div className="pr-2">
+                    <div className="text-[11px] font-bold text-[#1C1B18]">Nordic / XC Trails</div>
+                    <div className="text-[9px] text-[#5C5852] leading-tight">
+                      Groomed cross-country &amp; skate ski tracks
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                    <span className={`text-[8.5px] font-mono font-bold ${showNordicTrails ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
+                      {showNordicTrails ? 'ON' : 'OFF'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={showNordicTrails}
+                      onChange={(e) => setShowNordicTrails(e.target.checked)}
                       className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
                     />
                   </div>
