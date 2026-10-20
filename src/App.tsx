@@ -28,6 +28,8 @@ import {
   Globe,
   Menu,
   X,
+  Plus,
+  Minus,
 } from 'lucide-react';
 
 /* =========================================================================
@@ -3350,16 +3352,36 @@ export default function App() {
     window.addEventListener('mouseup', onMouseUp);
   }, []);
 
-  const handleResetNorth = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleResetNorth = useCallback((e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (didDragCompassRef.current) return;
     if (!mapRef.current) return;
+    const currentZoom = mapRef.current.getZoom?.() ?? 3;
+    const targetPitch = currentZoom < 5 ? 0 : mapRef.current.getPitch();
     safeEaseTo(mapRef.current, {
       bearing: 0,
-      duration: 500,
+      pitch: targetPitch,
+      duration: 350,
     });
     setMapBearing(0);
+    if (currentZoom < 5) setMapPitch(0);
+  }, []);
+
+  const handleZoomIn = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!mapRef.current) return;
+    mapRef.current.zoomIn({ duration: 250 });
+  }, []);
+
+  const handleZoomOut = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!mapRef.current) return;
+    mapRef.current.zoomOut({ duration: 250 });
   }, []);
 
   const handleTiltMouseDown = useCallback((e: React.MouseEvent) => {
@@ -3450,9 +3472,7 @@ export default function App() {
     const resort = displayedResorts.find((r) => r.id === id) || resorts.find((r) => r.id === id);
     if (!resort || !mapRef.current) return;
 
-    // Hemisphere-aware bearing: South-facing (180°) in Northern Hemisphere, North-facing (0°) in Southern Hemisphere
-    const isSouthHemisphere = resort.lat < 0;
-    const targetBearing = resort.default_bearing || (isSouthHemisphere ? 0 : 180);
+    // North up by default (bearing: 0)
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = window.innerWidth >= 768 ? 384 : 336;
 
@@ -3460,7 +3480,7 @@ export default function App() {
       center: [resort.lng, resort.lat],
       zoom: 13.2,
       pitch: 62,
-      bearing: targetBearing,
+      bearing: 0,
       padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
       duration: 1600,
       essential: true,
@@ -3495,7 +3515,7 @@ export default function App() {
       center: [coords[0], coords[1]],
       zoom: 13.0,
       pitch: 60,
-      bearing: isSouth ? 0 : 180,
+      bearing: 0,
       padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
       duration: 1600,
       essential: true,
@@ -3880,6 +3900,70 @@ export default function App() {
               )}
             </svg>
           </div>
+        </button>
+      </div>
+
+      {/* FLOATING TOP-LEFT MAP VIEWPORT CONTROLS: NORTH ARROW & ZOOM */}
+      <div
+        className={`absolute top-16 ${
+          leftDockOpen ? 'left-[356px] md:left-[420px]' : 'left-8'
+        } z-20 flex flex-col bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] shadow-sm divide-y divide-[#D6D0C2] overflow-hidden transition-all duration-300 ease-in-out`}
+        role="group"
+        aria-label="Map navigation controls"
+      >
+        {/* Reorient North Arrow Button */}
+        <button
+          onClick={handleResetNorth}
+          className="w-8 h-8 flex items-center justify-center hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer group"
+          title="Reorient to True North (0°)"
+          aria-label="Reorient to True North"
+        >
+          <svg
+            className="w-5 h-5 pointer-events-none transition-transform duration-150 ease-out"
+            viewBox="0 0 24 24"
+            style={{ transform: `rotate(${-mapBearing}deg)` }}
+          >
+            {/* North Arrow Facets (Terracotta Vermilion #B84A39) */}
+            <polygon points="12,3 15.5,12 12,10" fill="#B84A39" />
+            <polygon points="12,3 8.5,12 12,10" fill="#FAF8F3" stroke="#B84A39" strokeWidth="0.5" />
+            {/* South Arrow Facets (Muted Stone #5A554E) */}
+            <polygon points="12,21 15.5,12 12,14" fill="#5A554E" />
+            <polygon points="12,21 8.5,12 12,14" fill="#FAF8F3" stroke="#5A554E" strokeWidth="0.5" />
+            {/* Center Pivot Rivet */}
+            <circle cx="12" cy="12" r="1.3" fill="#2C2A27" />
+            {/* Engraved 'N' in Serifs */}
+            <text
+              x="12"
+              y="2.4"
+              textAnchor="middle"
+              fontSize="4"
+              fontWeight="bold"
+              fontFamily="Newsreader, Georgia, serif"
+              fill="#B84A39"
+            >
+              N
+            </text>
+          </svg>
+        </button>
+
+        {/* Zoom In Button */}
+        <button
+          onClick={handleZoomIn}
+          className="w-8 h-7 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
+          title="Zoom In"
+          aria-label="Zoom In"
+        >
+          <Plus className="w-3.5 h-3.5" strokeWidth={2.2} />
+        </button>
+
+        {/* Zoom Out Button */}
+        <button
+          onClick={handleZoomOut}
+          className="w-8 h-7 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
+          title="Zoom Out"
+          aria-label="Zoom Out"
+        >
+          <Minus className="w-3.5 h-3.5" strokeWidth={2.2} />
         </button>
       </div>
 
