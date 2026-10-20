@@ -1736,7 +1736,7 @@ export default function App() {
   const mapRef = useRef<MapLibreMap | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const [is3D, setIs3D] = useState(true);
+  const [is3D, setIs3D] = useState(false);
   const [earthProjection, setEarthProjection] = useState<EarthProjectionMode>('globe');
   const [basemapMode, setBasemapMode] = useState<BasemapMode>('satellite');
   const [unitsMetric, setUnitsMetric] = useState(false);
@@ -1768,8 +1768,8 @@ export default function App() {
 
   // Navigation Instrument (Compass/Gyro HUD)
   const [mapBearing, setMapBearing] = useState(0);
-  const [mapPitch, setMapPitch] = useState(45);
-  const [mapScale, setMapScale] = useState({ distStr: '50 km', barWidth: 80 });
+  const [mapPitch, setMapPitch] = useState(0);
+  const [mapScale, setMapScale] = useState({ distStr: '500 km', barWidth: 80 });
   const isDraggingCompassRef = useRef(false);
   const didDragCompassRef = useRef(false);
   const [isCompassDragging, setIsCompassDragging] = useState(false);
@@ -1813,6 +1813,26 @@ export default function App() {
     if (!showDownhill || showNordic || showHeliCat) count++;
     return count;
   }, [selectedPasses, minVertical, minAcreage, showDownhill, showNordic, showHeliCat]);
+
+  // Dynamic Category Counts Matching Sliders & Pass Network Filters
+  const categoryFilterCounts = useMemo(() => {
+    let downhill = 0;
+    let nordic = 0;
+    let heli_cat = 0;
+    for (const r of resorts) {
+      const vert = r.vertical_drop_ft || 0;
+      if (minVertical > 0 && vert < minVertical) continue;
+      const acres = r.skiable_acres || 0;
+      if (minAcreage > 0 && acres < minAcreage) continue;
+      const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
+      if (!passMatch) continue;
+      const cat = r.category || 'downhill';
+      if (cat === 'downhill') downhill++;
+      else if (cat === 'nordic') nordic++;
+      else if (cat === 'heli_cat') heli_cat++;
+    }
+    return { downhill, nordic, heli_cat };
+  }, [resorts, minVertical, minAcreage, selectedPasses]);
 
   const handleResetFilters = () => {
     setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent']);
@@ -2084,11 +2104,11 @@ export default function App() {
           },
         ],
       },
-      center: [-110.849, 43.593], // Default to Jackson Hole, WY
-      zoom: 12.6,
+      center: [-98.5, 39.8], // Default to North America on globe
+      zoom: 3.1,
       minZoom: 1.2,
-      pitch: 50,
-      bearing: 180,
+      pitch: 0,
+      bearing: 0,
       maxPitch: 85,
       dragRotate: false,
     });
@@ -2539,9 +2559,6 @@ export default function App() {
       });
 
       setMapLoaded(true);
-
-      // Trigger initial trail fetch for Jackson Hole
-      fetchOverpassBbox(43.55, -110.90, 43.62, -110.80);
     });
 
     return () => {
@@ -2625,16 +2642,86 @@ export default function App() {
   }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, mapLoaded]);
 
   /* =========================================================================
-     GLOBAL SKI AREAS SOURCE SYNC
+     DYNAMIC MAP GEOJSON SOURCES FILTER SYNC
+     Ensures clusters and map markers dynamically re-calculate counts on filter changes!
      ========================================================================= */
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
-    const src = mapRef.current.getSource('global-ski-areas-source') as GeoJSONSource;
-    if (src && allGlobalFeaturesRef.current.length > 0) {
-      src.setData({ type: 'FeatureCollection', features: allGlobalFeaturesRef.current });
+    const map = mapRef.current;
+
+    // 1. Sync global clustered ski areas source
+    const globalSrc = map.getSource('global-ski-areas-source') as GeoJSONSource;
+    if (globalSrc && allGlobalFeaturesRef.current.length > 0) {
+      const allowedCats = new Set<string>();
+      if (showDownhill) allowedCats.add('downhill');
+      if (showNordic) allowedCats.add('nordic');
+      if (showHeliCat) allowedCats.add('heli_cat');
+
+      const filteredFeatures = allGlobalFeaturesRef.current.filter((f) => {
+        const p = f.properties;
+        const cat = p.category || 'downhill';
+        if (!allowedCats.has(cat)) return false;
+        const vert = p.vertical_ft || p.vertical_drop_ft || 0;
+        if (minVertical > 0 && vert < minVertical) return false;
+        const acres = p.skiable_acres || 0;
+        if (minAcreage > 0 && acres < minAcreage) return false;
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const matchName = (p.name || '').toLowerCase().includes(q);
+          const matchReg = (p.region || '').toLowerCase().includes(q);
+          const matchCountry = (p.country || '').toLowerCase().includes(q);
+          if (!matchName && !matchReg && !matchCountry) return false;
+        }
+        return true;
+      });
+
+      globalSrc.setData({ type: 'FeatureCollection', features: filteredFeatures });
     }
-  }, [mapLoaded, resorts]);
+
+    // 2. Sync curated seed resorts source
+    const curatedSrc = map.getSource('resorts-source') as GeoJSONSource;
+    if (curatedSrc) {
+      const allowedCats = new Set<string>();
+      if (showDownhill) allowedCats.add('downhill');
+      if (showNordic) allowedCats.add('nordic');
+      if (showHeliCat) allowedCats.add('heli_cat');
+
+      const filteredCurated = GLOBAL_SKI_ATLAS.filter((r) => {
+        const cat = r.category || 'downhill';
+        if (!allowedCats.has(cat)) return false;
+        const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
+        if (!passMatch) return false;
+        const vert = r.vertical_drop_ft || 0;
+        if (minVertical > 0 && vert < minVertical) return false;
+        const acres = r.skiable_acres || 0;
+        if (minAcreage > 0 && acres < minAcreage) return false;
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const matchName = r.name.toLowerCase().includes(q);
+          const matchReg = (r.region || '').toLowerCase().includes(q);
+          const matchCountry = (r.country || '').toLowerCase().includes(q);
+          if (!matchName && !matchReg && !matchCountry) return false;
+        }
+        return true;
+      }).map((r) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [r.lng, r.lat] },
+        properties: {
+          id: r.id,
+          name: r.name,
+          category: r.category || 'downhill',
+          primary_pass: r.pass_networks[0] || 'Independent',
+          pass_color: PASS_COLORS[r.pass_networks[0] || 'Independent'],
+          vertical_ft: r.vertical_drop_ft || 0,
+          vertical_drop_ft: r.vertical_drop_ft || 0,
+          skiable_acres: r.skiable_acres || 0,
+        },
+      }));
+
+      curatedSrc.setData({ type: 'FeatureCollection', features: filteredCurated as any });
+    }
+  }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, selectedPasses, searchQuery, mapLoaded, resorts]);
 
   /* =========================================================================
      EARTH PROJECTION TOGGLE (3D Spherical Globe vs 2D Planar Mercator)
@@ -3541,9 +3628,14 @@ export default function App() {
             {/* Framed Filter Box */}
             <div className="border border-[#D6D0C2] rounded-[2px] bg-[#F7F4ED] p-2.5 space-y-2.5">
               <div className="flex items-center justify-between text-[10px] font-mono border-b border-[#D6D0C2] pb-1.5">
-                <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[9px]">
-                  Terrain Filters
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[9px]">
+                    Terrain Filters
+                  </span>
+                  <span className="text-[9px] text-[#8A847C] font-normal">
+                    ({filteredResorts.length.toLocaleString()} matching)
+                  </span>
+                </div>
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={handleResetFilters}
@@ -3563,8 +3655,9 @@ export default function App() {
                       ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] font-bold shadow-xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
                   }`}
+                  title="Toggle Downhill Ski Areas"
                 >
-                  <span>⛷️ Downhill</span>
+                  <span>⛷️ Downhill ({categoryFilterCounts.downhill.toLocaleString()})</span>
                 </button>
                 <button
                   onClick={() => setShowNordic(!showNordic)}
@@ -3573,8 +3666,9 @@ export default function App() {
                       ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] font-bold shadow-xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
                   }`}
+                  title="Toggle Nordic / Cross-Country Ski Centers"
                 >
-                  <span>🎿 Nordic</span>
+                  <span>🎿 Nordic ({categoryFilterCounts.nordic.toLocaleString()})</span>
                 </button>
                 <button
                   onClick={() => setShowHeliCat(!showHeliCat)}
@@ -3583,8 +3677,9 @@ export default function App() {
                       ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] font-bold shadow-xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
                   }`}
+                  title="Toggle Guided Snowcat & Heli Ski Operations"
                 >
-                  <span>🚁 Cat/Heli</span>
+                  <span>🚁 Heli/Cat ({categoryFilterCounts.heli_cat.toLocaleString()})</span>
                 </button>
               </div>
 
