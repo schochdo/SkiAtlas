@@ -3259,17 +3259,27 @@ export default function App() {
     didDragTiltRef.current = false;
     setIsTiltDragging(true);
 
+    const startX = e.clientX;
     const startY = e.clientY;
+    const startBearing = mapRef.current.getBearing();
     const startPitch = mapRef.current.getPitch();
 
     const onMouseMove = (ev: MouseEvent) => {
       if (!isDraggingTiltRef.current || !mapRef.current) return;
+      const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
 
-      if (Math.abs(dy) > 2) {
+      if (Math.hypot(dx, dy) > 2) {
         didDragTiltRef.current = true;
       }
 
+      // Horizontal Drag (dx): Rotates camera heading / bearing left and right
+      let newBearing = (startBearing + dx * 0.65) % 360;
+      if (newBearing < 0) newBearing += 360;
+      mapRef.current.setBearing(newBearing);
+      setMapBearing(Math.round(newBearing));
+
+      // Vertical Drag (dy): Tilts 3D pitch / perspective up and down
       const newPitch = Math.max(0, Math.min(85, startPitch - dy * 0.5));
       mapRef.current.setPitch(newPitch);
       setMapPitch(Math.round(newPitch));
@@ -4137,72 +4147,43 @@ export default function App() {
               e.preventDefault();
               e.stopPropagation();
               if (!mapRef.current) return;
-              safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
+              safeEaseTo(mapRef.current, { bearing: 0, pitch: 0, duration: 400 });
+              setMapBearing(0);
               setMapPitch(0);
               setIs3D(false);
               mapRef.current.setRenderWorldCopies(false);
             }}
-            className={`relative z-10 w-[42px] h-[42px] rounded-full bg-[#FAF8F3] border border-[#2C2A27]/40 shadow-inner flex flex-col items-center justify-center transition-all ${
+            className={`relative z-10 w-[42px] h-[42px] rounded-full bg-[#FAF8F3] border border-[#2C2A27]/40 shadow-inner flex items-center justify-center transition-all ${
               isTiltDragging
                 ? 'cursor-grabbing scale-105 ring-1 ring-[#2C2A27]'
                 : 'cursor-grab hover:bg-[#EFECE4]'
             }`}
-            title="3D Tilt Gimbal: Click to toggle 2D/3D · Drag up/down to tilt · Double-click to flatten"
+            title="Navigation Gimbal: Drag horizontally to rotate heading · Drag vertically to tilt pitch · Click to toggle 2D/3D · Double-click to flatten"
           >
-            {/* SVG Horizon Arc & Dynamic Ridgeline Vector */}
+            {/* SVG Perimeter Ring & Dynamic Pitch Arc Meter */}
             <svg className="w-[34px] h-[34px] pointer-events-none" viewBox="0 0 34 34">
-              <circle cx="17" cy="17" r="15" fill="none" stroke="#2C2A27" strokeWidth="0.6" strokeOpacity="0.25" />
-              <g
-                style={{
-                  transform: `translateY(${Math.max(-5, Math.min(5, (mapPitch / 85) * 8 - 2))}px)`,
-                  transition: isTiltDragging ? 'none' : 'transform 150ms ease-out',
-                }}
-              >
-                <path
-                  d="M 6 19 L 12 13 L 17 17 L 22 11 L 28 19"
-                  fill="none"
-                  stroke={is3D ? "#2E5A44" : "#8A847C"}
-                  strokeWidth="1.3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity={is3D ? 1 : 0.45}
-                />
-                <line
-                  x1="7"
-                  y1="20"
-                  x2="27"
-                  y2="20"
-                  stroke="#2C2A27"
-                  strokeWidth="0.8"
-                  strokeOpacity="0.5"
-                />
-              </g>
-
+              <circle cx="17" cy="17" r="14.5" fill="none" stroke="#2C2A27" strokeWidth="0.6" strokeOpacity="0.25" />
               {/* Pitch Arc Angle Meter */}
               <circle
                 cx="17"
                 cy="17"
-                r="13"
+                r="14.5"
                 fill="none"
                 stroke="#2E5A44"
-                strokeWidth="1.5"
-                strokeDasharray={`${(mapPitch / 85) * 30} 90`}
+                strokeWidth="1.6"
+                strokeDasharray={`${(mapPitch / 85) * 36} 100`}
                 strokeLinecap="round"
                 transform="rotate(-90 17 17)"
                 opacity={is3D ? 0.95 : 0.15}
               />
             </svg>
 
-            {/* Mode Tag: 2D vs 3D */}
-            <span
-              className={`absolute -bottom-1 px-1 py-0 text-[7.5px] font-mono font-bold rounded-[2px] border ${
-                is3D
-                  ? 'bg-[#2E5A44] text-[#FAF8F3] border-[#2E5A44]'
-                  : 'bg-[#FAF8F3] text-[#5C5852] border-[#2C2A27]'
-              }`}
-            >
-              {is3D ? `${mapPitch}°` : '2D'}
-            </span>
+            {/* Viewing Angle Display - Strictly Centered (No up/down translation) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+              <span className="text-[11.5px] font-mono font-bold text-[#1C1B18] tracking-tight leading-none">
+                {is3D ? `${mapPitch}°` : '2D'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
