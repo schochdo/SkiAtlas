@@ -2168,51 +2168,63 @@ export default function App() {
       (map as any).setCenterClampedToGround?.(false);
     } catch (_) {}
 
-    // Smooth Center-Locked Right-Click Orbit Controller
-    // 1. Keeps current view center strictly locked so the camera orbits the mountain without drifting
-    // 2. Calibrated smooth sensitivity (0.16 deg/px) eliminates wild, jerky spins
+    // Smooth Pivot-Point Right-Click Orbit Controller
+    // Locks the terrain point under the mouse at drag-start as the orbit pivot,
+    // so the camera genuinely revolves around the mountain rather than panning.
     const canvas = map.getCanvas();
     let isRightDragging = false;
     let rightStartX = 0;
     let rightStartY = 0;
     let rightStartBearing = 0;
     let rightStartPitch = 0;
-    let lockedOrbitCenter: [number, number] | null = null;
-    let lockedOrbitElev: number | null = null;
+    // The geographic pivot point (terrain under mouse at drag-start)
+    let pivotLng = 0;
+    let pivotLat = 0;
+    // Screen pixel where the pivot was captured
+    let pivotPixelX = 0;
+    let pivotPixelY = 0;
 
     const onRightContextMenu = (e: MouseEvent) => {
       e.preventDefault();
     };
 
     const onRightMouseMove = (e: MouseEvent) => {
-      if (!isRightDragging || !lockedOrbitCenter) return;
+      if (!isRightDragging) return;
 
       const dx = e.clientX - rightStartX;
       const dy = e.clientY - rightStartY;
 
-      // Smooth, controlled sensitivity (0.16 deg per pixel)
-      const SENSITIVITY = 0.16;
+      // Bearing: horizontal drag at 0.22 deg/px — fast enough to feel responsive
+      const BEAR_SENS = 0.22;
+      // Pitch: vertical drag at 0.18 deg/px
+      const PITCH_SENS = 0.18;
 
-      // Horizontal drag smoothly orbits camera bearing around the center
-      const nextBearing = (rightStartBearing + dx * SENSITIVITY) % 360;
-      const normalizedBearing = nextBearing < 0 ? nextBearing + 360 : nextBearing;
-
-      // Vertical drag smoothly tilts pitch (moving up increases pitch toward horizon, moving down decreases to nadir)
       const curZ = map.getZoom();
       const maxAllowedPitch = curZ < 5.0 ? Math.max(0, (curZ - 2.5) * 24) : 85;
-      const nextPitch = Math.max(0, Math.min(maxAllowedPitch, rightStartPitch - dy * SENSITIVITY));
 
-      const jumpOpts: any = {
-        center: lockedOrbitCenter, // View remains strictly centered!
-        bearing: normalizedBearing,
-        pitch: nextPitch,
-      };
-      if (lockedOrbitElev !== null && Number.isFinite(lockedOrbitElev)) {
-        jumpOpts.elevation = lockedOrbitElev;
+      const nextBearing = ((rightStartBearing + dx * BEAR_SENS) % 360 + 360) % 360;
+      const nextPitch = Math.max(0, Math.min(maxAllowedPitch, rightStartPitch - dy * PITCH_SENS));
+
+      // After changing bearing, the pivot point will have shifted on screen.
+      // We compensate by computing where it would end up and translating the center back
+      // so the pivot pixel stays visually locked.
+      map.jumpTo({ bearing: nextBearing, pitch: nextPitch });
+
+      // Re-project the pivot back to screen coords after the camera move
+      const pivotScreen = map.project([pivotLng, pivotLat]);
+      // Compute the delta from where it is now vs where it started
+      const offsetX = pivotScreen.x - pivotPixelX;
+      const offsetY = pivotScreen.y - pivotPixelY;
+
+      if (Math.abs(offsetX) > 0.1 || Math.abs(offsetY) > 0.1) {
+        // Unproject center + offset to get a corrected center
+        const canvasRect = canvas.getBoundingClientRect();
+        const centerPx = map.project(map.getCenter());
+        const correctedCenter = map.unproject([centerPx.x - offsetX, centerPx.y - offsetY]);
+        map.jumpTo({ center: correctedCenter });
       }
-      map.jumpTo(jumpOpts);
 
-      setMapBearing(Math.round(normalizedBearing));
+      setMapBearing(Math.round(nextBearing));
       setMapPitch(Math.round(nextPitch));
       setIs3D(nextPitch > 10);
     };
@@ -2220,8 +2232,6 @@ export default function App() {
     const onRightMouseUp = (e: MouseEvent) => {
       if (e.button === 2 || e.button === 1 || (e.button === 0 && !e.ctrlKey) || e.buttons === 0) {
         isRightDragging = false;
-        lockedOrbitCenter = null;
-        lockedOrbitElev = null;
         window.removeEventListener('mousemove', onRightMouseMove);
         window.removeEventListener('mouseup', onRightMouseUp);
       }
@@ -2237,15 +2247,13 @@ export default function App() {
         rightStartBearing = map.getBearing();
         rightStartPitch = map.getPitch();
 
-        const c = map.getCenter();
-        lockedOrbitCenter = [c.lng, c.lat];
-        try {
-          (map as any).setCenterClampedToGround?.(false);
-          const ele = map.getCenterElevation();
-          lockedOrbitElev = Number.isFinite(ele) ? ele : null;
-        } catch (_) {
-          lockedOrbitElev = null;
-        }
+        // Capture pivot: terrain point under the cursor at drag-start
+        const canvasRect = canvas.getBoundingClientRect();
+        pivotPixelX = e.clientX - canvasRect.left;
+        pivotPixelY = e.clientY - canvasRect.top;
+        const geo = map.unproject([pivotPixelX, pivotPixelY]);
+        pivotLng = geo.lng;
+        pivotLat = geo.lat;
 
         window.addEventListener('mousemove', onRightMouseMove);
         window.addEventListener('mouseup', onRightMouseUp);
