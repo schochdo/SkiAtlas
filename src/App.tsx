@@ -1781,7 +1781,7 @@ export default function App() {
 
   // Mountain Directory Scope & Sorting
   const [directoryScope, setDirectoryScope] = useState<'in_frame' | 'all'>('in_frame');
-  const [sortBy, setSortBy] = useState<'vert' | 'acres' | 'name' | 'snow'>('vert');
+  const [sortBy, setSortBy] = useState<'vert' | 'acres' | 'name' | 'snow'>('snow');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Pass Network filters
@@ -1874,7 +1874,7 @@ export default function App() {
     const multiplier = sortOrder === 'asc' ? 1 : -1;
     list.sort((a, b) => {
       if (sortBy === 'snow') {
-        const diff = (a.weather?.snowfall_72h_in ?? 0) - (b.weather?.snowfall_72h_in ?? 0);
+        const diff = (a.weather?.snowfall_7d_in ?? 0) - (b.weather?.snowfall_7d_in ?? 0);
         return diff * multiplier;
       } else if (sortBy === 'vert') {
         const diff = (a.vertical_drop_ft || 0) - (b.vertical_drop_ft || 0);
@@ -1963,6 +1963,43 @@ export default function App() {
   useEffect(() => {
     fetchOverpassBboxRef.current = fetchOverpassBbox;
   }, [fetchOverpassBbox]);
+
+  /* =========================================================================
+     BACKGROUND WEATHER PREFETCH — load 7-day snow for all resorts on mount
+     Batched (5 concurrent) to avoid hammering the API.
+     ========================================================================= */
+
+  useEffect(() => {
+    let cancelled = false;
+    const allResorts = [...GLOBAL_SKI_ATLAS];
+    const BATCH = 5;
+
+    async function prefetchAll() {
+      for (let i = 0; i < allResorts.length; i += BATCH) {
+        if (cancelled) break;
+        const batch = allResorts.slice(i, i + BATCH);
+        const results = await Promise.allSettled(batch.map((r) => fetchLiveWeather(r)));
+        if (cancelled) break;
+        setResorts((prev) => {
+          const updated = [...prev];
+          results.forEach((result, j) => {
+            if (result.status === 'fulfilled' && result.value) {
+              const id = batch[j].id;
+              const idx = updated.findIndex((r) => r.id === id);
+              if (idx !== -1) updated[idx] = { ...updated[idx], weather: result.value! };
+            }
+          });
+          return updated;
+        });
+        // Small delay between batches to be polite to the API
+        if (i + BATCH < allResorts.length) await new Promise((res) => setTimeout(res, 200));
+      }
+    }
+
+    prefetchAll();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* =========================================================================
      MAP INITIALIZATION (MapLibre GL)
@@ -3829,7 +3866,7 @@ export default function App() {
                     sortBy === 'snow' ? 'bg-[#F7F4ED] text-[#3B627E] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
-                  <span>Snow</span>
+                  <span>7-Day ❄</span>
                   {sortBy === 'snow' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
                 </button>
               </div>
@@ -3884,6 +3921,7 @@ export default function App() {
               displayedResorts.map((r) => {
                 const isSelected = r.id === selectedResortId;
                 const snow72 = r.weather?.snowfall_72h_in ?? 0;
+                const snow7d = r.weather?.snowfall_7d_in ?? 0;
                 const badge = getCategoryBadge(r.category);
                 return (
                   <div
@@ -3915,14 +3953,14 @@ export default function App() {
                         <div className="shrink-0 flex items-center font-mono text-[10px]">
                           <span
                             className={`px-1.5 py-0.5 rounded-[2px] border flex items-center gap-1 ${
-                              snow72 > 0
+                              snow7d > 0
                                 ? 'bg-[#3B627E]/10 border-[#3B627E]/40 text-[#3B627E] font-bold'
                                 : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C]'
                             }`}
-                            title="Upcoming 72h forecast snowfall"
+                            title="Upcoming 7-day forecast snowfall"
                           >
                             <Snowflake className="w-2.5 h-2.5 text-[#3B627E]" />
-                            <span>{formatSnow(snow72)}</span>
+                            <span>{formatSnow(snow7d)}</span>
                           </span>
                         </div>
                       )}
