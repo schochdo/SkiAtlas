@@ -17,7 +17,6 @@ import {
   Compass,
   Layers,
   Search,
-  ChevronLeft,
   ChevronRight,
   ChevronUp,
   ChevronDown,
@@ -3159,13 +3158,6 @@ export default function App() {
                 </span>
               )}
             </div>
-            <button
-              onClick={() => setLeftDockOpen(false)}
-              className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer"
-              title="Collapse directory tray"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
           </div>
 
           {/* CLEARLY DEFINED TERRAIN & INFRASTRUCTURE FILTERS CARD */}
