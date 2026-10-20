@@ -4020,45 +4020,10 @@ export default function App() {
         role="group"
         aria-label="Map navigation controls"
       >
-        {/* Reorient North Arrow Button */}
-        <button
-          onClick={handleResetNorth}
-          className="w-8 h-8 flex items-center justify-center hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer group"
-          title="Reorient to True North (0°)"
-          aria-label="Reorient to True North"
-        >
-          <svg
-            className="w-5 h-5 pointer-events-none transition-transform duration-150 ease-out"
-            viewBox="0 0 24 24"
-            style={{ transform: `rotate(${-mapBearing}deg)` }}
-          >
-            {/* North Arrow Facets (Terracotta Vermilion #B84A39) */}
-            <polygon points="12,3 15.5,12 12,10" fill="#B84A39" />
-            <polygon points="12,3 8.5,12 12,10" fill="#FAF8F3" stroke="#B84A39" strokeWidth="0.5" />
-            {/* South Arrow Facets (Muted Stone #5A554E) */}
-            <polygon points="12,21 15.5,12 12,14" fill="#5A554E" />
-            <polygon points="12,21 8.5,12 12,14" fill="#FAF8F3" stroke="#5A554E" strokeWidth="0.5" />
-            {/* Center Pivot Rivet */}
-            <circle cx="12" cy="12" r="1.3" fill="#2C2A27" />
-            {/* Engraved 'N' in Serifs */}
-            <text
-              x="12"
-              y="2.4"
-              textAnchor="middle"
-              fontSize="4"
-              fontWeight="bold"
-              fontFamily="Newsreader, Georgia, serif"
-              fill="#B84A39"
-            >
-              N
-            </text>
-          </svg>
-        </button>
-
         {/* Zoom In Button */}
         <button
           onClick={handleZoomIn}
-          className="w-8 h-7 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
+          className="w-8 h-8 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
           title="Zoom In"
           aria-label="Zoom In"
         >
@@ -4068,11 +4033,34 @@ export default function App() {
         {/* Zoom Out Button */}
         <button
           onClick={handleZoomOut}
-          className="w-8 h-7 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
+          className="w-8 h-8 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
           title="Zoom Out"
           aria-label="Zoom Out"
         >
           <Minus className="w-3.5 h-3.5" strokeWidth={2.2} />
+        </button>
+
+        {/* Reorient North Button (Clean Minimal Cartographic Style, Below +/-) */}
+        <button
+          onClick={handleResetNorth}
+          className="w-8 h-8 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer group"
+          title="Reorient to True North (0°)"
+          aria-label="Reorient to True North"
+        >
+          <svg
+            className="w-4 h-4 pointer-events-none transition-transform duration-150 ease-out"
+            viewBox="0 0 24 24"
+            style={{ transform: `rotate(${-mapBearing}deg)` }}
+          >
+            {/* North needle tip (clean filled triangular needle in dark ink #1C1B18) */}
+            <polygon points="12,3 16,13 12,11.2" fill="#1C1B18" />
+            <polygon points="12,3 8,13 12,11.2" fill="#5A554E" />
+            {/* South needle tip (clean outline/subtle tint) */}
+            <polygon points="12,21 16,13 12,14.8" fill="#D6D0C2" />
+            <polygon points="12,21 8,13 12,14.8" fill="#E5E0D5" />
+            {/* Minimal center pivot */}
+            <circle cx="12" cy="13" r="1.5" fill="#1C1B18" />
+          </svg>
         </button>
       </div>
 
