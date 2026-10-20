@@ -4245,6 +4245,13 @@ export default function App() {
 
           {/* Dossier Body */}
           <div className="flex-1 overflow-y-auto p-3.5 space-y-3 bg-[#F7F4ED]">
+            {/* Mountain Overview / Summary */}
+            {selectedResort.summary && (
+              <div className="bg-[#FAF8F3] p-3 rounded-[2px] border border-[#D6D0C2] text-xs font-serif text-[#1C1B18] leading-relaxed">
+                <p>{selectedResort.summary}</p>
+              </div>
+            )}
+
             {/* Metric Tables */}
             {(() => {
               const stats = getResortStats(selectedResort);
@@ -4346,14 +4353,6 @@ export default function App() {
                   })}
                 </div>
               )}
-            </div>
-
-            {/* Summary */}
-            <div className="bg-[#FAF8F3] p-3 rounded-[2px] border border-[#D6D0C2] text-xs font-serif text-[#1C1B18] leading-relaxed">
-              <p>{selectedResort.summary}</p>
-              <div className="text-[10px] font-mono text-[#5C5852] pt-2 mt-2 border-t border-[#D6D0C2]">
-                Infrastructure: <span className="text-[#1C1B18] font-bold">{selectedResort.infrastructure}</span>
-              </div>
             </div>
           </div>
         </div>
