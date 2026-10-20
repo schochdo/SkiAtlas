@@ -2085,6 +2085,7 @@ export default function App() {
       },
       center: [-110.849, 43.593], // Default to Jackson Hole, WY
       zoom: 12.6,
+      minZoom: 1.2,
       pitch: 50,
       bearing: 180,
       maxPitch: 85,
@@ -2093,7 +2094,10 @@ export default function App() {
     mapRef.current = map;
 
     map.on('rotate', () => setMapBearing(Math.round(map.getBearing())));
-    map.on('pitch', () => setMapPitch(Math.round(map.getPitch())));
+    map.on('pitch', () => {
+      setMapPitch(Math.round(map.getPitch()));
+      map.setRenderWorldCopies(false);
+    });
 
     const updateScale = () => {
       try {
@@ -2145,14 +2149,22 @@ export default function App() {
     map.on('moveend', handleMapMoveEnd);
 
     map.on('load', () => {
+      // Strictly enforce SINGLE planet - zero repeating earths in 2D or 3D
+      map.setRenderWorldCopies(false);
+      map.on('projectiontransition', () => map.setRenderWorldCopies(false));
+      map.on('styledata', () => map.setRenderWorldCopies(false));
+      map.on('style.load', () => map.setRenderWorldCopies(false));
+
       // Ensure canvas is 100% painted immediately on start
       map.resize();
       updateBounds();
       updateScale();
 
-      // Enable 3D Terrain mesh (0.7x natural mountain relief)
+      // Enable 3D Terrain mesh (0.7x natural mountain relief) if in Mercator
       try {
-        map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 });
+        if (earthProjection === 'mercator') {
+          map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 });
+        }
       } catch (e) {
         console.warn('SetTerrain error:', e);
       }
@@ -2515,12 +2527,31 @@ export default function App() {
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
     try {
-      mapRef.current.setProjection({ type: earthProjection });
+      if (earthProjection === 'globe') {
+        try { map.setTerrain(null); } catch (_) {}
+        map.setProjection({ type: 'globe' });
+      } else {
+        map.setProjection({ type: 'mercator' });
+        if (show3DTerrain) {
+          try { map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 }); } catch (_) {}
+        }
+      }
+      map.setRenderWorldCopies(false);
     } catch (err) {
       console.warn('Projection transition error:', err);
     }
-  }, [earthProjection, mapLoaded]);
+  }, [earthProjection, show3DTerrain, mapLoaded]);
+
+  /* =========================================================================
+     SINGLE PLANET ENFORCEMENT (ZERO REPEATING EARTHS IN 2D OR 3D)
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    mapRef.current.setRenderWorldCopies(false);
+  }, [is3D, mapPitch, earthProjection, mapLoaded]);
 
   /* =========================================================================
      OUTSIDE-CLICK DISMISSAL FOR BASEMAP & MAP KEY FLOATING PANELS
@@ -2609,15 +2640,16 @@ export default function App() {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
     try {
-      if (show3DTerrain) {
+      if (show3DTerrain && earthProjection === 'mercator') {
         map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 });
       } else {
         map.setTerrain(null);
       }
+      map.setRenderWorldCopies(false);
     } catch (err) {
       console.warn('SetTerrain toggle error:', err);
     }
-  }, [show3DTerrain, mapLoaded]);
+  }, [show3DTerrain, earthProjection, mapLoaded]);
 
   /* =========================================================================
      HILLSHADE RELIEF TOGGLE
@@ -3176,6 +3208,7 @@ export default function App() {
       });
       setMapPitch(0);
       setIs3D(false);
+      mapRef.current.setRenderWorldCopies(false);
     } else {
       safeEaseTo(mapRef.current, {
         pitch: 62,
@@ -3183,6 +3216,7 @@ export default function App() {
       });
       setMapPitch(62);
       setIs3D(true);
+      mapRef.current.setRenderWorldCopies(false);
     }
   }, []);
 
@@ -4010,6 +4044,7 @@ export default function App() {
               safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
               setMapPitch(0);
               setIs3D(false);
+              mapRef.current.setRenderWorldCopies(false);
             }}
             className={`relative z-10 w-[42px] h-[42px] rounded-full bg-[#FAF8F3] border border-[#2C2A27]/40 shadow-inner flex flex-col items-center justify-center transition-all ${
               isTiltDragging
