@@ -187,6 +187,11 @@ export function safeFlyTo(map: MapLibreMap | null, options: any) {
   try {
     isProgrammaticFlightActive = true;
     map.flyTo(options);
+    const onEnd = () => {
+      isProgrammaticFlightActive = false;
+      map.off('moveend', onEnd);
+    };
+    map.once('moveend', onEnd);
   } catch (err) {
     console.warn('safeFlyTo caught exception:', err);
     isProgrammaticFlightActive = false;
@@ -1725,10 +1730,6 @@ export default function App() {
   );
 
   const [selectedResortId, setSelectedResortId] = useState<string | null>(null);
-  const selectedResort = useMemo(() => {
-    if (!selectedResortId) return null;
-    return resorts.find((r) => r.id === selectedResortId) || null;
-  }, [resorts, selectedResortId]);
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -1758,11 +1759,14 @@ export default function App() {
   const [mapBearing, setMapBearing] = useState(0);
   const [mapPitch, setMapPitch] = useState(45);
   const [mapScale, setMapScale] = useState({ distStr: '50 km', barWidth: 80 });
-  const gyroDragStateRef = useRef<{ startX: number; startY: number; startBearing: number; startPitch: number } | null>(null);
-  const [isGyroDragging, setIsGyroDragging] = useState(false);
+  const isDraggingCompassRef = useRef(false);
+  const didDragCompassRef = useRef(false);
+  const [isCompassDragging, setIsCompassDragging] = useState(false);
+  const isDraggingTiltRef = useRef(false);
+  const didDragTiltRef = useRef(false);
+  const [isTiltDragging, setIsTiltDragging] = useState(false);
 
-  // Mountain Directory Tab & Sorting
-  const [mountainListTab, setMountainListTab] = useState<'featured' | 'in_view'>('featured');
+  // Mountain Directory Sorting
   const [sortBy, setSortBy] = useState<'vert' | 'acres' | 'name' | 'snow'>('vert');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -1843,9 +1847,53 @@ export default function App() {
     });
   }, [resorts, selectedPasses, minVertical, minAcreage, selectedRegionFilter, searchQuery, showDownhill, showNordic, showHeliCat]);
 
-  // Sorted Featured Resorts
-  const sortedFeaturedResorts = useMemo(() => {
-    const list = [...filteredResorts];
+  // Unified Ski Areas Directory (No confusing 'Featured' or 'In View' tabs)
+  const displayedResorts = useMemo(() => {
+    let list = [...filteredResorts];
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const globalMatches = (allGlobalFeaturesRef.current || [])
+        .filter((f) => {
+          const p = f.properties;
+          if (!p || !p.name) return false;
+          const cat = p.category || 'downhill';
+          if (cat === 'downhill' && !showDownhill) return false;
+          if (cat === 'nordic' && !showNordic) return false;
+          if (cat === 'heli_cat' && !showHeliCat) return false;
+          const matchName = p.name.toLowerCase().includes(q);
+          const matchRegion = (p.region || '').toLowerCase().includes(q);
+          const matchCountry = (p.country || '').toLowerCase().includes(q);
+          return matchName || matchRegion || matchCountry;
+        })
+        .slice(0, 60)
+        .map((f) => {
+          const p = f.properties;
+          return {
+            id: p.id,
+            name: p.name,
+            region: p.region || '',
+            country: p.country || '',
+            lat: p.lat,
+            lng: p.lng,
+            vertical_drop_ft: p.vertical_ft || 0,
+            skiable_acres: p.skiable_acres || 0,
+            pass_networks: ['Independent'] as PassNetwork[],
+            infrastructure: p.infrastructure || 'Local ski center',
+            summary: p.summary || '',
+            category: p.category,
+            archetype: p.archetype,
+          } as SkiResort;
+        });
+
+      const existingIds = new Set(list.map((r) => r.id));
+      for (const gm of globalMatches) {
+        if (!existingIds.has(gm.id)) {
+          list.push(gm);
+        }
+      }
+    }
+
     const multiplier = sortOrder === 'asc' ? 1 : -1;
     list.sort((a, b) => {
       if (sortBy === 'snow') {
@@ -1861,34 +1909,14 @@ export default function App() {
         return a.name.localeCompare(b.name) * multiplier;
       }
     });
+
     return list;
-  }, [filteredResorts, sortBy, sortOrder]);
+  }, [filteredResorts, searchQuery, sortBy, sortOrder, showDownhill, showNordic, showHeliCat]);
 
-  // Resorts in current map viewport
-  const visibleResorts = useMemo(() => {
-    if (!viewportBounds) return sortedFeaturedResorts;
-    const [west, south, east, north] = viewportBounds;
-    return sortedFeaturedResorts.filter((r) => {
-      const inLng = west <= east ? r.lng >= west && r.lng <= east : r.lng >= west || r.lng <= east;
-      const inLat = r.lat >= south && r.lat <= north;
-      return inLng && inLat;
-    });
-  }, [sortedFeaturedResorts, viewportBounds]);
-
-  // Visible Global Areas (from deduplicated OpenSkiData points)
-  const visibleGlobalAreas = useMemo(() => {
-    if (!viewportBounds || !showGlobalPoints) return [];
-    const [west, south, east, north] = viewportBounds;
-    const list = globalFeaturesRef.current.filter((f) => {
-      const coords = f.geometry?.coordinates;
-      if (!coords) return false;
-      const [lng, lat] = coords;
-      const inLng = west <= east ? lng >= west && lng <= east : lng >= west || lng <= east;
-      const inLat = lat >= south && lat <= north;
-      return inLng && inLat;
-    });
-    return list.slice(0, 100);
-  }, [viewportBounds, showGlobalPoints, globalFeaturesRef.current]);
+  const selectedResort = useMemo(() => {
+    if (!selectedResortId) return null;
+    return displayedResorts.find((r) => r.id === selectedResortId) || resorts.find((r) => r.id === selectedResortId) || null;
+  }, [displayedResorts, resorts, selectedResortId]);
 
   /* =========================================================================
      LOCALHOST TRAILS STREAMING ENGINE
@@ -1951,6 +1979,7 @@ export default function App() {
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
+      attributionControl: false,
       style: {
         version: 8,
         glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
@@ -2358,18 +2387,35 @@ export default function App() {
       });
 
       // Click on curated resort
-      map.on('click', 'resorts-outer-ring', (e) => {
+      const onResortClick = (e: any) => {
         if (!e.features || !e.features[0]) return;
         const id = e.features[0].properties?.id;
         if (id) handleSelectResort(id);
-      });
+      };
+
+      map.on('click', 'resorts-outer-ring', onResortClick);
+      map.on('click', 'resorts-inner-dot', onResortClick);
+      map.on('click', 'resorts-labels', onResortClick);
 
       // Click on global ski area
-      map.on('click', 'global-unclustered-point', (e) => {
+      const onGlobalClick = (e: any) => {
         if (!e.features || !e.features[0]) return;
         const p = e.features[0].properties;
         const coords = (e.features[0].geometry as any).coordinates;
         handleSelectGlobalResort(p, coords);
+      };
+
+      map.on('click', 'global-unclustered-point', onGlobalClick);
+      map.on('click', 'global-labels', onGlobalClick);
+
+      // Pointer cursor
+      ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels', 'global-unclustered-point', 'global-labels'].forEach((layerId) => {
+        map.on('mouseenter', layerId, () => {
+          map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', layerId, () => {
+          map.getCanvas().style.cursor = '';
+        });
       });
 
       setMapLoaded(true);
@@ -2389,13 +2435,14 @@ export default function App() {
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
+    if (isProgrammaticFlightActive) return;
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
-    const rightPad = selectedResort ? (window.innerWidth >= 768 ? 384 : 336) : 0;
+    const rightPad = selectedResortId ? (window.innerWidth >= 768 ? 384 : 336) : 0;
     mapRef.current.easeTo({
       padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
       duration: 300,
     });
-  }, [leftDockOpen, selectedResort, mapLoaded]);
+  }, [leftDockOpen, mapLoaded]);
 
   /* =========================================================================
      BASEMAP STYLE TOGGLE
@@ -2539,7 +2586,7 @@ export default function App() {
         const curBearing = map.getBearing();
         const bearingRad = (curBearing * Math.PI) / 180;
 
-        const speedMps = 240 * Math.pow(2, 14 - curZoom) * (isShift ? 2.0 : 1.0);
+        const speedMps = 720 * Math.pow(2, 14 - curZoom) * (isShift ? 2.5 : 1.0);
         const distMeters = speedMps * dt;
 
         const sinB = Math.sin(bearingRad);
@@ -2775,23 +2822,156 @@ export default function App() {
   }, []);
 
   /* =========================================================================
+     CARTOGRAPHIC CONCENTRIC NAVIGATION INSTRUMENT HANDLERS
+     - Outer Bezel: Rotary Compass heading & True North snap
+     - Inner Core: 3D Horizon perspective gimbal & 2D/3D toggle
+     ========================================================================= */
+
+  const handleCompassMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (!mapRef.current) return;
+
+    isDraggingCompassRef.current = true;
+    didDragCompassRef.current = false;
+    setIsCompassDragging(true);
+
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+    const startBearing = mapRef.current.getBearing();
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isDraggingCompassRef.current || !mapRef.current) return;
+      const currentAngle = Math.atan2(ev.clientY - centerY, ev.clientX - centerX) * (180 / Math.PI);
+      const deltaAngle = currentAngle - startAngle;
+
+      if (Math.abs(deltaAngle) > 2) {
+        didDragCompassRef.current = true;
+      }
+
+      let newBearing = (startBearing - deltaAngle) % 360;
+      if (newBearing < 0) newBearing += 360;
+
+      mapRef.current.setBearing(newBearing);
+      setMapBearing(Math.round(newBearing));
+    };
+
+    const onMouseUp = () => {
+      isDraggingCompassRef.current = false;
+      setIsCompassDragging(false);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      setTimeout(() => {
+        didDragCompassRef.current = false;
+      }, 100);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }, []);
+
+  const handleResetNorth = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (didDragCompassRef.current) return;
+    if (!mapRef.current) return;
+    safeEaseTo(mapRef.current, {
+      bearing: 0,
+      duration: 500,
+    });
+    setMapBearing(0);
+  }, []);
+
+  const handleTiltMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (!mapRef.current) return;
+
+    isDraggingTiltRef.current = true;
+    didDragTiltRef.current = false;
+    setIsTiltDragging(true);
+
+    const startY = e.clientY;
+    const startPitch = mapRef.current.getPitch();
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isDraggingTiltRef.current || !mapRef.current) return;
+      const dy = ev.clientY - startY;
+
+      if (Math.abs(dy) > 2) {
+        didDragTiltRef.current = true;
+      }
+
+      const newPitch = Math.max(0, Math.min(85, startPitch - dy * 0.5));
+      mapRef.current.setPitch(newPitch);
+      setMapPitch(Math.round(newPitch));
+      setIs3D(newPitch > 10);
+    };
+
+    const onMouseUp = () => {
+      isDraggingTiltRef.current = false;
+      setIsTiltDragging(false);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      setTimeout(() => {
+        didDragTiltRef.current = false;
+      }, 100);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }, []);
+
+  const handleToggle3D = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (didDragTiltRef.current) return;
+    if (!mapRef.current) return;
+    const curPitch = mapRef.current.getPitch();
+
+    if (curPitch > 10) {
+      safeEaseTo(mapRef.current, {
+        pitch: 0,
+        duration: 500,
+      });
+      setMapPitch(0);
+      setIs3D(false);
+    } else {
+      safeEaseTo(mapRef.current, {
+        pitch: 62,
+        duration: 600,
+      });
+      setMapPitch(62);
+      setIs3D(true);
+    }
+  }, []);
+
+  /* =========================================================================
      SELECTION HANDLERS WITH HEMISPHERE-AWARE 65° 3D SUN ANGLE
      ========================================================================= */
 
   const handleSelectResort = async (id: string) => {
     setSelectedResortId(id);
-    const resort = resorts.find((r) => r.id === id);
+    const resort = displayedResorts.find((r) => r.id === id) || resorts.find((r) => r.id === id);
     if (!resort || !mapRef.current) return;
 
     // Hemisphere-aware bearing: South-facing (180°) in Northern Hemisphere, North-facing (0°) in Southern Hemisphere
     const isSouthHemisphere = resort.lat < 0;
     const targetBearing = resort.default_bearing || (isSouthHemisphere ? 0 : 180);
+    const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
+    const rightPad = window.innerWidth >= 768 ? 384 : 336;
 
     safeFlyTo(mapRef.current, {
       center: [resort.lng, resort.lat],
       zoom: 13.2,
       pitch: 62,
       bearing: targetBearing,
+      padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
       duration: 1600,
       essential: true,
     });
@@ -2818,11 +2998,15 @@ export default function App() {
     setSelectedResortId(id);
 
     const isSouth = coords[1] < 0;
+    const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
+    const rightPad = window.innerWidth >= 768 ? 384 : 336;
+
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],
       zoom: 13.0,
       pitch: 60,
       bearing: isSouth ? 0 : 180,
+      padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
       duration: 1600,
       essential: true,
     });
@@ -2839,6 +3023,13 @@ export default function App() {
 
   const handleDeselectResort = () => {
     setSelectedResortId(null);
+    if (mapRef.current) {
+      const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
+      mapRef.current.easeTo({
+        padding: { left: leftPad, right: 0, top: 52, bottom: 0 },
+        duration: 300,
+      });
+    }
   };
 
   const handleSortClick = (type: 'vert' | 'acres' | 'name' | 'snow') => {
@@ -3117,34 +3308,24 @@ export default function App() {
             )}
           </div>
 
-          {/* Directory Tabs */}
-          <div className="flex border-b border-[#D6D0C2] bg-[#FAF8F3] text-[11px] font-mono shrink-0">
-            <button
-              onClick={() => setMountainListTab('featured')}
-              className={`flex-1 py-1.5 text-center font-bold transition-colors border-r border-[#D6D0C2] cursor-pointer ${
-                mountainListTab === 'featured'
-                  ? 'bg-[#F7F4ED] text-[#1C1B18] border-b-2 border-b-[#2E5A44]'
-                  : 'text-[#8A847C] hover:text-[#1C1B18]'
-              }`}
-            >
-              Featured ({sortedFeaturedResorts.length})
-            </button>
-            <button
-              onClick={() => setMountainListTab('in_view')}
-              className={`flex-1 py-1.5 text-center font-bold transition-colors cursor-pointer ${
-                mountainListTab === 'in_view'
-                  ? 'bg-[#F7F4ED] text-[#1C1B18] border-b-2 border-b-[#2E5A44]'
-                  : 'text-[#8A847C] hover:text-[#1C1B18]'
-              }`}
-            >
-              In View ({visibleResorts.length + visibleGlobalAreas.length})
-            </button>
+          {/* Directory Count Subheader */}
+          <div className="px-3.5 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center justify-between text-[11px] font-mono shrink-0">
+            <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[10px]">
+              Ski Area Directory
+            </span>
+            <span className="text-[#8A847C] text-[10px]">
+              {displayedResorts.length} areas
+            </span>
           </div>
 
           {/* Directory Cards List (Engraved Ledger Cards) */}
           <div className="flex-1 overflow-y-auto divide-y divide-[#D6D0C2] bg-[#F7F4ED]">
-            {mountainListTab === 'featured' ? (
-              sortedFeaturedResorts.map((r) => {
+            {displayedResorts.length === 0 ? (
+              <div className="p-4 text-center text-xs font-mono text-[#8A847C]">
+                No ski areas match current filters.
+              </div>
+            ) : (
+              displayedResorts.map((r) => {
                 const isSelected = r.id === selectedResortId;
                 const snow72 = r.weather?.snowfall_72h_in ?? 0;
                 const badge = getCategoryBadge(r.category);
@@ -3173,49 +3354,30 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Live Weather Chip if Loaded */}
+                      {/* Live Weather Display: Snowfall & Temperature kept completely separate */}
                       {r.weather?.is_live && (
-                        <div className="shrink-0 flex items-center gap-1 bg-[#FAF8F3] border border-[#D6D0C2] px-1.5 py-0.5 rounded-[2px] font-mono text-[10px]">
-                          {snow72 > 0 ? (
-                            <>
-                              <Snowflake className="w-2.5 h-2.5 text-[#3B627E]" />
-                              <span className="font-bold text-[#3B627E]">{formatSnow(snow72)}</span>
-                            </>
-                          ) : (
-                            <span className="text-[#5C5852]">{Math.round(unitsMetric ? r.weather.current_temp_c : r.weather.current_temp_f)}°</span>
-                          )}
+                        <div className="shrink-0 flex items-center gap-1.5 font-mono text-[10px]">
+                          {/* Snowfall chip */}
+                          <span
+                            className={`px-1.5 py-0.5 rounded-[2px] border flex items-center gap-1 ${
+                              snow72 > 0
+                                ? 'bg-[#3B627E]/10 border-[#3B627E]/40 text-[#3B627E] font-bold'
+                                : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C]'
+                            }`}
+                            title="72-hour forecast snowfall"
+                          >
+                            <Snowflake className="w-2.5 h-2.5 text-[#3B627E]" />
+                            <span>{formatSnow(snow72)}</span>
+                          </span>
+
+                          {/* Temperature chip */}
+                          <span
+                            className="px-1.5 py-0.5 rounded-[2px] border border-[#D6D0C2] bg-[#FAF8F3] text-[#5C5852]"
+                            title="Summit current temperature"
+                          >
+                            {Math.round(unitsMetric ? r.weather.current_temp_c : r.weather.current_temp_f)}°
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              visibleResorts.map((r) => {
-                const isSelected = r.id === selectedResortId;
-                const snow72 = r.weather?.snowfall_72h_in ?? 0;
-                return (
-                  <div
-                    key={`view-${r.id}`}
-                    onClick={() => handleSelectResort(r.id)}
-                    className={`p-2.5 transition-colors cursor-pointer group ${
-                      isSelected ? 'bg-[#FAF8F3] border-l-2 border-l-[#2E5A44]' : 'hover:bg-[#FAF8F3]'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-1">
-                      <div className="min-w-0">
-                        <h3 className="font-serif font-bold text-sm text-[#1C1B18] tracking-tight truncate">
-                          {r.name}
-                        </h3>
-                        <div className="text-[10px] font-mono text-[#5C5852] mt-0.5">
-                          <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
-                          {r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
-                        </div>
-                      </div>
-                      {r.weather?.is_live && snow72 > 0 && (
-                        <span className="shrink-0 text-[10px] font-mono text-[#3B627E] font-bold">
-                          {formatSnow(snow72)}
-                        </span>
                       )}
                     </div>
                   </div>
@@ -3361,61 +3523,175 @@ export default function App() {
         </div>
       </div>
 
-      {/* COMPACT CONCENTRIC NAVIGATION INSTRUMENT (BOTTOM-RIGHT) */}
-      <div className={`absolute bottom-5 ${selectedResort ? 'right-88 md:right-100' : 'right-4'} z-20 flex flex-col items-center transition-all duration-300 select-none`}>
+      {/* =====================================================================
+          UNIFIED CARTOGRAPHIC NAVIGATION GIMBAL & COMPASS INSTRUMENT
+          Integrated concentric dual-action dial:
+          - Outer Ring (Ø 72px): Rotary Compass heading & True North snap
+          - Inner Core (Ø 42px): 3D Horizon gimbal & 2D/3D perspective tilt
+          ===================================================================== */}
+      <div
+        className={`absolute bottom-6 ${
+          selectedResort ? 'right-92 md:right-104' : 'right-6'
+        } z-20 select-none transition-all duration-300`}
+      >
         <div
-          onMouseDown={(e) => {
-            if (e.button !== 0) return;
-            setIsGyroDragging(true);
-            gyroDragStateRef.current = {
-              startX: e.clientX,
-              startY: e.clientY,
-              startBearing: mapRef.current?.getBearing() || 0,
-              startPitch: mapRef.current?.getPitch() || 0,
-            };
-            const handleMouseMove = (me: MouseEvent) => {
-              if (!gyroDragStateRef.current || !mapRef.current) return;
-              const dx = me.clientX - gyroDragStateRef.current.startX;
-              const dy = me.clientY - gyroDragStateRef.current.startY;
-              const newBearing = (gyroDragStateRef.current.startBearing + dx * 0.4) % 360;
-              const normalized = newBearing < 0 ? newBearing + 360 : newBearing;
-              const newPitch = Math.max(0, Math.min(85, gyroDragStateRef.current.startPitch - dy * 0.4));
-              mapRef.current.setBearing(normalized);
-              mapRef.current.setPitch(newPitch);
-              setMapBearing(Math.round(normalized));
-              setMapPitch(Math.round(newPitch));
-            };
-            const handleMouseUp = () => {
-              setIsGyroDragging(false);
-              gyroDragStateRef.current = null;
-              window.removeEventListener('mousemove', handleMouseMove);
-              window.removeEventListener('mouseup', handleMouseUp);
-            };
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
-          }}
-          onDoubleClick={() => {
-            if (mapRef.current) {
-              mapRef.current.easeTo({ bearing: 0, pitch: 0, duration: 600 });
-              setMapBearing(0);
-              setMapPitch(0);
-            }
-          }}
-          className="relative w-14 h-14 rounded-full bg-[#FAF8F3] border border-[#2C2A27] shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing"
-          title="Navigation Instrument: Drag to tilt & rotate · Double-click to reset North"
+          className="relative w-[72px] h-[72px] rounded-full bg-[#FAF8F3] border border-[#2C2A27] shadow-sm flex items-center justify-center p-0"
+          title="Navigation Instrument: Outer ring controls heading (click to reset North) · Inner disc controls 3D tilt & perspective"
         >
-          {/* Rotating Compass Ring */}
+          {/* 1. OUTER ROTARY COMPASS BEZEL (HEADING / BEARING) */}
           <div
-            className="absolute inset-0 w-full h-full rounded-full pointer-events-none transition-transform"
-            style={{ transform: `rotate(${-mapBearing}deg)` }}
+            onMouseDown={handleCompassMouseDown}
+            onClick={handleResetNorth}
+            className={`absolute inset-0 rounded-full flex items-center justify-center cursor-pointer transition-all ${
+              isCompassDragging ? 'cursor-grabbing scale-[1.02] ring-1 ring-[#2C2A27]' : 'cursor-grab hover:bg-[#EFECE4]'
+            }`}
           >
-            <div className="absolute top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
-              <div className="w-0 h-0 border-l-[3.5px] border-l-transparent border-r-[3.5px] border-r-transparent border-b-[6px] border-b-[#B84A39]" />
-              <span className="text-[7px] font-mono font-bold text-[#B84A39]">N</span>
-            </div>
+            {/* Dynamic Rotating SVG Bezel */}
+            <svg
+              className="w-full h-full pointer-events-none transition-transform ease-out"
+              viewBox="0 0 72 72"
+              style={{
+                transform: `rotate(${-mapBearing}deg)`,
+                transitionDuration: isCompassDragging ? '0ms' : '150ms',
+              }}
+            >
+              {/* Outer Calibration Rings */}
+              <circle cx="36" cy="36" r="34" fill="none" stroke="#2C2A27" strokeWidth="0.8" strokeOpacity="0.75" />
+              <circle cx="36" cy="36" r="32" fill="none" stroke="#2C2A27" strokeWidth="0.4" strokeDasharray="1.5 1.5" strokeOpacity="0.5" />
+              <circle cx="36" cy="36" r="23.5" fill="none" stroke="#2C2A27" strokeWidth="0.6" strokeOpacity="0.4" />
+
+              {/* Degree Tick Marks on Rim */}
+              {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
+                <line
+                  key={`tick-${deg}`}
+                  x1="36"
+                  y1="2"
+                  x2="36"
+                  y2={deg % 90 === 0 ? "6" : "4"}
+                  stroke={deg === 0 ? "#B84A39" : "#2C2A27"}
+                  strokeWidth={deg % 90 === 0 ? "1" : "0.5"}
+                  strokeOpacity={deg === 0 ? "1" : "0.75"}
+                  transform={`rotate(${deg} 36 36)`}
+                />
+              ))}
+
+              {/* Secondary Faceted Points (NE, NW, SE, SW) */}
+              <g opacity="0.45">
+                <polygon points="36,36 36,24 38,36" fill="#2C2A27" transform="rotate(45 36 36)" />
+                <polygon points="36,36 36,24 34,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.4" transform="rotate(45 36 36)" />
+                <polygon points="36,36 36,24 38,36" fill="#2C2A27" transform="rotate(135 36 36)" />
+                <polygon points="36,36 36,24 34,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.4" transform="rotate(135 36 36)" />
+                <polygon points="36,36 36,24 38,36" fill="#2C2A27" transform="rotate(225 36 36)" />
+                <polygon points="36,36 36,24 34,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.4" transform="rotate(225 36 36)" />
+                <polygon points="36,36 36,24 38,36" fill="#2C2A27" transform="rotate(315 36 36)" />
+                <polygon points="36,36 36,24 34,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.4" transform="rotate(315 36 36)" />
+              </g>
+
+              {/* Cardinal East, South, West Points */}
+              <polygon points="36,36 36,54 39,36" fill="#2C2A27" opacity="0.75" />
+              <polygon points="36,36 36,54 33,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.5" opacity="0.75" />
+              <polygon points="36,36 54,36 36,39" fill="#2C2A27" opacity="0.75" />
+              <polygon points="36,36 54,36 36,33" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.5" opacity="0.75" />
+              <polygon points="36,36 18,36 36,33" fill="#2C2A27" opacity="0.75" />
+              <polygon points="36,36 18,36 36,39" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.5" opacity="0.75" />
+
+              {/* North Arrow Point (Terracotta Vermilion #B84A39 / Deep Charcoal) */}
+              <polygon points="36,36 36,11 40,36" fill="#B84A39" />
+              <polygon points="36,36 36,11 32,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.6" />
+
+              {/* Cardinal Letters in Tabular/Serif */}
+              <text x="36" y="9" textAnchor="middle" fontSize="7" fontWeight="bold" fontFamily="Newsreader, serif" fill="#B84A39">N</text>
+              <text x="64" y="38.5" textAnchor="middle" fontSize="6" fontFamily="JetBrains Mono, monospace" fill="#5C5852">E</text>
+              <text x="36" y="65" textAnchor="middle" fontSize="6" fontFamily="JetBrains Mono, monospace" fill="#5C5852">S</text>
+              <text x="8" y="38.5" textAnchor="middle" fontSize="6" fontFamily="JetBrains Mono, monospace" fill="#5C5852">W</text>
+            </svg>
           </div>
-          {/* Pitch indicator */}
-          <span className="text-[9px] font-mono font-bold text-[#1C1B18]">{mapPitch}°</span>
+
+          {/* 2. INNER 3D HORIZON & PITCH GIMBAL DISC */}
+          <div
+            onMouseDown={handleTiltMouseDown}
+            onClick={handleToggle3D}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!mapRef.current) return;
+              safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
+              setMapPitch(0);
+              setIs3D(false);
+            }}
+            className={`relative z-10 w-[42px] h-[42px] rounded-full bg-[#FAF8F3] border border-[#2C2A27]/40 shadow-inner flex flex-col items-center justify-center transition-all ${
+              isTiltDragging
+                ? 'cursor-grabbing scale-105 ring-1 ring-[#2C2A27]'
+                : 'cursor-grab hover:bg-[#EFECE4]'
+            }`}
+            title="3D Tilt Gimbal: Click to toggle 2D/3D · Drag up/down to tilt · Double-click to flatten"
+          >
+            {/* SVG Horizon Arc & Dynamic Ridgeline Vector */}
+            <svg className="w-[34px] h-[34px] pointer-events-none" viewBox="0 0 34 34">
+              <circle cx="17" cy="17" r="15" fill="none" stroke="#2C2A27" strokeWidth="0.6" strokeOpacity="0.25" />
+              <g
+                style={{
+                  transform: `translateY(${Math.max(-5, Math.min(5, (mapPitch / 85) * 8 - 2))}px)`,
+                  transition: isTiltDragging ? 'none' : 'transform 150ms ease-out',
+                }}
+              >
+                <path
+                  d="M 6 19 L 12 13 L 17 17 L 22 11 L 28 19"
+                  fill="none"
+                  stroke={is3D ? "#2E5A44" : "#8A847C"}
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={is3D ? 1 : 0.45}
+                />
+                <line
+                  x1="7"
+                  y1="20"
+                  x2="27"
+                  y2="20"
+                  stroke="#2C2A27"
+                  strokeWidth="0.8"
+                  strokeOpacity="0.5"
+                />
+              </g>
+
+              {/* Pitch Arc Angle Meter */}
+              <circle
+                cx="17"
+                cy="17"
+                r="13"
+                fill="none"
+                stroke="#2E5A44"
+                strokeWidth="1.5"
+                strokeDasharray={`${(mapPitch / 85) * 30} 90`}
+                strokeLinecap="round"
+                transform="rotate(-90 17 17)"
+                opacity={is3D ? 0.95 : 0.15}
+              />
+            </svg>
+
+            {/* Mode Tag: 2D vs 3D */}
+            <span
+              className={`absolute -bottom-1 px-1 py-0 text-[7.5px] font-mono font-bold rounded-[2px] border ${
+                is3D
+                  ? 'bg-[#2E5A44] text-[#FAF8F3] border-[#2E5A44]'
+                  : 'bg-[#FAF8F3] text-[#5C5852] border-[#2C2A27]'
+              }`}
+            >
+              {is3D ? `${mapPitch}°` : '2D'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ATTRIBUTION (CLEAN ARCHIVAL PAPER AT BOTTOM CENTER) */}
+      <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+        <div className="flex items-center gap-1.5 text-[9px] font-mono px-2.5 py-0.5 rounded-[2px] bg-[#FAF8F3]/90 backdrop-blur-xs border border-[#D6D0C2] text-[#8A847C] select-none">
+          <span>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">OpenStreetMap</a></span>
+          <span>·</span>
+          <span><a href="https://openskidata.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">OpenSkiData</a></span>
+          <span>·</span>
+          <span><a href="https://www.esri.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">Esri</a></span>
         </div>
       </div>
 
