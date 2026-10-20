@@ -6,6 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-19
 
+### `067f535` feat: split trail overlay into separate Alpine and Nordic/XC toggles; alpine on by default, nordic off
+- Replaced single `showTrails` boolean with two independent booleans: `showAlpineTrails` (default `true`) and `showNordicTrails` (default `false`)
+- Map visibility `useEffect` now builds a `piste:type` filter expression so each toggle only shows its respective trail type
+- UI basemap panel now has two separate toggle rows: "Alpine Ski Trails" and "Nordic / XC Trails"
+- Filter logic: alpine = all pistes where `piste:type !== 'nordic'`; nordic = pistes where `piste:type === 'nordic'`; both = all pistes; neither = nothing
+
 ### `c701649` feat: sort cards by 7-day snow forecast by default and prefetch weather for all resorts on load
 - Default `sortBy` state changed from `'vert'` to `'snow'`
 - Sort comparator for `'snow'` now uses `snowfall_7d_in` (was incorrectly using `snowfall_72h_in`)
