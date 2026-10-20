@@ -2244,6 +2244,8 @@ export default function App() {
     });
 
     const handleMapZoom = () => {
+      // Do not fight programmatic flights across continents
+      if (isProgrammaticFlightActive) return;
       const z = map.getZoom();
       // Ensure globe always stays centered when in view:
       // When zooming out to globe level, smoothly constrain pitch toward 0° so globe never drops down
@@ -3568,16 +3570,19 @@ export default function App() {
     // Bearing: use resort's default_bearing (fall-line / valley-up direction)
     const bearing = resort.default_bearing ?? 0;
 
-    // Zoom: scale with vertical drop — taller mountains need to pull back more.
-    // 500ft vert  → z13.5 (tight on a small hill)
-    // 2000ft vert → z12.1 (mid-size alpine)
-    // 4139ft vert → z11.4 (Jackson Hole — full mountain visible)
-    // 6000ft vert → z11.0 (giant like Whistler)
-    const vert = resort.vertical_drop_ft || 1500;
-    const zoom = Math.max(10.0, Math.min(13.5, 13.5 - Math.log2(vert / 500) * 0.75));
+    // Zoom: calibrated closer so ski runs and trail maps are crisp and readable
+    // Jackson (4139ft) → ~12.8 | typical US alpine (3200ft) → ~13.0 | small hill (500ft) → 14.0
+    // European mega-domains (Chamonix 9205ft, Zermatt 6005ft) → ~12.4 - 12.6
+    const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
+    const zoom = Math.max(12.0, Math.min(14.0, 14.0 - Math.log2(vert / 500) * 0.38));
 
     // Pitch: 45° — oblique enough to show terrain depth, shallow enough to frame the full run top-to-bottom
     const pitch = 45;
+
+    // Compute dynamic duration based on flight distance across the globe so transcontinental jumps don't stall
+    const curCenter = mapRef.current.getCenter();
+    const distDeg = Math.hypot(resort.lng - curCenter.lng, resort.lat - curCenter.lat);
+    const flightDuration = distDeg > 40 ? 2800 : (distDeg > 15 ? 2200 : 1600);
 
     safeFlyTo(mapRef.current, {
       center: [resort.lng, resort.lat],
@@ -3585,7 +3590,7 @@ export default function App() {
       pitch,
       bearing,
       padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
-      duration: 1800,
+      duration: flightDuration,
       essential: true,
     });
 
