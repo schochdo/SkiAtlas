@@ -3580,17 +3580,27 @@ export default function App() {
     const resort = displayedResorts.find((r) => r.id === id) || resorts.find((r) => r.id === id);
     if (!resort || !mapRef.current) return;
 
-    // North up by default (bearing: 0)
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = window.innerWidth >= 768 ? 384 : 336;
 
+    // Bearing: use resort's default_bearing (fall-line / valley-up direction)
+    const bearing = resort.default_bearing ?? 0;
+
+    // Zoom: derive from skiable acreage so the full resort fits in frame
+    // ~500 ac → z13.2, ~2500 ac → z12.2, ~5000 ac → z11.6
+    const acres = resort.skiable_acres || 500;
+    const zoom = Math.max(10.5, Math.min(13.4, 14.2 - Math.log2(acres / 100) * 0.72));
+
+    // Pitch: oblique aerial — high enough for terrain relief, low enough to see the full ski area
+    const pitch = 52;
+
     safeFlyTo(mapRef.current, {
       center: [resort.lng, resort.lat],
-      zoom: 13.2,
-      pitch: 62,
-      bearing: 0,
+      zoom,
+      pitch,
+      bearing,
       padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
-      duration: 1600,
+      duration: 1800,
       essential: true,
     });
 
@@ -3622,10 +3632,10 @@ export default function App() {
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],
       zoom: 13.0,
-      pitch: 60,
+      pitch: 52,
       bearing: 0,
       padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
-      duration: 1600,
+      duration: 1800,
       essential: true,
     });
 
