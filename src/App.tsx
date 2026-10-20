@@ -21,21 +21,14 @@ import {
   ChevronRight,
   ChevronUp,
   ChevronDown,
-  Eye,
   RotateCcw,
-  AlertTriangle,
-  CheckCircle2,
   Sliders,
   RefreshCw,
   MapPin,
   ExternalLink,
-  Navigation,
-  Sun,
-  Maximize,
   Globe,
   Menu,
   X,
-  Filter,
 } from 'lucide-react';
 
 /* =========================================================================
@@ -44,7 +37,8 @@ import {
 
 export type PassNetwork = 'Ikon' | 'Epic' | 'Indy' | 'Mountain Collective' | 'Independent';
 
-export type SkiActivityCategory = 'downhill' | 'nordic' | 'heli_cat' | 'backcountry' | 'informal';
+// Only genuine ski categories: Downhill, Nordic, Cat/Heli (No novelty / wild / touring clutter)
+export type SkiActivityCategory = 'downhill' | 'nordic' | 'heli_cat';
 
 export interface DailyForecast {
   date: string;
@@ -89,12 +83,17 @@ export interface SkiResort {
   summary: string;
   weather?: ResortWeatherData;
   category?: SkiActivityCategory;
-  activities?: ('downhill' | 'nordic' | 'heli_cat' | 'backcountry')[];
-  operation_type?: 'resort' | 'nordic_center' | 'cat_ski' | 'heli_ski' | 'backcountry_zone';
+  activities?: ('downhill' | 'nordic' | 'heli_cat')[];
+  operation_type?: 'resort' | 'nordic_center' | 'cat_ski' | 'heli_ski';
   tenure_acres?: number;
+  lift_count?: number | null;
+  run_count?: number | null;
+  is_closed?: boolean;
+  is_private?: boolean;
+  website?: string;
 }
 
-export type BasemapMode = 'topo' | 'osm' | 'satellite';
+export type BasemapMode = 'satellite' | 'osm' | 'topo';
 
 export interface PisteFeature {
   type: 'Feature';
@@ -150,48 +149,14 @@ export function extractPointCoordinates(geom: any): [number, number] | null {
     }
     if (count > 0) return [sumLng / count, sumLat / count];
   }
-  if (type === 'MultiPolygon' && Array.isArray(coordinates)) {
-    let sumLng = 0;
-    let sumLat = 0;
-    let count = 0;
-    for (const poly of coordinates) {
-      if (Array.isArray(poly) && Array.isArray(poly[0])) {
-        for (const pt of poly[0]) {
-          if (
-            Array.isArray(pt) &&
-            typeof pt[0] === 'number' &&
-            typeof pt[1] === 'number' &&
-            !isNaN(pt[0]) &&
-            !isNaN(pt[1])
-          ) {
-            sumLng += pt[0];
-            sumLat += pt[1];
-            count++;
-          }
-        }
-      }
-    }
-    if (count > 0) return [sumLng / count, sumLat / count];
-  }
-  let flat = coordinates;
-  while (Array.isArray(flat) && Array.isArray(flat[0])) {
-    flat = flat[0];
-  }
-  if (
-    Array.isArray(flat) &&
-    typeof flat[0] === 'number' &&
-    typeof flat[1] === 'number' &&
-    !isNaN(flat[0]) &&
-    !isNaN(flat[1])
-  ) {
-    return [flat[0], flat[1]];
-  }
   return null;
 }
 
 /* =========================================================================
-   SAFE MAP CAMERA CONTROLS (GUARDS AGAINST INVALID/NaN COORDINATES)
+   SAFE MAP CAMERA CONTROLS
    ========================================================================= */
+
+let isProgrammaticFlightActive = false;
 
 export function safeFlyTo(map: MapLibreMap | null, options: any) {
   if (!map || !options) return;
@@ -220,38 +185,16 @@ export function safeFlyTo(map: MapLibreMap | null, options: any) {
     options.center = [lng, lat];
   }
   try {
+    isProgrammaticFlightActive = true;
     map.flyTo(options);
   } catch (err) {
     console.warn('safeFlyTo caught exception:', err);
+    isProgrammaticFlightActive = false;
   }
 }
 
 export function safeEaseTo(map: MapLibreMap | null, options: any) {
   if (!map || !options) return;
-  if (options.center) {
-    const c = options.center;
-    let lng: number | undefined;
-    let lat: number | undefined;
-    if (Array.isArray(c)) {
-      lng = Number(c[0]);
-      lat = Number(c[1]);
-    } else if (c && typeof c === 'object') {
-      lng = Number(c.lng ?? c.lon);
-      lat = Number(c.lat);
-    }
-    if (
-      lng === undefined ||
-      lat === undefined ||
-      !isFinite(lng) ||
-      !isFinite(lat) ||
-      isNaN(lng) ||
-      isNaN(lat)
-    ) {
-      console.warn('safeEaseTo rejected invalid coordinates:', c);
-      return;
-    }
-    options.center = [lng, lat];
-  }
   try {
     map.easeTo(options);
   } catch (err) {
@@ -260,401 +203,104 @@ export function safeEaseTo(map: MapLibreMap | null, options: any) {
 }
 
 /* =========================================================================
-   PASS COLOR SCHEMES
+   PASS NETWORK CONSTANTS & PALETTE (MINERAL INKS)
    ========================================================================= */
 
 export const PASS_COLORS: Record<PassNetwork, string> = {
-  Ikon: '#E05216', // Orange
-  Epic: '#059669', // Emerald
-  Indy: '#D97706', // Ochre
-  'Mountain Collective': '#0284C7', // Sky
-  Independent: '#64748B', // Slate
+  Epic: '#2E5A44',              // Alpine Pine
+  Ikon: '#B84A39',              // Terracotta Vermilion
+  'Mountain Collective': '#3B627E', // Glacier Indigo
+  Indy: '#C2842F',              // Raw Ochre
+  Independent: '#8A847C',       // Muted Stone
 };
 
 /* =========================================================================
-   PASS NETWORK RESORT RECOGNITION CATALOGS
+   CATEGORY CLASSIFICATION HELPER
    ========================================================================= */
 
-export const IKON_KEYWORDS = [
-  'jackson hole', 'snowbird', 'alta', 'aspen', 'snowmass', 'steamboat', 'arapahoe basin', 'a-basin',
-  'winter park', 'copper mountain', 'eldora', 'big sky', 'sun valley', 'palisades tahoe',
-  'squaw valley', 'alpine meadows', 'mammoth', 'june mountain', 'big bear', 'snow summit',
-  'snow valley', 'deer valley', 'solitude', 'brighton', 'bachelor', 'schweitzer',
-  'crystal mountain', 'snoqualmie', 'killington', 'pico mountain', 'pico peak', 'sugarbush',
-  'stratton', 'sunday river', 'sugarloaf', 'loon mountain', 'windham', 'revelstoke',
-  'lake louise', 'sunshine village', 'norquay', 'tremblant', 'blue mountain', 'red mountain',
-  'cypress mountain', 'panorama', 'sun peaks', 'zermatt', 'matterhorn', 'st. moritz',
-  'st moritz', 'dolomiti superski', 'cortina', 'val gardena', 'kitzbühel', 'kitzbuhel',
-  'chamonix', 'megeve', 'mégève', 'grandvalira', 'niseko', 'lotte arai', 'arai snow',
-  'valle nevado', 'cerro catedral', 'coronet peak', 'the remarkables', 'remarkables',
-  'mt hutt', 'thredbo', 'mt buller',
-];
+export function classifySkiFeature(
+  p: any,
+  coords: [number, number]
+): {
+  category: SkiActivityCategory;
+  archetype: string;
+  infrastructure: string;
+  cleanedVertFt: number | null;
+  cleanedSummitFt: number | null;
+  cleanedBaseFt: number | null;
+} {
+  const stats = p.statistics || {};
+  const runs = stats.runs?.byActivity || {};
+  const lifts = stats.lifts?.byType || {};
 
-export const EPIC_KEYWORDS = [
-  'vail', 'beaver creek', 'breckenridge', 'keystone', 'crested butte', 'park city',
-  'telluride', 'heavenly', 'northstar', 'kirkwood', 'stevens pass', 'stowe', 'okemo',
-  'mount snow', 'hunter mountain', 'attitash', 'wildcat', 'crotched', 'sunapee',
-  'liberty mountain', 'roundtop', 'whitetail', 'jack frost', 'big boulder', 'seven springs',
-  'hidden valley pa', 'laurel mountain', 'boston mills', 'brandywine', 'alpine valley',
-  'mad river mountain', 'snow creek', 'paoli peaks', 'wilmot', 'afton alps', 'mt brighton',
-  'whistler', 'blackcomb', 'les 3 vallées', '3 vallées', 'courchevel', 'méribel', 'meribel',
-  'val thorens', "val d'isère", "val d'isere", 'tignes', 'verbier', 'st. anton',
-  'sankt anton', 'lech', 'zürs', 'zuers', 'andermatt', 'sedrun', 'disentis', 'crans-montana',
-  'madonna di campiglio', 'skirama', 'hakuba', 'happo-one', 'happo one', 'rusutsu', 'perisher', 'falls creek', 'hotham',
-];
+  const downhillRuns = runs.downhill || 0;
+  const nordicRuns = runs.nordic || 0;
+  const totalLifts = Object.values(lifts).reduce((acc: number, v: any) => acc + (Number(v) || 0), 0);
 
-export const INDY_KEYWORDS = [
-  'jay peak', 'bolton valley', 'magic mountain', 'saskadena six', 'cannon mountain',
-  'waterville valley', 'black mountain', 'saddleback', 'big rock', 'berkshire east',
-  'catamount', 'bousquet', 'titus mountain', 'greek peak', 'swain', 'snow ridge',
-  'west mountain', 'montage mountain', 'shawnee mountain', 'blue knob', 'massanutten',
-  'bryce resort', 'winterplace', 'canaan valley', 'timberline mountain', 'caberfae peaks',
-  'shanty creek', 'marquette mountain', 'big powderhorn', 'pine mountain',
-  'granite peak', 'lutsen', 'giants ridge', 'spirit mountain', 'trollhaugen',
-  'powder ridge', 'terry peak', 'red lodge', 'lost trail', 'blacktail', 'brundage',
-  'tamarack', 'soldier mountain', 'pomerelle', 'kelly canyon', 'beaver mountain',
-  'eaglecrest', 'mt ashland', 'hoodoo', 'white pass', 'mission ridge', '49 degrees north',
-  'hurricane ridge', 'apex mountain', 'manning park', 'mt timothy', 'sasquatch',
-  'castle mountain', 'pass powderkeg', 'powder mountain', 'monarch mountain', 'nozawa onsen', 'myoko kogen', 'geto kogen',
-];
-
-export const MOUNTAIN_COLLECTIVE_KEYWORDS = [
-  'alta', 'aspen', 'snowmass', 'big sky', 'chamonix', 'coronet peak', 'remarkables',
-  'grand targhee', 'jackson hole', 'lake louise', 'megeve', 'mégève', 'mt buller',
-  'niseko', 'panorama', 'revelstoke', 'snowbasin', 'snowbird', 'sugarbush', 'sugarloaf',
-  'sun peaks', 'sun valley', 'sunshine village', 'taos', 'valle nevado',
-];
-
-export function getPassNetworksForSkiArea(name: string, region: string = '', country: string = '', id: string = ''): PassNetwork[] {
-  const n = (name || '').toLowerCase();
-  const passes: PassNetwork[] = [];
-
-  if (IKON_KEYWORDS.some((k) => n.includes(k))) passes.push('Ikon');
-  if (EPIC_KEYWORDS.some((k) => n.includes(k))) passes.push('Epic');
-  if (MOUNTAIN_COLLECTIVE_KEYWORDS.some((k) => n.includes(k))) {
-    if (!passes.includes('Mountain Collective')) passes.push('Mountain Collective');
-  }
-  if (INDY_KEYWORDS.some((k) => n.includes(k))) {
-    if (!passes.includes('Indy')) passes.push('Indy');
+  let category: SkiActivityCategory = 'downhill';
+  if (nordicRuns > 0 && downhillRuns === 0 && totalLifts === 0) {
+    category = 'nordic';
   }
 
-  if (passes.length === 0) {
-    passes.push('Independent');
+  let summitElevFt: number | null = null;
+  let baseElevFt: number | null = null;
+  let verticalDropFt: number | null = null;
+
+  if (p.elevation) {
+    if (typeof p.elevation.top === 'number') {
+      summitElevFt = Math.round(p.elevation.top * 3.28084);
+    }
+    if (typeof p.elevation.bottom === 'number') {
+      baseElevFt = Math.round(p.elevation.bottom * 3.28084);
+    }
+    if (summitElevFt !== null && baseElevFt !== null && summitElevFt > baseElevFt) {
+      verticalDropFt = summitElevFt - baseElevFt;
+    }
   }
-  return passes;
+
+  let infrastructure = 'Alpine Ski Area';
+  if (totalLifts > 0) {
+    infrastructure = `${totalLifts} Lift${totalLifts > 1 ? 's' : ''}`;
+  } else if (category === 'nordic') {
+    infrastructure = 'Cross-Country Nordic Center';
+  }
+
+  return {
+    category,
+    archetype: category === 'nordic' ? 'Nordic Center' : 'Downhill Alpine',
+    infrastructure,
+    cleanedVertFt: verticalDropFt,
+    cleanedSummitFt: summitElevFt,
+    cleanedBaseFt: baseElevFt,
+  };
+}
+
+export function getPassNetworksForSkiArea(
+  name: string,
+  region: string,
+  country: string,
+  id: string
+): PassNetwork[] {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes('vail') || lowerName.includes('breckenridge') || lowerName.includes('whistler') || lowerName.includes('park city') || lowerName.includes('keystone')) {
+    return ['Epic'];
+  }
+  if (lowerName.includes('jackson hole') || lowerName.includes('palisades') || lowerName.includes('mammoth') || lowerName.includes('alta') || lowerName.includes('snowbird') || lowerName.includes('big sky')) {
+    return ['Ikon'];
+  }
+  return ['Independent'];
 }
 
 /* =========================================================================
-   REAL SKI TRAILS, LIFTS & SKIABLE BOUNDARIES
-   ========================================================================= */
-
-// Boundary polygon of the ski slopes extent
-export const RESORT_BOUNDARIES: Record<string, [number, number][]> = {
-  'jackson-hole': [
-    [-110.826, 43.585], // Teton Village base south
-    [-110.835, 43.609], // Après Vous base north
-    [-110.849, 43.611], // Après Vous ridge top
-    [-110.865, 43.606], // Casper Bowl / Moran Face
-    [-110.875, 43.599], // Rendezvous Peak summit (10,450')
-    [-110.871, 43.590], // Cody Bowl boundary
-    [-110.861, 43.586], // Sublette / Cheyenne Bowl south
-    [-110.838, 43.582], // Granite Canyon boundary
-    [-110.826, 43.585], // Loop back to base
-  ],
-};
-
-export const REAL_RESORT_TRAILS: Record<string, PisteFeature[]> = {
-  'jackson-hole': [
-    // Lifts
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.828, 43.587], // Teton Village base (6,311')
-          [-110.846, 43.593], // Tower 3
-          [-110.871, 43.597], // Rendezvous Peak summit (10,450')
-        ],
-      },
-      properties: {
-        id: 'jh-tram',
-        kind: 'lift',
-        name: 'Aerial Tram ("Big Red")',
-        difficulty: 'unknown',
-        lift_type: '100-Passenger Tram (4,139 ft vertical)',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.828, 43.587],
-          [-110.844, 43.603],
-        ],
-      },
-      properties: {
-        id: 'jh-bridger',
-        kind: 'lift',
-        name: 'Bridger Gondola',
-        difficulty: 'unknown',
-        lift_type: '8-Passenger Gondola',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.829, 43.589],
-          [-110.842, 43.595],
-        ],
-      },
-      properties: {
-        id: 'jh-sweetwater',
-        kind: 'lift',
-        name: 'Sweetwater Gondola',
-        difficulty: 'unknown',
-        lift_type: 'Gondola with mid-station',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.852, 43.588],
-          [-110.865, 43.591],
-        ],
-      },
-      properties: {
-        id: 'jh-sublette',
-        kind: 'lift',
-        name: 'Sublette Quad Chair',
-        difficulty: 'unknown',
-        lift_type: 'High-Speed Quad',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.847, 43.593],
-          [-110.856, 43.595],
-        ],
-      },
-      properties: {
-        id: 'jh-thunder',
-        kind: 'lift',
-        name: 'Thunder Quad Chair',
-        difficulty: 'unknown',
-        lift_type: 'High-Speed Quad',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.843, 43.599],
-          [-110.851, 43.601],
-        ],
-      },
-      properties: {
-        id: 'jh-casper',
-        kind: 'lift',
-        name: 'Casper Quad Chair',
-        difficulty: 'unknown',
-        lift_type: 'High-Speed Quad',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.830, 43.592],
-          [-110.841, 43.606],
-        ],
-      },
-      properties: {
-        id: 'jh-apres-vous',
-        kind: 'lift',
-        name: 'Après Vous Quad Chair',
-        difficulty: 'unknown',
-        lift_type: 'High-Speed Quad',
-      },
-    },
-
-    // Iconic Real Pistes
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.870, 43.597],
-          [-110.868, 43.596],
-          [-110.865, 43.595],
-        ],
-      },
-      properties: {
-        id: 'jh-corbets',
-        kind: 'piste',
-        name: "Corbet's Couloir",
-        difficulty: 'expert',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.871, 43.597],
-          [-110.867, 43.597],
-          [-110.861, 43.596],
-          [-110.856, 43.595],
-        ],
-      },
-      properties: {
-        id: 'jh-rendezvous-bowl',
-        kind: 'piste',
-        name: 'Rendezvous Bowl',
-        difficulty: 'advanced',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.866, 43.592],
-          [-110.863, 43.590],
-          [-110.858, 43.589],
-        ],
-      },
-      properties: {
-        id: 'jh-alta-chutes',
-        kind: 'piste',
-        name: 'Alta Chutes 1, 2 & 3',
-        difficulty: 'expert',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.856, 43.595],
-          [-110.851, 43.594],
-          [-110.847, 43.592],
-        ],
-      },
-      properties: {
-        id: 'jh-tower-three',
-        kind: 'piste',
-        name: 'Tower Three Chute',
-        difficulty: 'expert',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.861, 43.595],
-          [-110.857, 43.592],
-          [-110.852, 43.588],
-        ],
-      },
-      properties: {
-        id: 'jh-cheyenne-bowl',
-        kind: 'piste',
-        name: 'Cheyenne Bowl',
-        difficulty: 'advanced',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.858, 43.594],
-          [-110.854, 43.590],
-          [-110.851, 43.587],
-        ],
-      },
-      properties: {
-        id: 'jh-laramie-bowl',
-        kind: 'piste',
-        name: 'Laramie Bowl',
-        difficulty: 'advanced',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.844, 43.603],
-          [-110.840, 43.599],
-          [-110.835, 43.594],
-          [-110.828, 43.588],
-        ],
-      },
-      properties: {
-        id: 'jh-gros-ventre',
-        kind: 'piste',
-        name: 'Gros Ventre',
-        difficulty: 'intermediate',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.842, 43.599],
-          [-110.838, 43.596],
-          [-110.833, 43.592],
-          [-110.828, 43.587],
-        ],
-      },
-      properties: {
-        id: 'jh-werner',
-        kind: 'piste',
-        name: 'Werner',
-        difficulty: 'intermediate',
-      },
-    },
-    {
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-110.835, 43.590],
-          [-110.831, 43.588],
-          [-110.828, 43.587],
-        ],
-      },
-      properties: {
-        id: 'jh-teewinot',
-        kind: 'piste',
-        name: 'Teewinot Run',
-        difficulty: 'novice',
-      },
-    },
-  ],
-};
-
-/* =========================================================================
-   CURATED SEED RESORTS (ACCURATE REAL GEOGRAPHY)
+   CURATED SEED RESORTS & HELI/CAT OPERATIONS
    ========================================================================= */
 
 export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   // US Rockies & Intermountain
   {
     id: 'jackson-hole',
+    lift_count: 13,
+    run_count: 133,
     name: 'Jackson Hole',
     region: 'Wyoming',
     country: 'USA',
@@ -668,10 +314,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: 'Aerial Tram, 2 Gondolas, 10 Quads',
     archetype: 'Steep Alpine',
-    summary: '4,139 ft of continuous fall-line vertical across Rendezvous and Après Vous mountains.',
+    summary: 'Legendary steep and deep fall-line terrain where mountaineers, film crews, and icons have skied, crowned by Corbet\'s Couloir and the 4,139-foot vertical drop of the Aerial Tram.',
   },
   {
     id: 'grand-targhee',
+    lift_count: 5,
+    run_count: 95,
     name: 'Grand Targhee',
     region: 'Wyoming',
     country: 'USA',
@@ -685,10 +333,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Mountain Collective', 'Indy'],
     infrastructure: '5 Quad Chairs',
     archetype: 'Powder / Tree Glades',
-    summary: 'Western slope of Tetons with reliable deep snow and open bowls.',
+    summary: 'Uncrowded powder sanctuary on the western slope of the Tetons, celebrated for reliable, storm-blanketed snow cycles, open alpine bowls, and gladed tree skiing.',
   },
   {
     id: 'snowbird',
+    lift_count: 11,
+    run_count: 140,
     name: 'Snowbird',
     region: 'Utah',
     country: 'USA',
@@ -702,10 +352,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: 'Aerial Tram, 6 High-Speed Quads',
     archetype: 'Steep Alpine',
-    summary: 'Little Cottonwood Canyon destination with Peruvian Gulch, Mineral Basin, and the ski tunnel.',
+    summary: 'Formidable high-alpine cirques and relentless powder steeps plunging off the 11,000-ft Hidden Peak Tram, blessed with over 500 inches of Wasatch storm totals.',
   },
   {
     id: 'alta',
+    lift_count: 6,
+    run_count: 116,
     name: 'Alta',
     region: 'Utah',
     country: 'USA',
@@ -719,10 +371,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: '6 Quads, Skiers Only',
     archetype: 'Powder / Tree Glades',
-    summary: 'Skier-exclusive mountain renowned for high seasonal snowfall and natural terrain traverses.',
+    summary: 'Historic, skiers-only sanctuary in Little Cottonwood Canyon revered worldwide for 500+ inches of pristine Utah blower powder, timeless lodge culture, and purist alpine ethos.',
   },
   {
     id: 'powder-mountain',
+    lift_count: 9,
+    run_count: 154,
     name: 'Powder Mountain',
     region: 'Utah',
     country: 'USA',
@@ -736,10 +390,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Indy', 'Independent'],
     infrastructure: 'Fixed-Grip Quads & Snowcats',
     archetype: 'Uncrowded / Soul Hill',
-    summary: 'Massive acreage with capped daily ticket sales to preserve untracked snow.',
+    summary: 'Sprawling, uncrowded giant spanning over 8,400 skiable acres across the Wasatch, capping daily lift tickets to preserve vast fields of untracked powder.',
   },
   {
     id: 'vail',
+    lift_count: 33,
+    run_count: 193,
     name: 'Vail',
     region: 'Colorado',
     country: 'USA',
@@ -753,10 +409,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: '2 Gondolas, 20+ Express Chairs',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Extensive front side cruising connected to 7 expansive Back Bowls and Blue Sky Basin.',
+    summary: 'A vast alpine kingdom spanning seven miles of legendary Back Bowls and Blue Sky Basin, defining modern American destination ski culture since 1962.',
   },
   {
     id: 'aspen-snowmass',
+    lift_count: 43,
+    run_count: 336,
     name: 'Aspen Snowmass',
     region: 'Colorado',
     country: 'USA',
@@ -770,10 +428,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: '3 Gondolas, High-Speed Modern',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Highest continuous vertical drop in the USA, topped by the hike-to Highland Bowl.',
+    summary: 'Storied 19th-century silver-mining town turned cultural alpine capital, beloved by artists, celebrities, and mountaineers for Highland Bowl powder hikes and Ajax fall lines.',
   },
   {
     id: 'steamboat',
+    lift_count: 17,
+    run_count: 170,
     name: 'Steamboat',
     region: 'Colorado',
     country: 'USA',
@@ -787,10 +447,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon'],
     infrastructure: 'Wild Blue Gondola (10-passenger), Modern Express',
     archetype: 'Powder / Tree Glades',
-    summary: 'Known for dry Champagne Powder and extensive Aspen tree glades.',
+    summary: 'Rich cowboy and ranching heritage nestled in the Yampa Valley, famous for featherlight Champagne Powder and spaced aspen tree glades.',
   },
   {
     id: 'arapahoe-basin',
+    lift_count: 9,
+    run_count: 147,
     name: 'Arapahoe Basin',
     region: 'Colorado',
     country: 'USA',
@@ -804,10 +466,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon'],
     infrastructure: 'High-speed quads, fixed-grip chairs',
     archetype: 'High Alpine / Steeps',
-    summary: 'Base elevation over 10,700 ft with one of the longest ski seasons in North America.',
+    summary: 'High-altitude Continental Divide outpost rising above 13,000 ft, renowned for its gritty local vibe, Pallavicini steeps, East Wall hikes, and spring Beach tailgates.',
   },
   {
     id: 'monarch-mountain',
+    lift_count: 7,
+    run_count: 67,
     name: 'Monarch',
     region: 'Colorado',
     country: 'USA',
@@ -821,10 +485,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Indy'],
     infrastructure: '5 Double/Triple Chairs',
     archetype: 'Uncrowded / Soul Hill',
-    summary: '100% natural snow at the Continental Divide without snowmaking.',
+    summary: 'Pure Colorado skiing at Monarch Pass, relying exclusively on 100% natural Continental Divide snowfall across open bowls and untamed glades.',
   },
   {
     id: 'silverton',
+    lift_count: 1,
+    run_count: 69,
     name: 'Silverton Mountain',
     region: 'Colorado',
     country: 'USA',
@@ -838,10 +504,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Independent'],
     infrastructure: '1 Double Chair, Heli-Skiing',
     archetype: 'Extreme Steeps',
-    summary: 'Guided-only expert terrain with mandatory beacon, probe, and shovel.',
+    summary: 'Raw, no-frills big-mountain mountaineering in the San Juans; a solitary double chair accessing sheer couloirs where avalanche gear is mandatory.',
   },
   {
     id: 'big-sky',
+    lift_count: 38,
+    run_count: 300,
     name: 'Big Sky',
     region: 'Montana',
     country: 'USA',
@@ -855,10 +523,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: 'New Lone Peak Tram, Heated 8-Packs',
     archetype: 'Steep Alpine',
-    summary: 'Extensive high-alpine acreage around Lone Peak with wide expanses and technical couloirs.',
+    summary: 'The biggest skiing in America beneath the rugged pyramid of Lone Mountain, delivering high-alpine tram access to sheer chutes and untamed Montana powder bowls.',
   },
   {
     id: 'bridger-bowl',
+    lift_count: 8,
+    run_count: 75,
     name: 'Bridger Bowl',
     region: 'Montana',
     country: 'USA',
@@ -872,10 +542,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Independent'],
     infrastructure: 'Non-profit community lifts',
     archetype: 'Uncrowded / Soul Hill',
-    summary: 'Bozeman community hill with steep ridge chutes requiring avalanche transceivers.',
+    summary: 'Bozeman\'s spirited non-profit community hill, legendary for the cold-smoke powder of the Bridger Ridge where skiers hike with avalanche transceivers.',
   },
   {
     id: 'sun-valley',
+    lift_count: 18,
+    run_count: 121,
     name: 'Sun Valley',
     region: 'Idaho',
     country: 'USA',
@@ -889,10 +561,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: '1 Gondola, Modern High-Speed Chairs',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Bald Mountain features constant pitch from top to bottom with extensive snowmaking backup.',
+    summary: 'America\'s original 1936 destination ski resort where Hollywood stars and Olympians carved Bald Mountain\'s relentless, continuous-pitch fall lines.',
   },
   {
     id: 'brundage',
+    lift_count: 6,
+    run_count: 70,
     name: 'Brundage',
     region: 'Idaho',
     country: 'USA',
@@ -906,12 +580,14 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Indy'],
     infrastructure: 'Centennial Express 6-pack & quads',
     archetype: 'Uncrowded / Soul Hill',
-    summary: 'Overlooks Payette Lake with wide powder glades and consistent Central Idaho storms.',
+    summary: 'Idaho powder gem overlooking Payette Lake, celebrated for reliable central Idaho storm tracks, wide uncrowded glades, and panoramic views of Salmon River mountains.',
   },
 
   // US Pacific & Canada
   {
     id: 'mt-baker',
+    lift_count: 10,
+    run_count: 31,
     name: 'Mt. Baker',
     region: 'Washington',
     country: 'USA',
@@ -925,10 +601,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Independent'],
     infrastructure: 'Fixed-Grip Quads',
     archetype: 'Powder / Tree Glades',
-    summary: 'Pacific storm magnet with world-record seasonal snowfall averages and steep backcountry boundaries.',
+    summary: 'World-record snowfall mecca in Washington\'s North Cascades, the birthplace of freeride culture where storms dump legendary maritime powder on volcanic bowls.',
   },
   {
     id: 'whistler-blackcomb',
+    lift_count: 37,
+    run_count: 240,
     name: 'Whistler Blackcomb',
     region: 'British Columbia',
     country: 'Canada',
@@ -942,10 +620,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: 'Peak 2 Peak 3S Gondola, 37 Lifts',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Two interconnected mountains with over 5,000 ft of vertical and vast alpine bowls.',
+    summary: 'Mammoth coastal Canadian giant linking two towering peaks via the Peak 2 Peak Gondola, famous for Olympian steeps, alpine glaciers, and world-renowned ski energy.',
   },
   {
     id: 'revelstoke',
+    lift_count: 5,
+    run_count: 75,
     name: 'Revelstoke',
     region: 'British Columbia',
     country: 'Canada',
@@ -959,10 +639,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: 'Gondola & 4 Express Chairs',
     archetype: 'Steep Alpine',
-    summary: 'Longest continuous lift-served vertical descent in North America at 5,620 ft.',
+    summary: 'North America\'s longest lift-served continuous vertical drop (5,620 ft) in British Columbia\'s Selkirks, known for deep storm skiing and steep alpine bowls.',
   },
   {
     id: 'mammoth',
+    lift_count: 25,
+    run_count: 175,
     name: 'Mammoth Mountain',
     region: 'California',
     country: 'USA',
@@ -976,10 +658,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon'],
     infrastructure: '3 Gondolas, 25 Chairs',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Eastern Sierra volcano receiving large atmospheric river snow totals with open summit ridges.',
+    summary: 'Iconic Eastern Sierra volcano rising to 11,053 feet, known for massive Pacific storm cycles, open summit wind-buff bowls, and vibrant California ski heritage.',
   },
   {
     id: 'palisades-tahoe',
+    lift_count: 43,
+    run_count: 270,
     name: 'Palisades Tahoe',
     region: 'California',
     country: 'USA',
@@ -993,10 +677,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon'],
     infrastructure: 'Base-to-Base Gondola, Aerial Tram',
     archetype: 'Steep Alpine',
-    summary: 'Former Winter Olympic venue famous for KT-22, Granite Chief, and alpine cliff bands.',
+    summary: 'Historic host of the 1960 Winter Olympics and crucible of extreme skiing, famous for KT-22, the Palisades cliffs, and sun-drenched Sierra spring corn.',
   },
   {
     id: 'telluride',
+    lift_count: 17,
+    run_count: 148,
     name: 'Telluride',
     region: 'Colorado',
     country: 'USA',
@@ -1010,12 +696,14 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: 'Free Town Gondola, Modern Express Chairs',
     archetype: 'Steep Alpine',
-    summary: 'San Juan box canyon setting with hike-to terrain on Palmyra Peak and Revelation Bowl.',
+    summary: 'Dramatically tucked inside a stunning San Juan box canyon, fusing Victorian gold-rush architecture with hair-raising high-alpine steeps on Palmyra Peak.',
   },
 
   // European Alps
   {
     id: 'chamonix',
+    lift_count: 65,
+    run_count: 119,
     name: 'Chamonix-Mont-Blanc',
     region: 'Haute-Savoie',
     country: 'France',
@@ -1029,10 +717,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Mountain Collective'],
     infrastructure: 'Aiguille du Midi Cable Car',
     archetype: 'Steep Alpine',
-    summary: 'Historical capital of mountaineering beneath Mont Blanc with glacial off-piste descents.',
+    summary: 'Spiritual home of extreme alpinism beneath Mont Blanc, celebrated for the 20-km Vallée Blanche descent and pioneering mountain guide tradition.',
   },
   {
     id: 'val-disere',
+    lift_count: 78,
+    run_count: 159,
     name: 'Val d’Isère / Tignes',
     region: 'Savoie',
     country: 'France',
@@ -1046,10 +736,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: 'Over 75 Lifts, Funiculars & Cable Cars',
     archetype: 'Flagship Mega-Resort',
-    summary: 'High-altitude French Alps domain linking glaciers with dependable winter snowpack.',
+    summary: 'Legendary French Tarentaise high-altitude terrain linking with Tignes across the Espace Killy, famed for the Face de Bellevarde Olympic downhill and vast off-piste.',
   },
   {
     id: 'verbier',
+    lift_count: 67,
+    run_count: 80,
     name: 'Verbier (4 Vallées)',
     region: 'Valais',
     country: 'Switzerland',
@@ -1063,10 +755,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: 'Mont-Fort Cable Car & Express Network',
     archetype: 'Steep Alpine',
-    summary: 'Swiss freeride center featuring steep itineraries off Mont Gelé and Bec des Rosses.',
+    summary: 'The freeride jewel of the Swiss 4 Valleys, famous for the daunting Bec des Rosses face, high-altitude Mont Fort descents, and cosmopolitan alpine nightlife.',
   },
   {
     id: 'zermatt',
+    lift_count: 53,
+    run_count: 148,
     name: 'Zermatt Matterhorn',
     region: 'Valais',
     country: 'Switzerland',
@@ -1080,10 +774,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon'],
     infrastructure: 'Matterhorn Alpine Crossing 3S Cable Car',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Highest lift-served resort in Europe, crossing the international border into Cervinia, Italy.',
+    summary: 'Iconic car-free Swiss village backdropped by the majestic Matterhorn, featuring glaciated year-round ski descents and historic high-alpine trans-border terrain into Italy.',
   },
   {
     id: 'st-anton',
+    lift_count: 85,
+    run_count: 131,
     name: 'St. Anton am Arlberg',
     region: 'Tyrol',
     country: 'Austria',
@@ -1097,12 +793,14 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: 'Flexenbahn & Galzigbahn Gondolas',
     archetype: 'Steep Alpine',
-    summary: 'Birthplace of modern alpine ski technique with steep off-piste bowls in the Arlberg region.',
+    summary: 'Historic cradle of alpine ski technique in the Austrian Arlberg, famed for legendary Valluga steeps, untracked backcountry routes, and raucous Krazy Kanguruh après lore.',
   },
 
   // Japan
   {
     id: 'niseko-united',
+    lift_count: 30,
+    run_count: 80,
     name: 'Niseko United',
     region: 'Hokkaido',
     country: 'Japan',
@@ -1116,10 +814,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: '4 Interconnected Areas, 30+ Lifts',
     archetype: 'Powder / Tree Glades',
-    summary: 'Hokkaido powder hub receiving Siberian sea-effect snow with 11 backcountry access gates.',
+    summary: 'Global capital of bottomless powder snow on Hokkaido, renowned for Siberian storm cycles that blanket birch glades in ultra-light dry powder.',
   },
   {
     id: 'rusutsu',
+    lift_count: 18,
+    run_count: 37,
     name: 'Rusutsu',
     region: 'Hokkaido',
     country: 'Japan',
@@ -1133,10 +833,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: '4 Gondolas, Express Quads',
     archetype: 'Powder / Tree Glades',
-    summary: 'Lift-accessed deciduous birch glades and natural terrain rollers spanning 3 peaks.',
+    summary: 'Hokkaido powder sanctuary spreading across three mountains, famous for magical tree glades, natural gullies, and untracked snow without the crowds.',
   },
   {
     id: 'furano',
+    lift_count: 10,
+    run_count: 28,
     name: 'Furano',
     region: 'Hokkaido',
     country: 'Japan',
@@ -1150,10 +852,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Independent'],
     infrastructure: '100-passenger Furano Ropeway',
     archetype: 'Powder / Tree Glades',
-    summary: 'Inland Hokkaido location providing cold, low-moisture powder with views of Daisetsuzan.',
+    summary: 'Central Hokkaido destination known for exceptionally cold, dry snow, World Cup downhill heritage, and panoramic views across the Daisetsuzan mountain range.',
   },
   {
     id: 'hakuba-happo-one',
+    lift_count: 22,
+    run_count: 16,
     name: 'Hakuba Happo-One',
     region: 'Nagano',
     country: 'Japan',
@@ -1167,10 +871,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: 'Gondola & Quad Network',
     archetype: 'Steep Alpine',
-    summary: '1998 Winter Olympic downhill venue situated in the Japanese Northern Alps.',
+    summary: 'Crown jewel of the Japanese Northern Alps in Nagano, site of the 1998 Olympic downhills with steep fall-line ridges and immense backcountry alpine access.',
   },
   {
     id: 'nozawa-onsen',
+    lift_count: 20,
+    run_count: 36,
     name: 'Nozawa Onsen',
     region: 'Nagano',
     country: 'Japan',
@@ -1184,10 +890,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Indy'],
     infrastructure: 'Nagasaka 10-Passenger Gondola',
     archetype: 'Powder / Tree Glades',
-    summary: 'Traditional hot spring village with steep beech forest glades and high seasonal snow volume.',
+    summary: 'Eighth-century hot-spring village where ancient bathhouse tradition meets deep Honshu snow, renowned for Yamabiko tree skiing and classic lantern-lit village streets.',
   },
   {
     id: 'myoko-kogen',
+    lift_count: 15,
+    run_count: 32,
     name: 'Myoko Kogen',
     region: 'Niigata',
     country: 'Japan',
@@ -1201,12 +909,14 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Indy'],
     infrastructure: 'Akakura Onsen & Kanko Combined',
     archetype: 'Powder / Tree Glades',
-    summary: 'Located in Niigata’s "Snow Country" receiving heavy lake/sea-effect storms from Sea of Japan.',
+    summary: 'Deep-snow haven on Mount Myoko receiving immense Sea of Japan snowfall, rich in traditional Japanese ski history dating back to 1911.',
   },
 
   // Southern Hemisphere
   {
     id: 'treble-cone',
+    lift_count: 4,
+    run_count: 45,
     name: 'Treble Cone',
     region: 'Otago',
     country: 'New Zealand',
@@ -1220,10 +930,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Mountain Collective'],
     infrastructure: 'Home Basin 6-Pack',
     archetype: 'Steep Alpine',
-    summary: 'South Island mountain with Motatapu chutes and views over Lake Wanaka.',
+    summary: 'Premier freeride mountain of New Zealand\'s South Island, famed for the legendary Motatapu Chutes, natural halfpipes, and spectacular views over Lake Wanaka.',
   },
   {
     id: 'valle-nevado',
+    lift_count: 14,
+    run_count: 40,
     name: 'Valle Nevado',
     region: 'Santiago',
     country: 'Chile',
@@ -1237,10 +949,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: 'Modern Gondola & High-Speed Detachables',
     archetype: 'Steep Alpine',
-    summary: 'High-altitude Andes skiing located 9,400–12,000 ft above Santiago.',
+    summary: 'Modern high-altitude resort perched above 10,000 ft in the Chilean Andes, offering expansive above-treeline powder bowls beneath 18,000-ft glaciated peaks.',
   },
   {
     id: 'portillo',
+    lift_count: 14,
+    run_count: 35,
     name: 'Portillo',
     region: 'Valparaíso',
     country: 'Chile',
@@ -1254,12 +968,14 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Independent'],
     infrastructure: 'Va-et-Vient slingshot lifts on 45° pitches',
     archetype: 'Steep Alpine',
-    summary: 'Historic hotel resort next to Laguna del Inca known for high-angle chutes and off-piste bowls.',
+    summary: 'Storied yellow hotel perched beside Laguna del Inca high in the Chilean Andes, celebrated for steep couloirs, slingshot Va et Vient lifts, and Olympic summer training.',
   },
 
   // US East & Canada Rockies
   {
     id: 'stowe',
+    lift_count: 12,
+    run_count: 116,
     name: 'Stowe Mountain Resort',
     region: 'Vermont',
     country: 'USA',
@@ -1273,10 +989,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: 'Over Easy Gondola & FourRunner Quad',
     archetype: 'Steep Alpine',
-    summary: 'Mount Mansfield’s legendary "Front Four" steep fall-line trails in Northern Vermont.',
+    summary: 'The ski capital of the East on Mount Mansfield, featuring the fabled Front Four double-black trails and historic New England ski racing pedigree.',
   },
   {
     id: 'killington',
+    lift_count: 22,
+    run_count: 155,
     name: 'Killington',
     region: 'Vermont',
     country: 'USA',
@@ -1290,10 +1008,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon'],
     infrastructure: 'K-1 Express Gondola & Skyeship',
     archetype: 'Flagship Mega-Resort',
-    summary: 'The "Beast of the East" spanning six peaks with the largest vertical drop in New England.',
+    summary: 'The Beast of the East sprawling across six peaks in Vermont\'s Green Mountains, famous for World Cup racing on Superstar and one of the longest ski seasons in the East.',
   },
   {
     id: 'lake-louise',
+    lift_count: 11,
+    run_count: 164,
     name: 'Lake Louise',
     region: 'Alberta',
     country: 'Canada',
@@ -1307,12 +1027,14 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Mountain Collective'],
     infrastructure: 'Grizzly Gondola & Juniper Express',
     archetype: 'Steep Alpine',
-    summary: 'Banff National Park alpine expanse with West Bowl chutes and Rocky Mountain vistas.',
+    summary: 'Spectacular Canadian Rockies wilderness in Banff National Park, pairing historic World Cup downhill slopes with dramatic glaciated peaks and vast back bowls.',
   },
 
   // European Alps & Dolomites
   {
     id: 'cortina',
+    lift_count: 27,
+    run_count: 86,
     name: 'Cortina d’Ampezzo',
     region: 'Veneto',
     country: 'Italy',
@@ -1326,10 +1048,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Independent'],
     infrastructure: 'Freccia nel Cielo Cable Car & Dolomiti Superski Network',
     archetype: 'Steep Alpine',
-    summary: 'UNESCO Dolomites jewel featuring the Tofana schuss and 2026 Winter Olympic alpine courses.',
+    summary: 'Glamorous Queen of the Dolomites framed by dramatic pink limestone peaks, combining 1956 and 2026 Winter Olympic heritage with chic Italian lifestyle.',
   },
   {
     id: 'val-gardena',
+    lift_count: 79,
+    run_count: 175,
     name: 'Val Gardena / Sellaronda',
     region: 'South Tyrol',
     country: 'Italy',
@@ -1343,10 +1067,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon', 'Independent'],
     infrastructure: 'Saslong World Cup gondolas & interconnected circuit',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Heart of the Sellaronda carousel encircling the Sella massif in the Italian Dolomites.',
+    summary: 'Ladin cultural heart of the Dolomites and gateway to the famous Sellaronda circuit, host to the thrilling Saslong World Cup downhill.',
   },
   {
     id: 'courchevel',
+    lift_count: 55,
+    run_count: 109,
     name: 'Courchevel (Les 3 Vallées)',
     region: 'Savoie',
     country: 'France',
@@ -1360,10 +1086,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: 'Saulire Cable Car & 160 interconnected lifts',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Part of the largest interconnected ski area on Earth with 600km of linked pistes.',
+    summary: 'The most prestigious station of the French 3 Valleys, combining north-facing high-alpine snow preservation with Michelin-starred mountain luxury.',
   },
   {
     id: 'st-moritz',
+    lift_count: 58,
+    run_count: 88,
     name: 'St. Moritz (Corviglia & Diavolezza)',
     region: 'Graubünden',
     country: 'Switzerland',
@@ -1377,10 +1105,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic', 'Independent'],
     infrastructure: 'Signal Cable Car & Piz Nair Funicular',
     archetype: 'Steep Alpine',
-    summary: 'Engadin valley high-altitude skiing with dry "champagne climate" and Morteratsch glacier run.',
+    summary: 'The birthplace of winter tourism in 1864 in the Swiss Engadin valley, hosting two Winter Olympics and legendary Corviglia sun-drenched alpine pistes.',
   },
   {
     id: 'kitzbuehel',
+    lift_count: 57,
+    run_count: 96,
     name: 'Kitzbühel',
     region: 'Tyrol',
     country: 'Austria',
@@ -1394,12 +1124,14 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon'],
     infrastructure: '3S-Bahn Gondola & Hahnenkammbahn',
     archetype: 'Steep Alpine',
-    summary: 'Home of the Streif downhill on the Hahnenkamm, the most renowned course in ski racing.',
+    summary: 'Legendary Tyrolean ski town host to the harrowing Hahnenkamm downhill on the Streif, blending medieval town charm with 130 years of Austrian ski prestige.',
   },
 
   // Scandinavia & Spain
   {
     id: 'hemsedal',
+    lift_count: 21,
+    run_count: 51,
     name: 'Hemsedal',
     region: 'Viken',
     country: 'Norway',
@@ -1413,10 +1145,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Independent'],
     infrastructure: 'Hollvin Express 8-pack & T-bars',
     archetype: 'Steep Alpine',
-    summary: 'Known as the "Scandinavian Alps" with rugged peaks and dependable long Nordic winters.',
+    summary: 'The Scandinavian Alps of Norway, renowned for its dramatic pointed peaks, snow-sure season from November to May, and vibrant ski touring scene.',
   },
   {
     id: 'are-sweden',
+    lift_count: 35,
+    run_count: 89,
     name: 'Åre',
     region: 'Jämtland',
     country: 'Sweden',
@@ -1430,10 +1164,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Independent'],
     infrastructure: 'Åre Kabinbana & VM8 Express',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Northern Europe’s premier ski destination, hosting multiple FIS Alpine World Ski Championships.',
+    summary: 'Northern Europe\'s premier alpine resort on Mount Åreskutan, host to multiple World Championships with sweeping lake views and Nordic mountain soul.',
   },
   {
     id: 'baqueira-beret',
+    lift_count: 36,
+    run_count: 114,
     name: 'Baqueira-Beret',
     region: 'Catalonia',
     country: 'Spain',
@@ -1447,12 +1183,14 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Independent'],
     infrastructure: '36 Lifts including Baqueira Gondola',
     archetype: 'Steep Alpine',
-    summary: 'Atlantic-facing Pyrenean valley (Val d’Aran) providing deep natural snow and extensive freeride bowls.',
+    summary: 'The crown jewel of the Spanish Pyrenees in the Val d\'Aran, loved by the Spanish royal family for expansive high-altitude bowls and exceptional tapas culture.',
   },
 
   // Oceania & South America
   {
     id: 'cardrona',
+    lift_count: 7,
+    run_count: 65,
     name: 'Cardrona Alpine Resort',
     region: 'Otago',
     country: 'New Zealand',
@@ -1466,10 +1204,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Independent'],
     infrastructure: 'McDougall’s Chondola & Soho Basin expansion',
     archetype: 'Steep Alpine',
-    summary: 'Wide alpine terrain and high-elevation dry snow overlooking Queenstown and Wanaka.',
+    summary: 'New Zealand\'s premier alpine playground between Queenstown and Wanaka, famous for wide-open rolling basins and world-class terrain parks.',
   },
   {
     id: 'perisher',
+    lift_count: 49,
+    run_count: 133,
     name: 'Perisher',
     region: 'New South Wales',
     country: 'Australia',
@@ -1483,10 +1223,12 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Epic'],
     infrastructure: 'Skitube Alpine Railway & 47 Lifts',
     archetype: 'Flagship Mega-Resort',
-    summary: 'Largest ski resort in the Southern Hemisphere, combining Perisher Valley, Blue Cow, Smiggin Holes, and Guthega.',
+    summary: 'The Southern Hemisphere\'s largest resort in Australia\'s Snowy Mountains, connecting four distinct villages across rolling sub-alpine snowgum glades.',
   },
   {
     id: 'cerro-catedral',
+    lift_count: 29,
+    run_count: 60,
     name: 'Cerro Catedral (Bariloche)',
     region: 'Río Negro',
     country: 'Argentina',
@@ -1500,7 +1242,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     pass_networks: ['Ikon'],
     infrastructure: 'Amancay Gondola & 34 Lifts',
     archetype: 'Steep Alpine',
-    summary: 'Patagonian Andes flagship overlooking Lake Nahuel Huapi with granite spires and off-piste couloirs.',
+    summary: 'South America\'s premier resort towering above Lake Nahuel Huapi in Argentine Patagonia, famed for granite spires, beech forest tree runs, and vibrant Bariloche culture.',
   },
 ];
 
@@ -1791,116 +1533,63 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
 ];
 
-/* =========================================================================
-   BACKCOUNTRY & SKI TOURING ZONES DATASET
-   ========================================================================= */
-
-export const BACKCOUNTRY_ZONES: SkiResort[] = [
-  {
-    id: 'bc-tuckerman-ravine',
-    name: 'Tuckerman Ravine (Mt Washington)',
-    region: 'New Hampshire',
-    country: 'United States',
-    lat: 44.2625,
-    lng: -71.2989,
-    default_bearing: 100,
-    base_elev_ft: 2000,
-    summit_elev_ft: 6288,
-    vertical_drop_ft: 4288,
-    skiable_acres: 3000,
-    tenure_acres: 3000,
-    pass_networks: ['Independent'],
-    infrastructure: 'Hermit Lake backcountry shelters · USFS Snow Rangers · 100% human-powered uphill skinning',
-    archetype: 'Backcountry Headwall',
-    summary: 'The legendary birthplace of American extreme backcountry skiing with 40 to 55-degree glacial headwalls.',
-    category: 'backcountry',
-    operation_type: 'backcountry_zone',
-  },
-  {
-    id: 'bc-berthoud-pass',
-    name: 'Berthoud Pass Backcountry',
-    region: 'Colorado',
-    country: 'United States',
-    lat: 39.7981,
-    lng: -105.7778,
-    default_bearing: 180,
-    base_elev_ft: 11307,
-    summit_elev_ft: 12500,
-    vertical_drop_ft: 1500,
-    skiable_acres: 8000,
-    tenure_acres: 8000,
-    pass_networks: ['Independent'],
-    infrastructure: 'Continental Divide pass trailhead · Warming hut · Historic ski terrain reclaimed by nature',
-    archetype: 'Backcountry Pass',
-    summary: 'Colorado’s premier highway-accessible backcountry ski playground with high alpine bowls, chutes, and tree glades.',
-    category: 'backcountry',
-    operation_type: 'backcountry_zone',
-  },
-  {
-    id: 'bc-rogers-pass',
-    name: 'Rogers Pass (Glacier National Park)',
-    region: 'British Columbia',
-    country: 'Canada',
-    lat: 51.3006,
-    lng: -117.5217,
-    default_bearing: 190,
-    base_elev_ft: 4360,
-    summit_elev_ft: 10500,
-    vertical_drop_ft: 6140,
-    skiable_acres: 350000,
-    tenure_acres: 350000,
-    pass_networks: ['Independent'],
-    infrastructure: 'Parks Canada winter permit system · Asulkan and Hermit cabin networks · Transceivers mandatory',
-    archetype: 'Ski Mountaineering',
-    summary: 'The holy grail of North American ski mountaineering with enormous 6,000-ft continuous alpine descents in the Selkirks.',
-    category: 'backcountry',
-    operation_type: 'backcountry_zone',
-  },
-  {
-    id: 'bc-teton-pass',
-    name: 'Teton Pass Backcountry',
-    region: 'Wyoming',
-    country: 'United States',
-    lat: 43.4984,
-    lng: -110.9547,
-    default_bearing: 175,
-    base_elev_ft: 6400,
-    summit_elev_ft: 10098,
-    vertical_drop_ft: 3698,
-    skiable_acres: 12000,
-    tenure_acres: 12000,
-    pass_networks: ['Independent'],
-    infrastructure: 'Highway 22 summit parking · Bootpack trails & skintracks · Avalanche hazard forecast center',
-    archetype: 'Backcountry Pass',
-    summary: 'The epicenter of Jackson Hole community backcountry culture with classic descents including Mount Glory and Edelweiss.',
-    category: 'backcountry',
-    operation_type: 'backcountry_zone',
-  },
-  {
-    id: 'bc-loveland-pass',
-    name: 'Loveland Pass Backcountry',
-    region: 'Colorado',
-    country: 'United States',
-    lat: 39.6636,
-    lng: -105.8789,
-    default_bearing: 180,
-    base_elev_ft: 10800,
-    summit_elev_ft: 12995,
-    vertical_drop_ft: 2195,
-    skiable_acres: 6000,
-    tenure_acres: 6000,
-    pass_networks: ['Independent'],
-    infrastructure: 'Continental Divide Highway 6 shuttle route · Free parking · Human-powered alpine skinning',
-    archetype: 'Backcountry Ridges',
-    summary: 'Classic high-altitude hitch-and-ski ridgelines above timberline on the Continental Divide.',
-    category: 'backcountry',
-    operation_type: 'backcountry_zone',
-  },
-];
 
 /* =========================================================================
    CATEGORY BADGES HELPER
    ========================================================================= */
+
+/* =========================================================================
+   RESORT STATS & WEBSITE HELPERS
+   ========================================================================= */
+
+export function getResortStats(resort: SkiResort | null | undefined): {
+  lifts: number | null;
+  pistes: number | null;
+  acres: number | null;
+} {
+  if (!resort) return { lifts: null, pistes: null, acres: null };
+
+  let lifts: number | null =
+    resort.lift_count !== undefined && resort.lift_count !== null && resort.lift_count > 0
+      ? resort.lift_count
+      : null;
+
+  let pistes: number | null =
+    resort.run_count !== undefined && resort.run_count !== null && resort.run_count > 0
+      ? resort.run_count
+      : null;
+
+  let acres: number | null =
+    resort.skiable_acres && resort.skiable_acres > 0
+      ? resort.skiable_acres
+      : null;
+
+  if (lifts === null && resort.infrastructure) {
+    const m = resort.infrastructure.match(/(\\d+)\\s*(?:lifts?|aerialways?|chairs?|gondolas?)/i);
+    if (m) lifts = parseInt(m[1], 10);
+  }
+
+  if (pistes === null && resort.infrastructure) {
+    const m = resort.infrastructure.match(/(\\d+)\\s*(?:pistes?|runs?|trails?)/i);
+    if (m) pistes = parseInt(m[1], 10);
+  }
+
+  return { lifts, pistes, acres };
+}
+
+export function getResortWebsite(resort: SkiResort | null | undefined): { url: string; isDirect: boolean } | null {
+  if (!resort) return null;
+  const direct = resort.website || (resort as any).tags?.website || (resort as any).tags?.['contact:website'];
+  if (direct) {
+    const url = direct.startsWith('http://') || direct.startsWith('https://') ? direct : `https://${direct}`;
+    return { url, isDirect: true };
+  }
+  if (resort.name) {
+    const q = encodeURIComponent(`${resort.name} ski resort official website`);
+    return { url: `https://www.google.com/search?q=${q}`, isDirect: false };
+  }
+  return null;
+}
 
 export function getCategoryBadge(category?: SkiActivityCategory) {
   switch (category) {
@@ -1908,38 +1597,29 @@ export function getCategoryBadge(category?: SkiActivityCategory) {
       return {
         label: 'Nordic XC',
         icon: '🎿',
-        bg: 'bg-emerald-50',
-        text: 'text-emerald-700',
-        border: 'border-emerald-200',
-        dot: '#059669',
+        bg: 'bg-[#2E5A44]/10',
+        text: 'text-[#2E5A44]',
+        border: 'border-[#2E5A44]/30',
+        dot: '#2E5A44',
       };
     case 'heli_cat':
       return {
         label: 'Cat & Heli',
         icon: '🚁',
-        bg: 'bg-purple-50',
-        text: 'text-purple-700',
-        border: 'border-purple-200',
-        dot: '#7C3AED',
-      };
-    case 'backcountry':
-      return {
-        label: 'Backcountry',
-        icon: '🏔️',
-        bg: 'bg-sky-50',
-        text: 'text-sky-700',
-        border: 'border-sky-200',
-        dot: '#0284C7',
+        bg: 'bg-[#B84A39]/10',
+        text: 'text-[#B84A39]',
+        border: 'border-[#B84A39]/30',
+        dot: '#B84A39',
       };
     case 'downhill':
     default:
       return {
         label: 'Downhill',
         icon: '⛷️',
-        bg: 'bg-orange-50',
-        text: 'text-[#E05216]',
-        border: 'border-orange-200',
-        dot: '#E05216',
+        bg: 'bg-[#3B627E]/10',
+        text: 'text-[#3B627E]',
+        border: 'border-[#3B627E]/30',
+        dot: '#3B627E',
       };
   }
 }
@@ -1949,17 +1629,18 @@ export function getCategoryBadge(category?: SkiActivityCategory) {
    ========================================================================= */
 
 function getNeutralWeather(resort: SkiResort): ResortWeatherData {
-  const baseElev = resort.base_elev_ft || 2000;
+  const elev = resort.summit_elev_ft || 8000;
+  const baseTempF = Math.round(30 - (elev / 1000) * 1.5);
   return {
     snowfall_72h_in: 0,
     snowfall_7d_in: 0,
     snowfall_72h_cm: 0,
     snowfall_7d_cm: 0,
-    current_temp_f: 32,
-    current_temp_c: 0,
+    current_temp_f: baseTempF,
+    current_temp_c: Math.round(((baseTempF - 32) * 5) / 9),
     summit_wind_gust_mph: 15,
-    freezing_level_ft: baseElev + 1500,
-    rain_to_base_risk: true,
+    freezing_level_ft: Math.max(0, elev - 2500),
+    rain_to_base_risk: false,
     daily_forecast: [],
     is_live: false,
     last_updated: 'Checking Open-Meteo...',
@@ -1982,283 +1663,110 @@ async function fetchLiveWeather(resort: SkiResort): Promise<ResortWeatherData | 
     const data = await res.json();
 
     const hourlySnow: number[] = data?.hourly?.snowfall || [];
-    const freezingLevels: number[] = data?.hourly?.freezing_level_height || [];
-    const windGusts: number[] = data?.hourly?.wind_gusts_10m || [];
-    const temps: number[] = data?.hourly?.temperature_2m || [];
-
-    // Next 72 hours sum
-    const snow72cm = hourlySnow.slice(0, 72).reduce((a, b) => a + (b || 0), 0);
+    let snow72cm = 0;
+    const hoursToSum = Math.min(72, hourlySnow.length);
+    for (let i = 0; i < hoursToSum; i++) {
+      snow72cm += hourlySnow[i] || 0;
+    }
     const snow72in = Math.round((snow72cm / 2.54) * 10) / 10;
 
-    // Next 7 days daily sum
     const dailySnow: number[] = data?.daily?.snowfall_sum || [];
-    const snow7dCm = dailySnow.slice(0, 7).reduce((a, b) => a + (b || 0), 0);
+    const snow7dCm = dailySnow.reduce((a, b) => a + (b || 0), 0);
     const snow7dIn = Math.round((snow7dCm / 2.54) * 10) / 10;
 
-    // Average freezing level in next 24h
-    const avgFreezingM = freezingLevels.slice(0, 24).reduce((a, b) => a + (b || 0), 0) / 24 || 0;
-    const freezingFt = Math.round(avgFreezingM * 3.28084);
-    const rainRisk = freezingFt > (resort.base_elev_ft || 0);
-
-    const maxWindKmh = Math.max(...windGusts.slice(0, 24), 10);
-    const currentTempC = Math.round(temps[0] ?? 0);
-    const currentTempF = Math.round((currentTempC * 9) / 5 + 32);
-
-    const dailyForecast: DailyForecast[] = (data?.daily?.time || []).slice(0, 7).map((dStr: string, idx: number) => {
-      const d = new Date(dStr + 'T12:00:00');
+    const daily_forecast: DailyForecast[] = (data?.daily?.time || []).map((t: string, idx: number) => {
       const cm = Math.round((data.daily.snowfall_sum?.[idx] || 0) * 10) / 10;
       const inches = Math.round((cm / 2.54) * 10) / 10;
-      const maxC = Math.round(data.daily.temperature_2m_max?.[idx] || 0);
-      const minC = Math.round(data.daily.temperature_2m_min?.[idx] || 0);
+      const tMaxC = Math.round(data.daily.temperature_2m_max?.[idx] || 0);
+      const tMinC = Math.round(data.daily.temperature_2m_min?.[idx] || 0);
       return {
-        date: d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' }),
+        date: t,
         snowfall_in: inches,
         snowfall_cm: cm,
-        temp_max_f: Math.round((maxC * 9) / 5 + 32),
-        temp_min_f: Math.round((minC * 9) / 5 + 32),
-        temp_max_c: maxC,
-        temp_min_c: minC,
+        temp_max_f: Math.round((tMaxC * 9) / 5 + 32),
+        temp_min_f: Math.round((tMinC * 9) / 5 + 32),
+        temp_max_c: tMaxC,
+        temp_min_c: tMinC,
       };
     });
+
+    const curTempC = Math.round(data?.hourly?.temperature_2m?.[0] ?? -3);
+    const curTempF = Math.round((curTempC * 9) / 5 + 32);
 
     return {
       snowfall_72h_in: snow72in,
       snowfall_7d_in: snow7dIn,
       snowfall_72h_cm: Math.round(snow72cm * 10) / 10,
       snowfall_7d_cm: Math.round(snow7dCm * 10) / 10,
-      current_temp_f: currentTempF,
-      current_temp_c: currentTempC,
-      summit_wind_gust_mph: Math.round(maxWindKmh * 0.621371),
-      freezing_level_ft: freezingFt,
-      rain_to_base_risk: rainRisk,
-      daily_forecast: dailyForecast,
+      current_temp_f: curTempF,
+      current_temp_c: curTempC,
+      summit_wind_gust_mph: Math.round((data?.hourly?.wind_gusts_10m?.[0] || 15) * 0.621371),
+      freezing_level_ft: Math.round((data?.hourly?.freezing_level_height?.[0] || 2500) * 3.28084),
+      rain_to_base_risk: Boolean(data?.hourly?.temperature_2m?.[0] > 1.5 && (data?.hourly?.snowfall?.[0] || 0) > 0),
+      daily_forecast,
       is_live: true,
-      last_updated: 'Live Open-Meteo',
+      last_updated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
-  } catch (err) {
+  } catch (e) {
     return null;
   }
 }
 
 /* =========================================================================
-   FEATURE CLASSIFICATION & ELEVATION SANITIZATION ENGINE
-   ========================================================================= */
-
-export function classifySkiFeature(p: any, coords: [number, number]): {
-  category: SkiActivityCategory;
-  archetype: string;
-  cleanedSummitFt: number | null;
-  cleanedBaseFt: number | null;
-  cleanedVertFt: number | null;
-  infrastructure: string;
-} {
-  const name = (p?.name || '').trim();
-  const lowerName = name.toLowerCase();
-  const acts: string[] = Array.isArray(p?.activities) ? p.activities : [];
-  const hasDownhill = acts.includes('downhill');
-  const hasNordic = acts.includes('nordic');
-
-  // Count lifts and runs
-  let liftCount = 0;
-  if (p?.statistics?.lifts?.byType) {
-    Object.values(p.statistics.lifts.byType).forEach((l: any) => {
-      liftCount += (l as any).count || 0;
-    });
-  }
-  let runCount = 0;
-  if (p?.statistics?.runs?.byActivity?.downhill?.byDifficulty) {
-    Object.values(p.statistics.runs.byActivity.downhill.byDifficulty).forEach((r: any) => {
-      runCount += (r as any).count || 0;
-    });
-  }
-
-  // 1. Specific Known Anomalies: Mauna Kea Volcano (Hawaii)
-  // Mauna Kea is a 13,803 ft volcano, not a commercial ski resort with lifts/runs
-  if (lowerName.includes('mauna kea') || (coords && coords[0] < -155 && coords[0] > -156 && coords[1] > 19.5 && coords[1] < 20.0)) {
-    return {
-      category: 'informal',
-      archetype: 'Volcano Snowfield (Wild / Non-Resort)',
-      cleanedSummitFt: 13803,
-      cleanedBaseFt: 9200,
-      cleanedVertFt: 4603,
-      infrastructure: 'No Lifts · 4WD Summit Observatory Road · Seasonal Wild Snow',
-    };
-  }
-
-  // 2. Heli & Cat Ski Operations
-  if (/heli|cat\s*ski|snowcat|powdercat|catski/i.test(lowerName)) {
-    return {
-      category: 'heli_cat',
-      archetype: 'Cat & Heli Skiing',
-      cleanedSummitFt: null,
-      cleanedBaseFt: null,
-      cleanedVertFt: null,
-      infrastructure: 'Guided Deep Powder Snowcat / Helicopter',
-    };
-  }
-
-  // 3. Backcountry & Ski Touring Zones
-  if (/backcountry|touring\s*zone|skin\s*track|mountaineering|pass\s*trailhead|hut\s*system/i.test(lowerName)) {
-    return {
-      category: 'backcountry',
-      archetype: 'Backcountry Touring Zone',
-      cleanedSummitFt: null,
-      cleanedBaseFt: null,
-      cleanedVertFt: null,
-      infrastructure: 'Uphill Skinning & Trailheads (No Lifts)',
-    };
-  }
-
-  // 4. Raw elevation calculation and sanitization
-  const maxE = p?.statistics?.maxElevation || p?.statistics?.runs?.maxElevation || 0;
-  const minE = p?.statistics?.minElevation || p?.statistics?.runs?.minElevation || 0;
-  const vertM = maxE > minE ? maxE - minE : 0;
-  const vertFt = vertM > 0 ? Math.round(vertM * 3.28084) : 0;
-  const summitFt = maxE > 0 ? Math.round(maxE * 3.28084) : 0;
-  const baseFt = minE > 0 ? Math.round(minE * 3.28084) : 0;
-
-  // Detect fake / suspicious numbers (e.g. 4,000' summit, 2,000' base, 2,000' vertical placeholder or missing stats)
-  const isSuspicious =
-    (summitFt >= 3950 && summitFt <= 4050 && baseFt >= 1950 && baseFt <= 2050 && vertFt >= 1950 && vertFt <= 2050) ||
-    !maxE || !minE || maxE <= 0 || minE <= 0 || maxE === minE ||
-    (hasNordic && !hasDownhill && vertFt > 1200 && liftCount === 0);
-
-  const cleanedSummitFt: number | null = isSuspicious ? null : summitFt;
-  const cleanedBaseFt: number | null = isSuspicious ? null : baseFt;
-  const cleanedVertFt: number | null = isSuspicious ? null : vertFt;
-
-  // 5. Categorization:
-  // If no lifts and no downhill runs, and not Nordic: Wild / Informal Area
-  if (liftCount === 0 && runCount === 0 && !hasNordic) {
-    return {
-      category: 'informal',
-      archetype: 'Wild / Non-Resort Area',
-      cleanedSummitFt,
-      cleanedBaseFt,
-      cleanedVertFt,
-      infrastructure: 'No Recorded Lifts · Primitive / Informal Snow Area',
-    };
-  }
-
-  // If Nordic (XC trails)
-  if (hasNordic && (!hasDownhill || liftCount === 0)) {
-    return {
-      category: 'nordic',
-      archetype: 'Nordic XC Center',
-      cleanedSummitFt,
-      cleanedBaseFt,
-      cleanedVertFt: null, // Cross-country trails roll over terrain; don't claim fake downhill drop
-      infrastructure: 'Groomed Skate & Classic Cross-Country Trails',
-    };
-  }
-
-  // Standard Downhill Resort
-  return {
-    category: 'downhill',
-    archetype: (cleanedVertFt || 0) > 3000 ? 'Steep Alpine' : (liftCount > 0 ? 'Resort Trails' : 'Downhill Area'),
-    cleanedSummitFt,
-    cleanedBaseFt,
-    cleanedVertFt,
-    infrastructure: liftCount > 0 ? `${liftCount} Lifts, ${runCount} Marked Pistes` : 'Downhill Pistes Mapped',
-  };
-}
-
-/* =========================================================================
-   MAIN APP COMPONENT
+   APP COMPONENT
    ========================================================================= */
 
 export default function App() {
+  const [resorts, setResorts] = useState<SkiResort[]>(() =>
+    GLOBAL_SKI_ATLAS.map((r) => ({
+      ...r,
+      weather: getNeutralWeather(r),
+    }))
+  );
+
+  const [selectedResortId, setSelectedResortId] = useState<string | null>(null);
+  const selectedResort = useMemo(() => {
+    if (!selectedResortId) return null;
+    return resorts.find((r) => r.id === selectedResortId) || null;
+  }, [resorts, selectedResortId]);
+
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Resorts state: Combined Atlas, Cat/Heli, and Backcountry premier datasets
-  const [resorts, setResorts] = useState<SkiResort[]>(() => [
-    ...GLOBAL_SKI_ATLAS.map((r) => ({
-      ...r,
-      category: 'downhill' as SkiActivityCategory,
-      weather: getNeutralWeather(r),
-    })),
-    ...HELI_CAT_OPERATIONS.map((r) => ({
-      ...r,
-      category: 'heli_cat' as SkiActivityCategory,
-      weather: getNeutralWeather(r),
-    })),
-    ...BACKCOUNTRY_ZONES.map((r) => ({
-      ...r,
-      category: 'backcountry' as SkiActivityCategory,
-      weather: getNeutralWeather(r),
-    })),
-  ]);
-
-  const [selectedResortId, setSelectedResortId] = useState<string | null>('jackson-hole');
-  const selectedResort = useMemo(
-    () => resorts.find((r) => r.id === selectedResortId) || null,
-    [resorts, selectedResortId]
-  );
-
-  // Real Trails layer toggle & state
-  const [showRealTrailsLayer, setShowRealTrailsLayer] = useState(true);
-  const [activeTrailFilter, setActiveTrailFilter] = useState<string>('all');
-  const [selectedTrailId, setSelectedTrailId] = useState<string | null>(null);
-
-  // Terrain natural exaggeration state (defaulting to 0.5x as requested)
-  const [exaggeration, setExaggeration] = useState<number>(0.5);
-
-  // Visual settings
   const [is3D, setIs3D] = useState(true);
-  const [basemapMode, setBasemapMode] = useState<BasemapMode>('topo');
+  const [basemapMode, setBasemapMode] = useState<BasemapMode>('satellite');
   const [unitsMetric, setUnitsMetric] = useState(false);
   const [leftDockOpen, setLeftDockOpen] = useState(true);
   const [mapMenuOpen, setMapMenuOpen] = useState(false);
-  const [onlySnowIncoming, setOnlySnowIncoming] = useState(false);
+  const [mapLegendOpen, setMapLegendOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
 
-  // Category Individual Toggles
+  // Category Individual Toggles (Downhill, Nordic, Cat/Heli)
   const [showDownhill, setShowDownhill] = useState(true);
   const [showNordic, setShowNordic] = useState(true);
   const [showHeliCat, setShowHeliCat] = useState(true);
-  const [showBackcountry, setShowBackcountry] = useState(true);
-  const [showInformal, setShowInformal] = useState(true);
 
-  // Worldwide Ski Areas (OpenSkiData & OSM - 12,000+ ski areas worldwide)
-  const [showGlobalPoints, setShowGlobalPoints] = useState(true);
-  const [globalSkiAreasCount, setGlobalSkiAreasCount] = useState<number>(0);
-  const [categoryCounts, setCategoryCounts] = useState<{
-    downhill: number;
-    nordic: number;
-    heli_cat: number;
-    backcountry: number;
-    informal: number;
-  }>({
-    downhill: 6955,
-    nordic: 5276,
-    heli_cat: 15,
-    backcountry: 5,
-    informal: 160,
-  });
-  const [isFetchingGlobal, setIsFetchingGlobal] = useState(false);
-  const allGlobalFeaturesRef = useRef<any[]>([]);
-  const globalFeaturesRef = useRef<any[]>([]);
-  const handleSelectGlobalResortRef = useRef<((props: any, coords: [number, number]) => void) | null>(null);
-  const handleSelectResortRef = useRef<((id: string) => void) | null>(null);
+  // Filter Drawer & Sliders
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [minVertical, setMinVertical] = useState(0);
+  const [minAcreage, setMinAcreage] = useState(0);
+  const [selectedRegionFilter, setSelectedRegionFilter] = useState<string>('All');
 
-  // Map Orientation, Pitch & Viewport State
-  const [mapBearing, setMapBearing] = useState<number>(0);
-  const [mapPitch, setMapPitch] = useState<number>(45);
-  const [viewportBounds, setViewportBounds] = useState<[number, number, number, number] | null>(null);
-
-  // Google Earth style Gyroscope & Map Menu Refs
-  const mapMenuTimeoutRef = useRef<any>(null);
-  const isDraggingGyroRef = useRef(false);
+  // Navigation Instrument (Compass/Gyro HUD)
+  const [mapBearing, setMapBearing] = useState(0);
+  const [mapPitch, setMapPitch] = useState(45);
+  const [mapScale, setMapScale] = useState({ distStr: '50 km', barWidth: 80 });
+  const gyroDragStateRef = useRef<{ startX: number; startY: number; startBearing: number; startPitch: number } | null>(null);
   const [isGyroDragging, setIsGyroDragging] = useState(false);
 
   // Mountain Directory Tab & Sorting
-  const [mountainListTab, setMountainListTab] = useState<'featured' | 'in_view' | 'global'>('featured');
-  const [sortBy, setSortBy] = useState<'snow' | 'vert' | 'acres' | 'name'>('snow');
+  const [mountainListTab, setMountainListTab] = useState<'featured' | 'in_view'>('featured');
+  const [sortBy, setSortBy] = useState<'vert' | 'acres' | 'name' | 'snow'>('vert');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Filters
+  // Pass Network filters
   const [selectedPasses, setSelectedPasses] = useState<PassNetwork[]>([
     'Ikon',
     'Epic',
@@ -2266,295 +1774,176 @@ export default function App() {
     'Mountain Collective',
     'Independent',
   ]);
-  const [minVertical, setMinVertical] = useState(0);
-  const [minAcreage, setMinAcreage] = useState(0);
-  const [selectedRegionFilter, setSelectedRegionFilter] = useState<string>('All');
-  const [filtersExpanded, setFiltersExpanded] = useState<boolean>(false);
 
-  // Active filters count
+  // Viewport bounds for In Viewport listing
+  const [viewportBounds, setViewportBounds] = useState<[number, number, number, number] | null>(null);
+
+  // Global Points Ref & Features
+  const [showGlobalPoints, setShowGlobalPoints] = useState(true);
+  const [categoryCounts, setCategoryCounts] = useState({ downhill: 6955, nordic: 5276, heli_cat: 15 });
+  const allGlobalFeaturesRef = useRef<any[]>([]);
+  const globalFeaturesRef = useRef<any[]>([]);
+
+  // Localhost SQLite Trails Cache & Refs
+  const liveFeaturesMapRef = useRef<Map<string, any>>(new Map());
+  const activeOverpassAbortRef = useRef<AbortController | null>(null);
+  const lastFetchedBboxKeyRef = useRef<string>('');
+
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (selectedPasses.length < 5) count++;
     if (selectedRegionFilter !== 'All') count++;
     if (minVertical > 0) count++;
     if (minAcreage > 0) count++;
-    if (onlySnowIncoming) count++;
-    if (!showDownhill || !showNordic || !showHeliCat || !showBackcountry || !showInformal) count++;
+    if (!showDownhill || !showNordic || !showHeliCat) count++;
     return count;
-  }, [selectedPasses, selectedRegionFilter, minVertical, minAcreage, onlySnowIncoming, showDownhill, showNordic, showHeliCat, showBackcountry, showInformal]);
+  }, [selectedPasses, selectedRegionFilter, minVertical, minAcreage, showDownhill, showNordic, showHeliCat]);
 
   const handleResetFilters = () => {
     setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent']);
     setSelectedRegionFilter('All');
     setMinVertical(0);
     setMinAcreage(0);
-    setOnlySnowIncoming(false);
     setShowDownhill(true);
     setShowNordic(true);
     setShowHeliCat(true);
-    setShowBackcountry(true);
-    setShowInformal(true);
   };
 
-  // Filtered list
+  // Filtered Curated Resorts
   const filteredResorts = useMemo(() => {
     return resorts.filter((r) => {
       const cat = r.category || 'downhill';
       if (cat === 'downhill' && !showDownhill) return false;
       if (cat === 'nordic' && !showNordic) return false;
       if (cat === 'heli_cat' && !showHeliCat) return false;
-      if (cat === 'backcountry' && !showBackcountry) return false;
-      if (cat === 'informal' && !showInformal) return false;
 
       const passMatch = r.pass_networks.some((p) => selectedPasses.includes(p));
       if (!passMatch) return false;
 
       if (minVertical > 0 && (r.vertical_drop_ft === null || r.vertical_drop_ft < minVertical)) return false;
       if (minAcreage > 0 && r.skiable_acres < minAcreage) return false;
-      if (onlySnowIncoming && (r.weather?.snowfall_72h_in ?? 0) <= 0) return false;
 
       if (selectedRegionFilter !== 'All') {
         if (selectedRegionFilter === 'Rockies' && !['Wyoming', 'Utah', 'Colorado', 'Montana', 'Idaho'].includes(r.region)) return false;
         if (selectedRegionFilter === 'Pacific NW' && !['Washington', 'California', 'British Columbia'].includes(r.region)) return false;
         if (selectedRegionFilter === 'US East' && !['Vermont', 'New York', 'Maine', 'New Hampshire'].includes(r.region)) return false;
-        if (selectedRegionFilter === 'Alps' && !['France', 'Switzerland', 'Austria', 'Germany'].includes(r.country)) return false;
-        if (selectedRegionFilter === 'Dolomites' && r.country !== 'Italy') return false;
-        if (selectedRegionFilter === 'Scandinavia' && !['Norway', 'Sweden', 'Finland'].includes(r.country)) return false;
+        if (selectedRegionFilter === 'Alps' && !['France', 'Switzerland', 'Austria', 'Italy'].includes(r.country)) return false;
         if (selectedRegionFilter === 'Japan' && r.country !== 'Japan') return false;
-        if (selectedRegionFilter === 'South America' && !['Chile', 'Argentina', 'New Zealand', 'Australia'].includes(r.country)) return false;
       }
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        if (!r.name.toLowerCase().includes(q) && !r.region.toLowerCase().includes(q) && !r.country.toLowerCase().includes(q)) {
-          return false;
-        }
+        const matchesName = r.name.toLowerCase().includes(q);
+        const matchesRegion = r.region.toLowerCase().includes(q);
+        const matchesCountry = r.country.toLowerCase().includes(q);
+        if (!matchesName && !matchesRegion && !matchesCountry) return false;
       }
 
-    return true;
+      return true;
     });
-  }, [resorts, selectedPasses, minVertical, minAcreage, onlySnowIncoming, selectedRegionFilter, searchQuery, showDownhill, showNordic, showHeliCat, showBackcountry, showInformal]);
+  }, [resorts, selectedPasses, minVertical, minAcreage, selectedRegionFilter, searchQuery, showDownhill, showNordic, showHeliCat]);
 
   // Sorted Featured Resorts
   const sortedFeaturedResorts = useMemo(() => {
     const list = [...filteredResorts];
-    if (sortBy === 'snow') {
-      list.sort((a, b) => (b.weather?.snowfall_72h_in ?? 0) - (a.weather?.snowfall_72h_in ?? 0));
-    } else if (sortBy === 'vert') {
-      list.sort((a, b) => (b.vertical_drop_ft || 0) - (a.vertical_drop_ft || 0));
-    } else if (sortBy === 'acres') {
-      list.sort((a, b) => b.skiable_acres - a.skiable_acres);
-    } else if (sortBy === 'name') {
-      list.sort((a, b) => a.name.localeCompare(b.name));
-    }
+    const multiplier = sortOrder === 'asc' ? 1 : -1;
+    list.sort((a, b) => {
+      if (sortBy === 'snow') {
+        const diff = (a.weather?.snowfall_72h_in ?? 0) - (b.weather?.snowfall_72h_in ?? 0);
+        return diff * multiplier;
+      } else if (sortBy === 'vert') {
+        const diff = (a.vertical_drop_ft || 0) - (b.vertical_drop_ft || 0);
+        return diff * multiplier;
+      } else if (sortBy === 'acres') {
+        const diff = (a.skiable_acres || 0) - (b.skiable_acres || 0);
+        return diff * multiplier;
+      } else {
+        return a.name.localeCompare(b.name) * multiplier;
+      }
+    });
     return list;
-  }, [filteredResorts, sortBy]);
+  }, [filteredResorts, sortBy, sortOrder]);
 
   // Resorts in current map viewport
   const visibleResorts = useMemo(() => {
     if (!viewportBounds) return sortedFeaturedResorts;
     const [west, south, east, north] = viewportBounds;
-    const inBounds = sortedFeaturedResorts.filter((r) => {
+    return sortedFeaturedResorts.filter((r) => {
       const inLng = west <= east ? r.lng >= west && r.lng <= east : r.lng >= west || r.lng <= east;
       const inLat = r.lat >= south && r.lat <= north;
       return inLng && inLat;
     });
-    return inBounds;
   }, [sortedFeaturedResorts, viewportBounds]);
 
-  // Global OSM ski areas in current viewport or matching search
+  // Visible Global Areas (from deduplicated OpenSkiData points)
   const visibleGlobalAreas = useMemo(() => {
-    if (!globalFeaturesRef.current || globalFeaturesRef.current.length === 0) return [];
-    let list = globalFeaturesRef.current;
-
-    list = list.filter((f) => {
-      const cat = f.properties.category || 'downhill';
-      if (cat === 'downhill' && !showDownhill) return false;
-      if (cat === 'nordic' && !showNordic) return false;
-      if (cat === 'heli_cat' && !showHeliCat) return false;
-      if (cat === 'backcountry' && !showBackcountry) return false;
-      if (cat === 'informal' && !showInformal) return false;
-
-      // Pass network filter
-      const passes: PassNetwork[] = f.properties.pass_networks || ['Independent'];
-      const passMatch = passes.some((p) => selectedPasses.includes(p));
-      if (!passMatch) return false;
-
-      return true;
+    if (!viewportBounds || !showGlobalPoints) return [];
+    const [west, south, east, north] = viewportBounds;
+    const list = globalFeaturesRef.current.filter((f) => {
+      const coords = f.geometry?.coordinates;
+      if (!coords) return false;
+      const [lng, lat] = coords;
+      const inLng = west <= east ? lng >= west && lng <= east : lng >= west || lng <= east;
+      const inLat = lat >= south && lat <= north;
+      return inLng && inLat;
     });
-
-    if (searchQuery.trim().length >= 1) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter((f) => {
-        const p = f.properties;
-        return (
-          p.name?.toLowerCase().includes(q) ||
-          p.region?.toLowerCase().includes(q) ||
-          p.country?.toLowerCase().includes(q)
-        );
-      });
-    }
-
-    if (minVertical > 0) {
-      list = list.filter((f) => (f.properties.vertical_ft || 0) >= minVertical);
-    }
-    if (minAcreage > 0) {
-      list = list.filter((f) => (f.properties.skiable_acres || 0) >= minAcreage);
-    }
-
-    if (selectedRegionFilter !== 'All') {
-      list = list.filter((f) => {
-        const p = f.properties;
-        const c = p.country || '';
-        const reg = p.region || '';
-        if (selectedRegionFilter === 'Rockies') return ['United States', 'USA', 'Canada'].includes(c) && ['Wyoming', 'Utah', 'Colorado', 'Montana', 'Idaho', 'Alberta', 'BC'].some(r => reg.includes(r));
-        if (selectedRegionFilter === 'Pacific NW') return ['Washington', 'California', 'Oregon', 'British Columbia'].some(r => reg.includes(r));
-        if (selectedRegionFilter === 'US East') return ['Vermont', 'New York', 'Maine', 'New Hampshire', 'Pennsylvania'].some(r => reg.includes(r));
-        if (selectedRegionFilter === 'Alps') return ['France', 'Switzerland', 'Austria', 'Germany'].includes(c);
-        if (selectedRegionFilter === 'Dolomites') return c === 'Italy';
-        if (selectedRegionFilter === 'Scandinavia') return ['Norway', 'Sweden', 'Finland'].includes(c);
-        if (selectedRegionFilter === 'Japan') return c === 'Japan';
-        if (selectedRegionFilter === 'South America') return ['Chile', 'Argentina', 'New Zealand', 'Australia'].includes(c);
-        return true;
-      });
-    }
-
-    if (mountainListTab === 'in_view' && viewportBounds) {
-      const [west, south, east, north] = viewportBounds;
-      list = list.filter((f) => {
-        const coords = f.geometry?.coordinates;
-        if (!coords || typeof coords[0] !== 'number' || typeof coords[1] !== 'number' || isNaN(coords[0]) || isNaN(coords[1])) return false;
-        const [lng, lat] = coords;
-        const inLng = west <= east ? lng >= west && lng <= east : lng >= west || lng <= east;
-        const inLat = lat >= south && lat <= north;
-        return inLng && inLat;
-      });
-    }
-
-    if (sortBy === 'vert') {
-      return [...list].sort((a, b) => (b.properties.vertical_ft || 0) - (a.properties.vertical_ft || 0)).slice(0, 100);
-    } else if (sortBy === 'acres') {
-      return [...list].sort((a, b) => (b.properties.skiable_acres || 0) - (a.properties.skiable_acres || 0)).slice(0, 100);
-    } else if (sortBy === 'name') {
-      return [...list].sort((a, b) => (a.properties.name || '').localeCompare(b.properties.name || '')).slice(0, 100);
-    }
     return list.slice(0, 100);
-  }, [viewportBounds, mountainListTab, searchQuery, globalSkiAreasCount, sortBy, minVertical, minAcreage, selectedRegionFilter, selectedPasses, showDownhill, showNordic, showHeliCat, showBackcountry, showInformal]);
-
-  // LIVE SEARCH MATCHES ACROSS ALL CATEGORIES WITH INSTANT ZOOM
-  const allSearchMatches = useMemo(() => {
-    if (!searchQuery.trim() || searchQuery.trim().length < 1) return [];
-    const q = searchQuery.toLowerCase().trim();
-    const results: Array<{
-      id: string;
-      name: string;
-      country: string;
-      region: string;
-      category: SkiActivityCategory;
-      lat: number;
-      lng: number;
-      vertical_ft: number | null;
-      skiable_acres: number;
-      isFeatured: boolean;
-      rawProps?: any;
-    }> = [];
-
-    // 1. Check loaded resorts (Featured, Heli/Cat, Backcountry)
-    for (const r of resorts) {
-      const cat = r.category || 'downhill';
-      if (cat === 'downhill' && !showDownhill) continue;
-      if (cat === 'nordic' && !showNordic) continue;
-      if (cat === 'heli_cat' && !showHeliCat) continue;
-      if (cat === 'backcountry' && !showBackcountry) continue;
-      if (cat === 'informal' && !showInformal) continue;
-
-      if (selectedPasses.length < 5) {
-        const passes: PassNetwork[] = r.pass_networks || ['Independent'];
-        if (!passes.some((p) => selectedPasses.includes(p))) continue;
-      }
-
-      if (
-        r.name.toLowerCase().includes(q) ||
-        r.region.toLowerCase().includes(q) ||
-        r.country.toLowerCase().includes(q)
-      ) {
-        results.push({
-          id: r.id,
-          name: r.name,
-          country: r.country,
-          region: r.region,
-          category: cat,
-          lat: r.lat,
-          lng: r.lng,
-          vertical_ft: r.vertical_drop_ft,
-          skiable_acres: r.skiable_acres,
-          isFeatured: true,
-        });
-      }
-    }
-
-    // 2. Check all global OSM features
-    if (allGlobalFeaturesRef.current && allGlobalFeaturesRef.current.length > 0) {
-      for (const f of allGlobalFeaturesRef.current) {
-        const p = f.properties;
-        const cat = p.category || 'downhill';
-        if (cat === 'downhill' && !showDownhill) continue;
-        if (cat === 'nordic' && !showNordic) continue;
-        if (cat === 'heli_cat' && !showHeliCat) continue;
-        if (cat === 'backcountry' && !showBackcountry) continue;
-        if (cat === 'informal' && !showInformal) continue;
-
-        if (selectedPasses.length < 5) {
-          const passes: PassNetwork[] = p.pass_networks || ['Independent'];
-          if (!passes.some((pass) => selectedPasses.includes(pass))) continue;
-        }
-
-        const name = p.name || '';
-        const reg = p.region || '';
-        const c = p.country || '';
-
-        if (
-          name.toLowerCase().includes(q) ||
-          reg.toLowerCase().includes(q) ||
-          c.toLowerCase().includes(q)
-        ) {
-          if (!results.some((m) => m.id === String(p.id) || m.name.toLowerCase() === name.toLowerCase())) {
-            results.push({
-              id: String(p.id),
-              name,
-              country: c,
-              region: reg,
-              category: cat,
-              lat: p.lat,
-              lng: p.lng,
-              vertical_ft: p.vertical_ft,
-              skiable_acres: p.skiable_acres || 0,
-              isFeatured: false,
-              rawProps: p,
-            });
-          }
-        }
-        if (results.length >= 25) break;
-      }
-    }
-
-    return results;
-  }, [searchQuery, resorts, selectedPasses, showDownhill, showNordic, showHeliCat, showBackcountry, showInformal]);
-
-  // Current resort's real trails
-  const currentResortTrails = useMemo(() => {
-    if (!selectedResort) return [];
-    return REAL_RESORT_TRAILS[selectedResort.id] || [];
-  }, [selectedResort]);
-
-  const filteredTrails = useMemo(() => {
-    if (activeTrailFilter === 'all') return currentResortTrails;
-    if (activeTrailFilter === 'lifts') return currentResortTrails.filter((t) => t.properties.kind === 'lift');
-    return currentResortTrails.filter((t) => t.properties.difficulty === activeTrailFilter);
-  }, [currentResortTrails, activeTrailFilter]);
+  }, [viewportBounds, showGlobalPoints, globalFeaturesRef.current]);
 
   /* =========================================================================
-     MAP MOUNT & SETUP (HIGH-RESOLUTION BRIGHT TOPO + NATURAL 1.0X 3D TERRAIN)
+     LOCALHOST TRAILS STREAMING ENGINE
+     ========================================================================= */
+
+  const fetchOverpassBbox = useCallback(async (south: number, west: number, north: number, east: number) => {
+    if (north - south > 1.2 || east - west > 1.5) return;
+    const bboxKey = `${south.toFixed(2)},${west.toFixed(2)},${north.toFixed(2)},${east.toFixed(2)}`;
+    if (lastFetchedBboxKeyRef.current === bboxKey) return;
+
+    if (activeOverpassAbortRef.current) {
+      activeOverpassAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    activeOverpassAbortRef.current = controller;
+    lastFetchedBboxKeyRef.current = bboxKey;
+
+    try {
+      const res = await fetch(`/api/trails?bbox=${west},${south},${east},${north}`, {
+        signal: controller.signal,
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.features || !data.features.length || !mapRef.current) return;
+
+      for (const f of data.features) {
+        liveFeaturesMapRef.current.set(String(f.id || f.properties?.id), f);
+      }
+
+      if (liveFeaturesMapRef.current.size > 4500) {
+        const keys = Array.from(liveFeaturesMapRef.current.keys());
+        const toDelete = keys.slice(0, keys.length - 3500);
+        toDelete.forEach((k) => liveFeaturesMapRef.current.delete(k));
+      }
+
+      const src = mapRef.current.getSource('live-pistes-vector') as GeoJSONSource;
+      if (src) {
+        src.setData({
+          type: 'FeatureCollection',
+          features: Array.from(liveFeaturesMapRef.current.values()),
+        });
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
+      console.warn('Local bbox query fallback:', err);
+    }
+  }, []);
+
+  const fetchOverpassBboxRef = useRef(fetchOverpassBbox);
+  useEffect(() => {
+    fetchOverpassBboxRef.current = fetchOverpassBbox;
+  }, [fetchOverpassBbox]);
+
+  /* =========================================================================
+     MAP INITIALIZATION (MapLibre GL)
      ========================================================================= */
 
   useEffect(() => {
@@ -2566,13 +1955,15 @@ export default function App() {
         version: 8,
         glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
         sources: {
-          // Clean, high-resolution, vibrant topographic basemap
-          'topo-tiles': {
+          // 1. Esri World Imagery Satellite (Crisp 3D photo terrain)
+          'satellite-tiles': {
             type: 'raster',
-            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],
+            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
             tileSize: 256,
-            attribution: 'Esri Topo',
+            maxzoom: 18,
+            attribution: 'Esri Satellite',
           },
+          // 2. OpenStreetMap (Clean vector roads, towns & trails)
           'osm-tiles': {
             type: 'raster',
             tiles: [
@@ -2581,14 +1972,26 @@ export default function App() {
               'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
             ],
             tileSize: 256,
+            maxzoom: 19,
             attribution: 'OpenStreetMap',
           },
-          'satellite-tiles': {
+          // 3. Esri World Physical Map (Berann painted relief up to zoom 8)
+          'physical-tiles': {
             type: 'raster',
-            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}'],
             tileSize: 256,
-            attribution: 'Esri Satellite',
+            maxzoom: 8,
+            attribution: 'Esri Physical / Berann',
           },
+          // 4. Esri World Topo Map (Clean contours, summits, elevations & passes)
+          'topo-tiles': {
+            type: 'raster',
+            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],
+            tileSize: 256,
+            maxzoom: 19,
+            attribution: 'Esri Topo',
+          },
+          // 5. AWS Terrarium DEM (3D elevation mesh)
           'terrain-dem': {
             type: 'raster-dem',
             tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
@@ -2596,339 +1999,318 @@ export default function App() {
             tileSize: 256,
             maxzoom: 15,
           },
-          // REAL OPENSTREETMAP WORLDWIDE SKI PISTES & LIFTS LAYER
-          'opensnowmap-pistes': {
-            type: 'raster',
-            tiles: ['https://tiles.opensnowmap.org/pistes/{z}/{x}/{y}.png'],
+          // 6. Dedicated DEM source for painted hillshade relief
+          'hillshade-dem': {
+            type: 'raster-dem',
+            tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+            encoding: 'terrarium',
             tileSize: 256,
-            maxzoom: 18,
-            attribution: 'OpenSnowMap.org / OpenStreetMap',
+            maxzoom: 15,
           },
         },
         layers: [
-          // Crisp, high-contrast, fully saturated bright topo layer (no grayed-out filters)
-          {
-            id: 'basemap-topo',
-            type: 'raster',
-            source: 'topo-tiles',
-            layout: { visibility: 'visible' },
-            paint: {
-              'raster-contrast': 0.12,
-              'raster-saturation': 0.15,
-              'raster-brightness-min': 0.05,
-            },
-          },
-          {
-            id: 'basemap-osm',
-            type: 'raster',
-            source: 'osm-tiles',
-            layout: { visibility: 'none' },
-            paint: {
-              'raster-contrast': 0.1,
-            },
-          },
+          // Base 1: Satellite 3D
           {
             id: 'basemap-satellite',
             type: 'raster',
             source: 'satellite-tiles',
-            layout: { visibility: 'none' },
+            layout: { visibility: basemapMode === 'satellite' ? 'visible' : 'none' },
+            paint: { 'raster-contrast': 0.1 },
+          },
+          // Base 2: OpenStreetMap
+          {
+            id: 'basemap-osm',
+            type: 'raster',
+            source: 'osm-tiles',
+            layout: { visibility: basemapMode === 'osm' ? 'visible' : 'none' },
+            paint: { 'raster-contrast': 0.06, 'raster-saturation': 0.05, 'raster-brightness-min': 0.02 },
+          },
+          // Base 3A: Berann Physical Landcover (Visible at globe & regional zooms)
+          {
+            id: 'basemap-physical',
+            type: 'raster',
+            source: 'physical-tiles',
+            layout: { visibility: basemapMode === 'topo' ? 'visible' : 'none' },
             paint: {
-              'raster-contrast': 0.1,
+              'raster-contrast': 0.08,
+              'raster-saturation': -0.15,
+              'raster-brightness-min': 0.08,
+              'raster-opacity': ['interpolate', ['linear'], ['zoom'], 6, 1.0, 8, 1.0, 9.5, 0.0] as any,
             },
           },
-          // Soft, natural hillshade (subtle shadows, transparent ambient, no mud)
+          // Base 3B: Topo Map Contours (Cross-fades in as you zoom in)
+          {
+            id: 'basemap-topo',
+            type: 'raster',
+            source: 'topo-tiles',
+            layout: { visibility: basemapMode === 'topo' ? 'visible' : 'none' },
+            paint: {
+              'raster-contrast': 0.10,
+              'raster-saturation': 0.12,
+              'raster-brightness-min': 0.05,
+              'raster-opacity': ['interpolate', ['linear'], ['zoom'], 6.5, 0.0, 8, 0.5, 9.5, 1.0] as any,
+            },
+          },
+          // Berann/Niehues Multi-Color Painted Hillshade
+          {
+            id: 'alpine-painted-hillshade',
+            type: 'hillshade',
+            source: 'hillshade-dem',
+            layout: { visibility: basemapMode === 'topo' ? 'visible' : 'none' },
+            paint: {
+              'hillshade-exaggeration': 0.45,
+              'hillshade-illumination-direction': 315,
+              'hillshade-illumination-anchor': 'map',
+              'hillshade-shadow-color': 'rgba(44, 62, 80, 0.42)',
+              'hillshade-highlight-color': 'rgba(255, 255, 255, 0.75)',
+              'hillshade-accent-color': 'rgba(74, 107, 83, 0.22)',
+            },
+          },
+          // Subtle hillshade for OSM mode
           {
             id: 'hillshade-relief',
             type: 'hillshade',
-            source: 'terrain-dem',
-            layout: { visibility: 'visible' },
+            source: 'hillshade-dem',
+            layout: { visibility: basemapMode === 'osm' ? 'visible' : 'none' },
             paint: {
-              'hillshade-exaggeration': 0.38,
-              'hillshade-shadow-color': 'rgba(51, 65, 85, 0.45)',
-              'hillshade-highlight-color': 'rgba(255, 255, 255, 0.95)',
-              'hillshade-accent-color': 'rgba(148, 163, 184, 0.35)',
-            },
-          },
-          // Real OpenStreetMap Ski Trails Raster Overlay
-          {
-            id: 'opensnowmap-layer',
-            type: 'raster',
-            source: 'opensnowmap-pistes',
-            layout: { visibility: 'visible' },
-            paint: {
-              'raster-opacity': 0.92,
+              'hillshade-exaggeration': 0.35,
+              'hillshade-shadow-color': 'rgba(51, 65, 85, 0.40)',
+              'hillshade-highlight-color': 'rgba(255, 255, 255, 0.90)',
+              'hillshade-accent-color': 'rgba(148, 163, 184, 0.30)',
             },
           },
         ],
       },
-      // Default to North Up (bearing: 0) so all text, town labels, and contour lines are right-side up
-      center: [-110.849, 43.593],
+      center: [-110.849, 43.593], // Default to Jackson Hole, WY
       zoom: 12.6,
-      pitch: 45,
-      bearing: 0,
+      pitch: 50,
+      bearing: 180,
       maxPitch: 85,
     });
 
     mapRef.current = map;
 
-    // Listen to camera rotation and pitch to track orientation and gyroscope HUD
-    map.on('rotate', () => {
-      setMapBearing(Math.round(map.getBearing()));
-    });
-    map.on('pitch', () => {
-      setMapPitch(Math.round(map.getPitch()));
-    });
+    map.on('rotate', () => setMapBearing(Math.round(map.getBearing())));
+    map.on('pitch', () => setMapPitch(Math.round(map.getPitch())));
 
-    // Update viewport bounds when map moves to power the "In Viewport" mountain list
+    const updateScale = () => {
+      try {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        const latRad = (center.lat * Math.PI) / 180;
+        const metersPerPixel = (156543.03392 * Math.cos(latRad)) / Math.pow(2, zoom);
+        const targetPixels = 90;
+        const targetMeters = metersPerPixel * targetPixels;
+        if (targetMeters >= 1000) {
+          const km = Math.round(targetMeters / 1000);
+          setMapScale({ distStr: `${km} km`, barWidth: Math.round(km * 1000 / metersPerPixel) });
+        } else {
+          const m = Math.round(targetMeters / 10) * 10;
+          setMapScale({ distStr: `${m} m`, barWidth: Math.round(m / metersPerPixel) });
+        }
+      } catch (_) {}
+    };
+
     const updateBounds = () => {
       try {
         const b = map.getBounds();
         setViewportBounds([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
-      } catch (err) {
-        // map not ready
+      } catch (_) {}
+    };
+
+    const handleMapMoveEnd = () => {
+      updateBounds();
+      updateScale();
+      const z = map.getZoom();
+      if (z >= 9.5 && fetchOverpassBboxRef.current) {
+        try {
+          const center = map.getCenter();
+          const b = map.getBounds();
+          const rawHalfLng = Math.abs(b.getEast() - b.getWest()) / 2;
+          const rawHalfLat = Math.abs(b.getNorth() - b.getSouth()) / 2;
+          const halfLng = Math.min(0.35, Math.max(0.08, rawHalfLng));
+          const halfLat = Math.min(0.28, Math.max(0.06, rawHalfLat));
+          fetchOverpassBboxRef.current(
+            center.lat - halfLat,
+            center.lng - halfLng,
+            center.lat + halfLat,
+            center.lng + halfLng
+          );
+        } catch (_) {}
       }
     };
-    map.on('moveend', updateBounds);
+
+    map.on('moveend', handleMapMoveEnd);
 
     map.on('load', () => {
+      // Ensure canvas is 100% painted immediately on start
+      map.resize();
       updateBounds();
-      // 1. Natural 0.5x 3D Terrain relief (subtle, clean, and stable)
+      updateScale();
+
+      // Enable 3D Terrain mesh (0.7x natural mountain relief)
       try {
-        map.setTerrain({ source: 'terrain-dem', exaggeration: 0.5 });
+        map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 });
       } catch (e) {
         console.warn('SetTerrain error:', e);
       }
 
-      // 2. Ski slopes footprint / boundary source
-      map.addSource('resort-boundary-geojson', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'Polygon',
-                coordinates: [RESORT_BOUNDARIES['jackson-hole'] || []],
-              },
-              properties: { id: 'jackson-hole' },
-            },
-          ],
-        },
-      });
-
-      // Shaded ski area footprint extent
-      map.addLayer({
-        id: 'ski-boundary-fill',
-        type: 'fill',
-        source: 'resort-boundary-geojson',
-        paint: {
-          'fill-color': '#0284C7',
-          'fill-opacity': 0.12,
-        },
-      });
-
-      map.addLayer({
-        id: 'ski-boundary-line',
-        type: 'line',
-        source: 'resort-boundary-geojson',
-        paint: {
-          'line-color': '#0284C7',
-          'line-width': 2.5,
-          'line-dasharray': [3, 2],
-          'line-opacity': 0.8,
-        },
-      });
-
-      // 3. Resorts GeoJSON source
-      map.addSource('resorts-geojson', {
+      // 1. Localhost SQLite Real Vector Ski Trails Source & Layers
+      map.addSource('live-pistes-vector', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
       });
 
-      // 4. Real named vector trails source
-      map.addSource('pistes-lifts-geojson', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: REAL_RESORT_TRAILS['jackson-hole'] as any,
-        },
-      });
-
-      // Halo for resorts with incoming snow
+      // Outer Casing line (makes trails pop cleanly over terrain)
       map.addLayer({
-        id: 'resorts-snow-halo',
-        type: 'circle',
-        source: 'resorts-geojson',
-        filter: ['>', ['get', 'snow_72h'], 0],
-        paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 8, 6, 16, 12, 28],
-          'circle-color': '#0284C7',
-          'circle-opacity': 0.25,
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#0284C7',
-        },
-      });
-
-      // Resort node markers
-      map.addLayer({
-        id: 'resort-nodes',
-        type: 'circle',
-        source: 'resorts-geojson',
-        paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['get', 'vertical_drop_ft'],
-            1000,
-            5,
-            3000,
-            8.5,
-            5000,
-            13,
-            9000,
-            17,
-          ],
-          'circle-color': ['get', 'pass_color'],
-          'circle-stroke-width': 2.5,
-          'circle-stroke-color': '#ffffff',
-        },
-      });
-
-      // Monospace label
-      map.addLayer({
-        id: 'resort-labels',
-        type: 'symbol',
-        source: 'resorts-geojson',
-        minzoom: 5.5,
-        layout: {
-          'text-field': ['get', 'label_text'],
-          'text-size': 11,
-          'text-font': ['Open Sans Semibold'],
-          'text-offset': [0, 1.4],
-          'text-anchor': 'top',
-        },
-        paint: {
-          'text-color': '#0f172a',
-          'text-halo-color': '#ffffff',
-          'text-halo-width': 3,
-        },
-      });
-
-      // REAL VECTOR TRAIL LAYERS (High contrast on bright terrain)
-      map.addLayer({
-        id: 'vector-piste-casing',
+        id: 'live-pistes-casing',
         type: 'line',
-        source: 'pistes-lifts-geojson',
-        filter: ['==', ['get', 'kind'], 'piste'],
+        source: 'live-pistes-vector',
         paint: {
-          'line-color': '#ffffff',
-          'line-width': 5.5,
-          'line-opacity': 0.9,
+          'line-color': '#FAF8F3',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2.5, 14, 4.5, 17, 7],
+          'line-opacity': 0.85,
         },
       });
 
+      // Color lines (coded by difficulty)
       map.addLayer({
-        id: 'vector-piste-lines',
+        id: 'live-pistes-lines',
         type: 'line',
-        source: 'pistes-lifts-geojson',
-        filter: ['==', ['get', 'kind'], 'piste'],
+        source: 'live-pistes-vector',
         paint: {
           'line-color': [
             'match',
             ['get', 'difficulty'],
-            'novice',
-            '#16a34a',
-            'intermediate',
-            '#2563eb',
-            'advanced',
-            '#0f172a',
-            'expert',
-            '#dc2626',
-            '#64748b',
+            'novice', '#2E7D32',       // Alpine Green
+            'intermediate', '#1565C0', // Cobalt Blue
+            'advanced', '#1C1B18',     // Black Diamond
+            'expert', '#B84A39',       // Double Black Vermilion
+            '#8A847C',
           ],
-          'line-width': 3.5,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.5, 14, 2.8, 17, 5],
+          'line-opacity': 0.95,
         },
       });
 
+      // Aerialways / Lifts (Terracotta dashed line)
       map.addLayer({
-        id: 'vector-lift-lines',
+        id: 'live-pistes-lifts',
         type: 'line',
-        source: 'pistes-lifts-geojson',
+        source: 'live-pistes-vector',
         filter: ['==', ['get', 'kind'], 'lift'],
         paint: {
-          'line-color': '#E05216',
-          'line-width': 3.5,
-          'line-dasharray': [2, 2],
+          'line-color': '#B84A39',
+          'line-width': 2.5,
+          'line-dasharray': [3, 2],
         },
       });
 
-      // Interactive trail names draped on mountain
+      // Upright 3D Trail & Lift Names
       map.addLayer({
-        id: 'vector-trail-labels',
+        id: 'live-pistes-labels',
         type: 'symbol',
-        source: 'pistes-lifts-geojson',
-        minzoom: 12,
+        source: 'live-pistes-vector',
+        minzoom: 12.5,
         layout: {
           'symbol-placement': 'line-center',
           'text-field': ['get', 'name'],
           'text-size': 11,
-          'text-font': ['Open Sans Semibold'],
-          'text-offset': [0, 0.8],
-          'text-allow-overlap': false,
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-keep-upright': true,
+          'text-rotation-alignment': 'map',
+          'text-pitch-alignment': 'viewport',
         },
         paint: {
-          'text-color': '#0f172a',
-          'text-halo-color': '#ffffff',
-          'text-halo-width': 3,
+          'text-color': '#1C1B18',
+          'text-halo-color': '#FAF8F3',
+          'text-halo-width': 2,
         },
       });
 
-      // 5. WORLDWIDE SKI AREAS (OpenSkiData & OSM - 5,900+ active operating downhill resorts)
+      // 2. Curated Seed Resorts Source (Concentric Ring Markers)
+      const curatedFeatures = GLOBAL_SKI_ATLAS.map((r) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [r.lng, r.lat] },
+        properties: {
+          id: r.id,
+          name: r.name,
+          category: r.category || 'downhill',
+          primary_pass: r.pass_networks[0] || 'Independent',
+          pass_color: PASS_COLORS[r.pass_networks[0] || 'Independent'],
+        },
+      }));
+
+      map.addSource('resorts-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: curatedFeatures as any },
+      });
+
+      // Curated Outer Ring
+      map.addLayer({
+        id: 'resorts-outer-ring',
+        type: 'circle',
+        source: 'resorts-source',
+        paint: {
+          'circle-radius': 9,
+          'circle-color': ['get', 'pass_color'],
+          'circle-opacity': 0.22,
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': ['get', 'pass_color'],
+        },
+      });
+
+      // Curated Inner Ring
+      map.addLayer({
+        id: 'resorts-inner-dot',
+        type: 'circle',
+        source: 'resorts-source',
+        paint: {
+          'circle-radius': 3.5,
+          'circle-color': ['get', 'pass_color'],
+        },
+      });
+
+      // Curated Single Label
+      map.addLayer({
+        id: 'resorts-labels',
+        type: 'symbol',
+        source: 'resorts-source',
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-size': 11,
+          'text-offset': [0, 1.2],
+          'text-anchor': 'top',
+        },
+        paint: {
+          'text-color': '#1C1B18',
+          'text-halo-color': '#FAF8F3',
+          'text-halo-width': 2,
+        },
+      });
+
+      // 3. Global OpenSkiData Points Source
       map.addSource('global-ski-areas-source', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
         cluster: true,
         clusterMaxZoom: 10,
-        clusterRadius: 45,
+        clusterRadius: 40,
       });
 
-      // Cluster circle markers
       map.addLayer({
         id: 'global-clusters',
         type: 'circle',
         source: 'global-ski-areas-source',
         filter: ['has', 'point_count'],
         paint: {
-          'circle-color': [
-            'step',
-            ['get', 'point_count'],
-            '#0284C7',
-            20,
-            '#059669',
-            50,
-            '#D97706',
-            150,
-            '#E05216',
-          ],
-          'circle-radius': [
-            'step',
-            ['get', 'point_count'],
-            15,
-            20,
-            19,
-            100,
-            25,
-            500,
-            32,
-          ],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
-          'circle-opacity': 0.9,
+          'circle-color': '#2E5A44',
+          'circle-opacity': 0.8,
+          'circle-radius': ['step', ['get', 'point_count'], 14, 20, 18, 50, 22],
         },
       });
 
-      // Cluster count number
       map.addLayer({
         id: 'global-cluster-count',
         type: 'symbol',
@@ -2936,41 +2318,25 @@ export default function App() {
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
-          'text-font': ['Open Sans Semibold'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': 11,
         },
-        paint: {
-          'text-color': '#ffffff',
-        },
+        paint: { 'text-color': '#FAF8F3' },
       });
 
-      // Individual unclustered ski area node
       map.addLayer({
         id: 'global-unclustered-point',
         type: 'circle',
         source: 'global-ski-areas-source',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-color': [
-            'match',
-            ['get', 'category'],
-            'nordic',
-            '#059669', // Emerald for Nordic XC
-            'heli_cat',
-            '#7C3AED', // Purple for Cat & Heli Ski
-            'backcountry',
-            '#0284C7', // Sky Blue for Backcountry / Touring
-            'informal',
-            '#D97706', // Amber Gold for Wild / Non-Resort (Mauna Kea)
-            '#E05216', // Orange default for Alpine Downhill
-          ],
-          'circle-radius': 5.5,
-          'circle-stroke-width': 1.8,
-          'circle-stroke-color': '#ffffff',
+          'circle-color': '#3B627E',
+          'circle-radius': 4.5,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#FAF8F3',
         },
       });
 
-      // Individual unclustered resort label
       map.addLayer({
         id: 'global-unclustered-label',
         type: 'symbol',
@@ -2979,87 +2345,37 @@ export default function App() {
         minzoom: 8.5,
         layout: {
           'text-field': ['get', 'name'],
-          'text-size': 10.5,
-          'text-font': ['Open Sans Semibold'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-size': 10,
           'text-offset': [0, 1.2],
           'text-anchor': 'top',
         },
         paint: {
-          'text-color': '#0f172a',
-          'text-halo-color': '#ffffff',
-          'text-halo-width': 2.5,
+          'text-color': '#5C5852',
+          'text-halo-color': '#FAF8F3',
+          'text-halo-width': 1.5,
         },
       });
 
-      // Cluster click: zoom in
-      map.on('click', 'global-clusters', (e) => {
-        const features = map.queryRenderedFeatures(e.point, { layers: ['global-clusters'] });
-        const clusterId = features[0]?.properties?.cluster_id;
-        const source = map.getSource('global-ski-areas-source') as any;
-        if (source && clusterId !== undefined) {
-          source.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
-            if (err) return;
-            const geom = features[0]?.geometry;
-            const pt = extractPointCoordinates(geom) || (e.lngLat ? [e.lngLat.lng, e.lngLat.lat] : null);
-            if (!pt) return;
-            safeEaseTo(map, {
-              center: pt,
-              zoom: Math.min(zoom, 14),
-              duration: 800,
-            });
-          });
-        }
-      });
-
-      // Global Point click: pan to point & live weather
-      map.on('click', 'global-unclustered-point', (e) => {
-        if (!e.features || !e.features[0]) return;
-        const props = e.features[0].properties;
-        const pt = extractPointCoordinates(e.features[0].geometry) || [e.lngLat.lng, e.lngLat.lat];
-        handleSelectGlobalResortRef.current?.(props, pt);
-      });
-
-      // Global Label click: pan to point & live weather
-      map.on('click', 'global-unclustered-label', (e) => {
-        if (!e.features || !e.features[0]) return;
-        const props = e.features[0].properties;
-        const pt = extractPointCoordinates(e.features[0].geometry) || [e.lngLat.lng, e.lngLat.lat];
-        handleSelectGlobalResortRef.current?.(props, pt);
-      });
-
-      map.on('mouseenter', 'global-clusters', () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-      map.on('mouseleave', 'global-clusters', () => {
-        map.getCanvas().style.cursor = '';
-      });
-      map.on('mouseenter', 'global-unclustered-point', () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-      map.on('mouseleave', 'global-unclustered-point', () => {
-        map.getCanvas().style.cursor = '';
-      });
-      map.on('mouseenter', 'global-unclustered-label', () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-      map.on('mouseleave', 'global-unclustered-label', () => {
-        map.getCanvas().style.cursor = '';
-      });
-
-      map.on('click', 'resort-nodes', (e) => {
+      // Click on curated resort
+      map.on('click', 'resorts-outer-ring', (e) => {
         if (!e.features || !e.features[0]) return;
         const id = e.features[0].properties?.id;
-        if (id) handleSelectResortRef.current?.(id);
+        if (id) handleSelectResort(id);
       });
 
-      map.on('mouseenter', 'resort-nodes', () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-      map.on('mouseleave', 'resort-nodes', () => {
-        map.getCanvas().style.cursor = '';
+      // Click on global ski area
+      map.on('click', 'global-unclustered-point', (e) => {
+        if (!e.features || !e.features[0]) return;
+        const p = e.features[0].properties;
+        const coords = (e.features[0].geometry as any).coordinates;
+        handleSelectGlobalResort(p, coords);
       });
 
       setMapLoaded(true);
+
+      // Trigger initial trail fetch for Jackson Hole
+      fetchOverpassBbox(43.55, -110.90, 43.62, -110.80);
     });
 
     return () => {
@@ -3068,59 +2384,18 @@ export default function App() {
   }, []);
 
   /* =========================================================================
-     MAP DATA SYNC
+     VIEWPORT CENTERING VIA PADDING (Ensures globe is always dead-center)
      ========================================================================= */
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-    const source = map.getSource('resorts-geojson') as GeoJSONSource;
-    if (!source) return;
-
-    const features = filteredResorts.map((r) => {
-      const primaryPass = r.pass_networks[0] || 'Independent';
-      const passColor = PASS_COLORS[primaryPass];
-      const snow72 = r.weather?.snowfall_72h_in ?? 0;
-      const labelText = `${r.name.toUpperCase()}${
-        r.vertical_drop_ft ? ` · ${r.vertical_drop_ft.toLocaleString()}'` : ''
-      }${snow72 > 0 ? ` · ${snow72}"` : ''}`;
-
-      return {
-        type: 'Feature' as const,
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [r.lng, r.lat],
-        },
-        properties: {
-          id: r.id,
-          name: r.name,
-          region: r.region,
-          vertical_drop_ft: r.vertical_drop_ft,
-          pass_network: primaryPass,
-          pass_color: passColor,
-          snow_72h: snow72,
-          label_text: labelText,
-        },
-      };
+    const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 384 : 320) : 0;
+    const rightPad = selectedResort ? (window.innerWidth >= 768 ? 384 : 336) : 0;
+    mapRef.current.easeTo({
+      padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
+      duration: 300,
     });
-
-    source.setData({
-      type: 'FeatureCollection',
-      features,
-    });
-  }, [filteredResorts, mapLoaded]);
-
-  /* =========================================================================
-     OPENSTREETMAP REAL TRAILS LAYER VISIBILITY
-     ========================================================================= */
-
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-    if (map.getLayer('opensnowmap-layer')) {
-      map.setLayoutProperty('opensnowmap-layer', 'visibility', showRealTrailsLayer ? 'visible' : 'none');
-    }
-  }, [showRealTrailsLayer, mapLoaded]);
+  }, [leftDockOpen, selectedResort, mapLoaded]);
 
   /* =========================================================================
      BASEMAP STYLE TOGGLE
@@ -3129,372 +2404,288 @@ export default function App() {
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
-    const layers: BasemapMode[] = ['topo', 'osm', 'satellite'];
-    layers.forEach((mode) => {
-      const id = `basemap-${mode}`;
-      if (map.getLayer(id)) {
-        map.setLayoutProperty(id, 'visibility', mode === basemapMode ? 'visible' : 'none');
-      }
-    });
+
+    // Satellite
+    if (map.getLayer('basemap-satellite')) {
+      map.setLayoutProperty('basemap-satellite', 'visibility', basemapMode === 'satellite' ? 'visible' : 'none');
+    }
+    // OpenStreetMap
+    if (map.getLayer('basemap-osm')) {
+      map.setLayoutProperty('basemap-osm', 'visibility', basemapMode === 'osm' ? 'visible' : 'none');
+    }
+    if (map.getLayer('hillshade-relief')) {
+      map.setLayoutProperty('hillshade-relief', 'visibility', basemapMode === 'osm' ? 'visible' : 'none');
+    }
+    // Alpine Topo
+    if (map.getLayer('basemap-physical')) {
+      map.setLayoutProperty('basemap-physical', 'visibility', basemapMode === 'topo' ? 'visible' : 'none');
+    }
+    if (map.getLayer('basemap-topo')) {
+      map.setLayoutProperty('basemap-topo', 'visibility', basemapMode === 'topo' ? 'visible' : 'none');
+    }
+    if (map.getLayer('alpine-painted-hillshade')) {
+      map.setLayoutProperty('alpine-painted-hillshade', 'visibility', basemapMode === 'topo' ? 'visible' : 'none');
+    }
   }, [basemapMode, mapLoaded]);
 
   /* =========================================================================
-     TERRAIN EXAGGERATION CONTROL
+     60 FPS KEYBOARD CAMERA FLIGHT ENGINE (WASD + QE + ARROW KEYS)
      ========================================================================= */
 
-  const handleExaggerationChange = (val: number) => {
-    setExaggeration(val);
-    if (!mapRef.current) return;
+  useEffect(() => {
+    if (!mapLoaded || !mapRef.current) return;
+    const map = mapRef.current;
+
     try {
-      mapRef.current.setTerrain({ source: 'terrain-dem', exaggeration: val });
-    } catch (e) {
-      console.warn('SetTerrain error:', e);
-    }
-  };
+      map.keyboard.disable();
+    } catch (_) {}
 
-  /* =========================================================================
-     GOOGLE EARTH-STYLE GYROSCOPE NAVIGATION HANDLERS
-     Left-click drag changes bearing & pitch; double-click resets to 2D North
-     ========================================================================= */
+    const activeKeys = new Set<string>();
+    let animationFrameId: number | null = null;
+    let lastTimestamp: number | null = null;
+    let lockedElevation: number | null = null;
 
-  const handleGyroMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return; // Only standard left-click
-    e.preventDefault();
-    if (!mapRef.current) return;
+    const NAVIGATION_KEYS = new Set([
+      'KeyW',
+      'KeyA',
+      'KeyS',
+      'KeyD',
+      'KeyQ',
+      'KeyE',
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowLeft',
+      'ArrowRight',
+    ]);
 
-    isDraggingGyroRef.current = true;
-    setIsGyroDragging(true);
-
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startBearing = mapRef.current.getBearing();
-    const startPitch = mapRef.current.getPitch();
-
-    const onMouseMove = (ev: MouseEvent) => {
-      if (!isDraggingGyroRef.current || !mapRef.current) return;
-      const dx = ev.clientX - startX;
-      const dy = ev.clientY - startY;
-
-      // Horizontal drag rotates bearing
-      let newBearing = (startBearing - dx * 0.75) % 360;
-      if (newBearing < 0) newBearing += 360;
-
-      // Vertical drag tilts pitch: dragging up tilts to 3D perspective, dragging down flattens to 2D
-      let newPitch = Math.max(0, Math.min(85, startPitch - dy * 0.65));
-
-      mapRef.current.setBearing(newBearing);
-      mapRef.current.setPitch(newPitch);
-      setMapBearing(Math.round(newBearing));
-      setMapPitch(Math.round(newPitch));
-      setIs3D(newPitch > 10);
+    const isInputFocused = () => {
+      const el = document.activeElement;
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || (el as HTMLElement).isContentEditable;
     };
 
-    const onMouseUp = () => {
-      isDraggingGyroRef.current = false;
-      setIsGyroDragging(false);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  }, []);
-
-  const handleGyroDoubleClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!mapRef.current) return;
-    safeEaseTo(mapRef.current, {
-      pitch: 0,
-      bearing: 0,
-      duration: 650,
-    });
-    setMapBearing(0);
-    setMapPitch(0);
-    setIs3D(false);
-  }, []);
-
-  const handleNudge = useCallback((dBearing: number, dPitch: number) => {
-    if (!mapRef.current) return;
-    const curBearing = mapRef.current.getBearing();
-    const curPitch = mapRef.current.getPitch();
-    let newBearing = (curBearing + dBearing) % 360;
-    if (newBearing < 0) newBearing += 360;
-    const newPitch = Math.max(0, Math.min(85, curPitch + dPitch));
-
-    safeEaseTo(mapRef.current, {
-      bearing: newBearing,
-      pitch: newPitch,
-      duration: 300,
-    });
-    setMapBearing(Math.round(newBearing));
-    setMapPitch(Math.round(newPitch));
-    setIs3D(newPitch > 10);
-  }, []);
-
-  /* =========================================================================
-     CLICK-TO-ZOOM: 3D BIRD'S-EYE PERSPECTIVE FRAMING SKI SLOPES EXTENT
-     ========================================================================= */
-
-  const handleSelectResort = useCallback(
-    (resortId: string) => {
-      setSelectedResortId(resortId);
-      const resort = resorts.find((r) => r.id === resortId);
-      if (!resort || !mapRef.current) return;
-
-      if (
-        typeof resort.lng !== 'number' ||
-        typeof resort.lat !== 'number' ||
-        isNaN(resort.lng) ||
-        isNaN(resort.lat) ||
-        !isFinite(resort.lng) ||
-        !isFinite(resort.lat)
-      ) {
-        console.warn('Skipping flyTo due to invalid resort coordinates:', resort);
+    const flightStep = (timestamp: number) => {
+      if (!mapRef.current || activeKeys.size === 0) {
+        animationFrameId = null;
+        lastTimestamp = null;
         return;
       }
 
-      setIs3D(true);
+      if (lastTimestamp === null) lastTimestamp = timestamp;
+      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.08);
+      lastTimestamp = timestamp;
 
-      // Pan directly to resort point, keeping North Up (bearing: 0) so text is never upside down
-      safeFlyTo(mapRef.current, {
-        center: [resort.lng, resort.lat],
-        zoom: 12.8,
-        pitch: is3D ? 45 : 0,
-        bearing: 0,
-        duration: 1800,
-        essential: true,
-      });
+      const isShift = activeKeys.has('ShiftLeft') || activeKeys.has('ShiftRight');
 
-      // Update vector trails for selected mountain
-      const trails = REAL_RESORT_TRAILS[resort.id] || [];
-      const source = mapRef.current.getSource('pistes-lifts-geojson') as GeoJSONSource;
-      if (source) {
-        source.setData({
-          type: 'FeatureCollection',
-          features: trails as any,
+      let pitchDelta = 0;
+      let rotateBearing = 0;
+      let zoomDelta = 0;
+
+      // W/S: Tilt (pitch)
+      if (activeKeys.has('KeyW')) pitchDelta += 1;
+      if (activeKeys.has('KeyS')) pitchDelta -= 1;
+
+      // A/D: Rotate (yaw)
+      if (activeKeys.has('KeyA')) rotateBearing += 1;
+      if (activeKeys.has('KeyD')) rotateBearing -= 1;
+
+      // Q/E: Zoom
+      if (activeKeys.has('KeyQ')) zoomDelta -= 1;
+      if (activeKeys.has('KeyE')) zoomDelta += 1;
+
+      if (pitchDelta !== 0) {
+        const curPitch = map.getPitch();
+        const pitchSpeed = (isShift ? 2.0 : 1.0) * 36;
+        const nextPitch = Math.max(0, Math.min(85, curPitch + pitchDelta * pitchSpeed * dt));
+        map.setPitch(nextPitch);
+        setMapPitch(Math.round(nextPitch));
+        setIs3D(nextPitch > 10);
+      }
+
+      if (rotateBearing !== 0) {
+        const curBearing = map.getBearing();
+        const bearingSpeed = (isShift ? 2.0 : 1.0) * 42;
+        const nextBearing = (curBearing + rotateBearing * bearingSpeed * dt) % 360;
+        const normalized = nextBearing < 0 ? nextBearing + 360 : nextBearing;
+        map.setBearing(normalized);
+        setMapBearing(Math.round(normalized));
+      }
+
+      if (zoomDelta !== 0) {
+        lockedElevation = null;
+        const curZoom = map.getZoom();
+        const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.35;
+        const nextZoom = Math.max(1.0, Math.min(19.0, curZoom + zoomDelta * zoomSpeed * dt));
+        map.setZoom(nextZoom);
+      }
+
+      // Arrow keys: Terrain panning with fixed altitude lock
+      let moveForward = 0;
+      let moveStrafe = 0;
+
+      if (activeKeys.has('ArrowUp')) moveForward += 1;
+      if (activeKeys.has('ArrowDown')) moveForward -= 1;
+      if (activeKeys.has('ArrowRight')) moveStrafe += 1;
+      if (activeKeys.has('ArrowLeft')) moveStrafe -= 1;
+
+      if (moveForward !== 0 || moveStrafe !== 0) {
+        const len = Math.hypot(moveForward, moveStrafe);
+        moveForward /= len;
+        moveStrafe /= len;
+
+        const curZoom = map.getZoom();
+        const curCenter = map.getCenter();
+        const curBearing = map.getBearing();
+        const bearingRad = (curBearing * Math.PI) / 180;
+
+        const speedMps = 240 * Math.pow(2, 14 - curZoom) * (isShift ? 2.0 : 1.0);
+        const distMeters = speedMps * dt;
+
+        const sinB = Math.sin(bearingRad);
+        const cosB = Math.cos(bearingRad);
+        const deltaEastMeters = (sinB * moveForward + cosB * moveStrafe) * distMeters;
+        const deltaNorthMeters = (cosB * moveForward - sinB * moveStrafe) * distMeters;
+
+        const latRad = (curCenter.lat * Math.PI) / 180;
+        const metersPerDegLat = 111320;
+        const metersPerDegLng = 111320 * Math.max(0.1, Math.cos(latRad));
+
+        const deltaLat = deltaNorthMeters / metersPerDegLat;
+        const deltaLng = deltaEastMeters / metersPerDegLng;
+
+        const nextLat = Math.max(-85, Math.min(85, curCenter.lat + deltaLat));
+        const nextLng = curCenter.lng + deltaLng;
+
+        if (lockedElevation === null) {
+          try {
+            map.setCenterClampedToGround(false);
+            lockedElevation = map.getCenterElevation();
+          } catch (_) {
+            lockedElevation = 0;
+          }
+        }
+
+        map.jumpTo({
+          center: [nextLng, nextLat],
+          elevation: lockedElevation,
         });
       }
 
-      // Update boundary polygon footprint
-      const boundaryCoords = RESORT_BOUNDARIES[resort.id];
-      const boundarySource = mapRef.current.getSource('resort-boundary-geojson') as GeoJSONSource;
-      if (boundarySource) {
-        if (boundaryCoords && boundaryCoords.length > 0) {
-          boundarySource.setData({
-            type: 'FeatureCollection',
-            features: [
-              {
-                type: 'Feature',
-                geometry: {
-                  type: 'Polygon',
-                  coordinates: [boundaryCoords],
-                },
-                properties: { id: resort.id },
-              },
-            ],
-          });
-        } else {
-          boundarySource.setData({
-            type: 'FeatureCollection',
-            features: [],
-          });
-        }
-      }
-    },
-    [resorts, is3D]
-  );
+      animationFrameId = requestAnimationFrame(flightStep);
+    };
 
-  // Focus a specific trail or chute
-  const handleFocusTrail = (trail: PisteFeature) => {
-    if (!mapRef.current) return;
-    setSelectedTrailId(trail.properties.id);
-    const coords = trail.geometry.coordinates;
-    const midIndex = Math.floor(coords.length / 2);
-    const targetPt = coords[midIndex] || coords[0];
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isInputFocused()) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-    if (
-      !targetPt ||
-      typeof targetPt[0] !== 'number' ||
-      typeof targetPt[1] !== 'number' ||
-      isNaN(targetPt[0]) ||
-      isNaN(targetPt[1]) ||
-      !isFinite(targetPt[0]) ||
-      !isFinite(targetPt[1])
-    ) {
-      return;
-    }
+      if (NAVIGATION_KEYS.has(e.code) || e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+        if (NAVIGATION_KEYS.has(e.code)) e.preventDefault();
+        activeKeys.add(e.code);
+        isProgrammaticFlightActive = false;
 
-    safeFlyTo(mapRef.current, {
-      center: targetPt,
-      zoom: 14.8,
-      pitch: is3D ? 48 : 0,
-      bearing: 0,
-      duration: 1600,
-      essential: true,
-    });
-  };
-
-  /* =========================================================================
-     GLOBAL SKI AREA SELECTION & PAN TO POINT (NORTH UP)
-     ========================================================================= */
-
-  handleSelectResortRef.current = handleSelectResort;
-
-  const handleSelectGlobalResort = useCallback(
-    async (props: any, rawCoords: any) => {
-      let lng: number | undefined;
-      let lat: number | undefined;
-
-      if (Array.isArray(rawCoords) && typeof rawCoords[0] === 'number' && typeof rawCoords[1] === 'number') {
-        lng = rawCoords[0];
-        lat = rawCoords[1];
-      } else if (rawCoords && typeof rawCoords === 'object') {
-        const pt = extractPointCoordinates(rawCoords.coordinates ? rawCoords : { type: 'Point', coordinates: rawCoords });
-        if (pt) [lng, lat] = pt;
-      }
-
-      if ((lng === undefined || lat === undefined || isNaN(lng) || isNaN(lat)) && props) {
-        if (props.lng !== undefined && props.lat !== undefined) {
-          const pLng = Number(props.lng);
-          const pLat = Number(props.lat);
-          if (isFinite(pLng) && isFinite(pLat) && !isNaN(pLng) && !isNaN(pLat)) {
-            lng = pLng;
-            lat = pLat;
+        if (animationFrameId === null) {
+          try {
+            map.setCenterClampedToGround(false);
+            lockedElevation = map.getCenterElevation();
+          } catch (_) {
+            lockedElevation = 0;
           }
+          lastTimestamp = performance.now();
+          animationFrameId = requestAnimationFrame(flightStep);
         }
       }
+    };
 
-      if (lng === undefined || lat === undefined || isNaN(lng) || isNaN(lat) || !isFinite(lng) || !isFinite(lat)) {
-        console.warn('Invalid coordinates for global resort:', props, rawCoords);
-        return;
+    const handleKeyUp = (e: KeyboardEvent) => {
+      activeKeys.delete(e.code);
+      if (activeKeys.size === 0 && animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+        lastTimestamp = null;
+        lockedElevation = null;
       }
+    };
 
-      const id = props.id ? String(props.id) : `global-${Math.round(lng * 1000)}-${Math.round(lat * 1000)}`;
-      const classified = classifySkiFeature(props, [lng, lat]);
-      const name = props.name || 'Ski Area';
-      const country = props.country || 'Global';
-      const region = props.region || '';
-      const summitElevFt = classified.cleanedSummitFt;
-      const baseElevFt = classified.cleanedBaseFt;
-      const vertFt = classified.cleanedVertFt;
-      const bearing = Number(props.bearing) || 0;
-      const skiableAcres = Number(props.skiable_acres) || 0;
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
 
-      const pass_networks: PassNetwork[] =
-        props.pass_networks && Array.isArray(props.pass_networks) && props.pass_networks.length > 0
-          ? props.pass_networks
-          : getPassNetworksForSkiArea(name, region, country, id);
-
-      const dynamicResort: SkiResort = {
-        id,
-        name,
-        country,
-        region,
-        lat,
-        lng,
-        default_bearing: bearing,
-        base_elev_ft: baseElevFt,
-        summit_elev_ft: summitElevFt,
-        vertical_drop_ft: vertFt,
-        skiable_acres: skiableAcres,
-        pass_networks,
-        infrastructure: classified.infrastructure,
-        archetype: classified.archetype,
-        summary: props.summary || `${name} in ${region ? region + ', ' : ''}${country}. ${classified.infrastructure}`,
-        weather: getNeutralWeather({ base_elev_ft: baseElevFt, summit_elev_ft: summitElevFt } as any),
-        category: classified.category,
-      };
-
-      setResorts((prev) => {
-        const exists = prev.find((r) => r.id === id);
-        if (exists) return prev;
-        return [dynamicResort, ...prev];
-      });
-      setSelectedResortId(id);
-
-      // Pan directly to ski area point, North Up (bearing: 0)
-      safeFlyTo(mapRef.current, {
-        center: [lng, lat],
-        zoom: 13.0,
-        pitch: is3D ? 45 : 0,
-        bearing: 0,
-        duration: 1800,
-        essential: true,
-      });
-
-      // Fetch live weather immediately for this summit
-      const live = await fetchLiveWeather(dynamicResort);
-      if (live) {
-        setResorts((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, weather: live } : r))
-        );
-      }
-    },
-    [is3D]
-  );
-
-  handleSelectGlobalResortRef.current = handleSelectGlobalResort;
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
+    };
+  }, [mapLoaded]);
 
   /* =========================================================================
-     OPENSKIDATA WORLDWIDE DATASET INGESTION (12,000+ SKI AREAS WITH CATEGORIES)
+     INGEST OPENSKIDATA & DEDUPLICATE AGAINST CURATED SEED RESORTS
+     (Guarantees ZERO double names on the map!)
      ========================================================================= */
 
   useEffect(() => {
     let cancelled = false;
-    const fetchGlobalSkiAreas = async () => {
-      setIsFetchingGlobal(true);
+    const fetchGlobal = async () => {
       try {
-        const res = await fetch('https://tiles.openskimap.org/geojson/ski_areas.geojson');
-        if (!res.ok) throw new Error('Failed to fetch OpenSkiData');
-        const data = await res.json();
-        if (cancelled) return;
+        // Load local curated JSON first, fallback to CDN
+        let data: any = null;
+        try {
+          const localRes = await fetch('/data/global_ski_areas.json');
+          if (localRes.ok) data = await localRes.json();
+        } catch (_) {}
 
-        const formattedFeatures: any[] = [];
-        let downhillTotal = 0;
-        let nordicTotal = 0;
-        let heliCatTotal = HELI_CAT_OPERATIONS.length;
-        let backcountryTotal = BACKCOUNTRY_ZONES.length;
-        let informalTotal = 0;
+        if (!data) {
+          const remoteRes = await fetch('https://tiles.openskimap.org/geojson/ski_areas.geojson');
+          if (remoteRes.ok) data = await remoteRes.json();
+        }
 
-        for (const f of (data.features || [])) {
+        if (cancelled || !data || !data.features) return;
+
+        // Curated resort definitions for duplicate suppression
+        const curatedList = GLOBAL_SKI_ATLAS.map((r) => ({
+          name: r.name.toLowerCase().trim(),
+          lat: r.lat,
+          lng: r.lng,
+        }));
+
+        const features: any[] = [];
+        let dhTotal = 0;
+        let nordTotal = 0;
+
+        for (const f of data.features) {
           const pt = extractPointCoordinates(f.geometry);
           if (!pt) continue;
           const p = f.properties;
           if (!p || !p.name) continue;
+
+          // Check if already in curated seed list -> SKIP to prevent double label!
+          const pName = p.name.toLowerCase().trim();
+          const pLng = pt[0];
+          const pLat = pt[1];
+
+          let isDuplicate = false;
+          for (const cr of curatedList) {
+            const dLat = Math.abs(pLat - cr.lat);
+            const dLng = Math.abs(pLng - cr.lng);
+            const dist = Math.hypot(dLat, dLng);
+            const nameMatch = pName.includes(cr.name) || cr.name.includes(pName);
+            if (dist < 0.05 || (nameMatch && dist < 0.15)) {
+              isDuplicate = true;
+              break;
+            }
+          }
+          if (isDuplicate) continue;
 
           const place = p.places?.[0]?.localized?.en;
           const country = place?.country || '';
           const region = place?.region || '';
           const classified = classifySkiFeature(p, pt);
 
-          if (classified.category === 'downhill') downhillTotal++;
-          else if (classified.category === 'nordic') nordicTotal++;
-          else if (classified.category === 'heli_cat') heliCatTotal++;
-          else if (classified.category === 'backcountry') backcountryTotal++;
-          else if (classified.category === 'informal') informalTotal++;
+          if (classified.category === 'downhill') dhTotal++;
+          else if (classified.category === 'nordic') nordTotal++;
 
-          // Match with featured atlas resort or known pass networks
-          const matchedAtlas = GLOBAL_SKI_ATLAS.find((a) => {
-            if (a.id === p.id) return true;
-            const aName = a.name.toLowerCase();
-            const pName = (p.name || '').toLowerCase();
-            return aName === pName || (aName.length > 5 && pName.includes(aName));
-          });
-
-          const pass_networks: PassNetwork[] = matchedAtlas
-            ? matchedAtlas.pass_networks
-            : getPassNetworksForSkiArea(p.name, region, country, p.id);
-
-          const primaryPass = pass_networks[0] || 'Independent';
-          const passColor = PASS_COLORS[primaryPass];
-
-          formattedFeatures.push({
+          features.push({
             type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: pt,
-            },
+            geometry: { type: 'Point', coordinates: pt },
             properties: {
               id: p.id,
               name: p.name,
@@ -3505,262 +2696,159 @@ export default function App() {
               category: classified.category,
               archetype: classified.archetype,
               infrastructure: classified.infrastructure,
-              vertical_ft: matchedAtlas ? matchedAtlas.vertical_drop_ft : classified.cleanedVertFt,
-              summit_elev_ft: matchedAtlas ? matchedAtlas.summit_elev_ft : classified.cleanedSummitFt,
-              base_elev_ft: matchedAtlas ? matchedAtlas.base_elev_ft : classified.cleanedBaseFt,
-              skiable_acres: matchedAtlas ? matchedAtlas.skiable_acres : 0,
-              pass_networks,
-              primary_pass: primaryPass,
-              pass_color: passColor,
-              bearing: Math.round(p.viewportHint?.bearing || 180),
-              website: p.websites?.[0] || '',
+              vertical_ft: classified.cleanedVertFt,
+              summit_elev_ft: classified.cleanedSummitFt,
+              base_elev_ft: classified.cleanedBaseFt,
+              skiable_acres: 0,
             },
           });
         }
 
-        // Append curated Cat/Heli operations
-        HELI_CAT_OPERATIONS.forEach((h) => {
-          const passNetworks = h.pass_networks || ['Independent'];
-          const primaryPass = passNetworks[0] || 'Independent';
-          formattedFeatures.push({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [h.lng, h.lat] },
-            properties: {
-              id: h.id,
-              name: h.name,
-              country: h.country,
-              region: h.region,
-              lng: h.lng,
-              lat: h.lat,
-              category: 'heli_cat',
-              archetype: h.archetype,
-              infrastructure: h.infrastructure,
-              vertical_ft: h.vertical_drop_ft,
-              summit_elev_ft: h.summit_elev_ft,
-              base_elev_ft: h.base_elev_ft,
-              skiable_acres: h.skiable_acres,
-              tenure_acres: h.tenure_acres,
-              pass_networks: passNetworks,
-              primary_pass: primaryPass,
-              pass_color: PASS_COLORS[primaryPass],
-              bearing: h.default_bearing,
-            },
-          });
-        });
+        allGlobalFeaturesRef.current = features;
+        globalFeaturesRef.current = features;
+        setCategoryCounts({ downhill: dhTotal, nordic: nordTotal, heli_cat: HELI_CAT_OPERATIONS.length });
 
-        // Append curated Backcountry zones
-        BACKCOUNTRY_ZONES.forEach((b) => {
-          const passNetworks = b.pass_networks || ['Independent'];
-          const primaryPass = passNetworks[0] || 'Independent';
-          formattedFeatures.push({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [b.lng, b.lat] },
-            properties: {
-              id: b.id,
-              name: b.name,
-              country: b.country,
-              region: b.region,
-              lng: b.lng,
-              lat: b.lat,
-              category: 'backcountry',
-              archetype: b.archetype,
-              infrastructure: b.infrastructure,
-              vertical_ft: b.vertical_drop_ft,
-              summit_elev_ft: b.summit_elev_ft,
-              base_elev_ft: b.base_elev_ft,
-              skiable_acres: b.skiable_acres,
-              pass_networks: passNetworks,
-              primary_pass: primaryPass,
-              pass_color: PASS_COLORS[primaryPass],
-              bearing: b.default_bearing,
-            },
-          });
-        });
-
-        allGlobalFeaturesRef.current = formattedFeatures;
-        globalFeaturesRef.current = formattedFeatures;
-        setCategoryCounts({
-          downhill: downhillTotal,
-          nordic: nordicTotal,
-          heli_cat: heliCatTotal,
-          backcountry: backcountryTotal,
-          informal: informalTotal,
-        });
-        setGlobalSkiAreasCount(formattedFeatures.length);
+        // Update GeoJSON source on map
+        if (mapRef.current) {
+          const src = mapRef.current.getSource('global-ski-areas-source') as GeoJSONSource;
+          if (src) src.setData({ type: 'FeatureCollection', features });
+        }
       } catch (err) {
-        console.warn('Could not load OpenSkiData, using expanded built-in atlas:', err);
-      } finally {
-        if (!cancelled) setIsFetchingGlobal(false);
+        console.warn('Could not load global ski areas:', err);
       }
     };
 
-    fetchGlobalSkiAreas();
+    fetchGlobal();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  // SYNC GEOJSON MAP SOURCE WHENEVER FILTERS OR CATEGORY TOGGLES CHANGE (FILTERS THE DOTS ON THE MAP!)
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded || !allGlobalFeaturesRef.current.length) return;
-    const src = mapRef.current.getSource('global-ski-areas-source') as GeoJSONSource;
-    if (!src) return;
-
-    const filtered = allGlobalFeaturesRef.current.filter((f) => {
-      // 1. Category filter
-      const cat = f.properties.category || 'downhill';
-      if (cat === 'downhill' && !showDownhill) return false;
-      if (cat === 'nordic' && !showNordic) return false;
-      if (cat === 'heli_cat' && !showHeliCat) return false;
-      if (cat === 'backcountry' && !showBackcountry) return false;
-      if (cat === 'informal' && !showInformal) return false;
-
-      // 2. Pass network filter (Crucial for filtering map dots to Ikon, Epic, Indy, etc.!)
-      const passes: PassNetwork[] = f.properties.pass_networks || ['Independent'];
-      const passMatch = passes.some((p) => selectedPasses.includes(p));
-      if (!passMatch) return false;
-
-      // 3. Min Vertical filter
-      if (minVertical > 0 && ((f.properties.vertical_ft || 0) < minVertical)) return false;
-
-      // 4. Min Acreage filter
-      if (minAcreage > 0 && ((f.properties.skiable_acres || 0) < minAcreage)) return false;
-
-      // 5. Region filter
-      if (selectedRegionFilter !== 'All') {
-        const reg = f.properties.region || '';
-        const ctry = f.properties.country || '';
-        if (selectedRegionFilter === 'Rockies') {
-          if (!['Wyoming', 'Utah', 'Colorado', 'Montana', 'Idaho', 'Alberta', 'BC'].some(r => reg.includes(r))) return false;
-        } else if (selectedRegionFilter === 'Pacific NW') {
-          if (!['Washington', 'California', 'British Columbia', 'Oregon', 'Alaska'].some(r => reg.includes(r))) return false;
-        } else if (selectedRegionFilter === 'US East') {
-          if (!['Vermont', 'New York', 'Maine', 'New Hampshire', 'Pennsylvania', 'Massachusetts', 'West Virginia'].some(r => reg.includes(r))) return false;
-        } else if (selectedRegionFilter === 'Alps') {
-          if (!['France', 'Switzerland', 'Austria', 'Germany'].includes(ctry)) return false;
-        } else if (selectedRegionFilter === 'Dolomites') {
-          if (ctry !== 'Italy') return false;
-        } else if (selectedRegionFilter === 'Scandinavia') {
-          if (!['Norway', 'Sweden', 'Finland'].includes(ctry)) return false;
-        } else if (selectedRegionFilter === 'Japan') {
-          if (ctry !== 'Japan') return false;
-        } else if (selectedRegionFilter === 'South America') {
-          if (!['Chile', 'Argentina', 'New Zealand', 'Australia'].includes(ctry)) return false;
-        }
-      }
-
-      // 6. Snow incoming filter
-      if (onlySnowIncoming && (f.properties.snow_72h || 0) <= 0) return false;
-
-      // 7. Search query filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const name = (f.properties.name || '').toLowerCase();
-        const reg = (f.properties.region || '').toLowerCase();
-        const ctry = (f.properties.country || '').toLowerCase();
-        if (!name.includes(q) && !reg.includes(q) && !ctry.includes(q)) return false;
-      }
-
-      return true;
-    });
-
-    globalFeaturesRef.current = filtered;
-    src.setData({
-      type: 'FeatureCollection',
-      features: filtered,
-    });
-  }, [
-    showDownhill,
-    showNordic,
-    showHeliCat,
-    showBackcountry,
-    showInformal,
-    selectedPasses,
-    minVertical,
-    minAcreage,
-    selectedRegionFilter,
-    onlySnowIncoming,
-    searchQuery,
-    globalSkiAreasCount,
-    mapLoaded,
-  ]);
-
   /* =========================================================================
-     GLOBAL POINTS VISIBILITY TOGGLE
+     BATCH WEATHER INITIALIZATION ON STARTUP
+     (Pre-populates live snow data for curated resorts immediately without clicking!)
      ========================================================================= */
 
   useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-    const layers = [
-      'global-clusters',
-      'global-cluster-count',
-      'global-unclustered-point',
-      'global-unclustered-label',
-    ];
-    layers.forEach((lyr) => {
-      if (map.getLayer(lyr)) {
-        map.setLayoutProperty(lyr, 'visibility', showGlobalPoints ? 'visible' : 'none');
-      }
-    });
-  }, [showGlobalPoints, mapLoaded]);
+    const batchFetchWeather = async () => {
+      try {
+        // Batch query top 20 curated resorts in a single Open-Meteo call!
+        const targets = resorts.slice(0, 20);
+        const lats = targets.map((r) => r.lat.toFixed(4)).join(',');
+        const lngs = targets.map((r) => r.lng.toFixed(4)).join(',');
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&daily=snowfall_sum,temperature_2m_max&hourly=temperature_2m&timezone=auto`;
 
-  /* =========================================================================
-     GLOBAL SKI AREA SEARCH MATCHES
-     ========================================================================= */
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        const dataList = Array.isArray(data) ? data : [data];
 
-  const globalSearchMatches = useMemo(() => {
-    if (!searchQuery.trim() || searchQuery.trim().length < 2) return [];
-    const q = searchQuery.toLowerCase();
-    return globalFeaturesRef.current
-      .filter((f) => {
-        const p = f.properties;
-        return (
-          p.name.toLowerCase().includes(q) ||
-          p.country.toLowerCase().includes(q) ||
-          p.region.toLowerCase().includes(q)
+        setResorts((prev) =>
+          prev.map((r, idx) => {
+            const item = dataList[idx];
+            if (!item || !item.daily) return r;
+
+            const dailySnow: number[] = item.daily.snowfall_sum || [];
+            const snow72cm = (dailySnow[0] || 0) + (dailySnow[1] || 0) + (dailySnow[2] || 0);
+            const snow72in = Math.round((snow72cm / 2.54) * 10) / 10;
+            const curTempC = Math.round(item.hourly?.temperature_2m?.[0] ?? -3);
+            const curTempF = Math.round((curTempC * 9) / 5 + 32);
+
+            return {
+              ...r,
+              weather: {
+                ...getNeutralWeather(r),
+                snowfall_72h_in: snow72in,
+                snowfall_72h_cm: Math.round(snow72cm * 10) / 10,
+                current_temp_f: curTempF,
+                current_temp_c: curTempC,
+                is_live: true,
+                last_updated: 'Just now',
+              },
+            };
+          })
         );
-      })
-      .slice(0, 15);
-  }, [searchQuery, globalSkiAreasCount]);
+      } catch (_) {}
+    };
+
+    batchFetchWeather();
+  }, []);
 
   /* =========================================================================
-     LIVE METEOROLOGICAL FETCH (REAL OPEN-METEO DATA)
+     SELECTION HANDLERS WITH HEMISPHERE-AWARE 65° 3D SUN ANGLE
      ========================================================================= */
 
-  const updateResortWeather = async (resort: SkiResort) => {
+  const handleSelectResort = async (id: string) => {
+    setSelectedResortId(id);
+    const resort = resorts.find((r) => r.id === id);
+    if (!resort || !mapRef.current) return;
+
+    // Hemisphere-aware bearing: South-facing (180°) in Northern Hemisphere, North-facing (0°) in Southern Hemisphere
+    const isSouthHemisphere = resort.lat < 0;
+    const targetBearing = resort.default_bearing || (isSouthHemisphere ? 0 : 180);
+
+    safeFlyTo(mapRef.current, {
+      center: [resort.lng, resort.lat],
+      zoom: 13.2,
+      pitch: 62,
+      bearing: targetBearing,
+      duration: 1600,
+      essential: true,
+    });
+
+    // Stream trails for this mountain AND adjacent mountains in bounding box
+    if (fetchOverpassBboxRef.current) {
+      fetchOverpassBboxRef.current(
+        resort.lat - 0.22,
+        resort.lng - 0.25,
+        resort.lat + 0.22,
+        resort.lng + 0.25
+      );
+    }
+
+    // Fetch deep weather for dossier
     const live = await fetchLiveWeather(resort);
     if (live) {
-      setResorts((prev) =>
-        prev.map((r) => (r.id === resort.id ? { ...r, weather: live } : r))
+      setResorts((prev) => prev.map((r) => (r.id === id ? { ...r, weather: live } : r)));
+    }
+  };
+
+  const handleSelectGlobalResort = async (p: any, coords: [number, number]) => {
+    const id = p.id || `global-${Math.round(coords[0] * 1000)}-${Math.round(coords[1] * 1000)}`;
+    setSelectedResortId(id);
+
+    const isSouth = coords[1] < 0;
+    safeFlyTo(mapRef.current, {
+      center: [coords[0], coords[1]],
+      zoom: 13.0,
+      pitch: 60,
+      bearing: isSouth ? 0 : 180,
+      duration: 1600,
+      essential: true,
+    });
+
+    if (fetchOverpassBboxRef.current) {
+      fetchOverpassBboxRef.current(
+        coords[1] - 0.20,
+        coords[0] - 0.22,
+        coords[1] + 0.20,
+        coords[0] + 0.22
       );
     }
   };
 
-  useEffect(() => {
-    if (selectedResort && !selectedResort.weather?.is_live) {
-      updateResortWeather(selectedResort);
+  const handleDeselectResort = () => {
+    setSelectedResortId(null);
+  };
+
+  const handleSortClick = (type: 'vert' | 'acres' | 'name' | 'snow') => {
+    if (sortBy === type) {
+      setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'));
+    } else {
+      setSortBy(type);
+      setSortOrder(type === 'name' ? 'asc' : 'desc');
     }
-  }, [selectedResortId]);
-
-  useEffect(() => {
-    const fetchInitial = async () => {
-      const targets = resorts.slice(0, 8);
-      for (const t of targets) {
-        const live = await fetchLiveWeather(t);
-        if (live) {
-          setResorts((prev) =>
-            prev.map((r) => (r.id === t.id ? { ...r, weather: live } : r))
-          );
-        }
-      }
-    };
-    fetchInitial();
-  }, []);
-
-  /* =========================================================================
-     FORMATTING HELPERS
-     ========================================================================= */
+  };
 
   const formatVert = (ft: number | null | undefined) => {
     if (!ft || ft <= 0) return '—';
@@ -3768,10 +2856,10 @@ export default function App() {
     return `${ft.toLocaleString()}'`;
   };
 
-  const formatAcres = (ac: number | null | undefined) => {
-    if (!ac || ac <= 0) return '—';
-    if (unitsMetric) return `${Math.round(ac * 0.404686).toLocaleString()} ha`;
-    return `${ac.toLocaleString()} ac`;
+  const formatAcres = (acres: number | null | undefined) => {
+    if (!acres || acres <= 0) return '—';
+    if (unitsMetric) return `${Math.round(acres * 0.404686).toLocaleString()} ha`;
+    return `${acres.toLocaleString()} ac`;
   };
 
   const formatSnow = (inches: number) => {
@@ -3779,48 +2867,31 @@ export default function App() {
     return `${inches}"`;
   };
 
-  const formatTemp = (f: number) => {
-    if (unitsMetric) return `${Math.round(((f - 32) * 5) / 9)}°C`;
-    return `${f}°F`;
-  };
-
-  const formatWind = (mph: number) => {
-    if (unitsMetric) return `${Math.round(mph * 1.60934)} km/h`;
-    return `${mph} mph`;
-  };
-
   /* =========================================================================
-     RENDER: BRIGHT, CLEAN ALPINE GIS INTERFACE
+     RENDER: EDWARD TUFTE × BERANN DAYLIGHT CARTOGRAPHY
      ========================================================================= */
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-slate-100 text-slate-800 font-sans select-none">
-      {/* 3D MAP CANVAS */}
-      <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-0" />
+    <div className="relative w-screen h-screen overflow-hidden bg-[#F7F4ED] text-[#1C1B18] font-sans select-none">
+      {/* 3D MAP CANVAS (ALWAYS 100% INSET-0, NEVER BLANK ON START) */}
+      <div
+        ref={mapContainerRef}
+        className="absolute inset-0 w-full h-full z-0 bg-[#E8EFF2]"
+      />
 
-      {/* CLEAN BRIGHT TOP BAR */}
-      <header className="absolute top-0 inset-x-0 z-20 h-13 flex items-center justify-between px-4 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Mountain className="w-5 h-5 text-[#E05216]" />
-            <h1 className="text-sm font-bold tracking-tight text-slate-900 font-mono">
-              3D Ski Atlas
-            </h1>
-          </div>
-          <span className="hidden sm:inline-block text-xs text-slate-500 font-mono border-l border-slate-200 pl-3">
-            Global Topography & Trails
-          </span>
+      {/* EDITORIAL TOP BAR (WARM COTTON RAG PAPER & SERIF TITLE - NO VANITY PADDING) */}
+      <header className="absolute top-0 inset-x-0 z-20 h-13 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
+        <div className="flex items-center gap-2.5">
+          <Mountain className="w-5 h-5 text-[#2E5A44]" />
+          <h1 className="text-lg font-bold tracking-tight text-[#1C1B18] font-serif">
+            SkiAtlas
+          </h1>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-mono">
-          <div className="text-[11px] text-slate-500 hidden md:block">
-            {globalSkiAreasCount > 0 ? `${globalSkiAreasCount.toLocaleString()} ski areas loaded` : '5,900+ ski areas loaded'}
-          </div>
-
-          {/* Units */}
+        <div className="flex items-center gap-3 font-mono text-xs">
           <button
             onClick={() => setUnitsMetric(!unitsMetric)}
-            className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-md text-slate-700 shadow-xs transition-colors"
+            className="px-2.5 py-1 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer"
             title="Toggle Metric / Imperial units"
           >
             {unitsMetric ? 'Metric (°C, m)' : 'Imperial (°F, ft)'}
@@ -3828,1214 +2899,656 @@ export default function App() {
         </div>
       </header>
 
-      {/* DOCKED EXPAND BUTTON WHEN LEFT PANEL IS COLLAPSED (CLEAN, 100% VISIBLE, NEVER HALF-HIDDEN) */}
-      {!leftDockOpen && (
-        <button
-          onClick={() => setLeftDockOpen(true)}
-          className="absolute top-16 left-0 z-20 flex items-center gap-2 px-3 py-2 bg-white/95 backdrop-blur-md border border-l-0 border-slate-200 rounded-r-xl shadow-md text-xs font-semibold text-slate-800 hover:text-slate-900 hover:bg-white transition-all cursor-pointer group"
-          title="Open Filters & Mountains"
-        >
-          <Sliders className="w-4 h-4 text-[#E05216] group-hover:scale-110 transition-transform" />
-          <span className="font-mono text-[11px]">Filters & Mountains</span>
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700" />
-        </button>
-      )}
-
-      {/* LEFT FILTER PANEL (FLUSH TO THE LEFT SIDE - NO FLOATING GAPS) */}
+      {/* SLIDING ARCHITECTURAL SKI DIRECTORY TRAY */}
       <div
-        className={`absolute top-13 bottom-0 left-0 z-20 flex flex-col transition-transform duration-300 ease-in-out ${
-          leftDockOpen ? 'w-80 md:w-96 translate-x-0' : 'w-80 md:w-96 -translate-x-full pointer-events-none'
+        className={`absolute top-13 bottom-0 left-0 z-30 flex flex-col transition-transform duration-300 ease-in-out pointer-events-none ${
+          leftDockOpen ? 'w-80 md:w-96 translate-x-0' : 'w-80 md:w-96 -translate-x-full'
         }`}
       >
-        <div className="relative flex flex-col h-full bg-white/98 backdrop-blur-md border-r border-slate-200/90 shadow-xl overflow-hidden">
-          {/* Panel Header */}
-          <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/80 shrink-0">
+        {/* CLEARLY FRAMED ARCHITECTURAL TRAY BODY */}
+        <div className="relative flex flex-col h-full bg-[#F7F4ED] border-r border-[#D6D0C2] shadow-2xl overflow-hidden pointer-events-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-[#D6D0C2] bg-[#F7F4ED] shrink-0">
             <div className="flex items-center gap-2">
-              <Mountain className="w-4 h-4 text-[#E05216]" />
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-800 font-mono">
+              <Mountain className="w-4 h-4 text-[#2E5A44]" />
+              <span className="font-serif text-sm font-bold text-[#1C1B18] tracking-tight">
                 Ski Directory
               </span>
               {activeFiltersCount > 0 && (
-                <span className="bg-[#E05216]/10 text-[#E05216] border border-[#E05216]/30 font-mono text-[9px] px-1.5 py-0.2 rounded-full font-bold">
+                <span className="bg-[#2E5A44] text-[#FAF8F3] font-mono text-[9px] px-1.5 py-0.2 rounded-[2px] font-bold">
                   {activeFiltersCount} active
                 </span>
               )}
             </div>
             <button
               onClick={() => setLeftDockOpen(false)}
-              className="p-1.5 hover:bg-slate-200/80 rounded-md text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-              title="Collapse left panel"
+              className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer"
+              title="Collapse directory tray"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Top Search, Category Toggles, Collapsible Filter Bar & Mode Tabs (Sticky) */}
-          <div className="p-3 border-b border-slate-100 bg-white space-y-2.5 shrink-0 relative">
-            {/* Integrated Search Bar with Instant Floating Zoom Results */}
+          {/* Search, Categories, Sort & Collapsible Filters */}
+          <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-2.5 shrink-0">
+            {/* Search Input */}
             <div className="relative flex items-center">
-              <Search className="absolute left-2.5 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              <Search className="absolute left-2.5 w-3.5 h-3.5 text-[#8A847C] pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search 12,000+ downhill, nordic, cat/heli & wild areas..."
+                placeholder="Search alpine resorts, peaks, regions..."
                 value={searchQuery}
-                onFocus={() => setSearchDropdownOpen(true)}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSearchDropdownOpen(true);
-                }}
-                className="w-full bg-slate-50 hover:bg-slate-100/70 border border-slate-200 rounded-lg pl-8 pr-8 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#E05216] focus:bg-white transition-colors"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-[2px] pl-8 pr-7 py-1 text-xs text-[#1C1B18] placeholder-[#8A847C] font-mono focus:outline-none focus:border-[#2C2A27]"
               />
               {searchQuery && (
                 <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSearchDropdownOpen(false);
-                  }}
-                  className="absolute right-2.5 p-0.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-200 transition-colors cursor-pointer"
-                  title="Clear search"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 text-[#8A847C] hover:text-[#1C1B18]"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
-              )}
-
-              {/* Instant Floating Search Results Dropdown - Direct Click to Zoom! */}
-              {searchDropdownOpen && searchQuery.trim().length >= 1 && (
-                <div className="absolute top-9 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border border-slate-200 rounded-lg shadow-2xl overflow-hidden max-h-72 flex flex-col animate-in fade-in duration-150">
-                  <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[10px] font-mono text-slate-500">
-                    <span>{allSearchMatches.length} matching areas</span>
-                    <span className="text-[#E05216] font-semibold">Click to Zoom ↗</span>
-                  </div>
-                  <div className="overflow-y-auto p-1.5 space-y-1">
-                    {allSearchMatches.length === 0 ? (
-                      <div className="p-3 text-center text-slate-400 text-xs italic">
-                        No ski areas matching "{searchQuery}" in active categories.
-                      </div>
-                    ) : (
-                      allSearchMatches.map((match) => {
-                        const badge = getCategoryBadge(match.category);
-                        return (
-                          <div
-                            key={`search-pop-${match.id}`}
-                            onClick={() => {
-                              if (match.isFeatured || resorts.some((r) => r.id === match.id)) {
-                                handleSelectResort(match.id);
-                              } else {
-                                handleSelectGlobalResort(match.rawProps || match, [match.lng, match.lat]);
-                              }
-                              if (mapRef.current && isFinite(match.lng) && isFinite(match.lat)) {
-                                safeFlyTo(mapRef.current, {
-                                  center: [match.lng, match.lat],
-                                  zoom: 12.8,
-                                  pitch: 45,
-                                  bearing: 0,
-                                  duration: 1600,
-                                  essential: true,
-                                });
-                              }
-                              setSearchDropdownOpen(false);
-                            }}
-                            className="flex items-center justify-between p-2 rounded-md hover:bg-slate-100/90 cursor-pointer transition-colors group border border-transparent hover:border-slate-200"
-                          >
-                            <div className="truncate mr-2">
-                              <div className="font-semibold text-xs text-slate-900 truncate flex items-center gap-1.5">
-                                <span>{match.name}</span>
-                                <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full border ${badge.bg} ${badge.text} ${badge.border}`}>
-                                  {badge.icon} {badge.label}
-                                </span>
-                              </div>
-                              <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1 mt-0.5">
-                                <span>{match.region ? `${match.region}, ` : ''}{match.country}</span>
-                                {match.vertical_ft && match.vertical_ft > 0 && (
-                                  <>
-                                    <span>·</span>
-                                    <span>{formatVert(match.vertical_ft)}</span>
-                                  </>
-                                )}
-                                {match.skiable_acres > 0 && (
-                                  <>
-                                    <span>·</span>
-                                    <span>{formatAcres(match.skiable_acres)}</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <span className="text-[10px] font-mono font-bold text-[#E05216] opacity-80 group-hover:opacity-100 transition-opacity shrink-0">
-                              Zoom ↗
-                            </span>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
               )}
             </div>
 
-            {/* Individual Category Toggles Bar */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-[9px] font-mono text-slate-400 font-semibold uppercase">
-                <span>Categories (Individual Toggles)</span>
-                <button
-                  onClick={() => {
-                    setShowDownhill(true);
-                    setShowNordic(true);
-                    setShowHeliCat(true);
-                    setShowBackcountry(true);
-                    setShowInformal(true);
-                  }}
-                  className="text-[9px] text-slate-500 hover:text-slate-800 underline cursor-pointer"
-                >
-                  All On
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-1">
-                {/* 1. Downhill */}
-                <button
-                  onClick={() => setShowDownhill(!showDownhill)}
-                  className={`flex items-center justify-center gap-1 py-1 px-1 rounded-md text-[10px] font-mono border transition-all cursor-pointer ${
-                    showDownhill
-                      ? 'bg-orange-50 border-orange-300 text-[#E05216] font-bold shadow-2xs'
-                      : 'bg-slate-50/70 border-slate-200 text-slate-400 opacity-60'
-                  }`}
-                  title="Toggle Downhill / Alpine Ski Resorts"
-                >
-                  <span>⛷️ Downhill</span>
-                </button>
-
-                {/* 2. Nordic XC */}
-                <button
-                  onClick={() => setShowNordic(!showNordic)}
-                  className={`flex items-center justify-center gap-1 py-1 px-1 rounded-md text-[10px] font-mono border transition-all cursor-pointer ${
-                    showNordic
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-2xs'
-                      : 'bg-slate-50/70 border-slate-200 text-slate-400 opacity-60'
-                  }`}
-                  title="Toggle Nordic / Cross-Country Trail Networks"
-                >
-                  <span>🎿 Nordic</span>
-                </button>
-
-                {/* 3. Cat & Heli */}
-                <button
-                  onClick={() => setShowHeliCat(!showHeliCat)}
-                  className={`flex items-center justify-center gap-1 py-1 px-1 rounded-md text-[10px] font-mono border transition-all cursor-pointer ${
-                    showHeliCat
-                      ? 'bg-purple-50 border-purple-300 text-purple-800 font-bold shadow-2xs'
-                      : 'bg-slate-50/70 border-slate-200 text-slate-400 opacity-60'
-                  }`}
-                  title="Toggle Guided Snowcat & Helicopter Ski Operations"
-                >
-                  <span>🚁 Cat/Heli</span>
-                </button>
-
-                {/* 4. Backcountry */}
-                <button
-                  onClick={() => setShowBackcountry(!showBackcountry)}
-                  className={`flex items-center justify-center gap-1 py-1 px-1 rounded-md text-[10px] font-mono border transition-all cursor-pointer ${
-                    showBackcountry
-                      ? 'bg-sky-50 border-sky-300 text-sky-800 font-bold shadow-2xs'
-                      : 'bg-slate-50/70 border-slate-200 text-slate-400 opacity-60'
-                  }`}
-                  title="Toggle Backcountry & Ski Touring Zones"
-                >
-                  <span>🏔️ Touring</span>
-                </button>
-
-                {/* 5. Wild & Non-Resort (Mauna Kea) */}
-                <button
-                  onClick={() => setShowInformal(!showInformal)}
-                  className={`col-span-2 flex items-center justify-center gap-1 py-1 px-1.5 rounded-md text-[10px] font-mono border transition-all cursor-pointer ${
-                    showInformal
-                      ? 'bg-amber-50 border-amber-300 text-amber-800 font-bold shadow-2xs'
-                      : 'bg-slate-50/70 border-slate-200 text-slate-400 opacity-60'
-                  }`}
-                  title="Toggle Informal / Wild Snowfields & Non-Resorts (e.g. Mauna Kea)"
-                >
-                  <span>🌋 Wild / Non-Resort</span>
-                </button>
-              </div>
+            {/* Curated Categories: Downhill, Nordic, Cat/Heli (No novelty / wild / touring clutter!) */}
+            <div className="grid grid-cols-3 gap-1">
+              <button
+                onClick={() => setShowDownhill(!showDownhill)}
+                className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  showDownhill
+                    ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] font-bold'
+                    : 'bg-[#F7F4ED] border-[#D6D0C2] text-[#8A847C] opacity-50'
+                }`}
+              >
+                <span>⛷️ Downhill</span>
+              </button>
+              <button
+                onClick={() => setShowNordic(!showNordic)}
+                className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  showNordic
+                    ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] font-bold'
+                    : 'bg-[#F7F4ED] border-[#D6D0C2] text-[#8A847C] opacity-50'
+                }`}
+              >
+                <span>🎿 Nordic</span>
+              </button>
+              <button
+                onClick={() => setShowHeliCat(!showHeliCat)}
+                className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  showHeliCat
+                    ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] font-bold'
+                    : 'bg-[#F7F4ED] border-[#D6D0C2] text-[#8A847C] opacity-50'
+                }`}
+              >
+                <span>🚁 Cat/Heli</span>
+              </button>
             </div>
 
-            {/* Filter Toggle & Sorting Row */}
-            <div className="flex items-center justify-between gap-1 text-[11px] font-mono">
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setFiltersExpanded(!filtersExpanded)}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded-md border text-[11px] font-medium transition-all cursor-pointer ${
-                    filtersExpanded || activeFiltersCount > 0
-                      ? 'bg-[#E05216]/10 border-[#E05216] text-[#E05216] font-semibold'
-                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
-                  }`}
-                  title="Toggle region, pass networks, and elevation/acreage sliders"
-                >
-                  <Sliders className="w-3 h-3 text-[#E05216]" />
-                  <span>Filters</span>
-                  {activeFiltersCount > 0 && (
-                    <span className="bg-[#E05216] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                      {activeFiltersCount}
-                    </span>
-                  )}
-                  <ChevronDown
-                    className={`w-3 h-3 transition-transform ${filtersExpanded ? 'rotate-180' : ''}`}
-                  />
-                </button>
-
-                {activeFiltersCount > 0 && (
+            {/* Sort Row */}
+            <div className="flex items-center justify-between gap-1 text-[10px] font-mono">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-[#8A847C] uppercase tracking-wider font-semibold text-[9px] shrink-0">Sort:</span>
+                <div className="flex items-center gap-0.5 bg-[#FAF8F3] p-0.5 rounded-[2px] border border-[#D6D0C2]">
                   <button
-                    onClick={handleResetFilters}
-                    className="text-[10px] text-slate-500 hover:text-[#E05216] underline transition-colors cursor-pointer"
+                    onClick={() => handleSortClick('vert')}
+                    className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                      sortBy === 'vert' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                    }`}
                   >
-                    Reset
+                    <span>Vert</span>
+                    {sortBy === 'vert' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
                   </button>
-                )}
+                  <button
+                    onClick={() => handleSortClick('acres')}
+                    className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                      sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#2E5A44] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                    }`}
+                  >
+                    <span>Acres</span>
+                    {sortBy === 'acres' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                  </button>
+                  <button
+                    onClick={() => handleSortClick('name')}
+                    className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                      sortBy === 'name' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                    }`}
+                  >
+                    <span>A-Z</span>
+                    {sortBy === 'name' && <span className="text-[8px] ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </button>
+                  <button
+                    onClick={() => handleSortClick('snow')}
+                    className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                      sortBy === 'snow' ? 'bg-[#F7F4ED] text-[#3B627E] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                    }`}
+                  >
+                    <span>Snow</span>
+                    {sortBy === 'snow' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                  </button>
+                </div>
               </div>
 
-              {/* Quick Sort Selector */}
-              <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-md border border-slate-200 text-[10px]">
-                <button
-                  onClick={() => setSortBy('snow')}
-                  className={`px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
-                    sortBy === 'snow' ? 'bg-white text-sky-700 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="Sort by 72h Snowfall"
-                >
-                  Snow
-                </button>
-                <button
-                  onClick={() => setSortBy('vert')}
-                  className={`px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
-                    sortBy === 'vert' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="Sort by Vertical Drop"
-                >
-                  Vert
-                </button>
-                <button
-                  onClick={() => setSortBy('acres')}
-                  className={`px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
-                    sortBy === 'acres' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="Sort by Skiable Acreage"
-                >
-                  Acres
-                </button>
-                <button
-                  onClick={() => setSortBy('name')}
-                  className={`px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
-                    sortBy === 'name' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="Sort Alphabetically (A-Z)"
-                >
-                  A-Z
-                </button>
-              </div>
+              {/* Filters Toggle */}
+              <button
+                onClick={() => setFiltersExpanded(!filtersExpanded)}
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] border text-[10px] transition-all cursor-pointer ${
+                  filtersExpanded || activeFiltersCount > 0
+                    ? 'bg-[#F7F4ED] border-[#2C2A27] text-[#1C1B18] font-bold'
+                    : 'bg-[#F7F4ED] border-[#D6D0C2] text-[#5C5852]'
+                }`}
+              >
+                <Sliders className="w-3 h-3 text-[#2E5A44]" />
+                <span>Filters</span>
+                {activeFiltersCount > 0 && <span>({activeFiltersCount})</span>}
+              </button>
             </div>
 
-            {/* Active Pass Filter Indicator Chips */}
-            {selectedPasses.length < 5 && (
-              <div className="flex items-center flex-wrap gap-1 bg-amber-50/70 p-1.5 rounded-md border border-amber-200/70 text-[10px] font-mono">
-                <span className="text-amber-800 text-[9px] uppercase font-bold">Map Dots Filter:</span>
-                {selectedPasses.map((p) => (
-                  <span
-                    key={p}
-                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-900 font-bold shadow-2xs"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: PASS_COLORS[p] }} />
-                    <span>{p} Only</span>
-                  </span>
-                ))}
-                <button
-                  onClick={() => setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'])}
-                  className="ml-auto text-[9px] text-[#E05216] hover:text-slate-900 underline cursor-pointer font-bold"
-                >
-                  Show All Dots
-                </button>
-              </div>
-            )}
-
-            {/* Collapsible Filter Drawer (Compact & Collapsed by Default) */}
+            {/* Collapsible Tufte Range Sliders & Regions */}
             {filtersExpanded && (
-              <div className="pt-2 border-t border-slate-100 space-y-2.5 animate-in fade-in duration-200">
-                {/* Sliders: Acreage & Vertical Drop */}
-                <div className="space-y-2">
-                  {/* Min Skiable Acreage Slider */}
-                  <div className="space-y-1 bg-slate-50/80 p-2 rounded-lg border border-slate-200">
-                    <div className="flex justify-between items-center text-[10px] font-mono">
-                      <span className="text-slate-600 font-semibold">Min Skiable Acreage</span>
-                      <span className="text-emerald-700 font-bold">{minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="6000"
-                      step="250"
-                      value={minAcreage}
-                      onChange={(e) => setMinAcreage(Number(e.target.value))}
-                      className="w-full accent-emerald-600 cursor-pointer"
-                    />
+              <div className="pt-2 border-t border-[#D6D0C2] space-y-2">
+                {/* Min Vertical Drop Slider */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-[10px] font-mono">
+                    <span className="text-[#5C5852]">Min Vertical</span>
+                    <span className="text-[#1C1B18] font-bold">{minVertical > 0 ? formatVert(minVertical) : 'Any'}</span>
                   </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="4500"
+                    step="250"
+                    value={minVertical}
+                    onChange={(e) => setMinVertical(Number(e.target.value))}
+                    className="w-full tufte-slider cursor-pointer"
+                  />
+                </div>
 
-                  {/* Min Vertical Drop Slider */}
-                  <div className="space-y-1 bg-slate-50/80 p-2 rounded-lg border border-slate-200">
-                    <div className="flex justify-between items-center text-[10px] font-mono">
-                      <span className="text-slate-600 font-semibold">Min Vertical Drop</span>
-                      <span className="text-slate-900 font-bold">{minVertical > 0 ? formatVert(minVertical) : 'Any'}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="5000"
-                      step="250"
-                      value={minVertical}
-                      onChange={(e) => setMinVertical(Number(e.target.value))}
-                      className="w-full accent-[#E05216] cursor-pointer"
-                    />
+                {/* Min Acreage Slider */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-[10px] font-mono">
+                    <span className="text-[#5C5852]">Min Acreage</span>
+                    <span className="text-[#2E5A44] font-bold">{minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}</span>
                   </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="6000"
+                    step="250"
+                    value={minAcreage}
+                    onChange={(e) => setMinAcreage(Number(e.target.value))}
+                    className="w-full tufte-slider cursor-pointer"
+                  />
                 </div>
 
                 {/* Region Jump Pills */}
-                <div>
-                  <div className="text-[10px] font-mono text-slate-400 font-semibold uppercase mb-1">
-                    Region Jump
-                  </div>
-                  <div className="grid grid-cols-3 gap-1">
-                    {[
-                      { label: 'All', value: 'All' },
-                      { label: 'Rockies', value: 'Rockies' },
-                      { label: 'Pacific NW', value: 'Pacific NW' },
-                      { label: 'US East', value: 'US East' },
-                      { label: 'Alps', value: 'Alps' },
-                      { label: 'Dolomites', value: 'Dolomites' },
-                      { label: 'Scandinavia', value: 'Scandinavia' },
-                      { label: 'Japan', value: 'Japan' },
-                      { label: 'S. America', value: 'South America' },
-                    ].map((reg) => (
-                      <button
-                        key={reg.value}
-                        onClick={() => {
-                          setSelectedRegionFilter(reg.value);
-                          if (mapRef.current) {
-                            if (reg.value === 'Rockies') safeFlyTo(mapRef.current, { center: [-110.84, 43.59], zoom: 7, bearing: 0 });
-                            if (reg.value === 'Pacific NW') safeFlyTo(mapRef.current, { center: [-122.9, 50.1], zoom: 7, bearing: 0 });
-                            if (reg.value === 'US East') safeFlyTo(mapRef.current, { center: [-72.8, 44.1], zoom: 7.5, bearing: 0 });
-                            if (reg.value === 'Alps') safeFlyTo(mapRef.current, { center: [7.5, 46.0], zoom: 7, bearing: 0 });
-                            if (reg.value === 'Dolomites') safeFlyTo(mapRef.current, { center: [11.9, 46.5], zoom: 8, bearing: 0 });
-                            if (reg.value === 'Scandinavia') safeFlyTo(mapRef.current, { center: [10.5, 61.5], zoom: 6.5, bearing: 0 });
-                            if (reg.value === 'Japan') safeFlyTo(mapRef.current, { center: [140.7, 42.8], zoom: 7, bearing: 0 });
-                            if (reg.value === 'South America') safeFlyTo(mapRef.current, { center: [-70.2, -33.3], zoom: 7, bearing: 0 });
-                          }
-                        }}
-                        className={`px-1 py-1 rounded text-[10px] font-mono border transition-colors text-center cursor-pointer ${
-                          selectedRegionFilter === reg.value
-                            ? 'bg-[#E05216] text-white border-[#E05216] font-semibold'
-                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {reg.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Pass Type Pills */}
-                <div>
-                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 font-semibold uppercase mb-1">
-                    <span>Pass Networks (Filters Map Dots)</span>
+                <div className="grid grid-cols-3 gap-1 pt-1">
+                  {[
+                    { label: 'All', value: 'All' },
+                    { label: 'Rockies', value: 'Rockies' },
+                    { label: 'Pacific NW', value: 'Pacific NW' },
+                    { label: 'US East', value: 'US East' },
+                    { label: 'Alps', value: 'Alps' },
+                    { label: 'Japan', value: 'Japan' },
+                  ].map((reg) => (
                     <button
-                      onClick={() =>
-                        setSelectedPasses(
-                          selectedPasses.length === 5
-                            ? ['Ikon']
-                            : ['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent']
-                        )
-                      }
-                      className="text-[9px] text-[#E05216] hover:text-slate-900 underline cursor-pointer font-bold"
+                      key={reg.value}
+                      onClick={() => {
+                        setSelectedRegionFilter(reg.value);
+                        if (mapRef.current) {
+                          if (reg.value === 'Rockies') safeFlyTo(mapRef.current, { center: [-110.84, 43.59], zoom: 7, bearing: 180 });
+                          if (reg.value === 'Pacific NW') safeFlyTo(mapRef.current, { center: [-122.9, 50.1], zoom: 7, bearing: 180 });
+                          if (reg.value === 'US East') safeFlyTo(mapRef.current, { center: [-72.8, 44.1], zoom: 7.5, bearing: 180 });
+                          if (reg.value === 'Alps') safeFlyTo(mapRef.current, { center: [7.5, 46.0], zoom: 7, bearing: 180 });
+                          if (reg.value === 'Japan') safeFlyTo(mapRef.current, { center: [140.7, 42.8], zoom: 7, bearing: 180 });
+                        }
+                      }}
+                      className={`px-1.5 py-0.5 text-[9px] font-mono rounded-[2px] border text-center transition-colors cursor-pointer ${
+                        selectedRegionFilter === reg.value
+                          ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#2C2A27]'
+                          : 'bg-[#FAF8F3] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
+                      }`}
                     >
-                      {selectedPasses.length === 5 ? 'Solo Ikon' : 'Select All'}
+                      {reg.label}
                     </button>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'] as PassNetwork[]).map((pass) => {
-                      const active = selectedPasses.includes(pass);
-                      const color = PASS_COLORS[pass];
-                      return (
-                        <button
-                          key={pass}
-                          onClick={() => {
-                            if (selectedPasses.length === 5) {
-                              // If all are selected, clicking one isolates that pass (e.g. click Ikon -> only Ikon dots on map!)
-                              setSelectedPasses([pass]);
-                            } else if (selectedPasses.length === 1 && selectedPasses[0] === pass) {
-                              // If this pass is the only one selected, reset to all
-                              setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent']);
-                            } else {
-                              if (active) {
-                                setSelectedPasses(selectedPasses.filter((p) => p !== pass));
-                              } else {
-                                setSelectedPasses([...selectedPasses, pass]);
-                              }
-                            }
-                          }}
-                          title={`Click to filter map dots and directory to ${pass} Pass`}
-                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono border transition-all cursor-pointer ${
-                            active
-                              ? 'bg-white border-slate-300 text-slate-900 shadow-2xs font-bold ring-1 ring-slate-300'
-                              : 'bg-slate-50/70 border-slate-200/60 text-slate-400 opacity-60 hover:opacity-100'
-                          }`}
-                        >
-                          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                          <span>{pass}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
-
-            {/* Directory Mode Tabs: Featured | In Viewport | Global */}
-            <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-[10px] font-mono">
-              <button
-                onClick={() => setMountainListTab('featured')}
-                className={`py-1 rounded text-center transition-all cursor-pointer ${
-                  mountainListTab === 'featured'
-                    ? 'bg-white text-slate-900 font-bold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Featured ({sortedFeaturedResorts.length})
-              </button>
-              <button
-                onClick={() => setMountainListTab('in_view')}
-                className={`py-1 rounded text-center transition-all cursor-pointer ${
-                  mountainListTab === 'in_view'
-                    ? 'bg-white text-[#E05216] font-bold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Ski areas currently visible inside your map extent"
-              >
-                In View ({visibleResorts.length + (mountainListTab === 'in_view' ? visibleGlobalAreas.length : 0)})
-              </button>
-              <button
-                onClick={() => setMountainListTab('global')}
-                className={`py-1 rounded text-center transition-all cursor-pointer ${
-                  mountainListTab === 'global'
-                    ? 'bg-white text-sky-700 font-bold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="All worldwide ski areas"
-              >
-                All Areas ({globalSkiAreasCount > 0 ? `${globalSkiAreasCount.toLocaleString()}` : '12k+'})
-              </button>
-            </div>
           </div>
 
-          {/* Directory Mountain List: Placed at Top & Fills Full Remaining Height! */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-xs">
-            {/* TAB 1: FEATURED PREMIER RESORTS & OPERATIONS */}
-            {mountainListTab === 'featured' && (
-              <>
-                {sortedFeaturedResorts.length === 0 ? (
-                  <div className="p-4 text-center text-slate-400 text-xs italic space-y-2">
-                    <div>No mountains match your search or filters.</div>
-                    {searchQuery && (
-                      <button
-                        onClick={() => setMountainListTab('global')}
-                        className="text-sky-600 hover:text-sky-800 text-[11px] font-mono underline block mx-auto cursor-pointer"
-                      >
-                        Search all 12,000+ worldwide ski areas ↗
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  sortedFeaturedResorts.map((r) => {
-                    const isSelected = r.id === selectedResortId;
-                    const snow72 = r.weather?.snowfall_72h_in ?? 0;
-                    const badge = getCategoryBadge(r.category);
-                    return (
-                      <div
-                        key={r.id}
-                        onClick={() => handleSelectResort(r.id)}
-                        className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all border group ${
-                          isSelected
-                            ? 'bg-[#E05216]/10 border-[#E05216] text-[#E05216] ring-1 ring-[#E05216]'
-                            : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-2xs hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="truncate mr-2">
-                          <div className="font-semibold text-xs truncate text-slate-900 flex items-center gap-1.5">
-                            <span>{r.name}</span>
-                            <span className={`text-[8px] font-mono px-1 py-0.2 rounded-full border ${badge.bg} ${badge.text} ${badge.border}`}>
-                              {badge.icon} {badge.label}
-                            </span>
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1 mt-0.5">
-                            <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
-                            {r.vertical_drop_ft && r.vertical_drop_ft > 0 && (
-                              <>
-                                <span>·</span>
-                                <span>{formatVert(r.vertical_drop_ft)}</span>
-                              </>
-                            )}
-                            {r.skiable_acres > 0 && (
-                              <>
-                                <span>·</span>
-                                <span>{formatAcres(r.skiable_acres)}</span>
-                              </>
-                            )}
-                            {r.tenure_acres && r.tenure_acres > 0 && (
-                              <>
-                                <span>·</span>
-                                <span>{formatAcres(r.tenure_acres)} tenure</span>
-                              </>
-                            )}
-                          </div>
+          {/* Directory Tabs */}
+          <div className="flex border-b border-[#D6D0C2] bg-[#FAF8F3] text-[11px] font-mono shrink-0">
+            <button
+              onClick={() => setMountainListTab('featured')}
+              className={`flex-1 py-1.5 text-center font-bold transition-colors border-r border-[#D6D0C2] cursor-pointer ${
+                mountainListTab === 'featured'
+                  ? 'bg-[#F7F4ED] text-[#1C1B18] border-b-2 border-b-[#2E5A44]'
+                  : 'text-[#8A847C] hover:text-[#1C1B18]'
+              }`}
+            >
+              Featured ({sortedFeaturedResorts.length})
+            </button>
+            <button
+              onClick={() => setMountainListTab('in_view')}
+              className={`flex-1 py-1.5 text-center font-bold transition-colors cursor-pointer ${
+                mountainListTab === 'in_view'
+                  ? 'bg-[#F7F4ED] text-[#1C1B18] border-b-2 border-b-[#2E5A44]'
+                  : 'text-[#8A847C] hover:text-[#1C1B18]'
+              }`}
+            >
+              In View ({visibleResorts.length + visibleGlobalAreas.length})
+            </button>
+          </div>
+
+          {/* Directory Cards List (Engraved Ledger Cards) */}
+          <div className="flex-1 overflow-y-auto divide-y divide-[#D6D0C2] bg-[#F7F4ED]">
+            {mountainListTab === 'featured' ? (
+              sortedFeaturedResorts.map((r) => {
+                const isSelected = r.id === selectedResortId;
+                const snow72 = r.weather?.snowfall_72h_in ?? 0;
+                const badge = getCategoryBadge(r.category);
+                return (
+                  <div
+                    key={r.id}
+                    onClick={() => handleSelectResort(r.id)}
+                    className={`p-2.5 transition-colors cursor-pointer group ${
+                      isSelected ? 'bg-[#FAF8F3] border-l-2 border-l-[#2E5A44]' : 'hover:bg-[#FAF8F3]'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-1">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="font-serif font-bold text-sm text-[#1C1B18] tracking-tight truncate">
+                            {r.name}
+                          </h3>
+                          <span className={`text-[8px] font-mono px-1 py-0.2 rounded-[2px] border ${badge.bg} ${badge.text} ${badge.border} shrink-0`}>
+                            {badge.icon} {badge.label}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="text-[10px] font-mono text-[#5C5852] mt-0.5">
+                          <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
+                          {r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
+                          {r.skiable_acres > 0 && ` · ${formatAcres(r.skiable_acres)}`}
+                        </div>
+                      </div>
+
+                      {/* Live Weather Chip if Loaded */}
+                      {r.weather?.is_live && (
+                        <div className="shrink-0 flex items-center gap-1 bg-[#FAF8F3] border border-[#D6D0C2] px-1.5 py-0.5 rounded-[2px] font-mono text-[10px]">
                           {snow72 > 0 ? (
-                            <span className="text-sky-600 font-bold bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100 font-mono text-[10px]">
-                              {formatSnow(snow72)}
-                            </span>
+                            <>
+                              <Snowflake className="w-2.5 h-2.5 text-[#3B627E]" />
+                              <span className="font-bold text-[#3B627E]">{formatSnow(snow72)}</span>
+                            </>
                           ) : (
-                            <span className="text-slate-400 font-mono text-[10px]">0"</span>
+                            <span className="text-[#5C5852]">{Math.round(unitsMetric ? r.weather.current_temp_c : r.weather.current_temp_f)}°</span>
                           )}
-                          <span className="opacity-0 group-hover:opacity-100 text-slate-400 group-hover:text-[#E05216] text-[10px] font-mono transition-opacity">
-                            Pan ↗
-                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              visibleResorts.map((r) => {
+                const isSelected = r.id === selectedResortId;
+                const snow72 = r.weather?.snowfall_72h_in ?? 0;
+                return (
+                  <div
+                    key={`view-${r.id}`}
+                    onClick={() => handleSelectResort(r.id)}
+                    className={`p-2.5 transition-colors cursor-pointer group ${
+                      isSelected ? 'bg-[#FAF8F3] border-l-2 border-l-[#2E5A44]' : 'hover:bg-[#FAF8F3]'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-1">
+                      <div className="min-w-0">
+                        <h3 className="font-serif font-bold text-sm text-[#1C1B18] tracking-tight truncate">
+                          {r.name}
+                        </h3>
+                        <div className="text-[10px] font-mono text-[#5C5852] mt-0.5">
+                          <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
+                          {r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
                         </div>
                       </div>
-                    );
-                  })
-                )}
-              </>
-            )}
-
-            {/* TAB 2: IN VIEWPORT (MAP EXTENT) */}
-            {mountainListTab === 'in_view' && (
-              <>
-                {visibleResorts.length === 0 && visibleGlobalAreas.length === 0 ? (
-                  <div className="p-4 text-center text-slate-400 text-xs italic space-y-1">
-                    <MapPin className="w-5 h-5 mx-auto text-slate-300" />
-                    <div>No ski areas in current map view.</div>
-                    <div className="text-[10px] text-slate-400">Pan or zoom towards mountain ranges.</div>
-                  </div>
-                ) : (
-                  <>
-                    {/* Visible Featured */}
-                    {visibleResorts.map((r) => {
-                      const isSelected = r.id === selectedResortId;
-                      const snow72 = r.weather?.snowfall_72h_in ?? 0;
-                      const badge = getCategoryBadge(r.category);
-                      return (
-                        <div
-                          key={`view-featured-${r.id}`}
-                          onClick={() => handleSelectResort(r.id)}
-                          className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all border group ${
-                            isSelected
-                              ? 'bg-[#E05216]/10 border-[#E05216] text-[#E05216] ring-1 ring-[#E05216]'
-                              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-2xs hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="truncate mr-2">
-                            <div className="font-semibold text-xs truncate text-slate-900 flex items-center gap-1.5">
-                              <span>{r.name}</span>
-                              <span className={`text-[8px] font-mono px-1 py-0.2 rounded-full border ${badge.bg} ${badge.text} ${badge.border}`}>
-                                {badge.icon} {badge.label}
-                              </span>
-                            </div>
-                            <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                              {r.region ? `${r.region}, ` : ''}{r.country}
-                              {r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
-                              {r.skiable_acres > 0 && ` · ${formatAcres(r.skiable_acres)}`}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {snow72 > 0 && (
-                              <span className="text-sky-600 font-bold bg-sky-50 px-1 py-0.5 rounded text-[10px] font-mono">
-                                {formatSnow(snow72)}
-                              </span>
-                            )}
-                            <span className="opacity-0 group-hover:opacity-100 text-[#E05216] text-[10px] font-mono">
-                              Pan ↗
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Visible Global OSM Ski Areas */}
-                    {visibleGlobalAreas.map((f: any) => {
-                      const p = f.properties;
-                      const coords = f.geometry?.coordinates;
-                      const badge = getCategoryBadge(p.category);
-                      const isSelected =
-                        selectedResortId === p.id ||
-                        (Array.isArray(coords) &&
-                          typeof coords[0] === 'number' &&
-                          typeof coords[1] === 'number' &&
-                          !isNaN(coords[0]) &&
-                          !isNaN(coords[1]) &&
-                          selectedResortId === `global-${Math.round(coords[0] * 1000)}-${Math.round(coords[1] * 1000)}`);
-                      return (
-                        <div
-                          key={`view-global-${p.id}`}
-                          onClick={() => handleSelectGlobalResort(p, coords)}
-                          className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all border group ${
-                            isSelected
-                              ? 'bg-sky-50 border-sky-400 text-sky-800 ring-1 ring-sky-300'
-                              : 'bg-slate-50/70 hover:bg-white text-slate-700 border-slate-200 shadow-2xs hover:border-sky-300'
-                          }`}
-                        >
-                          <div className="truncate mr-2">
-                            <div className="font-semibold text-xs truncate text-slate-900 flex items-center gap-1.5">
-                              <span>{p.name}</span>
-                              <span className={`text-[8px] font-mono px-1 py-0.2 rounded-full border ${badge.bg} ${badge.text} ${badge.border}`}>
-                                {badge.icon} {badge.label}
-                              </span>
-                            </div>
-                            <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                              {p.region ? `${p.region}, ` : ''}{p.country}
-                              {p.vertical_ft && p.vertical_ft > 0 && ` · ${formatVert(p.vertical_ft)}`}
-                            </div>
-                          </div>
-                          <span className="opacity-0 group-hover:opacity-100 text-sky-600 text-[10px] font-mono shrink-0">
-                            Pan ↗
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </>
-                )}
-              </>
-            )}
-
-            {/* TAB 3: ALL WORLDWIDE SKI AREAS (OPENSKIDATA) */}
-            {mountainListTab === 'global' && (
-              <>
-                {visibleGlobalAreas.length === 0 ? (
-                  <div className="p-4 text-center text-slate-400 text-xs italic">
-                    {isFetchingGlobal ? 'Loading 12,000+ worldwide ski areas...' : 'No ski areas match your search or filters.'}
-                  </div>
-                ) : (
-                  visibleGlobalAreas.map((f: any) => {
-                    const p = f.properties;
-                    const coords = f.geometry?.coordinates;
-                    const badge = getCategoryBadge(p.category);
-                    const isSelected =
-                      selectedResortId === p.id ||
-                      (Array.isArray(coords) &&
-                        typeof coords[0] === 'number' &&
-                        typeof coords[1] === 'number' &&
-                        !isNaN(coords[0]) &&
-                        !isNaN(coords[1]) &&
-                        selectedResortId === `global-${Math.round(coords[0] * 1000)}-${Math.round(coords[1] * 1000)}`);
-                    return (
-                      <div
-                        key={`all-global-${p.id}`}
-                        onClick={() => handleSelectGlobalResort(p, coords)}
-                        className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all border group ${
-                          isSelected
-                            ? 'bg-sky-50 border-sky-400 text-sky-800 ring-1 ring-sky-300'
-                            : 'bg-white hover:bg-sky-50/50 text-slate-700 border-slate-200 shadow-2xs hover:border-sky-300'
-                        }`}
-                      >
-                        <div className="truncate mr-2">
-                          <div className="font-semibold text-xs truncate text-slate-900 flex items-center gap-1.5">
-                            <span>{p.name}</span>
-                            <span className={`text-[8px] font-mono px-1 py-0.2 rounded-full border ${badge.bg} ${badge.text} ${badge.border}`}>
-                              {badge.icon} {badge.label}
-                            </span>
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                            {p.region ? `${p.region}, ` : ''}{p.country}
-                            {p.vertical_ft && p.vertical_ft > 0 && ` · ${formatVert(p.vertical_ft)}`}
-                          </div>
-                        </div>
-                        <span className="opacity-0 group-hover:opacity-100 text-sky-600 text-[10px] font-mono shrink-0">
-                          Pan ↗
+                      {r.weather?.is_live && snow72 > 0 && (
+                        <span className="shrink-0 text-[10px] font-mono text-[#3B627E] font-bold">
+                          {formatSnow(snow72)}
                         </span>
-                      </div>
-                    );
-                  })
-                )}
-              </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
+
+        {/* TRAY EDGE PULL TAB (VERTICALLY CENTERED TRIANGLE TAB ON THE SEAM) */}
+        <button
+          onClick={() => setLeftDockOpen(!leftDockOpen)}
+          className="absolute top-1/2 -translate-y-1/2 left-full pointer-events-auto z-40 flex items-center justify-center w-5 h-16 bg-[#FAF8F3] hover:bg-[#EFECE4] border-y border-r border-[#D6D0C2] hover:border-[#2C2A27] rounded-r-[3px] shadow-[2px_1px_4px_rgba(0,0,0,0.06)] transition-all cursor-pointer group"
+          title={leftDockOpen ? "Collapse directory tray" : "Open directory tray"}
+          aria-label={leftDockOpen ? "Collapse directory tray" : "Open directory tray"}
+        >
+          <svg
+            className="w-2.5 h-3 text-[#5A554E] group-hover:text-[#1C1B18] transition-colors"
+            viewBox="0 0 8 10"
+            fill="currentColor"
+          >
+            {leftDockOpen ? (
+              <polygon points="7,1 1,5 7,9" />
+            ) : (
+              <polygon points="1,1 7,5 1,9" />
+            )}
+          </svg>
+        </button>
       </div>
 
-      {/* BASEMAP & OVERLAYS HAMBURGER TOGGLE ON MAP (DISAPPEARS ON HOVER OFF) */}
-      <div
-        className={`absolute top-16 ${selectedResort ? 'right-88 md:right-100' : 'right-4'} z-20 transition-all duration-300`}
-        onMouseEnter={() => {
-          if (mapMenuTimeoutRef.current) clearTimeout(mapMenuTimeoutRef.current);
-          setMapMenuOpen(true);
-        }}
-        onMouseLeave={() => {
-          if (mapMenuTimeoutRef.current) clearTimeout(mapMenuTimeoutRef.current);
-          mapMenuTimeoutRef.current = setTimeout(() => {
-            setMapMenuOpen(false);
-          }, 180);
-        }}
-      >
+      {/* BASEMAP & OVERLAYS POPOVER (ARCHIVAL PAPER) */}
+      <div className="absolute top-16 right-4 z-20">
         <button
           onClick={() => setMapMenuOpen(!mapMenuOpen)}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl border shadow-md backdrop-blur-md text-xs font-medium transition-all ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-[2px] border text-xs font-mono transition-all cursor-pointer ${
             mapMenuOpen
-              ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
-              : 'bg-white/95 text-slate-800 border-slate-200/90 hover:bg-white hover:text-slate-900'
+              ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#2C2A27]'
+              : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
           }`}
-          title="Map Layers & Basemap"
         >
-          <Menu className="w-4 h-4 text-[#E05216]" />
+          <Menu className="w-3.5 h-3.5 text-[#2E5A44]" />
           <span className="font-mono text-[11px] font-semibold">Basemap & Layers</span>
         </button>
 
         {mapMenuOpen && (
-          <div className="absolute right-0 top-11 w-68 bg-white/98 backdrop-blur-md border border-slate-200 rounded-xl shadow-2xl p-3 space-y-3 z-30 text-xs">
+          <div className="absolute right-0 top-10 w-72 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3 space-y-3 z-30 text-xs font-mono shadow-2xl animate-in fade-in duration-150">
             <div>
-              <div className="text-[10px] font-mono uppercase text-slate-400 font-semibold mb-1.5">
-                Base Map Style
+              <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5">
+                Cartographic Base
               </div>
               <div className="space-y-1">
                 {[
-                  { id: 'topo', label: 'High-Res Topo (Terrain)', desc: 'Elevation contours & hillshade relief' },
                   { id: 'satellite', label: 'Satellite 3D', desc: 'High-resolution aerial satellite imagery' },
                   { id: 'osm', label: 'OpenStreetMap', desc: 'Detailed vector roads, towns & trails' },
+                  { id: 'topo', label: 'Alpine Topo (Berann)', desc: 'Painted relief zooming to detailed topo contours' },
                 ].map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => {
-                      setBasemapMode(item.id as BasemapMode);
-                    }}
-                    className={`w-full text-left p-2 rounded-lg border transition-all ${
+                    onClick={() => setBasemapMode(item.id as BasemapMode)}
+                    className={`w-full text-left p-2 rounded-[2px] border transition-all cursor-pointer ${
                       basemapMode === item.id
-                        ? 'bg-slate-900 text-white border-slate-900 font-medium'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
+                        ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#2C2A27]'
+                        : 'bg-[#F7F4ED] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
                     }`}
                   >
-                    <div className="text-[11px] font-semibold">{item.label}</div>
-                    <div className={`text-[10px] ${basemapMode === item.id ? 'text-slate-300' : 'text-slate-400'}`}>
+                    <div className="text-[11px] font-bold">{item.label}</div>
+                    <div className={`text-[9px] ${basemapMode === item.id ? 'text-[#8A847C]' : 'text-[#8A847C]'}`}>
                       {item.desc}
                     </div>
                   </button>
                 ))}
               </div>
             </div>
-
-            <div className="pt-2 border-t border-slate-100">
-              <div className="text-[10px] font-mono uppercase text-slate-400 font-semibold mb-1.5">
-                Map Overlays
-              </div>
-              <div className="space-y-1.5">
-                <label className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-[11px] font-medium text-slate-700">OSM Ski Trails</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={showRealTrailsLayer}
-                    onChange={(e) => setShowRealTrailsLayer(e.target.checked)}
-                    className="rounded text-[#E05216] focus:ring-[#E05216]"
-                  />
-                </label>
-
-                <label className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-3.5 h-3.5 text-sky-600" />
-                    <span className="text-[11px] font-medium text-slate-700">5,900+ Global Points</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={showGlobalPoints}
-                    onChange={(e) => setShowGlobalPoints(e.target.checked)}
-                    className="rounded text-[#E05216] focus:ring-[#E05216]"
-                  />
-                </label>
-              </div>
-            </div>
           </div>
         )}
       </div>
 
-      {/* LIGHT-THEMED COMPACT COMPASS & GYROSCOPE */}
-      <div
-        className={`absolute bottom-5 ${
-          selectedResort ? 'right-88 md:right-100' : 'right-4'
-        } z-20 flex flex-col items-center transition-all duration-300 select-none`}
-      >
-        <div
-          onMouseDown={handleGyroMouseDown}
-          onDoubleClick={handleGyroDoubleClick}
-          className={`relative w-16 h-16 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-md flex items-center justify-center transition-all ${
-            isGyroDragging
-              ? 'cursor-grabbing scale-105 ring-2 ring-[#E05216] shadow-lg'
-              : 'cursor-grab hover:border-slate-300 hover:shadow-lg'
-          }`}
-          title="Compass & Gyroscope: Left-click drag to rotate/tilt · Double-click to reset 2D North"
-        >
-          {/* Rotating Compass Bezel (Rotates with Map Bearing) */}
-          <div
-            className="absolute inset-0 w-full h-full rounded-full pointer-events-none transition-transform ease-out"
-            style={{
-              transform: `rotate(${-mapBearing}deg)`,
-              transitionDuration: isGyroDragging ? '0ms' : '150ms',
-            }}
-          >
-            {/* North Indicator: Red Pointer Arrow & Bold 'N' (Clickable) */}
-            <div
-              className="absolute top-1 left-1/2 -translate-x-1/2 flex flex-col items-center cursor-pointer pointer-events-auto"
-              onClick={(e) => {
-                e.stopPropagation();
-                safeEaseTo(mapRef.current, { bearing: 0, duration: 500 });
-                setMapBearing(0);
-              }}
-              title="Click to face North (0°)"
-            >
-              <div className="w-0 h-0 border-l-[3.5px] border-l-transparent border-r-[3.5px] border-r-transparent border-b-[5px] border-b-rose-500" />
-              <span className="text-[9px] font-black text-rose-500 leading-none tracking-tight mt-0.5">N</span>
+      {/* CARTOGRAPHIC MAP FURNITURE: ALTERNATING BAR SCALE & LEGEND */}
+      <div className={`absolute bottom-5 ${leftDockOpen ? 'left-84 md:left-100' : 'left-8'} z-20 transition-all duration-300 select-none`}>
+        {mapLegendOpen && (
+          <div className="absolute bottom-11 left-0 w-72 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3.5 space-y-3 z-30 text-xs animate-in fade-in duration-150">
+            <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
+              <span className="font-serif text-sm font-bold text-[#1C1B18]">Cartographic Key</span>
+              <button onClick={() => setMapLegendOpen(false)} className="text-[#8A847C] hover:text-[#1C1B18]">
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
-
-            {/* East Cardinal */}
-            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">
-              E
+            {/* Piste Key */}
+            <div className="space-y-1 font-mono text-[9px]">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-1.5 rounded-xs bg-[#2E7D32]" />
+                <span>Novice (Green)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-1.5 rounded-xs bg-[#1565C0]" />
+                <span>Intermediate (Blue)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-1.5 rounded-xs bg-[#1C1B18]" />
+                <span>Advanced (Black)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-1.5 rounded-xs bg-[#B84A39]" />
+                <span>Expert / Freeride (Double Black)</span>
+              </div>
+              <div className="flex items-center gap-2 pt-1 border-t border-[#D6D0C2]">
+                <span className="w-3 border-t-2 border-dashed border-[#B84A39]" />
+                <span>Aerialway / Ski Lift</span>
+              </div>
             </div>
-
-            {/* South Cardinal */}
-            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[8px] font-bold text-slate-400">
-              S
+            {/* Keyboard Guide */}
+            <div className="pt-2 border-t border-[#D6D0C2] font-mono text-[9px] text-[#5C5852] space-y-1">
+              <div><strong className="text-[#1C1B18]">W / S:</strong> Tilt horizon / nadir</div>
+              <div><strong className="text-[#1C1B18]">A / D:</strong> Rotate camera heading</div>
+              <div><strong className="text-[#1C1B18]">Q / E:</strong> Zoom Out / In</div>
+              <div><strong className="text-[#1C1B18]">Arrows:</strong> Pan terrain (fixed altitude)</div>
             </div>
-
-            {/* West Cardinal */}
-            <div className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">
-              W
-            </div>
-
-            {/* Subtle Dial Ring */}
-            <div className="absolute inset-1 rounded-full border border-slate-200/80" />
           </div>
+        )}
 
-          {/* Clean Center Navigation Disc (No ellipses, dual-tone compass needle) */}
-          <div className="w-8 h-8 rounded-full bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 shadow-inner flex items-center justify-center pointer-events-none">
-            <div
-              className="w-full h-full relative flex items-center justify-center transition-transform ease-out"
-              style={{
-                transform: `rotate(${-mapBearing}deg)`,
-                transitionDuration: isGyroDragging ? '0ms' : '150ms',
-              }}
-            >
-              {/* North Needle (Red) */}
-              <div className="absolute top-1 w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[9px] border-b-rose-500" />
-              {/* South Needle (Slate) */}
-              <div className="absolute bottom-1 w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[9px] border-t-slate-300" />
-              {/* Center Pivot Pip */}
-              <div className="w-2 h-2 rounded-full bg-white border border-slate-300 shadow-2xs z-10" />
+        {/* Alternating Scale Bar */}
+        <div className="flex items-center gap-2 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] px-2.5 py-1.5 font-mono text-[10px] text-[#1C1B18] shadow-xs">
+          <button
+            onClick={() => setMapLegendOpen(!mapLegendOpen)}
+            className="flex items-center gap-1 hover:text-[#2E5A44] transition-colors cursor-pointer mr-1"
+            title="Toggle Map Key & Controls"
+          >
+            <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
+            <span className="font-bold underline">Key</span>
+          </button>
+          <div className="h-3 w-px bg-[#D6D0C2]" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold">{mapScale.distStr}</span>
+            <div className="flex h-1.5 border border-[#2C2A27] overflow-hidden" style={{ width: `${mapScale.barWidth}px` }}>
+              <div className="h-full bg-[#1C1B18] flex-1" />
+              <div className="h-full bg-[#FAF8F3] flex-1" />
+              <div className="h-full bg-[#1C1B18] flex-1" />
+              <div className="h-full bg-[#FAF8F3] flex-1" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* RIGHT MOUNTAIN DOSSIER (FLUSH TO RIGHT SIDE) */}
+      {/* COMPACT CONCENTRIC NAVIGATION INSTRUMENT (BOTTOM-RIGHT) */}
+      <div className={`absolute bottom-5 ${selectedResort ? 'right-88 md:right-100' : 'right-4'} z-20 flex flex-col items-center transition-all duration-300 select-none`}>
+        <div
+          onMouseDown={(e) => {
+            if (e.button !== 0) return;
+            setIsGyroDragging(true);
+            gyroDragStateRef.current = {
+              startX: e.clientX,
+              startY: e.clientY,
+              startBearing: mapRef.current?.getBearing() || 0,
+              startPitch: mapRef.current?.getPitch() || 0,
+            };
+            const handleMouseMove = (me: MouseEvent) => {
+              if (!gyroDragStateRef.current || !mapRef.current) return;
+              const dx = me.clientX - gyroDragStateRef.current.startX;
+              const dy = me.clientY - gyroDragStateRef.current.startY;
+              const newBearing = (gyroDragStateRef.current.startBearing + dx * 0.4) % 360;
+              const normalized = newBearing < 0 ? newBearing + 360 : newBearing;
+              const newPitch = Math.max(0, Math.min(85, gyroDragStateRef.current.startPitch - dy * 0.4));
+              mapRef.current.setBearing(normalized);
+              mapRef.current.setPitch(newPitch);
+              setMapBearing(Math.round(normalized));
+              setMapPitch(Math.round(newPitch));
+            };
+            const handleMouseUp = () => {
+              setIsGyroDragging(false);
+              gyroDragStateRef.current = null;
+              window.removeEventListener('mousemove', handleMouseMove);
+              window.removeEventListener('mouseup', handleMouseUp);
+            };
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+          }}
+          onDoubleClick={() => {
+            if (mapRef.current) {
+              mapRef.current.easeTo({ bearing: 0, pitch: 0, duration: 600 });
+              setMapBearing(0);
+              setMapPitch(0);
+            }
+          }}
+          className="relative w-14 h-14 rounded-full bg-[#FAF8F3] border border-[#2C2A27] shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing"
+          title="Navigation Instrument: Drag to tilt & rotate · Double-click to reset North"
+        >
+          {/* Rotating Compass Ring */}
+          <div
+            className="absolute inset-0 w-full h-full rounded-full pointer-events-none transition-transform"
+            style={{ transform: `rotate(${-mapBearing}deg)` }}
+          >
+            <div className="absolute top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
+              <div className="w-0 h-0 border-l-[3.5px] border-l-transparent border-r-[3.5px] border-r-transparent border-b-[6px] border-b-[#B84A39]" />
+              <span className="text-[7px] font-mono font-bold text-[#B84A39]">N</span>
+            </div>
+          </div>
+          {/* Pitch indicator */}
+          <span className="text-[9px] font-mono font-bold text-[#1C1B18]">{mapPitch}°</span>
+        </div>
+      </div>
+
+      {/* RIGHT MOUNTAIN DOSSIER (WARM ARCHIVAL COTTON RAG PAPER) */}
       {selectedResort && (
-        <div className="absolute top-13 bottom-0 right-0 z-20 w-84 md:w-96 flex flex-col bg-white/98 backdrop-blur-md border-l border-slate-200/90 shadow-xl overflow-hidden">
+        <div className="absolute top-13 bottom-0 right-0 z-20 w-84 md:w-96 flex flex-col bg-[#F7F4ED] border-l border-[#D6D0C2] shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="p-3.5 border-b border-slate-100 bg-slate-50/80">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="text-[10px] font-mono text-slate-500">
-                  {selectedResort.region}, {selectedResort.country}
+          <div className="p-3.5 border-b border-[#D6D0C2] bg-[#F7F4ED]">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-[10px] font-mono text-[#5C5852]">
+                  {selectedResort.region ? `${selectedResort.region}, ` : ''}{selectedResort.country}
                 </div>
-                <h2 className="text-base font-bold text-slate-900 tracking-tight mt-0.5">
+                <h2 className="text-base font-serif font-bold text-[#1C1B18] tracking-tight mt-0.5 truncate">
                   {selectedResort.name}
                 </h2>
               </div>
               <button
-                onClick={() => setSelectedResortId(null)}
-                className="p-1 hover:bg-slate-200 text-slate-400 hover:text-slate-700 rounded"
+                onClick={handleDeselectResort}
+                className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer shrink-0"
+                title="Close (Esc)"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Badges */}
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {(() => {
-                const badge = getCategoryBadge(selectedResort.category);
-                return (
-                  <span className={`px-2 py-0.5 text-[10px] font-mono rounded-md font-semibold border ${badge.bg} ${badge.text} ${badge.border}`}>
-                    {badge.icon} {badge.label}
-                  </span>
-                );
-              })()}
-              {selectedResort.pass_networks.map((pass) => (
-                <span
-                  key={pass}
-                  className="px-2 py-0.5 text-[10px] font-mono rounded-md font-semibold border"
-                  style={{
-                    backgroundColor: `${PASS_COLORS[pass]}15`,
-                    borderColor: `${PASS_COLORS[pass]}50`,
-                    color: PASS_COLORS[pass],
-                  }}
-                >
-                  {pass}
-                </span>
-              ))}
-              <span className="px-2 py-0.5 text-[10px] font-mono bg-slate-200 text-slate-700 rounded-md">
-                {selectedResort.archetype}
-              </span>
-            </div>
+            {/* Official Website Link */}
+            {(() => {
+              const site = getResortWebsite(selectedResort);
+              if (!site) return null;
+              return (
+                <div className="mt-1.5">
+                  <a
+                    href={site.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[11px] font-mono font-medium text-[#2E5A44] hover:text-[#1C1B18] hover:underline transition-colors"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>{site.isDirect ? 'Official Website' : 'Search Official Site'}</span>
+                    <ExternalLink className="w-3 h-3 opacity-80" />
+                  </a>
+                </div>
+              );
+            })()}
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-3.5 space-y-4 text-xs">
-            {/* View Actions */}
-            <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
-              <button
-                onClick={() => handleSelectResort(selectedResort.id)}
-                className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-xs"
-              >
-                <Eye className="w-3.5 h-3.5 text-[#E05216]" />
-                <span>Pan to Mountain</span>
-              </button>
-              <button
-                onClick={() => {
-                  if (
-                    typeof selectedResort.lng !== 'number' ||
-                    typeof selectedResort.lat !== 'number' ||
-                    isNaN(selectedResort.lng) ||
-                    isNaN(selectedResort.lat)
-                  ) {
-                    return;
-                  }
-                  safeEaseTo(mapRef.current, {
-                    center: [selectedResort.lng, selectedResort.lat],
-                    pitch: 62,
-                    bearing: 0,
-                    zoom: 14.2,
-                    duration: 1200,
-                  });
-                }}
-                className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 rounded-lg"
-              >
-                <Mountain className="w-3.5 h-3.5 text-sky-600" />
-                <span>Summit Pitch</span>
-              </button>
-            </div>
-
-            {/* Core Mountain Stats */}
-            <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200 font-mono text-center">
-              <div>
-                <div className="text-[10px] text-slate-500">Vertical</div>
-                <div className="text-sm font-bold text-slate-900 mt-0.5">
-                  {formatVert(selectedResort.vertical_drop_ft)}
-                </div>
-              </div>
-              <div className="border-x border-slate-200">
-                <div className="text-[10px] text-slate-500">Summit</div>
-                <div className="text-sm font-bold text-slate-900 mt-0.5">
-                  {formatVert(selectedResort.summit_elev_ft)}
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] text-slate-500">Base</div>
-                <div className="text-sm font-bold text-slate-900 mt-0.5">
-                  {formatVert(selectedResort.base_elev_ft)}
-                </div>
-              </div>
-            </div>
-
-            {/* Terrain Footprint Stats */}
-            {(selectedResort.skiable_acres > 0 || (selectedResort.tenure_acres && selectedResort.tenure_acres > 0)) && (
-              <div className="flex items-center justify-around bg-slate-50 p-2 rounded-lg border border-slate-200 font-mono text-center text-xs">
-                {selectedResort.skiable_acres > 0 && (
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Skiable Terrain</span>
-                    <span className="font-bold text-emerald-700">{formatAcres(selectedResort.skiable_acres)}</span>
-                  </div>
-                )}
-                {selectedResort.tenure_acres && selectedResort.tenure_acres > 0 && (
-                  <div>
-                    <span className="text-[10px] text-slate-500 block">Permitted Tenure</span>
-                    <span className="font-bold text-purple-700">{formatAcres(selectedResort.tenure_acres)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* REAL TRAILS & LIFTS DIRECTORY */}
-            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2.5">
-              <div className="flex items-center justify-between font-mono text-[11px]">
-                <div className="flex items-center gap-1.5">
-                  <Navigation className="w-3.5 h-3.5 text-[#E05216]" />
-                  <span className="text-slate-900 font-semibold uppercase">Real Pistes & Lifts</span>
-                </div>
-                <span className="text-[10px] text-sky-700 font-mono font-semibold">
-                  {filteredTrails.length > 0 ? `${filteredTrails.length} Named Tracks` : 'OSM Draped'}
-                </span>
-              </div>
-
-              {/* Difficulty filter buttons */}
-              {currentResortTrails.length > 0 && (
-                <div className="flex items-center gap-1 font-mono text-[10px]">
-                  {[
-                    { id: 'all', label: 'All' },
-                    { id: 'expert', label: 'Dbl Black' },
-                    { id: 'advanced', label: 'Black' },
-                    { id: 'intermediate', label: 'Blue' },
-                    { id: 'novice', label: 'Green' },
-                    { id: 'lifts', label: 'Lifts' },
-                  ].map((btn) => (
-                    <button
-                      key={btn.id}
-                      onClick={() => setActiveTrailFilter(btn.id)}
-                      className={`px-1.5 py-0.5 rounded border transition-colors ${
-                        activeTrailFilter === btn.id
-                          ? 'bg-slate-800 text-white border-slate-800 font-bold'
-                          : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900'
-                      }`}
-                    >
-                      {btn.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Named Trail List */}
-              {currentResortTrails.length > 0 ? (
-                <div className="max-h-48 overflow-y-auto space-y-1 pr-1 font-mono">
-                  {filteredTrails.map((trail) => {
-                    const isSelected = selectedTrailId === trail.properties.id;
-                    const isLift = trail.properties.kind === 'lift';
-
-                    let badgeColor = '#64748b';
-                    if (isLift) badgeColor = '#E05216';
-                    else if (trail.properties.difficulty === 'novice') badgeColor = '#16a34a';
-                    else if (trail.properties.difficulty === 'intermediate') badgeColor = '#2563eb';
-                    else if (trail.properties.difficulty === 'advanced') badgeColor = '#0f172a';
-                    else if (trail.properties.difficulty === 'expert') badgeColor = '#dc2626';
-
-                    return (
-                      <div
-                        key={trail.properties.id}
-                        onClick={() => handleFocusTrail(trail)}
-                        className={`flex items-center justify-between p-1.5 rounded-lg cursor-pointer border transition-colors ${
-                          isSelected
-                            ? 'bg-[#E05216]/10 border-[#E05216] text-[#E05216]'
-                            : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-2xs'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0"
-                            style={{ backgroundColor: badgeColor }}
-                          />
-                          <div className="truncate">
-                            <span className="font-semibold text-xs text-slate-900">
-                              {trail.properties.name}
-                            </span>
-                            {trail.properties.lift_type && (
-                              <div className="text-[9px] text-slate-500 truncate">
-                                {trail.properties.lift_type}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <span className="text-[9px] text-slate-500 uppercase shrink-0 pl-1">
-                          Zoom ↗
-                        </span>
+          {/* Dossier Body */}
+          <div className="flex-1 overflow-y-auto p-3.5 space-y-3 bg-[#F7F4ED]">
+            {/* Metric Tables */}
+            {(() => {
+              const stats = getResortStats(selectedResort);
+              return (
+                <div className="bg-[#FAF8F3] border border-[#D6D0C2] rounded-[2px] overflow-hidden font-mono text-center">
+                  {/* Row 1: Infrastructure */}
+                  <div className="grid grid-cols-3 divide-x divide-[#D6D0C2] border-b border-[#D6D0C2] p-2">
+                    <div>
+                      <div className="text-[9px] text-[#5C5852] uppercase">Lifts</div>
+                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.lifts ?? '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] text-[#5C5852] uppercase">Pistes</div>
+                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.pistes ?? '—'}</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] text-[#5C5852] uppercase">Acres</div>
+                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">
+                        {stats.acres && stats.acres > 0 ? formatAcres(stats.acres) : '—'}
                       </div>
-                    );
-                  })}
+                    </div>
+                  </div>
+                  {/* Row 2: Elevations */}
+                  <div className="grid grid-cols-3 divide-x divide-[#D6D0C2] p-2 bg-[#F7F4ED]">
+                    <div>
+                      <div className="text-[9px] text-[#5C5852] uppercase">Vertical</div>
+                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{formatVert(selectedResort.vertical_drop_ft)}</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] text-[#5C5852] uppercase">Summit</div>
+                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{formatVert(selectedResort.summit_elev_ft)}</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] text-[#5C5852] uppercase">Base</div>
+                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{formatVert(selectedResort.base_elev_ft)}</div>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <div className="text-[11px] text-slate-600 p-2 bg-white rounded-lg border border-slate-200 leading-relaxed">
-                  Real OpenStreetMap downhill ski pistes and aerialways are active and draped directly across this 3D mountain via the green/blue/red/black overlay.
-                </div>
-              )}
+              );
+            })()}
 
-              {/* Legend */}
-              <div className="grid grid-cols-2 gap-1 font-mono text-[9px] bg-white p-2 rounded-lg border border-slate-200">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-1.5 rounded bg-[#16a34a]" />
-                  <span className="text-slate-700">Green Novice</span>
+            {/* Summit Weather Forecast */}
+            <div className="bg-[#FAF8F3] p-3 rounded-[2px] border border-[#D6D0C2] space-y-2 font-mono">
+              <div className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-1.5 font-bold text-[#1C1B18]">
+                  <Snowflake className="w-3.5 h-3.5 text-[#3B627E]" />
+                  <span>Summit Meteorology</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-1.5 rounded bg-[#2563eb]" />
-                  <span className="text-slate-700">Blue Intermediate</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-1.5 rounded bg-[#0f172a]" />
-                  <span className="text-slate-700">Black Advanced</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-1.5 rounded bg-[#dc2626]" />
-                  <span className="text-slate-700">Double Black</span>
-                </div>
-                <div className="flex items-center gap-1.5 col-span-2 pt-1 border-t border-slate-100">
-                  <span className="w-3 border-t-2 border-dashed border-[#E05216]" />
-                  <span className="text-slate-700">Aerialway Lifts (Tram / Gondola / Quad)</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Snow & Weather Forecast */}
-            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
-              <div className="flex items-center justify-between font-mono text-[11px]">
-                <div className="flex items-center gap-1.5">
-                  <Snowflake className="w-3.5 h-3.5 text-[#E05216]" />
-                  <span className="text-slate-900 font-semibold uppercase">Summit Forecast</span>
-                </div>
-                <button
-                  onClick={() => updateResortWeather(selectedResort)}
-                  className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-900"
-                >
-                  <RefreshCw className="w-3 h-3 text-[#E05216]" />
-                  <span>Update</span>
-                </button>
+                {selectedResort.weather?.is_live && (
+                  <span className="text-[9px] text-[#8A847C]">{selectedResort.weather.last_updated}</span>
+                )}
               </div>
 
-              <div className="grid grid-cols-3 gap-2 p-2 bg-white rounded-lg border border-slate-200 font-mono text-center">
-                <div>
-                  <div className="text-[9px] text-slate-500">72h Snow</div>
-                  <div className="text-sm font-bold text-slate-900 mt-0.5">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-[#F7F4ED] p-2 border border-[#D6D0C2] rounded-[2px]">
+                  <div className="text-[9px] text-[#5C5852] uppercase">72h Snow</div>
+                  <div className="text-base font-bold text-[#3B627E] mt-0.5">
                     {formatSnow(selectedResort.weather?.snowfall_72h_in ?? 0)}
                   </div>
                 </div>
-                <div>
-                  <div className="text-[9px] text-slate-500">7-Day Snow</div>
-                  <div className="text-sm font-bold text-sky-700 mt-0.5">
-                    {formatSnow(selectedResort.weather?.snowfall_7d_in ?? 0)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[9px] text-slate-500">Summit Gusts</div>
-                  <div className="text-sm font-bold text-amber-700 mt-0.5">
-                    {formatWind(selectedResort.weather?.summit_wind_gust_mph ?? 0)}
+                <div className="bg-[#F7F4ED] p-2 border border-[#D6D0C2] rounded-[2px]">
+                  <div className="text-[9px] text-[#5C5852] uppercase">Summit Temp</div>
+                  <div className="text-base font-bold text-[#1C1B18] mt-0.5">
+                    {selectedResort.weather ? `${Math.round(unitsMetric ? selectedResort.weather.current_temp_c : selectedResort.weather.current_temp_f)}°` : '—'}
                   </div>
                 </div>
               </div>
 
-              {/* 7-day bars */}
+              {/* 7-Day Snowfall Bars */}
               {selectedResort.weather?.daily_forecast && selectedResort.weather.daily_forecast.length > 0 && (
-                <div className="grid grid-cols-7 gap-1 h-16 items-end bg-white p-1.5 rounded-lg border border-slate-200">
+                <div className="grid grid-cols-7 gap-1 h-16 items-end bg-[#F7F4ED] p-1.5 border border-[#D6D0C2] rounded-[2px]">
                   {selectedResort.weather.daily_forecast.map((day, idx) => {
                     const val = unitsMetric ? day.snowfall_cm : day.snowfall_in;
-                    const maxVal = unitsMetric ? 20 : 8;
-                    const barH = Math.min(100, Math.max(10, (val / maxVal) * 100));
-
+                    const maxVal = Math.max(1, ...selectedResort.weather!.daily_forecast.map((d) => (unitsMetric ? d.snowfall_cm : d.snowfall_in)));
+                    const heightPercent = Math.max(8, Math.min(100, Math.round((val / maxVal) * 100)));
                     return (
                       <div key={idx} className="flex flex-col items-center h-full justify-end">
-                        <span className="text-[8px] font-mono text-slate-600">
-                          {val > 0 ? (unitsMetric ? Math.round(val) : val) : '-'}
-                        </span>
                         <div
-                          className={`w-full rounded-t ${val > 2 ? 'bg-[#E05216]' : 'bg-sky-500'}`}
-                          style={{ height: `${barH}%` }}
+                          style={{ height: `${heightPercent}%` }}
+                          className={`w-full rounded-xs transition-all ${
+                            val > 0 ? 'bg-[#3B627E]' : 'bg-[#D6D0C2]'
+                          }`}
+                          title={`${day.date}: ${val}${unitsMetric ? 'cm' : 'in'} snow`}
                         />
-                        <span className="text-[8px] font-mono text-slate-400 mt-1 truncate w-full text-center">
-                          {day.date.split(' ')[0]}
+                        <span className="text-[8px] text-[#8A847C] mt-1">
+                          {new Date(day.date).toLocaleDateString([], { weekday: 'narrow' })}
                         </span>
                       </div>
                     );
@@ -5044,11 +3557,11 @@ export default function App() {
               )}
             </div>
 
-            {/* Description & Infrastructure */}
-            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-1.5 text-xs text-slate-700">
-              <p className="leading-relaxed">{selectedResort.summary}</p>
-              <div className="text-[11px] font-mono text-slate-500 pt-1 border-t border-slate-200">
-                Lifts: <span className="text-slate-900">{selectedResort.infrastructure}</span>
+            {/* Summary */}
+            <div className="bg-[#FAF8F3] p-3 rounded-[2px] border border-[#D6D0C2] text-xs font-serif text-[#1C1B18] leading-relaxed">
+              <p>{selectedResort.summary}</p>
+              <div className="text-[10px] font-mono text-[#5C5852] pt-2 mt-2 border-t border-[#D6D0C2]">
+                Infrastructure: <span className="text-[#1C1B18] font-bold">{selectedResort.infrastructure}</span>
               </div>
             </div>
           </div>
