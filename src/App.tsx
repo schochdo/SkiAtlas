@@ -1977,13 +1977,13 @@ export default function App() {
             maxzoom: 19,
             attribution: 'OpenStreetMap',
           },
-          // 3. Esri World Physical Map (Berann painted relief up to zoom 8)
+          // 3. Esri World Physical Map (Painted relief up to zoom 8)
           'physical-tiles': {
             type: 'raster',
             tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}'],
             tileSize: 256,
             maxzoom: 8,
-            attribution: 'Esri Physical / Berann',
+            attribution: 'Esri Physical',
           },
           // 4. Esri World Topo Map (Clean contours, summits, elevations & passes)
           'topo-tiles': {
@@ -2027,7 +2027,7 @@ export default function App() {
             layout: { visibility: basemapMode === 'osm' ? 'visible' : 'none' },
             paint: { 'raster-contrast': 0.06, 'raster-saturation': 0.05, 'raster-brightness-min': 0.02 },
           },
-          // Base 3A: Berann Physical Landcover (Visible at globe & regional zooms)
+          // Base 3A: Alpine Physical Landcover (Visible at globe & regional zooms)
           {
             id: 'basemap-physical',
             type: 'raster',
@@ -2053,7 +2053,7 @@ export default function App() {
               'raster-opacity': ['interpolate', ['linear'], ['zoom'], 6.5, 0.0, 8, 0.5, 9.5, 1.0] as any,
             },
           },
-          // Berann/Niehues Multi-Color Painted Hillshade
+          // Alpine Multi-Color Painted Hillshade
           {
             id: 'alpine-painted-hillshade',
             type: 'hillshade',
@@ -2130,7 +2130,9 @@ export default function App() {
       const normalizedBearing = nextBearing < 0 ? nextBearing + 360 : nextBearing;
 
       // Vertical drag smoothly tilts pitch (moving up increases pitch toward horizon, moving down decreases to nadir)
-      const nextPitch = Math.max(0, Math.min(85, rightStartPitch - dy * SENSITIVITY));
+      const curZ = map.getZoom();
+      const maxAllowedPitch = curZ < 5.0 ? Math.max(0, (curZ - 2.5) * 24) : 85;
+      const nextPitch = Math.max(0, Math.min(maxAllowedPitch, rightStartPitch - dy * SENSITIVITY));
 
       const jumpOpts: any = {
         center: lockedOrbitCenter, // View remains strictly centered!
@@ -2190,6 +2192,22 @@ export default function App() {
       setMapPitch(Math.round(map.getPitch()));
       map.setRenderWorldCopies(false);
     });
+
+    const handleMapZoom = () => {
+      const z = map.getZoom();
+      // Ensure globe always stays centered when in view:
+      // When zooming out to globe level, smoothly constrain pitch toward 0° so globe never drops down
+      if (z < 5.0) {
+        const curPitch = map.getPitch();
+        const maxAllowedPitch = Math.max(0, (z - 2.5) * 24);
+        if (curPitch > maxAllowedPitch) {
+          map.setPitch(maxAllowedPitch);
+          setMapPitch(Math.round(maxAllowedPitch));
+          setIs3D(maxAllowedPitch > 10);
+        }
+      }
+    };
+    map.on('zoom', handleMapZoom);
 
     const updateScale = () => {
       try {
@@ -2252,9 +2270,9 @@ export default function App() {
       updateBounds();
       updateScale();
 
-      // Enable 3D Terrain mesh (0.7x natural mountain relief) if in Mercator
+      // Enable 3D Terrain mesh (0.7x natural mountain relief)
       try {
-        if (earthProjection === 'mercator') {
+        if (show3DTerrain) {
           map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 });
         }
       } catch (e) {
@@ -2547,7 +2565,7 @@ export default function App() {
       padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
       duration: 300,
     });
-  }, [leftDockOpen, mapLoaded]);
+  }, [leftDockOpen, selectedResortId, mapLoaded]);
 
   /* =========================================================================
      TRAILS OVERLAY VISIBILITY TOGGLE (Lifts shown by default; trails toggleable)
@@ -2626,13 +2644,20 @@ export default function App() {
     const map = mapRef.current;
     try {
       if (earthProjection === 'globe') {
-        try { map.setTerrain(null); } catch (_) {}
         map.setProjection({ type: 'globe' });
+        // If at low zoom, ensure camera is facing perpendicularly so globe stays centered
+        if (map.getZoom() < 5 && map.getPitch() > 0) {
+          safeEaseTo(map, { pitch: 0, duration: 400 });
+          setMapPitch(0);
+          setIs3D(false);
+        }
       } else {
         map.setProjection({ type: 'mercator' });
-        if (show3DTerrain) {
-          try { map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 }); } catch (_) {}
-        }
+      }
+      if (show3DTerrain) {
+        try { map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 }); } catch (_) {}
+      } else {
+        try { map.setTerrain(null); } catch (_) {}
       }
       map.setRenderWorldCopies(false);
     } catch (err) {
@@ -2736,7 +2761,7 @@ export default function App() {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
     try {
-      if (show3DTerrain && earthProjection === 'mercator') {
+      if (show3DTerrain) {
         map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 });
       } else {
         map.setTerrain(null);
@@ -2745,7 +2770,7 @@ export default function App() {
     } catch (err) {
       console.warn('SetTerrain toggle error:', err);
     }
-  }, [show3DTerrain, earthProjection, mapLoaded]);
+  }, [show3DTerrain, mapLoaded]);
 
   /* =========================================================================
      HILLSHADE RELIEF TOGGLE
@@ -3280,7 +3305,9 @@ export default function App() {
       setMapBearing(Math.round(newBearing));
 
       // Vertical Drag (dy): Tilts 3D pitch / perspective up and down
-      const newPitch = Math.max(0, Math.min(85, startPitch - dy * 0.5));
+      const curZ = mapRef.current.getZoom();
+      const maxAllowedPitch = curZ < 5.0 ? Math.max(0, (curZ - 2.5) * 24) : 85;
+      const newPitch = Math.max(0, Math.min(maxAllowedPitch, startPitch - dy * 0.5));
       mapRef.current.setPitch(newPitch);
       setMapPitch(Math.round(newPitch));
       setIs3D(newPitch > 10);
@@ -3732,29 +3759,13 @@ export default function App() {
         </button>
       </div>
 
-      {/* FLOATING TOP-RIGHT CARTO CONTROLS: GLOBE & BASEMAP POPOVER */}
+      {/* FLOATING TOP-RIGHT CARTO CONTROLS: BASEMAP POPOVER */}
       <div
         ref={basemapMenuRef}
         className={`absolute top-16 ${
           selectedResort ? 'right-88 md:right-100' : 'right-4'
         } z-20 flex items-center gap-2 transition-all duration-300`}
       >
-        {/* Globe Mode Quick Toggle */}
-        <button
-          onClick={() => setEarthProjection((prev) => (prev === 'globe' ? 'mercator' : 'globe'))}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[2px] border text-xs font-mono transition-all cursor-pointer shadow-xs ${
-            earthProjection === 'globe'
-              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-semibold'
-              : 'bg-[#FAF8F3] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
-          }`}
-          title={earthProjection === 'globe' ? 'Switch to 2D Mercator Flat Map' : 'Switch to 3D Spherical Globe'}
-        >
-          <Globe className={`w-3.5 h-3.5 ${earthProjection === 'globe' ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`} />
-          <span className="font-mono text-[11px] font-semibold">
-            {earthProjection === 'globe' ? 'Globe 3D' : 'Flat Map'}
-          </span>
-        </button>
-
         {/* Basemap & Layers Dropdown Anchor */}
         <div className="relative">
           <button
@@ -3797,7 +3808,14 @@ export default function App() {
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
-                    onClick={() => setEarthProjection('globe')}
+                    onClick={() => {
+                      setEarthProjection('globe');
+                      if (mapRef.current && mapRef.current.getZoom() < 5) {
+                        safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
+                        setMapPitch(0);
+                        setIs3D(false);
+                      }
+                    }}
                     className={`p-2 rounded-[2px] border text-left transition-all cursor-pointer ${
                       earthProjection === 'globe'
                         ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-bold'
@@ -3841,7 +3859,7 @@ export default function App() {
                 {[
                   { id: 'satellite', label: 'Satellite 3D', desc: 'High-resolution aerial satellite imagery' },
                   { id: 'osm', label: 'OpenStreetMap', desc: 'Detailed vector roads, towns & trails' },
-                  { id: 'topo', label: 'Alpine Topo (Berann)', desc: 'Painted relief zooming to detailed topo contours' },
+                  { id: 'topo', label: 'Alpine Topo', desc: 'Painted relief zooming to detailed topo contours' },
                 ].map((item) => {
                   const isSelected = basemapMode === item.id;
                   return (
