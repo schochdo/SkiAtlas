@@ -2016,20 +2016,21 @@ export default function App() {
             maxzoom: 19,
             attribution: 'Esri Topo',
           },
-          // 5. AWS Terrarium DEM (3D elevation mesh)
+          // 5. Mapterhorn Global DEM (Copernicus GLO-30 + JAXA void-free 3D elevation mesh - eliminates SRTM radar void spikes)
           'terrain-dem': {
             type: 'raster-dem',
-            tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+            tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
             encoding: 'terrarium',
-            tileSize: 256,
+            tileSize: 512,
             maxzoom: 15,
+            attribution: '© Mapterhorn',
           },
           // 6. Dedicated DEM source for painted hillshade relief
           'hillshade-dem': {
             type: 'raster-dem',
-            tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+            tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
             encoding: 'terrarium',
-            tileSize: 256,
+            tileSize: 512,
             maxzoom: 15,
           },
         },
