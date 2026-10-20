@@ -2389,7 +2389,7 @@ export default function App() {
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
-    const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 384 : 320) : 0;
+    const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = selectedResort ? (window.innerWidth >= 768 ? 384 : 336) : 0;
     mapRef.current.easeTo({
       padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
@@ -3225,24 +3225,26 @@ export default function App() {
           </div>
         </div>
 
-        {/* TRAY EDGE PULL TAB (VERTICALLY CENTERED TRIANGLE TAB ON THE SEAM) */}
+        {/* TRAY EDGE PULL TAB (FULL-HEIGHT SEAM RAIL ON THE EDGE OF THE TRAY) */}
         <button
           onClick={() => setLeftDockOpen(!leftDockOpen)}
-          className="absolute top-1/2 -translate-y-1/2 left-full pointer-events-auto z-40 flex items-center justify-center w-5 h-16 bg-[#FAF8F3] hover:bg-[#EFECE4] border-y border-r border-[#D6D0C2] hover:border-[#2C2A27] rounded-r-[3px] shadow-[2px_1px_4px_rgba(0,0,0,0.06)] transition-all cursor-pointer group"
+          className="absolute top-0 bottom-0 left-full pointer-events-auto z-40 flex items-center justify-center w-5 bg-[#FAF8F3] hover:bg-[#EFECE4] border-r border-[#D6D0C2] hover:border-[#2C2A27] shadow-[2px_0_6px_rgba(0,0,0,0.06)] transition-colors cursor-pointer group"
           title={leftDockOpen ? "Collapse directory tray" : "Open directory tray"}
           aria-label={leftDockOpen ? "Collapse directory tray" : "Open directory tray"}
         >
-          <svg
-            className="w-2.5 h-3 text-[#5A554E] group-hover:text-[#1C1B18] transition-colors"
-            viewBox="0 0 8 10"
-            fill="currentColor"
-          >
-            {leftDockOpen ? (
-              <polygon points="7,1 1,5 7,9" />
-            ) : (
-              <polygon points="1,1 7,5 1,9" />
-            )}
-          </svg>
+          <div className="flex items-center justify-center w-4 h-8 rounded-[2px] group-hover:bg-[#E5E0D5] transition-colors">
+            <svg
+              className="w-2.5 h-3 text-[#5A554E] group-hover:text-[#1C1B18] transition-colors"
+              viewBox="0 0 8 10"
+              fill="currentColor"
+            >
+              {leftDockOpen ? (
+                <polygon points="7,1 1,5 7,9" />
+              ) : (
+                <polygon points="1,1 7,5 1,9" />
+              )}
+            </svg>
+          </div>
         </button>
       </div>
 
@@ -3294,7 +3296,7 @@ export default function App() {
       </div>
 
       {/* CARTOGRAPHIC MAP FURNITURE: ALTERNATING BAR SCALE & LEGEND */}
-      <div className={`absolute bottom-5 ${leftDockOpen ? 'left-84 md:left-100' : 'left-8'} z-20 transition-all duration-300 select-none`}>
+      <div className={`absolute bottom-5 ${leftDockOpen ? 'left-88 md:left-106' : 'left-8'} z-20 transition-all duration-300 select-none`}>
         {mapLegendOpen && (
           <div className="absolute bottom-11 left-0 w-72 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3.5 space-y-3 z-30 text-xs animate-in fade-in duration-150">
             <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
