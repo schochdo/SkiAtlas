@@ -2654,6 +2654,8 @@ export default function App() {
     if (isProgrammaticFlightActive) return;
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = selectedResortId ? (window.innerWidth >= 768 ? 384 : 336) : 0;
+    const bottomPad = selectedResortId ? 220 : 0;
+    const topPad = selectedResortId ? 30 : 52;
 
     try {
       const curPad = mapRef.current.getPadding();
@@ -2661,15 +2663,15 @@ export default function App() {
         curPad &&
         Math.abs((curPad.left ?? 0) - leftPad) < 2 &&
         Math.abs((curPad.right ?? 0) - rightPad) < 2 &&
-        Math.abs((curPad.top ?? 0) - 52) < 2 &&
-        Math.abs((curPad.bottom ?? 0) - 0) < 2
+        Math.abs((curPad.top ?? 0) - topPad) < 2 &&
+        Math.abs((curPad.bottom ?? 0) - bottomPad) < 2
       ) {
         return; // Already at target padding, prevent unwanted sliding on start
       }
     } catch (_) {}
 
     mapRef.current.easeTo({
-      padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
+      padding: { left: leftPad, right: rightPad, top: topPad, bottom: bottomPad },
       duration: 300,
     });
   }, [leftDockOpen, selectedResortId, mapLoaded]);
@@ -3598,8 +3600,16 @@ export default function App() {
     const distDeg = Math.hypot(resort.lng - curCenter.lng, resort.lat - curCenter.lat);
     const flightDuration = distDeg > 40 ? 2800 : (distDeg > 15 ? 2200 : 1600);
 
+    // Offset camera center toward the valley (opposite of bearing) so the mountain sits squarely in the lower-middle viewport
+    // at 42° pitch. A ~1.4km offset brings peaks down from the top edge.
+    const bearingRad = (bearing * Math.PI) / 180;
+    const offsetDistanceKm = 1.35;
+    const dLat = -(offsetDistanceKm / 111.32) * Math.cos(bearingRad);
+    const dLng = -(offsetDistanceKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
+    const targetCenter: [number, number] = [resort.lng + dLng, resort.lat + dLat];
+
     safeFlyTo(mapRef.current, {
-      center: [resort.lng, resort.lat],
+      center: targetCenter,
       zoom,
       pitch,
       bearing,
