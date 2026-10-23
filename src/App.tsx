@@ -2155,7 +2155,7 @@ export default function App() {
       pitch: 0,
       bearing: 0,
       maxPitch: 85,
-      dragRotate: false,
+      dragRotate: true,
     });
 
     // Apply viewport padding synchronously before first render so globe never slides on start
@@ -2163,80 +2163,17 @@ export default function App() {
 
     mapRef.current = map;
 
-    // Disable built-in jerky dragRotate and ground-clamping in favor of smooth, center-locked orbit
+    // Enable native linear drag-to-rotate around center with ground-clamped terrain elevation
     try {
-      map.dragRotate.disable();
-      (map as any).setCenterClampedToGround?.(false);
+      (map as any).setCenterClampedToGround?.(true);
+      map.dragRotate.enable({ around: 'center', movement: 'linear' });
     } catch (_) {}
 
-    // Right-Click Orbit Controller
-    // Locks the geographic center captured at drag-start as the orbit pivot.
-    // Pivot compensation via unproject() is intentionally avoided — it blows up
-    // at high pitch angles where horizon pixels map to coordinates miles away.
     const canvas = map.getCanvas();
-    let isRightDragging = false;
-    let rightStartX = 0;
-    let rightStartY = 0;
-    let rightStartBearing = 0;
-    let rightStartPitch = 0;
-    let lockedCenter: [number, number] | null = null;
-
-    const onRightContextMenu = (e: MouseEvent) => {
+    const onContextMenu = (e: MouseEvent) => {
       e.preventDefault();
     };
-
-    const onRightMouseMove = (e: MouseEvent) => {
-      if (!isRightDragging || !lockedCenter) return;
-
-      const dx = e.clientX - rightStartX;
-      const dy = e.clientY - rightStartY;
-
-      // 0.35 deg/px bearing feels snappy without being wild
-      const nextBearing = ((rightStartBearing + dx * 0.35) % 360 + 360) % 360;
-
-      // 0.25 deg/px pitch — slightly slower so you don't slam into nadir
-      const curZ = map.getZoom();
-      const maxPitch = curZ < 5.0 ? Math.max(0, (curZ - 2.5) * 24) : 85;
-      const nextPitch = Math.max(0, Math.min(maxPitch, rightStartPitch - dy * 0.25));
-
-      map.jumpTo({
-        center: lockedCenter,
-        bearing: nextBearing,
-        pitch: nextPitch,
-      });
-
-      setMapBearing(Math.round(nextBearing));
-      setMapPitch(Math.round(nextPitch));
-      setIs3D(nextPitch > 10);
-    };
-
-    const onRightMouseUp = (e: MouseEvent) => {
-      if (e.button === 2 || e.button === 1 || e.buttons === 0) {
-        isRightDragging = false;
-        lockedCenter = null;
-        window.removeEventListener('mousemove', onRightMouseMove);
-        window.removeEventListener('mouseup', onRightMouseUp);
-      }
-    };
-
-    const onRightMouseDown = (e: MouseEvent) => {
-      if (e.button === 2 || e.button === 1 || (e.button === 0 && e.ctrlKey)) {
-        e.preventDefault();
-        isRightDragging = true;
-        isProgrammaticFlightActive = false;
-        rightStartX = e.clientX;
-        rightStartY = e.clientY;
-        rightStartBearing = map.getBearing();
-        rightStartPitch = map.getPitch();
-        const c = map.getCenter();
-        lockedCenter = [c.lng, c.lat];
-        window.addEventListener('mousemove', onRightMouseMove);
-        window.addEventListener('mouseup', onRightMouseUp);
-      }
-    };
-
-    canvas.addEventListener('contextmenu', onRightContextMenu);
-    canvas.addEventListener('mousedown', onRightMouseDown);
+    canvas.addEventListener('contextmenu', onContextMenu);
 
     map.on('rotate', () => setMapBearing(Math.round(map.getBearing())));
     map.on('pitch', () => {
@@ -2637,10 +2574,7 @@ export default function App() {
     });
 
     return () => {
-      canvas.removeEventListener('contextmenu', onRightContextMenu);
-      canvas.removeEventListener('mousedown', onRightMouseDown);
-      window.removeEventListener('mousemove', onRightMouseMove);
-      window.removeEventListener('mouseup', onRightMouseUp);
+      canvas.removeEventListener('contextmenu', onContextMenu);
       map.remove();
     };
   }, []);
@@ -2654,7 +2588,7 @@ export default function App() {
     if (isProgrammaticFlightActive) return;
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = selectedResortId ? (window.innerWidth >= 768 ? 384 : 336) : 0;
-    const bottomPad = selectedResortId ? 20 : 0;
+    const bottomPad = selectedResortId ? 140 : 0;
     const topPad = selectedResortId ? 60 : 52;
 
     try {
@@ -3197,6 +3131,9 @@ export default function App() {
         animationFrameId = null;
         lastTimestamp = null;
         lockedElevation = null;
+        try {
+          map.setCenterClampedToGround(true);
+        } catch (_) {}
       }
     };
 
@@ -3585,22 +3522,22 @@ export default function App() {
 
     // Zoom: scale with both vertical drop and skiable acreage so sprawling resorts (Vail, Zermatt)
     // pull back appropriately, while maintaining a clear, framed view of the ski network.
-    // Alta (~12.0) | Snowbird (~11.9) | Vail (~11.6) | Jackson (~11.8) | Zermatt (~11.2) | Small hill (~13.5)
+    // Alta (~11.5) | Snowbird (~11.4) | Jackson (~11.2) | Vail (~10.9) | Zermatt (~10.2) | Small hill (~13.3)
     const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
     const acres = Math.max(resort.skiable_acres || 500, 200);
-    const zoom = Math.max(11.0, Math.min(13.5, 13.3 - Math.log2(vert / 500) * 0.35 - Math.log2(acres / 500) * 0.20));
+    const zoom = Math.max(9.8, Math.min(13.5, 12.6 - Math.log2(vert / 1000) * 0.45 - Math.log2(acres / 1000) * 0.35));
 
     // Midpoint calculation:
     // Coordinates in GLOBAL_SKI_ATLAS point to the mountain base/village.
     // The trails and summit rise forward in the direction of default_bearing (valley looking up to peak).
-    // Advancing from the base into the mountain along bearing centers the entire ski area vertically on screen.
-    const midpointKm = Math.min(2.2, Math.max(0.5, (vert * 0.3048) / (2 * Math.tan(20 * Math.PI / 180)) / 1000));
+    // Advancing from the base into the mountain along bearing centers the physical mountain.
+    const midpointKm = Math.min(1.8, Math.max(0.6, (vert * 0.3048) / (2 * Math.tan(22 * Math.PI / 180)) / 1000));
     const bearingRad = (bearing * Math.PI) / 180;
     const dLat = (midpointKm / 111.32) * Math.cos(bearingRad);
     const dLng = (midpointKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
     const targetCenter: [number, number] = [resort.lng + dLng, resort.lat + dLat];
 
-    const pitch = 45;
+    const pitch = 38;
 
     // Compute dynamic duration based on flight distance across the globe so transcontinental jumps don't stall
     const curCenter = mapRef.current.getCenter();
@@ -3612,7 +3549,7 @@ export default function App() {
       zoom,
       pitch,
       bearing,
-      padding: { left: leftPad, right: rightPad, top: 60, bottom: 20 },
+      padding: { left: leftPad, right: rightPad, top: 60, bottom: 140 },
       duration: flightDuration,
       essential: true,
     });
@@ -3645,9 +3582,9 @@ export default function App() {
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],
       zoom: 12.0,
-      pitch: 45,
+      pitch: 38,
       bearing: 0,
-      padding: { left: leftPad, right: rightPad, top: 60, bottom: 20 },
+      padding: { left: leftPad, right: rightPad, top: 60, bottom: 140 },
       duration: 1800,
       essential: true,
     });
