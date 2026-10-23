@@ -2654,8 +2654,8 @@ export default function App() {
     if (isProgrammaticFlightActive) return;
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = selectedResortId ? (window.innerWidth >= 768 ? 384 : 336) : 0;
-    const bottomPad = selectedResortId ? 220 : 0;
-    const topPad = selectedResortId ? 30 : 52;
+    const bottomPad = selectedResortId ? 260 : 0;
+    const topPad = selectedResortId ? 20 : 52;
 
     try {
       const curPad = mapRef.current.getPadding();
@@ -3592,28 +3592,28 @@ export default function App() {
     const acreSprawl = Math.log2(acres / 500) * 0.15;
     const zoom = Math.max(11.3, Math.min(13.6, 13.6 - Math.log2(vert / 500) * 0.40 - acreSprawl));
 
-    // Pitch: 42° — slightly shallower pitch expands mountain relief into the lower frame
-    const pitch = 42;
+    // Offset camera center toward the valley (opposite of bearing) so the mountain sits squarely in the lower-middle viewport
+    // At zoom ~12 with 38° pitch and 3,000ft terrain relief, a ~3.8km down-valley offset brings the mountain down into the center of the frame.
+    const bearingRad = (bearing * Math.PI) / 180;
+    const offsetDistanceKm = 3.8;
+    const dLat = -(offsetDistanceKm / 111.32) * Math.cos(bearingRad);
+    const dLng = -(offsetDistanceKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
+    const targetCenter: [number, number] = [resort.lng + dLng, resort.lat + dLat];
+
+    // Pitch: 38° — shallower oblique angle keeps peaks from projecting into the upper horizon
+    const pitch = 38;
 
     // Compute dynamic duration based on flight distance across the globe so transcontinental jumps don't stall
     const curCenter = mapRef.current.getCenter();
     const distDeg = Math.hypot(resort.lng - curCenter.lng, resort.lat - curCenter.lat);
     const flightDuration = distDeg > 40 ? 2800 : (distDeg > 15 ? 2200 : 1600);
 
-    // Offset camera center toward the valley (opposite of bearing) so the mountain sits squarely in the lower-middle viewport
-    // at 42° pitch. A ~1.4km offset brings peaks down from the top edge.
-    const bearingRad = (bearing * Math.PI) / 180;
-    const offsetDistanceKm = 1.35;
-    const dLat = -(offsetDistanceKm / 111.32) * Math.cos(bearingRad);
-    const dLng = -(offsetDistanceKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
-    const targetCenter: [number, number] = [resort.lng + dLng, resort.lat + dLat];
-
     safeFlyTo(mapRef.current, {
       center: targetCenter,
       zoom,
       pitch,
       bearing,
-      padding: { left: leftPad, right: rightPad, top: 30, bottom: 220 },
+      padding: { left: leftPad, right: rightPad, top: 20, bottom: 260 },
       duration: flightDuration,
       essential: true,
     });
