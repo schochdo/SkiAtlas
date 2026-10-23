@@ -1786,9 +1786,10 @@ export default function App() {
   const [minVertical, setMinVertical] = useState(500);
   const [minAcreage, setMinAcreage] = useState(100);
 
-  // Piste trail toggles — alpine on by default, nordic off by default
+  // Piste trail toggles — alpine on by default, nordic & touring off by default
   const [showAlpineTrails, setShowAlpineTrails] = useState(true);
   const [showNordicTrails, setShowNordicTrails] = useState(false);
+  const [showTouringTrails, setShowTouringTrails] = useState(false);
 
   // Navigation Instrument (Compass/Gyro HUD)
   const [mapBearing, setMapBearing] = useState(0);
@@ -2333,6 +2334,7 @@ export default function App() {
             'intermediate', '#1565C0', // Cobalt Blue
             'advanced', '#1C1B18',     // Black Diamond
             'expert', '#B84A39',       // Double Black Vermilion
+            'freeride', '#C25916',     // Backcountry / Freeride Ochre
             '#8A847C',
           ],
           'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.2, 14, 2.2, 17, 3.0],
@@ -2353,7 +2355,7 @@ export default function App() {
         },
       });
 
-      // Upright 3D Trail & Lift Names (Off by default for speed; toggled via showTrails)
+      // Upright 3D Trail & Lift Names (Off by default for speed; suppresses Unnamed/Unknown labels)
       map.addLayer({
         id: 'live-pistes-labels',
         type: 'symbol',
@@ -2362,7 +2364,18 @@ export default function App() {
         layout: {
           'visibility': 'none',
           'symbol-placement': 'line-center',
-          'text-field': ['get', 'name'],
+          'text-field': [
+            'case',
+            [
+              'any',
+              ['!', ['has', 'name']],
+              ['==', ['coalesce', ['get', 'name'], ''], ''],
+              ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]],
+              ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]],
+            ],
+            '',
+            ['get', 'name']
+          ],
           'text-size': 11,
           'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-keep-upright': true,
@@ -2632,34 +2645,76 @@ export default function App() {
   }, [leftDockOpen, selectedResortId, mapLoaded]);
 
   /* =========================================================================
-     TRAILS OVERLAY VISIBILITY TOGGLE (alpine/nordic individually controlled)
+     TRAILS OVERLAY VISIBILITY TOGGLE (alpine / touring / nordic individually controlled)
      ========================================================================= */
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
 
-    const anyTrails = showAlpineTrails || showNordicTrails;
+    const anyTrails = showAlpineTrails || showNordicTrails || showTouringTrails;
 
-    // Build a piste:type filter for the feature lines
-    let pisteFilter: any;
-    if (showAlpineTrails && showNordicTrails) {
-      pisteFilter = ['!=', ['get', 'kind'], 'lift']; // all pistes
-    } else if (showAlpineTrails) {
-      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], ['!=', ['get', 'piste:type'], 'nordic']];
-    } else if (showNordicTrails) {
-      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], ['==', ['get', 'piste:type'], 'nordic']];
-    } else {
-      pisteFilter = ['==', '1', '0']; // match nothing
+    // Build conditions for each active trail type
+    const allowedConditions: any[] = [];
+
+    if (showAlpineTrails) {
+      allowedConditions.push([
+        'all',
+        ['!=', ['get', 'piste:type'], 'nordic'],
+        ['!=', ['coalesce', ['get', 'grooming'], ''], 'backcountry'],
+        ['!=', ['coalesce', ['get', 'difficulty'], ''], 'freeride'],
+      ]);
     }
 
-    ['live-pistes-casing', 'live-pistes-lines', 'live-pistes-labels'].forEach((id) => {
+    if (showNordicTrails) {
+      allowedConditions.push([
+        'all',
+        ['==', ['get', 'piste:type'], 'nordic'],
+        ['!=', ['coalesce', ['get', 'grooming'], ''], 'backcountry'],
+      ]);
+    }
+
+    if (showTouringTrails) {
+      allowedConditions.push([
+        'any',
+        ['==', ['coalesce', ['get', 'grooming'], ''], 'backcountry'],
+        ['==', ['coalesce', ['get', 'difficulty'], ''], 'freeride'],
+      ]);
+    }
+
+    let pisteFilter: any;
+    if (allowedConditions.length === 0) {
+      pisteFilter = ['==', '1', '0']; // match nothing
+    } else if (allowedConditions.length === 3) {
+      pisteFilter = ['!=', ['get', 'kind'], 'lift']; // all pistes
+    } else if (allowedConditions.length === 1) {
+      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], allowedConditions[0]];
+    } else {
+      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], ['any', ...allowedConditions]];
+    }
+
+    // Suppress text labels for Unnamed, Unknown, or empty trail names while keeping lines visible
+    const labelFilter: any = [
+      'all',
+      pisteFilter,
+      ['has', 'name'],
+      ['!=', ['coalesce', ['get', 'name'], ''], ''],
+      ['!', ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+    ];
+
+    ['live-pistes-casing', 'live-pistes-lines'].forEach((id) => {
       if (map.getLayer(id)) {
         map.setLayoutProperty(id, 'visibility', anyTrails ? 'visible' : 'none');
         if (anyTrails) map.setFilter(id, pisteFilter);
       }
     });
-  }, [showAlpineTrails, showNordicTrails, mapLoaded]);
+
+    if (map.getLayer('live-pistes-labels')) {
+      map.setLayoutProperty('live-pistes-labels', 'visibility', anyTrails ? 'visible' : 'none');
+      if (anyTrails) map.setFilter('live-pistes-labels', labelFilter);
+    }
+  }, [showAlpineTrails, showNordicTrails, showTouringTrails, mapLoaded]);
 
   /* =========================================================================
      MAP POINTS GPU FILTERING (Keeps map markers strictly in sync with filters)
@@ -4198,7 +4253,7 @@ export default function App() {
                 {/* 1. Alpine Ski Trails */}
                 <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
                   <div className="pr-2">
-                    <div className="text-[11px] font-bold text-[#1C1B18]">Alpine Ski Trails</div>
+                    <div className="text-[11px] font-bold text-[#1C1B18]">Alpine Downhill Trails</div>
                     <div className="text-[9px] text-[#5C5852] leading-tight">
                       Colored downhill piste runs &amp; difficulty grades
                     </div>
@@ -4216,7 +4271,28 @@ export default function App() {
                   </div>
                 </label>
 
-                {/* 1b. Nordic / XC Trails */}
+                {/* 1b. Touring / Backcountry Trails */}
+                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
+                  <div className="pr-2">
+                    <div className="text-[11px] font-bold text-[#1C1B18]">Touring / Backcountry</div>
+                    <div className="text-[9px] text-[#5C5852] leading-tight">
+                      Backcountry ski tours, skin tracks &amp; freeride routes
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                    <span className={`text-[8.5px] font-mono font-bold ${showTouringTrails ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
+                      {showTouringTrails ? 'ON' : 'OFF'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={showTouringTrails}
+                      onChange={(e) => setShowTouringTrails(e.target.checked)}
+                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
+                    />
+                  </div>
+                </label>
+
+                {/* 1c. Nordic / XC Trails */}
                 <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
                   <div className="pr-2">
                     <div className="text-[11px] font-bold text-[#1C1B18]">Nordic / XC Trails</div>

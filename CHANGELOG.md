@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: add backcountry touring toggle and suppress unnamed/unknown trail labels`
+- **Unnamed / Unknown Label Suppression**: Suppressed text labels for trails named "Unnamed Trail", "Unnamed", "Unknown", or blank/null strings using MapLibre expressions and label filtering. The physical trail line geometries remain rendered on the mountain, but map label clutter from placeholder names is eliminated.
+- **Dedicated Touring / Backcountry Toggle**: Split trails into three independent overlays: Alpine Downhill (default ON), Touring / Backcountry (default OFF), and Nordic / XC (default OFF).
+- **Touring Identification**: Classified trails with `grooming === 'backcountry'` or `difficulty === 'freeride'` (24,636 trails globally, such as Cody Bowl and Rock Springs at Jackson Hole) into the Touring category, and rendered them with an ochre (`#C25916`) freeride color palette.
+
 ### `feat: add minimal full-screen toggle button next to unit selector in header`
 - Added an icon-only full-screen button (`Maximize` / `Minimize` from `lucide-react`) directly next to the Imperial / Metric selector in the top bar.
 - Styled in the warm cotton rag aesthetic (`#FAF8F3`, border `#D6D0C2`, `rounded-[2px]`, 26px height matching the unit selector).
