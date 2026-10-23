@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `bae25d1` fix: increase down-valley target offset to 3.8km, lower pitch to 38deg, and set bottom padding to 260px
+- **Vertical Centering Geometry**: At zoom ~12 with 3,000+ ft vertical relief, a 1.3km offset was too subtle to overcome the high perspective displacement of mountain summits. Increased the down-valley focal offset to `3.8 km` along the inverse of `default_bearing`.
+- **Pitch Softening**: Lowered pitch from `42°` to `38°`. A shallower pitch substantially compresses the vertical horizon stretch, preventing peaks from reaching the top navigation elements and placing the trail network squarely in the center of the viewport.
+- **Padding Update**: Elevated bottom viewport padding to `260px` in both the flight parameters and the responsive viewport padding hook.
+
 ### `9cb62a5` fix: persist bottom padding in viewport effect and apply bearing-aligned valley offset so mountains center vertically
 - **Padding Overwrite Fix**: Fixed a bug where the reactive `useEffect` monitoring `[selectedResortId]` was immediately executing `map.easeTo({ padding: { top: 52, bottom: 0 } })` the moment a card was clicked, instantly stripping the `bottom: 220` padding set by `safeFlyTo`. Updated the `useEffect` to retain `bottom: 220` whenever `selectedResortId` is active.
 - **Bearing-Aligned Valley Ground Anchor**: In addition to padding, offset the camera focal coordinate by ~1.35 km down the valley along the inverse of `default_bearing`. At 42° pitch, this pulls the physical mountain down into the central optical zone of the screen instead of letting the summit crowd the top bar.
