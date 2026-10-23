@@ -6,6 +6,10 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `7457771` feat: add bottom viewport padding to camera fly-to so 3D mountains frame prominently in center
+- Added `bottom: 140` padding to `safeFlyTo` camera flight options for both curated resort selection and global ski area selection.
+- In 3D perspective mode (45° pitch), focusing strictly on `[lng, lat]` without bottom padding pushed the mountain far into the upper horizon of the screen. Bottom padding pulls the focal mountain forward into the lower and middle thirds of the viewport, matching traditional ski trail map perspectives.
+
 ### `a744de7` fix: cap maxZoom to 16.5 and refine piste line widths at high zoom
 - **Subterranean Zoom Prevention**: Added `maxZoom: 16.5` to the MapLibre map initialization. Previously, without a maximum zoom limit, scroll-wheel zooming could drive the camera beyond the DEM tile resolution and clip beneath the mountain surface mesh. Added pitch clamping to 65° if zoom exceeds 16.0 to prevent steep oblique camera angles from colliding into terrain.
 - **Piste Line Width Taming**: Reduced the high-zoom line width interpolation stops for `live-pistes-lines` (from 5px down to 3.0px at zoom 17) and `live-pistes-casing` (from 7px down to 4.6px at zoom 17). Eliminates the ribbon-like ballooning of trail lines when zoomed in close on mountain faces.
