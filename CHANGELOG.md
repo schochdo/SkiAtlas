@@ -6,6 +6,10 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `245899b` fix: increase bottom framing padding to 220px, soften pitch to 42deg, and factor acreage into zoom
+- **Mountain Position Framing**: Increased camera viewport `bottom` padding from `140px` to `220px` (with `top: 30px`) and softened pitch from `45°` to `42°`. This prevents mountains (like Jackson Hole, Alta, Snowbird) from riding up against the top edge or disappearing into the upper horizon, seating the base village and runs comfortably in the lower-middle field of view.
+- **Acreage Sprawl Zoom Damping**: Added an acreage factor (`Math.log2(acres / 500) * 0.15`) into the zoom calculation alongside vertical drop. Vast expanses like Vail (5,317 acres) and Zermatt (8,800 acres) no longer over-zoom into a single localized cluster of trails, pulling back to ~`11.97` (Vail) and ~`11.54` (Zermatt) while keeping standard alpine peaks crisp around `12.0 – 12.3`.
+
 ### `7457771` feat: add bottom viewport padding to camera fly-to so 3D mountains frame prominently in center
 - Added `bottom: 140` padding to `safeFlyTo` camera flight options for both curated resort selection and global ski area selection.
 - In 3D perspective mode (45° pitch), focusing strictly on `[lng, lat]` without bottom padding pushed the mountain far into the upper horizon of the screen. Bottom padding pulls the focal mountain forward into the lower and middle thirds of the viewport, matching traditional ski trail map perspectives.
