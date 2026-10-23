@@ -3600,7 +3600,7 @@ export default function App() {
       zoom,
       pitch,
       bearing,
-      padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
+      padding: { left: leftPad, right: rightPad, top: 40, bottom: 140 },
       duration: flightDuration,
       essential: true,
     });
@@ -3633,9 +3633,9 @@ export default function App() {
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],
       zoom: 13.0,
-      pitch: 52,
+      pitch: 45,
       bearing: 0,
-      padding: { left: leftPad, right: rightPad, top: 52, bottom: 0 },
+      padding: { left: leftPad, right: rightPad, top: 40, bottom: 140 },
       duration: 1800,
       essential: true,
     });
