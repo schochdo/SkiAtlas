@@ -4,6 +4,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-23
+
+### `a744de7` fix: cap maxZoom to 16.5 and refine piste line widths at high zoom
+- **Subterranean Zoom Prevention**: Added `maxZoom: 16.5` to the MapLibre map initialization. Previously, without a maximum zoom limit, scroll-wheel zooming could drive the camera beyond the DEM tile resolution and clip beneath the mountain surface mesh. Added pitch clamping to 65° if zoom exceeds 16.0 to prevent steep oblique camera angles from colliding into terrain.
+- **Piste Line Width Taming**: Reduced the high-zoom line width interpolation stops for `live-pistes-lines` (from 5px down to 3.0px at zoom 17) and `live-pistes-casing` (from 7px down to 4.6px at zoom 17). Eliminates the ribbon-like ballooning of trail lines when zoomed in close on mountain faces.
+
 ## 2026-10-19
 
 ### `e535e72` style: position north arrow below +/- buttons with minimal cartographic needle matching zoom control aesthetic
