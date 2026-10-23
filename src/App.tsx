@@ -2654,8 +2654,8 @@ export default function App() {
     if (isProgrammaticFlightActive) return;
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = selectedResortId ? (window.innerWidth >= 768 ? 384 : 336) : 0;
-    const bottomPad = selectedResortId ? 260 : 0;
-    const topPad = selectedResortId ? 20 : 52;
+    const bottomPad = selectedResortId ? 20 : 0;
+    const topPad = selectedResortId ? 60 : 52;
 
     try {
       const curPad = mapRef.current.getPadding();
@@ -3585,23 +3585,22 @@ export default function App() {
 
     // Zoom: scale with both vertical drop and skiable acreage so sprawling resorts (Vail, Zermatt)
     // pull back appropriately, while maintaining a clear, framed view of the ski network.
-    // Jackson (4139ft, 2500ac) → ~12.0 | Vail (3450ft, 5317ac) → ~12.0 | Snowbird (3240ft) → ~12.2
-    // Zermatt (6005ft, 8800ac) → ~11.5 | Small hill (500ft, 100ac) → ~13.5
+    // Alta (~12.0) | Snowbird (~11.9) | Vail (~11.6) | Jackson (~11.8) | Zermatt (~11.2) | Small hill (~13.5)
     const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
     const acres = Math.max(resort.skiable_acres || 500, 200);
-    const acreSprawl = Math.log2(acres / 500) * 0.15;
-    const zoom = Math.max(11.3, Math.min(13.6, 13.6 - Math.log2(vert / 500) * 0.40 - acreSprawl));
+    const zoom = Math.max(11.0, Math.min(13.5, 13.3 - Math.log2(vert / 500) * 0.35 - Math.log2(acres / 500) * 0.20));
 
-    // Offset camera center toward the valley (opposite of bearing) so the mountain sits squarely in the lower-middle viewport
-    // At zoom ~12 with 38° pitch and 3,000ft terrain relief, a ~3.8km down-valley offset brings the mountain down into the center of the frame.
+    // Midpoint calculation:
+    // Coordinates in GLOBAL_SKI_ATLAS point to the mountain base/village.
+    // The trails and summit rise forward in the direction of default_bearing (valley looking up to peak).
+    // Advancing from the base into the mountain along bearing centers the entire ski area vertically on screen.
+    const midpointKm = Math.min(2.2, Math.max(0.5, (vert * 0.3048) / (2 * Math.tan(20 * Math.PI / 180)) / 1000));
     const bearingRad = (bearing * Math.PI) / 180;
-    const offsetDistanceKm = 3.8;
-    const dLat = -(offsetDistanceKm / 111.32) * Math.cos(bearingRad);
-    const dLng = -(offsetDistanceKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
+    const dLat = (midpointKm / 111.32) * Math.cos(bearingRad);
+    const dLng = (midpointKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
     const targetCenter: [number, number] = [resort.lng + dLng, resort.lat + dLat];
 
-    // Pitch: 38° — shallower oblique angle keeps peaks from projecting into the upper horizon
-    const pitch = 38;
+    const pitch = 45;
 
     // Compute dynamic duration based on flight distance across the globe so transcontinental jumps don't stall
     const curCenter = mapRef.current.getCenter();
@@ -3613,7 +3612,7 @@ export default function App() {
       zoom,
       pitch,
       bearing,
-      padding: { left: leftPad, right: rightPad, top: 20, bottom: 260 },
+      padding: { left: leftPad, right: rightPad, top: 60, bottom: 20 },
       duration: flightDuration,
       essential: true,
     });
@@ -3645,10 +3644,10 @@ export default function App() {
 
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],
-      zoom: 12.3,
-      pitch: 42,
+      zoom: 12.0,
+      pitch: 45,
       bearing: 0,
-      padding: { left: leftPad, right: rightPad, top: 30, bottom: 220 },
+      padding: { left: leftPad, right: rightPad, top: 60, bottom: 20 },
       duration: 1800,
       essential: true,
     });
