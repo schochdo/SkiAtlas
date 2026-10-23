@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `598adb1` fix: invert direction vector and remove bottom padding to center mountain between base and summit
+- **Direction Vector Inversion**: The previous offset math subtracted a vector along `default_bearing`, which moved the target away from the mountain into the valley flatlands. Because the camera faces towards the mountain (along `default_bearing`), moving the target backwards pushed the mountain further into the distance towards the top horizon. Corrected the vector to advance *forward* along `default_bearing` from the base lodge into the mid-mountain (`midpointKm = 0.5 - 2.2 km`), placing the middle of the ski area directly at the screen center.
+- **Removed Artificial Bottom Padding**: In MapLibre, `padding.bottom` tells the map engine that the bottom of the screen is covered by UI, which shifts the focal point *upwards* towards the top of the monitor. Removed the artificial 260px bottom padding and restored natural viewport padding (`top: 60, bottom: 20`) so the vertical center of the map corresponds to the unobstructed middle of the screen.
+- **Refined Zoom Calibration**: Tuned zoom scaling (`13.3 - log2(vert/500)*0.35 - log2(acres/500)*0.20`) to pull back slightly further for large-acreage mountains: Alta ~`12.00`, Snowbird ~`11.89`, Vail ~`11.64`, Jackson Hole ~`11.77`, Zermatt ~`11.22`.
+
 ### `bae25d1` fix: increase down-valley target offset to 3.8km, lower pitch to 38deg, and set bottom padding to 260px
 - **Vertical Centering Geometry**: At zoom ~12 with 3,000+ ft vertical relief, a 1.3km offset was too subtle to overcome the high perspective displacement of mountain summits. Increased the down-valley focal offset to `3.8 km` along the inverse of `default_bearing`.
 - **Pitch Softening**: Lowered pitch from `42°` to `38°`. A shallower pitch substantially compresses the vertical horizon stretch, preventing peaks from reaching the top navigation elements and placing the trail network squarely in the center of the viewport.
