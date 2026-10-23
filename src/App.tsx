@@ -3581,14 +3581,17 @@ export default function App() {
     // Bearing: use resort's default_bearing (fall-line / valley-up direction)
     const bearing = resort.default_bearing ?? 0;
 
-    // Zoom: calibrated closer so ski runs and trail maps are crisp and readable
-    // Jackson (4139ft) → ~12.8 | typical US alpine (3200ft) → ~13.0 | small hill (500ft) → 14.0
-    // European mega-domains (Chamonix 9205ft, Zermatt 6005ft) → ~12.4 - 12.6
+    // Zoom: scale with both vertical drop and skiable acreage so sprawling resorts (Vail, Zermatt)
+    // pull back appropriately, while maintaining a clear, framed view of the ski network.
+    // Jackson (4139ft, 2500ac) → ~12.0 | Vail (3450ft, 5317ac) → ~12.0 | Snowbird (3240ft) → ~12.2
+    // Zermatt (6005ft, 8800ac) → ~11.5 | Small hill (500ft, 100ac) → ~13.5
     const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
-    const zoom = Math.max(12.0, Math.min(14.0, 14.0 - Math.log2(vert / 500) * 0.38));
+    const acres = Math.max(resort.skiable_acres || 500, 200);
+    const acreSprawl = Math.log2(acres / 500) * 0.15;
+    const zoom = Math.max(11.3, Math.min(13.6, 13.6 - Math.log2(vert / 500) * 0.40 - acreSprawl));
 
-    // Pitch: 45° — oblique enough to show terrain depth, shallow enough to frame the full run top-to-bottom
-    const pitch = 45;
+    // Pitch: 42° — slightly shallower pitch expands mountain relief into the lower frame
+    const pitch = 42;
 
     // Compute dynamic duration based on flight distance across the globe so transcontinental jumps don't stall
     const curCenter = mapRef.current.getCenter();
@@ -3600,7 +3603,7 @@ export default function App() {
       zoom,
       pitch,
       bearing,
-      padding: { left: leftPad, right: rightPad, top: 40, bottom: 140 },
+      padding: { left: leftPad, right: rightPad, top: 30, bottom: 220 },
       duration: flightDuration,
       essential: true,
     });
@@ -3632,10 +3635,10 @@ export default function App() {
 
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],
-      zoom: 13.0,
-      pitch: 45,
+      zoom: 12.3,
+      pitch: 42,
       bearing: 0,
-      padding: { left: leftPad, right: rightPad, top: 40, bottom: 140 },
+      padding: { left: leftPad, right: rightPad, top: 30, bottom: 220 },
       duration: 1800,
       essential: true,
     });
