@@ -30,6 +30,8 @@ import {
   X,
   Plus,
   Minus,
+  Maximize,
+  Minimize,
 } from 'lucide-react';
 
 /* =========================================================================
@@ -1742,6 +1744,25 @@ export default function App() {
   const [earthProjection, setEarthProjection] = useState<EarthProjectionMode>('globe');
   const [basemapMode, setBasemapMode] = useState<BasemapMode>('satellite');
   const [unitsMetric, setUnitsMetric] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen?.().catch(() => {});
+    }
+  };
   const [leftDockOpen, setLeftDockOpen] = useState(true);
   const [mapMenuOpen, setMapMenuOpen] = useState(false);
   const [mapLegendOpen, setMapLegendOpen] = useState(false);
@@ -3657,13 +3678,26 @@ export default function App() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-3 font-mono text-xs">
+        <div className="flex items-center gap-2 font-mono text-xs">
           <button
             onClick={() => setUnitsMetric(!unitsMetric)}
             className="px-2.5 py-1 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer"
             title="Toggle Metric / Imperial units"
           >
             {unitsMetric ? 'Metric (°C, m)' : 'Imperial (°F, ft)'}
+          </button>
+
+          <button
+            onClick={toggleFullscreen}
+            className="h-[26px] w-[26px] bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer flex items-center justify-center"
+            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+          >
+            {isFullscreen ? (
+              <Minimize className="w-3.5 h-3.5 text-[#5C5852]" />
+            ) : (
+              <Maximize className="w-3.5 h-3.5 text-[#5C5852]" />
+            )}
           </button>
         </div>
       </header>

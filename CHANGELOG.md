@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: add minimal full-screen toggle button next to unit selector in header`
+- Added an icon-only full-screen button (`Maximize` / `Minimize` from `lucide-react`) directly next to the Imperial / Metric selector in the top bar.
+- Styled in the warm cotton rag aesthetic (`#FAF8F3`, border `#D6D0C2`, `rounded-[2px]`, 26px height matching the unit selector).
+- Listens to native `fullscreenchange` events to update its icon state seamlessly whether toggled via the button or browser shortcuts (e.g. `Esc`).
+
 ### `fix: enable native linear drag-to-rotate with ground clamping, and calibrate zoom and framing padding`
 - **Root Cause of Rotation Panning/Flinging**: Disabling `setCenterClampedToGround` on map init forced MapLibre to calculate camera positioning relative to sea level (elevation 0) rather than the mountain terrain surface. In alpine resorts (2,500m–3,500m elevation), this placed the rotation pivot 2.5–3.5 km underground. Rotating around an underground pivot caused the mountain to swing hundreds of pixels in a circle on every slight mouse drag. Replaced the custom mouse listener with MapLibre's native `dragRotate.enable({ around: 'center', movement: 'linear' })` and ensured `setCenterClampedToGround(true)`, so right-click drag orbits cleanly around the true 3D mountain surface in place without swinging.
 - **Mountain Centering & Top-Clip Elimination**: Set pitch to 38° to compress vertical perspective foreshortening. Set `bottom: 140px` framing padding (with `top: 60px`) in both `safeFlyTo` and the responsive padding hook, pulling mountain summits down from the top bar into the upper third while keeping the base village in the lower third.
