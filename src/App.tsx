@@ -2151,6 +2151,7 @@ export default function App() {
       center: [-98.5, 39.8], // Default to North America on globe
       zoom: 3.1,
       minZoom: 1.2,
+      maxZoom: 16.5, // Prevent over-zooming past DEM resolution into the subterranean surface
       pitch: 0,
       bearing: 0,
       maxPitch: 85,
@@ -2247,6 +2248,11 @@ export default function App() {
       // Do not fight programmatic flights across continents
       if (isProgrammaticFlightActive) return;
       const z = map.getZoom();
+      // Ensure camera does not dip below terrain surface when pitched steeply at high zoom
+      if (z > 16.0 && map.getPitch() > 65) {
+        map.setPitch(65);
+        setMapPitch(65);
+      }
       // Ensure globe always stays centered when in view:
       // When zooming out to globe level, smoothly constrain pitch toward 0° so globe never drops down
       if (z < 5.0) {
@@ -2290,6 +2296,11 @@ export default function App() {
       updateBounds();
       updateScale();
       const z = map.getZoom();
+      // Ensure camera does not dip below terrain surface when pitched steeply at high zoom
+      if (z > 16.0 && map.getPitch() > 65) {
+        map.setPitch(65);
+        setMapPitch(65);
+      }
       if (z >= 9.5 && fetchOverpassBboxRef.current) {
         try {
           const center = map.getCenter();
@@ -2345,7 +2356,7 @@ export default function App() {
         layout: { visibility: 'none' },
         paint: {
           'line-color': '#FAF8F3',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2.5, 14, 4.5, 17, 7],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2.0, 14, 3.6, 17, 4.6],
           'line-opacity': 0.85,
         },
       });
@@ -2366,7 +2377,7 @@ export default function App() {
             'expert', '#B84A39',       // Double Black Vermilion
             '#8A847C',
           ],
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.5, 14, 2.8, 17, 5],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.2, 14, 2.2, 17, 3.0],
           'line-opacity': 0.95,
         },
       });
