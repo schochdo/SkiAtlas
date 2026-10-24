@@ -3974,17 +3974,21 @@ export default function App() {
       {/* EDITORIAL TOP BAR (WARM COTTON RAG PAPER & SERIF TITLE - NO VANITY PADDING) */}
       <header className="absolute top-0 inset-x-0 z-20 h-13 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
         <div className="flex items-center gap-3 min-w-0">
-          {/* Custom Hypsometric Topo Contour Crest with Geodetic Triangulation Summit Monument */}
+          {/* Alpine Snow Globe Crest */}
           <svg className="w-6.5 h-6.5 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            {/* Base elevation contour */}
-            <path d="M2.5 19.5C5 17 8 16 12 16C16 16 19 17 21.5 19.5" stroke="#8A847C" strokeWidth="1.5" strokeLinecap="round" />
-            {/* Mid elevation contour */}
-            <path d="M5.5 15C7.5 13 9.5 12 12 12C14.5 12 16.5 13 18.5 15" stroke="#5A554E" strokeWidth="1.6" strokeLinecap="round" />
-            {/* High alpine contour */}
-            <path d="M8.5 10.5C9.8 9.2 10.8 8.5 12 8.5C13.2 8.5 14.2 9.2 15.5 10.5" stroke="#1C1B18" strokeWidth="1.7" strokeLinecap="round" />
-            {/* Geodetic Summit Mark (triangular triangulation monument) */}
-            <polygon points="12,3.2 15.2,7.4 8.8,7.4" fill="#B84A39" stroke="#1C1B18" strokeWidth="1.1" strokeLinejoin="round" />
-            <circle cx="12" cy="5.6" r="0.85" fill="#FAF8F3" />
+            {/* Glass Sphere Dome */}
+            <circle cx="12" cy="10.5" r="8" stroke="#1C1B18" strokeWidth="1.3" />
+            {/* Pedestal Base */}
+            <path d="M7 20H17" stroke="#1C1B18" strokeWidth="1.4" strokeLinecap="round" />
+            <path d="M8.5 18.5L7 20M15.5 18.5L17 20" stroke="#1C1B18" strokeWidth="1.2" strokeLinecap="round" />
+            {/* Alpine Mountain Silhouette inside Dome */}
+            <path d="M6 16L10.5 10L13.5 14L15 12L18 16" stroke="#5C5852" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            {/* Vermilion Summit Accent */}
+            <polygon points="10.5,10 12,12 9,12" fill="#B84A39" />
+            {/* Drifting Snow Crystals */}
+            <circle cx="10" cy="6" r="0.75" fill="#B84A39" />
+            <circle cx="14.5" cy="7.2" r="0.65" fill="#8A847C" />
+            <circle cx="7.5" cy="9.5" r="0.5" fill="#8A847C" />
           </svg>
 
           {/* Tracked Mountain Editorial Wordmark */}

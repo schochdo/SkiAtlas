@@ -6,6 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: replace Christmas-tree contour icon with Alpine Snow Globe crest`
+- **Replaced Confusing Contour Mark**:
+  - The previous 3-tiered elevation contour curves crowned by a red triangular monument resembled a decorated Christmas tree at small navbar sizes (26px).
+  - Replaced it with an authentic **Alpine Snow Globe** crest: a circular glass dome on a flared architectural pedestal, framing a dual-peak alpine ridge silhouette, vermilion summit flag, and drifting snow crystals.
+  - Aligns cleanly with the rebranded **`SNOW · GLOBE`** identity.
+
 ### `feat: rebrand application title and masthead wordmark to Snow Globe`
 - **Updated Page & Masthead Title**:
   - Changed `<title>` and OpenGraph title in `index.html` from `SkiAtlas` to `Snow Globe`.
