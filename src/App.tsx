@@ -4013,7 +4013,7 @@ export default function App() {
         <div className="flex items-center gap-2 text-xs font-medium">
           <button
             onClick={() => setUnitsMetric(!unitsMetric)}
-            className="px-3 py-1.5 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-full transition-colors cursor-pointer text-xs font-bold"
+            className="px-3 py-1.5 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer text-xs font-bold"
             title="Toggle Metric / Imperial units"
           >
             {unitsMetric ? 'Metric (°C, m)' : 'Imperial (°F, ft)'}
@@ -4021,7 +4021,7 @@ export default function App() {
 
           <button
             onClick={toggleFullscreen}
-            className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-full transition-colors cursor-pointer flex items-center justify-center"
+            className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer flex items-center justify-center"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
@@ -4052,7 +4052,7 @@ export default function App() {
                 placeholder="Search alpine resorts, peaks, countries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-full pl-9.5 pr-8 py-2 text-sm text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#2C2A27] focus:bg-[#FAF8F3] transition-colors"
+                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-md pl-9.5 pr-8 py-2 text-sm text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#2C2A27] focus:bg-[#FAF8F3] transition-colors"
               />
               {searchQuery && (
                 <button
@@ -4065,7 +4065,7 @@ export default function App() {
             </div>
 
             {/* Framed Filter Box */}
-            <div className="border border-[#D6D0C2] rounded-2xl bg-[#F7F4ED] p-3 space-y-3">
+            <div className="border border-[#D6D0C2] rounded-md bg-[#F7F4ED] p-3 space-y-3">
               <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
                 <div className="flex items-center gap-2">
                   <span className="font-extrabold text-[#1C1B18] uppercase tracking-wider text-[11px]">
@@ -4094,7 +4094,7 @@ export default function App() {
               <div className="grid grid-cols-3 gap-1.5">
                 <button
                   onClick={() => setShowDownhill(!showDownhill)}
-                  className={`py-2 px-1 rounded-full text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     showDownhill
                       ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] shadow-2xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
@@ -4105,7 +4105,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setShowNordic(!showNordic)}
-                  className={`py-2 px-1 rounded-full text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     showNordic
                       ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] shadow-2xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
@@ -4116,7 +4116,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setShowHeliCat(!showHeliCat)}
-                  className={`py-2 px-1 rounded-full text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     showHeliCat
                       ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] shadow-2xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
@@ -4199,10 +4199,10 @@ export default function App() {
               <span className="text-[#736E67] uppercase tracking-wider font-extrabold text-[11px] shrink-0">
                 Sort:
               </span>
-              <div className="flex items-center gap-1 bg-[#FAF8F3] p-0.5 rounded-full border border-[#D6D0C2]">
+              <div className="flex items-center gap-1 bg-[#FAF8F3] p-0.5 rounded-md border border-[#D6D0C2]">
                 <button
                   onClick={() => handleSortClick('vert')}
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                     sortBy === 'vert' ? 'bg-[#F7F4ED] text-[#1C1B18] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
@@ -4211,7 +4211,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => handleSortClick('acres')}
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                     sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#2E5A44] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
@@ -4220,7 +4220,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => handleSortClick('name')}
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                     sortBy === 'name' ? 'bg-[#F7F4ED] text-[#1C1B18] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
@@ -4229,7 +4229,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => handleSortClick('snow')}
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                     sortBy === 'snow' ? 'bg-[#F7F4ED] text-[#3B627E] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
@@ -4244,7 +4244,7 @@ export default function App() {
           <div className="px-3 py-2 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center gap-2 shrink-0">
             <button
               onClick={() => setDirectoryScope('in_frame')}
-              className={`flex-1 py-1.5 px-3 rounded-full border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
                 directoryScope === 'in_frame'
                   ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2C2A27] shadow-2xs'
                   : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
@@ -4256,7 +4256,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setDirectoryScope('all')}
-              className={`flex-1 py-1.5 px-3 rounded-full border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
                 directoryScope === 'all'
                   ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] shadow-2xs ring-1 ring-[#2E5A44]/30'
                   : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
@@ -4280,7 +4280,7 @@ export default function App() {
                 {directoryScope === 'in_frame' && filteredResorts.length > 0 && (
                   <button
                     onClick={() => setDirectoryScope('all')}
-                    className="inline-block px-3 py-1.5 text-xs font-bold text-[#2E5A44] bg-[#FAF8F3] border border-[#2E5A44] rounded-full hover:bg-[#EAE5D9] transition-colors cursor-pointer"
+                    className="inline-block px-3 py-1.5 text-xs font-bold text-[#2E5A44] bg-[#FAF8F3] border border-[#2E5A44] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
                   >
                     View all {filteredResorts.length.toLocaleString()} matching areas →
                   </button>
@@ -4306,7 +4306,7 @@ export default function App() {
                           <h3 className="font-bold text-sm text-[#1C1B18] tracking-tight truncate">
                             {r.name}
                           </h3>
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.bg} ${badge.text} ${badge.border} shrink-0`}>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${badge.bg} ${badge.text} ${badge.border} shrink-0`}>
                             {badge.icon} {badge.label}
                           </span>
                         </div>
@@ -4328,7 +4328,7 @@ export default function App() {
                       {r.weather?.is_live && (
                         <div className="shrink-0 flex items-center text-xs">
                           <span
-                            className={`px-2.5 py-1 rounded-full border flex items-center gap-1 text-xs font-bold ${
+                            className={`px-2 py-1 rounded-md border flex items-center gap-1 text-xs font-bold ${
                               snow7d > 0
                                 ? 'bg-[#3B627E]/10 border-[#3B627E]/40 text-[#3B627E]'
                                 : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C]'
@@ -4355,7 +4355,7 @@ export default function App() {
           title={leftDockOpen ? "Collapse directory tray" : "Open directory tray"}
           aria-label={leftDockOpen ? "Collapse directory tray" : "Open directory tray"}
         >
-          <div className="flex items-center justify-center w-4 h-8 rounded-full group-hover:bg-[#E5E0D5] transition-colors">
+          <div className="flex items-center justify-center w-4 h-8 rounded-md group-hover:bg-[#E5E0D5] transition-colors">
             <svg
               className="w-2.5 h-3 text-[#5A554E] group-hover:text-[#1C1B18] transition-colors"
               viewBox="0 0 8 10"
@@ -4773,14 +4773,14 @@ export default function App() {
         {!attributionOpen ? (
           <button
             onClick={() => setAttributionOpen(true)}
-            className="flex items-center justify-center w-5 h-5 rounded-full bg-[#FAF8F3]/90 hover:bg-[#FAF8F3] backdrop-blur-xs border border-[#D6D0C2] hover:border-[#1C1B18] text-[#5C5852] hover:text-[#1C1B18] shadow-xs transition-colors cursor-pointer"
+            className="flex items-center justify-center w-5 h-5 rounded-md bg-[#FAF8F3]/90 hover:bg-[#FAF8F3] backdrop-blur-xs border border-[#D6D0C2] hover:border-[#1C1B18] text-[#5C5852] hover:text-[#1C1B18] shadow-xs transition-colors cursor-pointer"
             title="Map Attribution & Data Sources"
             aria-label="Toggle map attribution"
           >
             <span className="font-sans italic font-bold text-[11px] leading-none">i</span>
           </button>
         ) : (
-          <div className="flex items-center gap-1.5 text-[9.5px] font-medium px-2.5 py-1 rounded-full bg-[#FAF8F3]/95 backdrop-blur-xs border border-[#D6D0C2] text-[#8A847C] shadow-sm animate-in fade-in duration-150">
+          <div className="flex items-center gap-1.5 text-[9.5px] font-medium px-2 py-0.5 rounded-md bg-[#FAF8F3]/95 backdrop-blur-xs border border-[#D6D0C2] text-[#8A847C] shadow-sm animate-in fade-in duration-150">
             <button
               onClick={() => setAttributionOpen(false)}
               className="text-[#5C5852] hover:text-[#1C1B18] cursor-pointer font-sans italic font-bold text-[10px] pr-0.5"

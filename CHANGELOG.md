@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: standardize on refined rounded-md (6px) corners across panel and controls`
+- **Replaced Full Stadium Pills with Tailored 6px Rounded Corners**:
+  - Overly round stadium capsules (`rounded-full`) felt too circular and bubbly.
+  - Standardized on the user's preferred corner geometry: `rounded-md` (`border-radius: 6px` / `0.375rem`), as featured on the Basemap cartographic controls button.
+- **Applied Consistent `rounded-md` Across Elements**:
+  - **Search Input**: Updated from `rounded-full` to `rounded-md`.
+  - **Terrain Filters Container**: Standardized to `rounded-md`.
+  - **Category Filter Buttons**: Converted Downhill, Nordic, and Heli/Cat toggle buttons to `rounded-md`.
+  - **Sort Bar**: Container and buttons standardized to `rounded-md`.
+  - **Scope Tabs**: `IN FRAME` and `ALL MATCHING` tabs set to `rounded-md`.
+  - **Card Badges & Snow Chips**: Category tags and snowfall chips standardized to `rounded-md`.
+  - **Header & Tool Toggles**: Units toggle, fullscreen button, tray pull tab, and attribution controls set to `rounded-md`.
+
 ### `style: soften panel elements with fully rounded pills and smooth curved containers`
 - **Eliminated Discordant Hard Edges Inside Directory Panel**:
   - Previously, category badges (`rounded-full`) were soft enamel pills, while adjacent panel controls (search input, terrain filter box, sort buttons, scope tabs, and pull tabs) retained sharp `rounded-[2px]`, `rounded-[3px]`, and `rounded` corners, creating visual friction.
