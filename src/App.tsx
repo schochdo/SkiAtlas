@@ -2526,6 +2526,48 @@ export default function App() {
         },
       });
 
+      // Dedicated Aerialway / Lift Cable-Aligned Labels
+      map.addLayer({
+        id: 'live-pistes-lifts-labels',
+        type: 'symbol',
+        source: 'live-pistes-vector',
+        minzoom: 12.5,
+        filter: [
+          'all',
+          ['==', ['get', 'kind'], 'lift'],
+          ['has', 'name'],
+          ['!=', ['coalesce', ['get', 'name'], ''], ''],
+          ['!', ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+        ],
+        layout: {
+          'visibility': showDownhill ? 'visible' : 'none',
+          'symbol-placement': 'line-center',
+          'text-field': ['get', 'name'],
+          'text-size': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            12.5, 9.5,
+            14, 11,
+            16, 12.5,
+          ],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-offset': [0, -0.75],
+          'text-keep-upright': true,
+          'text-rotation-alignment': 'map',
+          'text-pitch-alignment': 'viewport',
+          'text-letter-spacing': 0.04,
+          'text-max-angle': 35,
+        },
+        paint: {
+          'text-color': '#8F3628',
+          'text-halo-color': '#FAF8F3',
+          'text-halo-width': 2.5,
+          'text-halo-blur': 0.5,
+        },
+      });
+
       // 2. Curated Seed Resorts Source (Concentric Ring Markers)
       const curatedFeatures = GLOBAL_SKI_ATLAS.map((r) => ({
         type: 'Feature',
@@ -2906,9 +2948,12 @@ export default function App() {
       if (anyTrails) map.setFilter('live-pistes-labels', labelFilter);
     }
 
-    // Aerialway Lifts are tied directly to Downhill ski infrastructure
+    // Aerialway Lifts & Cable-Aligned Labels are tied directly to Downhill ski infrastructure
     if (map.getLayer('live-pistes-lifts')) {
       map.setLayoutProperty('live-pistes-lifts', 'visibility', showDownhill ? 'visible' : 'none');
+    }
+    if (map.getLayer('live-pistes-lifts-labels')) {
+      map.setLayoutProperty('live-pistes-lifts-labels', 'visibility', showDownhill ? 'visible' : 'none');
     }
   }, [showDownhill, showNordic, showHeliCat, mapLoaded]);
 

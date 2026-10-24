@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: add cable-aligned ski lift labels with editorial vermilion styling`
+- **Cable-Aligned Aerialway Labels**:
+  - Added dedicated vector symbol layer `live-pistes-lifts-labels` in [`src/App.tsx#L2529-L2571`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L2529-L2571) displaying official lift names (*"Aerial Tram"*, *"Sublette Quad Chair"*, etc.) centered directly along the aerialway cable lines (`symbol-placement: 'line-center'`).
+  - Aligns with the cable line rotation angle while keeping text strictly upright (`text-keep-upright: true`) and offset slightly perpendicular to the cable (`text-offset: [0, -0.75]`), ensuring the dashed terracotta line remains visible.
+- **Editorial Mountain Styling**:
+  - Styled in deep alpine vermilion (`#8F3628`) with an off-white cotton-rag halo (`#FAF8F3`, width 2.5), establishing instant visual hierarchy against dark charcoal trail names.
+  - Dynamically scales font size from 9.5px at zoom 12.5 up to 12.5px at zoom 16.
+  - Tied to the `⛷️ Downhill` category master toggle alongside `live-pistes-lifts`.
+  - Suppresses placeholder and unnamed labels (`Unnamed`, `Unknown`).
+
 ### `refactor: remove redundant selected resort name from top navigation bar`
 - **Eliminated Header Redundancy**:
   - Removed `{selectedResort.name} ({region}, {country})` breadcrumb from the top navigation bar.
