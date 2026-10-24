@@ -3740,11 +3740,11 @@ export default function App() {
     const bearing = resort.default_bearing ?? 0;
 
     // Zoom: scale with both vertical drop and skiable acreage so sprawling resorts (Vail, Zermatt)
-    // pull back appropriately, while maintaining a clear, framed view of the ski network.
-    // Alta (~11.5) | Snowbird (~11.4) | Jackson (~11.2) | Vail (~10.9) | Zermatt (~10.2) | Small hill (~13.3)
+    // pull back appropriately, while maintaining an intimate, framed view of the ski network.
+    // Alta (~12.5) | Snowbird (~12.4) | Jackson (~12.2) | Vail (~12.0) | Zermatt (~11.2) | Small hill (~14.3)
     const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
     const acres = Math.max(resort.skiable_acres || 500, 200);
-    const zoom = Math.max(9.8, Math.min(13.5, 12.6 - Math.log2(vert / 1000) * 0.45 - Math.log2(acres / 1000) * 0.35));
+    const zoom = Math.max(10.8, Math.min(14.5, 13.6 - Math.log2(vert / 1000) * 0.45 - Math.log2(acres / 1000) * 0.35));
 
     // Midpoint calculation:
     // Coordinates in GLOBAL_SKI_ATLAS point to the mountain base/village.
@@ -3798,9 +3798,13 @@ export default function App() {
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = window.innerWidth >= 768 ? 384 : 336;
 
+    const gVert = Math.max(p.vertical_ft || 1500, 500);
+    const gAcres = Math.max(p.skiable_acres || 500, 200);
+    const gZoom = Math.max(10.8, Math.min(14.5, 13.6 - Math.log2(gVert / 1000) * 0.45 - Math.log2(gAcres / 1000) * 0.35));
+
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],
-      zoom: 12.0,
+      zoom: gZoom,
       pitch: 38,
       bearing: 0,
       padding: { left: leftPad, right: rightPad, top: 60, bottom: 140 },
@@ -4241,33 +4245,21 @@ export default function App() {
           aria-label="Reorient to True North"
         >
           <svg
-            className="w-5.5 h-5.5 pointer-events-none transition-transform duration-150 ease-out"
+            className="w-4 h-4 pointer-events-none transition-transform duration-150 ease-out"
             viewBox="0 0 24 24"
             style={{ transform: `rotate(${-mapBearing}deg)` }}
           >
-            {/* True Cartographic North Arrow pointing directly UP to North (Completely Grayscale) */}
+            {/* True Cartographic North Arrow in exact same #1C1B18 gray as + and - */}
             <polygon
-              points="12,2 4.5,20 12,15.5"
-              fill="#1C1B18"
-              stroke="#1C1B18"
-              strokeWidth="0.8"
-              strokeLinejoin="round"
+              points="12,2 4.5,20 12,15.5 19.5,20"
+              fill="currentColor"
             />
-            <polygon
-              points="12,2 19.5,20 12,15.5"
-              fill="#5A554E"
-              stroke="#1C1B18"
-              strokeWidth="0.8"
-              strokeLinejoin="round"
-            />
-            <line x1="12" y1="2" x2="12" y2="15.5" stroke="#1C1B18" strokeWidth="0.6" />
-
-            {/* Prominent, highly legible bold 'N' inside the North arrow */}
             <text
               x="12"
-              y="12.5"
+              y="10.5"
               textAnchor="middle"
-              fontSize="6.5"
+              dominantBaseline="central"
+              fontSize="6"
               fontWeight="900"
               fontFamily="system-ui, -apple-system, sans-serif"
               fill="#FAF8F3"

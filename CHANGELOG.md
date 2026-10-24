@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: increase default resort selection zoom by one full click and unify north arrow color with +/- controls`
+- **One Full Click Closer on Resort Selection**:
+  - Increased the base zoom constant from `12.6` to `13.6` in `handleSelectResort()` (e.g. Alta: ~11.5 → ~12.5, Snowbird: ~11.4 → ~12.4, Jackson: ~11.2 → ~12.2, Vail: ~10.9 → ~12.0, Zermatt: ~10.2 → ~11.2, regional hills: ~13.3 → ~14.3).
+  - Replaced the hardcoded `zoom: 12.0` in `handleSelectGlobalResort()` with the same dynamic acreage- and vertical-scaled `gZoom` formula (base `13.6`), ensuring all global ski areas frame tightly on selection rather than floating far out in orbit.
+  - Aligns with user request for one full `+` click closer zoom, providing an intimate, readable framing of the piste network and base area upon fly-in.
+- **Unified North Arrow Ink Palette**:
+  - Matched the North arrow chevron color to the exact uniform charcoal ink (`#1C1B18` via `fill="currentColor"`) used by the adjacent `+` (`Plus`) and `−` (`Minus`) zoom buttons.
+  - Eliminated dual-tone facet shading to ensure clean graphic consistency with the monochrome linework of the viewport control stack.
+  - Centered a high-contrast `#FAF8F3` bold knockout `N` glyph in the chevron belly for immediate True North orientation.
+  - Scaled SVG icon footprint to `w-4 h-4` to match the exact visual weight and balance of the `w-3.5 h-3.5` zoom icons.
+
 ### `style: convert top-left north arrow to completely grayscale cartographic palette`
 - **Monochrome Cartographic Palette**: Converted the top-left True North arrow from chromatic vermilion red to a pure grayscale palette.
 - **Deep Charcoal & Slate Faceting**: Rendered the upward-pointing chevron with deep ink charcoal (`#1C1B18`) on the left facet and rich graphite gray (`#5A554E`) on the shaded facet, bounded by a `#1C1B18` stroke and center spine.
