@@ -5433,9 +5433,8 @@ export default function App() {
 
               {/* EARTH PROJECTION SELECTION */}
               <div>
-                <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
-                  <span>Earth Projection</span>
-                  <span className="text-[10px] text-[#5C5852] font-normal">Geometry</span>
+                <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5">
+                  Earth Projection
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
@@ -5446,73 +5445,57 @@ export default function App() {
                         setMapPitch(0);
                       }
                     }}
-                    className={`p-2 rounded-md border text-left transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-md border text-xs font-semibold transition-all cursor-pointer ${
                       earthProjection === 'globe'
                         ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
                         : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
                     }`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <Globe className="w-3.5 h-3.5 text-[#5C5852]" />
-                      <span className="text-xs font-semibold">3D Globe</span>
-                    </div>
-                    <div className="text-[10px] text-[#5C5852] mt-0.5 font-normal leading-tight">
-                      Spherical Earth
-                    </div>
+                    <Globe className="w-3.5 h-3.5 text-[#5C5852]" />
+                    <span>3D Globe</span>
                   </button>
                   <button
                     onClick={() => setEarthProjection('mercator')}
-                    className={`p-2 rounded-md border text-left transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-md border text-xs font-semibold transition-all cursor-pointer ${
                       earthProjection === 'mercator'
                         ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
                         : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
                     }`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-[#5C5852]" />
-                      <span className="text-xs font-semibold">Flat Map</span>
-                    </div>
-                    <div className="text-[10px] text-[#5C5852] mt-0.5 font-normal leading-tight">
-                      Planar Mercator
-                    </div>
+                    <Layers className="w-3.5 h-3.5 text-[#5C5852]" />
+                    <span>Flat Map</span>
                   </button>
                 </div>
               </div>
 
               {/* BASEMAP STYLE SELECTION */}
               <div>
-                <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
-                  <span>Cartographic Base</span>
-                  <span className="text-[10px] text-[#5C5852] font-normal">Select style</span>
+                <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5">
+                  Cartographic Base
                 </div>
                 <div className="space-y-1">
                   {[
-                    { id: 'satellite', label: 'Satellite 3D', desc: 'High-resolution aerial satellite imagery' },
-                    { id: 'osm', label: 'OpenStreetMap', desc: 'Detailed vector roads, towns & trails' },
-                    { id: 'topo', label: 'Alpine Topo', desc: 'Painted relief zooming to detailed topo contours' },
+                    { id: 'satellite', label: 'Satellite 3D' },
+                    { id: 'osm', label: 'OpenStreetMap' },
+                    { id: 'topo', label: 'Alpine Topo' },
                   ].map((item) => {
                     const isSelected = basemapMode === item.id;
                     return (
                       <button
                         key={item.id}
                         onClick={() => setBasemapMode(item.id as BasemapMode)}
-                        className={`w-full text-left p-2.5 rounded-md border transition-all cursor-pointer ${
+                        className={`w-full flex items-center justify-between p-2 rounded-md border text-xs transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
-                            : 'bg-[#F7F4ED] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
+                            : 'bg-[#F7F4ED] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4] font-medium'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#1C1B18]">{item.label}</span>
-                          {isSelected && (
-                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-[#1C1B18] text-[#FAF8F3]">
-                              Active
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[10px] text-[#5C5852] mt-0.5 leading-tight font-normal">
-                          {item.desc}
-                        </div>
+                        <span>{item.label}</span>
+                        {isSelected && (
+                          <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#1C1B18] text-[#FAF8F3]">
+                            Active
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -5545,10 +5528,10 @@ export default function App() {
                   {/* Preset Quick Toggles */}
                   <div className="grid grid-cols-4 gap-1 pt-0.5">
                     {[
-                      { label: 'Flat', val: 0.0, desc: '0×' },
-                      { label: 'Calib.', val: 0.7, desc: '0.7×' },
-                      { label: '1:1', val: 1.0, desc: '1.0×' },
-                      { label: 'Alpine', val: 2.0, desc: '2.0×' },
+                      { label: 'Flat (0×)', val: 0.0 },
+                      { label: '0.7×', val: 0.7 },
+                      { label: '1.0×', val: 1.0 },
+                      { label: 'Alpine (2×)', val: 2.0 },
                     ].map((preset) => {
                       const isActive = Math.abs(terrainExaggeration - preset.val) < 0.04;
                       return (
@@ -5561,20 +5544,12 @@ export default function App() {
                               ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-extrabold'
                               : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
                           }`}
-                          title={`Set elevation multiplier to ${preset.desc}`}
                         >
-                          <div>{preset.label}</div>
-                          <div className={`text-[9px] ${isActive ? 'text-[#1C1B18]' : 'text-[#8A847C]'} font-normal`}>
-                            {preset.desc}
-                          </div>
+                          {preset.label}
                         </button>
                       );
                     })}
                   </div>
-                </div>
-
-                <div className="text-[10px] text-[#736E67] leading-tight font-normal">
-                  Scales the vertical elevation mesh of mountain summits, ridges, and valleys.
                 </div>
               </div>
             </div>

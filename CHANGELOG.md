@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `refactor: purge redundant explanatory subtitles from Cartographic Controls`
+- **Removed AI Explanatory Text Padding**:
+  - **What was wrong**: The Cartographic Controls menu was cluttered with redundant second-line explanations beneath intuitive buttons ("Spherical Earth" under 3D Globe, "Planar Mercator" under Flat Map, "High-resolution aerial satellite imagery" under Satellite 3D, "Detailed vector roads..." under OSM, "Painted relief..." under Alpine Topo, plus a trailing paragraph explaining what an elevation multiplier does).
+  - **Clean Typography Layout**: Purged all redundant subtitle descriptions and subheader tags (`GEOMETRY`, `SELECT STYLE`). The control buttons are now crisp, single-line elements with clear labels and active status badges, adhering strictly to Edward Tufte and Swiss cartographic layout principles.
+
+---
+
 ### `feat: reinstate Deer Valley and 24 world titan flagships; fix adjacent-resort duplicate suppression`
 - **Root Cause of Missing Major Resort Points**:
   - **Overzealous Proximity Suppression**: In `fetchGlobal()`, the duplicate check previously evaluated `if (dist < 0.05 || (nameMatch && dist < 0.15))` against curated flagships. Because `0.05°` is ~3.5 miles, any real, legitimate ski area located near a curated flagship was discarded as a "duplicate" even if their names were completely distinct.
