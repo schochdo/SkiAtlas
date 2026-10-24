@@ -2382,10 +2382,12 @@ export default function App() {
       });
 
       // Outer Casing line (Off by default for speed; toggled via showTrails)
+      // Geometry strictly filtered to LineStrings to prevent duplicate strokes on area polygons
       map.addLayer({
         id: 'live-pistes-casing',
         type: 'line',
         source: 'live-pistes-vector',
+        filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
         layout: { visibility: 'none' },
         paint: {
           'line-color': '#FAF8F3',
@@ -2395,10 +2397,12 @@ export default function App() {
       });
 
       // Color lines (Off by default for speed; toggled via showTrails)
+      // Geometry strictly filtered to LineStrings to eliminate 3-parallel-line duplicate boundary strokes
       map.addLayer({
         id: 'live-pistes-lines',
         type: 'line',
         source: 'live-pistes-vector',
+        filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
         layout: { visibility: 'none' },
         paint: {
           'line-color': [
@@ -2435,6 +2439,7 @@ export default function App() {
         type: 'symbol',
         source: 'live-pistes-vector',
         minzoom: 12.5,
+        filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
         layout: {
           'visibility': 'none',
           'symbol-placement': 'line-center',
@@ -2756,15 +2761,18 @@ export default function App() {
       ]);
     }
 
+    // Restrict piste strokes to LineStrings to avoid stroking perimeter boundaries of clearing polygons
+    const isLineGeom = ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']];
+
     let pisteFilter: any;
     if (allowedConditions.length === 0) {
       pisteFilter = ['==', '1', '0']; // match nothing
     } else if (allowedConditions.length === 3) {
-      pisteFilter = ['!=', ['get', 'kind'], 'lift']; // all pistes
+      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom]; // all line pistes
     } else if (allowedConditions.length === 1) {
-      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], allowedConditions[0]];
+      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom, allowedConditions[0]];
     } else {
-      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], ['any', ...allowedConditions]];
+      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom, ['any', ...allowedConditions]];
     }
 
     // Suppress text labels for Unnamed, Unknown, or empty trail names while keeping lines visible

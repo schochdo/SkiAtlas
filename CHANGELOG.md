@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: filter trail line layers to LineString geometries to eliminate duplicate polygon boundary strokes`
+- **Eliminated 3-Parallel-Line Artifacts**: Resolved an issue where ski runs (such as those at Blue Knob, PA) rendered as three parallel lines with crossbar caps down a single trail clearing.
+- **Root Cause**: OpenStreetMap and OpenSkiData contain two geometry types for ski runs: (1) centerline paths (`LineString`) and (2) clearing area footprints (`Polygon`). When a `Polygon` is fed to a MapLibre `type: 'line'` layer without geometry filtering, MapLibre strokes the polygon's perimeter boundary (left and right tree lines plus top/bottom end-caps). When combined with the centerline `LineString`, this stroked both flanks and the middle of the trail simultaneously.
+- **Geometry-Type Filtering**: Updated `live-pistes-casing`, `live-pistes-lines`, and `live-pistes-labels` with `['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']]` both on layer initialization and inside dynamic layer visibility/difficulty filters. All trail outlines now render as single, clean, canonical centerlines matching editorial cartographic standards.
+
 ### `fix: populate direct official websites for curated resorts and eliminate generic google search fallbacks`
 - **Curated Resort Official Websites**: Added direct, verified official website URLs for all 49 flagship curated resorts (e.g. Jackson Hole, Alta, Snowbird, Vail, Aspen Snowmass, Zermatt, Chamonix, Whistler) and 14 heli/cat operations in `GLOBAL_SKI_ATLAS` and `HELI_CAT_OPERATIONS`.
 - **Eliminated Generic Google Search Fallback**: Removed the fallback that redirected users to `google.com/search?q=...` when no website was present. If a ski area has no official website known, the website link is omitted entirely rather than displaying a generic search page.
