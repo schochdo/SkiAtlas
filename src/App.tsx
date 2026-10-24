@@ -4245,17 +4245,17 @@ export default function App() {
             viewBox="0 0 24 24"
             style={{ transform: `rotate(${-mapBearing}deg)` }}
           >
-            {/* True Cartographic North Arrow pointing directly UP to North */}
+            {/* True Cartographic North Arrow pointing directly UP to North (Completely Grayscale) */}
             <polygon
               points="12,2 4.5,20 12,15.5"
-              fill="#E04836"
+              fill="#1C1B18"
               stroke="#1C1B18"
               strokeWidth="0.8"
               strokeLinejoin="round"
             />
             <polygon
               points="12,2 19.5,20 12,15.5"
-              fill="#B84A39"
+              fill="#5A554E"
               stroke="#1C1B18"
               strokeWidth="0.8"
               strokeLinejoin="round"

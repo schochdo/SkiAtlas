@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: convert top-left north arrow to completely grayscale cartographic palette`
+- **Monochrome Cartographic Palette**: Converted the top-left True North arrow from chromatic vermilion red to a pure grayscale palette.
+- **Deep Charcoal & Slate Faceting**: Rendered the upward-pointing chevron with deep ink charcoal (`#1C1B18`) on the left facet and rich graphite gray (`#5A554E`) on the shaded facet, bounded by a `#1C1B18` stroke and center spine.
+- **High-Contrast White 'N'**: Retained the crisp, prominent off-white (`#FAF8F3`) bold `N` glyph inside the chevron, achieving high legibility and quiet Swiss editorial restraint.
+
 ### `fix: redesign north arrow to true upward-pointing cartographic chevron with bold N glyph`
 - **Eliminated Inverted Visual Cue**: Previously, trying to fit both a North cap, center pivot, South needle, and external letter resulted in the South pointer being almost twice as long as the North pointer with a heavy black outline. Visually, the bulk of the arrow pointed South with a miniscule 4px N.
 - **True North Orientation**: Replaced the ambiguous two-pointed compass needle with a full-height, dual-faceted **North Arrow** pointing directly UP to North (`y=20` to `y=2`), matching modern cartographic and GIS conventions.
