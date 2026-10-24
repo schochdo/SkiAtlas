@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: restore WASD direct camera rotation and tilt without requiring shift key modifier`
+- **Eliminated Shift-Key Confusion**: Requiring `Shift + Arrows` to rotate and tilt the 3D camera caused friction and confusion. Restored `W`, `A`, `S`, `D` as direct, single-finger camera orientation controls requiring no modifier keys.
+- **Direct 3D Camera Controls (WASD)**:
+  - `A` / `D`: Directly rotates camera azimuth / heading (spins yaw left and right around focal center).
+  - `W` / `S`: Directly tilts camera pitch (tilts up towards 3D oblique horizon / tilts down towards 2D nadir).
+- **Direct Terrain Panning (Arrow Keys)**:
+  - `Arrow Keys` (`↑`, `↓`, `←`, `→`): Directly pan directional ground navigation across mountain terrain with elevation lock.
+- **Direct Zoom (+ / − and Z / X)**:
+  - `+` / `−` and `Z` / `X`: Directly zoom in and out.
+- **Optional Speed Multiplier**: Holding `Shift` now serves exclusively as an optional turbo speed multiplier rather than a prerequisite modifier.
+- **Updated Cartographic Key**: Updated the on-screen Keyboard Guide inside the Cartographic Key modal to display `W / S: Tilt camera pitch`, `A / D: Rotate camera heading`, `Arrows: Pan across mountain`, `+ / −: Zoom In / Out`.
+
 ### `fix: restore authoritative nordic classification and eliminate phantom cross-country skiable acreage`
 - **Root Cause of Nordic Miscategorization**: In `public/data/global_ski_areas.json`, 889 cross-country areas (including Larch Hills, McCulloch, Methow, Katahdin) were already correctly flagged as `category: "nordic"`. However, during runtime ingestion in `src/App.tsx`, `classifySkiFeature()` ignored the existing `p.category` and inspected `p.statistics.runs.byActivity.nordic`. Because `p.statistics` is not included in the pre-built JSON, the function defaulted to `category: 'downhill'`, overwriting all 890+ Nordic centers as Downhill and stamping them with `⛷ Downhill` badges.
 - **Top Acreage Clogging Fixed**: When OpenSkiData calculates polygon area for Nordic trail networks, it calculates the geographic area of the entire surrounding park or forest reserve (e.g. 11,134 ac for Larch Hills, 7,825 ac for McCulloch, 19,072 ac for Katahdin). Because they were misclassified as Downhill, they falsely outranked mega alpine resorts like Whistler, Vail, and Big Sky when sorted by Acreage.
