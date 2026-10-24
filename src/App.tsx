@@ -4140,21 +4140,6 @@ export default function App() {
       >
         {/* CLEARLY FRAMED ARCHITECTURAL TRAY BODY */}
         <div className="relative flex flex-col h-full bg-[#F7F4ED] border-r border-[#D6D0C2] shadow-2xl overflow-hidden pointer-events-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-[#D6D0C2] bg-[#F7F4ED] shrink-0">
-            <div className="flex items-center gap-2">
-              <Mountain className="w-4 h-4 text-[#2E5A44]" />
-              <span className="font-serif text-sm font-bold text-[#1C1B18] tracking-tight">
-                Ski Directory
-              </span>
-              {activeFiltersCount > 0 && (
-                <span className="bg-[#2E5A44] text-[#FAF8F3] font-mono text-[9px] px-1.5 py-0.2 rounded-[2px] font-bold">
-                  {activeFiltersCount} active
-                </span>
-              )}
-            </div>
-          </div>
-
           {/* CLEARLY DEFINED TERRAIN & INFRASTRUCTURE FILTERS CARD */}
           <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-2.5 shrink-0">
             {/* Search Input */}
@@ -4184,8 +4169,13 @@ export default function App() {
                   <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[9px]">
                     Terrain Filters
                   </span>
+                  {activeFiltersCount > 0 && (
+                    <span className="bg-[#2E5A44] text-[#FAF8F3] font-mono text-[8px] px-1 py-0.2 rounded-[2px] font-bold">
+                      {activeFiltersCount} active
+                    </span>
+                  )}
                   <span className="text-[9px] text-[#8A847C] font-normal">
-                    ({filteredResorts.length.toLocaleString()} matching)
+                    ({filteredResorts.length.toLocaleString()})
                   </span>
                 </div>
                 {activeFiltersCount > 0 && (

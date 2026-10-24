@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `refactor: eliminate redundant 'Ski Directory' sub-header and consolidate active filter counter`
+- **Eliminated Redundant Sub-Header**:
+  - Removed the duplicate `Ski Directory` header row and redundant mountain icon from the top of the sliding architectural tray.
+  - Previously, opening the tray stacked an identical icon and label right under the main header bar, adding visual clutter and consuming vertical screen real estate without providing new domain information.
+- **Consolidated Filter Hierarchy**:
+  - Moved the active filter badge (`{activeFiltersCount} active`) directly into the `Terrain Filters` header, keeping the tray header completely streamlined and letting the search bar sit immediately below the top bar.
+
 ### `fix: restore visible map points, persistent area nameplates, and centered framing for nordic ski areas`
 - **Root Cause of Missing Nordic Points & Anonymous Terrain**:
   - `global-unclustered-label` had `text-optional: true`. As soon as the camera zoomed into a Nordic area and `/api/trails` loaded 20–50 cross-country trail LineStrings, MapLibre GL collision avoidance prioritized trail lines and dropped the ski area's name label completely, leaving the user with anonymous trails.
