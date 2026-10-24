@@ -6,6 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: redesign north arrow to true upward-pointing cartographic chevron with bold N glyph`
+- **Eliminated Inverted Visual Cue**: Previously, trying to fit both a North cap, center pivot, South needle, and external letter resulted in the South pointer being almost twice as long as the North pointer with a heavy black outline. Visually, the bulk of the arrow pointed South with a miniscule 4px N.
+- **True North Orientation**: Replaced the ambiguous two-pointed compass needle with a full-height, dual-faceted **North Arrow** pointing directly UP to North (`y=20` to `y=2`), matching modern cartographic and GIS conventions.
+- **Embedded Bold 'N'**: Stamped a prominent, crystal-clear white **`N`** (6.5px font-size, bold weight 900) directly into the heart of the Alpine Vermilion chevron.
+- **High Visibility**: Dual-faceted in Alpine Vermilion (`#E04836` lit facet / `#B84A39` shaded facet) with a crisp `#1C1B18` charcoal stroke. 100% of the graphic unambiguously indicates True North.
+
 ### `fix: restore WASD direct camera rotation and tilt without requiring shift key modifier`
 - **Eliminated Shift-Key Confusion**: Requiring `Shift + Arrows` to rotate and tilt the 3D camera caused friction and confusion. Restored `W`, `A`, `S`, `D` as direct, single-finger camera orientation controls requiring no modifier keys.
 - **Direct 3D Camera Controls (WASD)**:

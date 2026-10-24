@@ -4245,42 +4245,35 @@ export default function App() {
             viewBox="0 0 24 24"
             style={{ transform: `rotate(${-mapBearing}deg)` }}
           >
-            {/* Bold North 'N' glyph in Alpine Vermilion */}
+            {/* True Cartographic North Arrow pointing directly UP to North */}
+            <polygon
+              points="12,2 4.5,20 12,15.5"
+              fill="#E04836"
+              stroke="#1C1B18"
+              strokeWidth="0.8"
+              strokeLinejoin="round"
+            />
+            <polygon
+              points="12,2 19.5,20 12,15.5"
+              fill="#B84A39"
+              stroke="#1C1B18"
+              strokeWidth="0.8"
+              strokeLinejoin="round"
+            />
+            <line x1="12" y1="2" x2="12" y2="15.5" stroke="#1C1B18" strokeWidth="0.6" />
+
+            {/* Prominent, highly legible bold 'N' inside the North arrow */}
             <text
               x="12"
-              y="4.2"
+              y="12.5"
               textAnchor="middle"
-              fontSize="4.4"
+              fontSize="6.5"
               fontWeight="900"
-              fontFamily="Newsreader, serif"
-              fill="#B84A39"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              fill="#FAF8F3"
             >
               N
             </text>
-
-            {/* North needle pointer (Alpine Vermilion #E04836 / Deep Terracotta #B84A39) */}
-            <polygon points="12,5.2 7.4,12 12,10.4" fill="#E04836" />
-            <polygon points="12,5.2 16.6,12 12,10.4" fill="#B84A39" />
-
-            {/* South needle pointer (Crisp Charcoal-outlined Cream / Silver) */}
-            <polygon
-              points="12,23 7.4,12 12,13.6"
-              fill="#FAF8F3"
-              stroke="#1C1B18"
-              strokeWidth="0.8"
-              strokeLinejoin="round"
-            />
-            <polygon
-              points="12,23 16.6,12 12,13.6"
-              fill="#D6D0C2"
-              stroke="#1C1B18"
-              strokeWidth="0.8"
-              strokeLinejoin="round"
-            />
-
-            {/* Center Pivot Ring with inner brass core */}
-            <circle cx="12" cy="12" r="2.2" fill="#1C1B18" />
-            <circle cx="12" cy="12" r="0.9" fill="#FAF8F3" />
           </svg>
         </button>
       </div>
