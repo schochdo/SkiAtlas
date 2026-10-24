@@ -226,6 +226,22 @@ export const PASS_COLORS: Record<PassNetwork, string> = {
   Independent: '#8A847C',       // Muted Stone
 };
 
+export const PASS_DISPLAY_NAMES: Record<PassNetwork, string> = {
+  Epic: 'Epic Pass (Vail Resorts & Global Partners)',
+  Ikon: 'Ikon Pass (Alterra & Global Partners)',
+  'Mountain Collective': 'Mountain Collective',
+  Indy: 'Indy Pass (180+ Independent Partner Resorts)',
+  Independent: 'Unaffiliated / Independent (No Multi-Pass)',
+};
+
+export const PASS_SHORT_LABELS: Record<PassNetwork, string> = {
+  Epic: 'Epic Pass',
+  Ikon: 'Ikon Pass',
+  'Mountain Collective': 'Mountain Collective',
+  Indy: 'Indy Pass',
+  Independent: 'Unaffiliated',
+};
+
 /* =========================================================================
    CATEGORY CLASSIFICATION HELPER
    ========================================================================= */
@@ -565,7 +581,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 13050,
     vertical_drop_ft: 2270,
     skiable_acres: 1428,
-    pass_networks: ['Ikon'],
+    pass_networks: ['Ikon','Mountain Collective'],
     infrastructure: 'High-speed quads, fixed-grip chairs',
     archetype: 'High Alpine / Steeps',
     summary: 'High-altitude Continental Divide outpost rising above 13,000 ft, renowned for its gritty local vibe, Pallavicini steeps, East Wall hikes, and spring Beach tailgates.',
@@ -805,7 +821,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 11353,
     vertical_drop_ft: 5268,
     skiable_acres: 10000,
-    pass_networks: ['Independent'],
+    pass_networks: ['Epic','Independent'],
     infrastructure: 'Funicular, Cable Cars, Grande Motte Glacier',
     archetype: 'Flagship Mega-Resort',
     summary: 'The legendary Espace Killy spanning 300 km of high-altitude runs, two glaciated massifs, Olympic downhill speed runs, and some of the world\'s finest off-piste descents.',
@@ -825,7 +841,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 8970,
     vertical_drop_ft: 4705,
     skiable_acres: 15000,
-    pass_networks: ['Independent','Ikon'],
+    pass_networks: ['Epic','Independent'],
     infrastructure: '600 km linked piste network in Les Trois Vallées',
     archetype: 'Flagship Mega-Resort',
     summary: 'The glamorous crown of the world\'s largest linked ski domain (Les 3 Vallées); perfectly groomed boulevards, steep couloirs on the Saulire, and Michelin-starred alpine luxury.',
@@ -845,7 +861,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 10597,
     vertical_drop_ft: 4691,
     skiable_acres: 15000,
-    pass_networks: ['Independent','Ikon'],
+    pass_networks: ['Epic','Independent'],
     infrastructure: 'Cime Caron Cable Car, Funitel Thorens',
     archetype: 'Glaciated High-Altitude Citadel',
     summary: 'The highest ski resort village in Europe at 2,300 meters, perched at the pinnacle of Les Trois Vallées. Offers vast glacier-fed powder bowls below Cime Caron (3,200m) and 100% snow certainty from November to May.',
@@ -905,7 +921,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 10925,
     vertical_drop_ft: 6005,
     skiable_acres: 9500,
-    pass_networks: ['Independent'],
+    pass_networks: ['Epic','Independent'],
     infrastructure: 'Mont-Fort Cable Car, 410 km in 4 Vallées',
     archetype: 'Steep Alpine',
     summary: 'Switzerland\'s premier freeride capital; steep glaciated descents off the 3,330m Mont-Fort summit, world-class itinerary trails, and pulsating alpine nightlife.',
@@ -4418,6 +4434,7 @@ export default function App() {
                   {(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'] as PassNetwork[]).map((pass) => {
                     const active = selectedPasses.includes(pass);
                     const color = PASS_COLORS[pass];
+                    const label = PASS_SHORT_LABELS[pass] || pass;
                     return (
                       <button
                         key={pass}
@@ -4440,13 +4457,13 @@ export default function App() {
                             ? 'bg-[#FAF8F3] border-[#1C1B18] text-[#1C1B18] shadow-2xs'
                             : 'bg-[#F2EFE8] border-[#D6D0C2] text-[#8A847C] opacity-60 hover:opacity-100'
                         }`}
-                        title={`Filter by ${pass} pass network`}
+                        title={PASS_DISPLAY_NAMES[pass] || `Filter by ${label}`}
                       >
                         <span
                           className="w-2 h-2 rounded-full shrink-0"
                           style={{ backgroundColor: color }}
                         />
-                        <span>{pass}</span>
+                        <span>{label}</span>
                       </button>
                     );
                   })}
@@ -4643,7 +4660,7 @@ export default function App() {
                                 borderColor: PASS_COLORS[r.pass_networks[0]] || '#8A847C',
                               }}
                             >
-                              {r.pass_networks[0]}
+                              {PASS_SHORT_LABELS[r.pass_networks[0]] || r.pass_networks[0]}
                             </span>
                           )}
                         </div>
@@ -5223,12 +5240,13 @@ export default function App() {
                   <span
                     key={pass}
                     className="inline-flex items-center gap-1.5 text-[10.5px] font-bold px-2 py-0.5 rounded-md border bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] shadow-2xs"
+                    title={PASS_DISPLAY_NAMES[pass]}
                   >
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
                       style={{ backgroundColor: PASS_COLORS[pass] || '#8A847C' }}
                     />
-                    <span>{pass}</span>
+                    <span>{PASS_SHORT_LABELS[pass] || pass}</span>
                   </span>
                 ))}
               </div>

@@ -6,6 +6,27 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: disambiguate Indy Pass vs Unaffiliated and audit global pass rosters`
+- **Disambiguated "Indy" vs "Independent" Terminology**:
+  - **What was confusing**: Having "Indy" and "Independent" side by side confused users between the multi-resort commercial pass product (Indy Pass®) and standalone mountains not affiliated with any pass network.
+  - **Crystal-Clear Labels**:
+    - Commercial subscription pass product is explicitly labeled **"Indy Pass"** across filter toggles, card tags, and mountain dossiers (with explanatory tooltip: *"Indy Pass (180+ Independent Partner Resorts)"*).
+    - Standalone ski areas not on any commercial pass network are explicitly labeled **"Unaffiliated"** (with tooltip: *"Unaffiliated / Independent (No Multi-Pass)"*).
+- **Pass Network Accuracy Audit & Corrections**:
+  - **Flagship European Partnerships**: Corrected flagship affiliations in [`GLOBAL_SKI_ATLAS`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L810-L930):
+    - **Courchevel** & **Val Thorens** (Les 3 Vallées, France) — Affiliated with **Epic Pass** (7 days lodging partner), not Ikon.
+    - **Verbier** (4 Vallées, Switzerland) — Affiliated with **Epic Pass** (5 days lodging partner).
+    - **Val d’Isère / Tignes** (France) — Affiliated with **Epic Pass** (2 days partner).
+    - **Arapahoe Basin** (Colorado, USA) — Tagged on both **Ikon Pass** and **Mountain Collective**.
+  - **Global Pass Network Coverage**: Audited and enriched 271 ski areas in [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json) across all official rosters:
+    - **Epic Pass**: 73 resorts (Vail Resorts owned mountains, RCR Canada, Hakuba Valley, Rusutsu, Ski Arlberg, Les 3 Vallées, Skirama Dolomiti, Verbier).
+    - **Ikon Pass**: 81 resorts (Alterra owned, Boyne Resorts, Powdr Corp, Aspen Snowmass, SkiBig3, Dolomiti Superski, Kitzbühel, Zermatt, St. Moritz, Niseko, Valle Nevado, Portillo, etc.).
+    - **Indy Pass**: 113 verified authentic independent partners across the US, Canada, and Japan (Jay Peak, Tamarack, Brundage, Silver Mountain, Hoodoo, Sunlight, Monarch, Ski Cooper, Trollhaugen, Lutsen, Granite Peak, Cannon, Bolton Valley, etc.).
+    - **Mountain Collective**: 33 titan resorts.
+    - **Unaffiliated**: 6,322 standalone community and independent ski areas.
+
+---
+
 ### `feat: filter map dots and clusters reactively by pass network`
 - **Dynamic Map Pass Filtering**:
   - **What was wrong**: Filtering by pass network only affected the left dock directory; the map itself continued to show all 6,000+ ski areas and clusters from `global-ski-areas-source` because the MapLibre source sync omitted `selectedPasses`. Furthermore, curated flagship dots had `minzoom: 8.0`, rendering them invisible on the globe or continental zooms.
