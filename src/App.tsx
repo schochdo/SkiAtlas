@@ -1850,6 +1850,8 @@ export default function App() {
   const [showHillshade, setShowHillshade] = useState(true);
   const basemapMenuRef = useRef<HTMLDivElement | null>(null);
   const mapLegendRef = useRef<HTMLDivElement | null>(null);
+  const [attributionOpen, setAttributionOpen] = useState(false);
+  const attributionRef = useRef<HTMLDivElement | null>(null);
 
   // Category Individual Toggles (Default: Downhill only)
   const [showDownhill, setShowDownhill] = useState(true);
@@ -3004,6 +3006,26 @@ export default function App() {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [mapLegendOpen]);
+
+  useEffect(() => {
+    if (!attributionOpen) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (attributionRef.current && !attributionRef.current.contains(e.target as Node)) {
+        setAttributionOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setAttributionOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handleOutsideClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [attributionOpen]);
 
   /* =========================================================================
      AERIALWAYS & LIFTS VISIBILITY TOGGLE
@@ -4558,7 +4580,7 @@ export default function App() {
           - Inner Core (Ø 42px): 3D Horizon gimbal & 2D/3D perspective tilt
           ===================================================================== */}
       <div
-        className={`absolute bottom-6 ${
+        className={`absolute bottom-8 ${
           selectedResort ? 'right-92 md:right-104' : 'right-6'
         } z-20 select-none transition-all duration-300`}
       >
@@ -4684,15 +4706,47 @@ export default function App() {
         </div>
       </div>
 
-      {/* ATTRIBUTION (CLEAN ARCHIVAL PAPER AT BOTTOM CENTER) */}
-      <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
-        <div className="flex items-center gap-1.5 text-[9px] font-mono px-2.5 py-0.5 rounded-[2px] bg-[#FAF8F3]/90 backdrop-blur-xs border border-[#D6D0C2] text-[#8A847C] select-none">
-          <span>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">OpenStreetMap</a></span>
-          <span>·</span>
-          <span><a href="https://openskidata.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">OpenSkiData</a></span>
-          <span>·</span>
-          <span><a href="https://www.esri.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">Esri</a></span>
-        </div>
+      {/* MAP DATA ATTRIBUTION (COLLAPSIBLE ARCHIVAL PAPER AT BOTTOM RIGHT) */}
+      <div
+        ref={attributionRef}
+        className={`absolute bottom-2 ${
+          selectedResort ? 'right-92 md:right-104' : 'right-6'
+        } z-20 transition-all duration-300 pointer-events-auto select-none`}
+      >
+        {!attributionOpen ? (
+          <button
+            onClick={() => setAttributionOpen(true)}
+            className="flex items-center justify-center w-5 h-5 rounded-[2px] bg-[#FAF8F3]/90 hover:bg-[#FAF8F3] backdrop-blur-xs border border-[#D6D0C2] hover:border-[#1C1B18] text-[#5C5852] hover:text-[#1C1B18] shadow-xs transition-colors cursor-pointer"
+            title="Map Attribution & Data Sources"
+            aria-label="Toggle map attribution"
+          >
+            <span className="font-serif italic font-bold text-[11px] leading-none">i</span>
+          </button>
+        ) : (
+          <div className="flex items-center gap-1.5 text-[9px] font-mono px-2 py-0.5 rounded-[2px] bg-[#FAF8F3]/95 backdrop-blur-xs border border-[#D6D0C2] text-[#8A847C] shadow-sm animate-in fade-in duration-150">
+            <button
+              onClick={() => setAttributionOpen(false)}
+              className="text-[#5C5852] hover:text-[#1C1B18] cursor-pointer font-serif italic font-bold text-[10px] pr-0.5"
+              title="Collapse attribution"
+            >
+              i
+            </button>
+            <span>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">OpenStreetMap</a></span>
+            <span>·</span>
+            <span><a href="https://openskidata.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">OpenSkiData</a></span>
+            <span>·</span>
+            <span><a href="https://www.esri.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">Esri</a></span>
+            <span>·</span>
+            <span><a href="https://github.com/tilezen/joerd" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1C1B18]">Mapterhorn</a></span>
+            <button
+              onClick={() => setAttributionOpen(false)}
+              className="ml-0.5 text-[#8A847C] hover:text-[#1C1B18] cursor-pointer"
+              title="Close attribution"
+            >
+              <X className="w-2.5 h-2.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* RIGHT MOUNTAIN DOSSIER (WARM ARCHIVAL COTTON RAG PAPER) */}

@@ -6,6 +6,15 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: move map attribution to bottom right with collapsible expansion button to eliminate overlap with scale bar`
+- **Eliminated Scale Bar Overlap**: Previously, attribution was centered at `bottom-1.5 left-1/2 -translate-x-1/2`. When the left directory dock was open, the cartographic scale bar shifted right to `left-88 md:left-106`, causing the scale bar to sit directly on top of the attribution text.
+- **Relocated to Bottom Right with Collapsible "i"**: Replaced the static center pill with a collapsible bottom-right attribution widget styled in the Swiss/Tufte archival cotton rag paper aesthetic (`#FAF8F3`, border `#D6D0C2`, text `#8A847C`, `rounded-[2px]`).
+- **Conflict-Free Positioning**:
+  - When collapsed: Renders as a discrete 20×20px button with a classic serif italic `i` aligned with the right edge below the compass navigation dial (`bottom-2 right-6`).
+  - When expanded: Slides open horizontally to the left, cleanly tucked 6px beneath the compass dial and well clear of the bottom-left scale bar.
+  - Reactive to Right Dossier: When a resort is selected, both the compass and the attribution widget slide smoothly to `right-92 md:right-104` with `transition-all duration-300`, preventing any obstruction by the resort dossier.
+  - Dismissal: Automatically collapses when clicking the `i` or close button, clicking outside on the map, or pressing `Escape`.
+
 ### `fix: filter trail line layers to LineString geometries to eliminate duplicate polygon boundary strokes`
 - **Eliminated 3-Parallel-Line Artifacts**: Resolved an issue where ski runs (such as those at Blue Knob, PA) rendered as three parallel lines with crossbar caps down a single trail clearing.
 - **Root Cause**: OpenStreetMap and OpenSkiData contain two geometry types for ski runs: (1) centerline paths (`LineString`) and (2) clearing area footprints (`Polygon`). When a `Polygon` is fed to a MapLibre `type: 'line'` layer without geometry filtering, MapLibre strokes the polygon's perimeter boundary (left and right tree lines plus top/bottom end-caps). When combined with the centerline `LineString`, this stroked both flanks and the middle of the trail simultaneously.
