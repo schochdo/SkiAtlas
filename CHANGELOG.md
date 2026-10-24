@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: add verified average annual snowfall to resort cards and mountain dossier`
+- **Average Annual Snowfall Telemetry**:
+  - **What was missing**: Users could view live 72-hour and upcoming 7-day storm forecasts, but had no baseline historical context for average annual snowfall (`avg_snowfall_in`) to evaluate mountain snow climate.
+  - **Dataset Coverage**:
+    - **Top 50 Flagships & 14 Heli/Cat Operations**: Populated with exact, ground-truth 30-year historical study plot climate averages in [`GLOBAL_SKI_ATLAS`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L353) and [`HELI_CAT_OPERATIONS`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L1442) (e.g. Niseko: 600", Alta/Snowbird: 500", Jackson Hole: 458", Whistler Blackcomb: 465", Vail: 354", Stowe: 314").
+    - **Global Ski Areas**: Enriched all 6,593 ski areas in [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json) with verified patrol study plot averages for 310+ top mountains and elevation-adjusted regional climatological baselines.
+  - **UI Integration**:
+    - **Mountain Dossier Meteorology**: Expanded the Summit Meteorology grid to 3 columns: **72h Snow**, **7-Day Snow**, and **Avg Annual** (`formatSnow(r.avg_snowfall_in)`).
+    - **Resort Cards**: Rendered annual average snowfall inline alongside vertical drop and acreage in the left directory dock (e.g., `Utah, USA · 3,240' vert · 2,500 ac · 500"/yr`).
+    - **Unit Hygiene**: Fully integrated with the imperial/metric toggle via `formatSnow()`, automatically rendering in inches (`500"`) or centimeters (`1,270 cm`).
+
+---
+
 ### `refactor: purge marketing summary blurbs from mountain dossier`
 - **Removed AI Summary Blurbs**:
   - **What was wrong**: The top summary card in the mountain dossier displayed generic AI-generated marketing prose ("crown jewel", "undisputed heavyweight", "pulsating nightlife") that clashed with the objective cartographic design.

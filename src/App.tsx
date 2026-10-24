@@ -98,6 +98,7 @@ export interface SkiResort {
   website?: string;
   trail_km?: number | null;
   trail_mi?: number | null;
+  avg_snowfall_in?: number | null;
 }
 
 export type BasemapMode = 'satellite' | 'osm' | 'topo';
@@ -369,6 +370,7 @@ export function getPassNetworksForSkiArea(
 export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   {
     id: 'jackson-hole',
+    avg_snowfall_in: 458,
     lift_count: 13,
     run_count: 133,
     name: 'Jackson Hole',
@@ -389,6 +391,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'snowbird',
+    avg_snowfall_in: 500,
     lift_count: 14,
     run_count: 140,
     name: 'Snowbird',
@@ -409,6 +412,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'alta',
+    avg_snowfall_in: 500,
     lift_count: 6,
     run_count: 116,
     name: 'Alta',
@@ -429,6 +433,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'park-city',
+    avg_snowfall_in: 355,
     lift_count: 43,
     run_count: 330,
     name: 'Park City Mountain',
@@ -449,6 +454,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'powder-mountain',
+    avg_snowfall_in: 500,
     lift_count: 9,
     run_count: 154,
     name: 'Powder Mountain',
@@ -469,6 +475,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'vail',
+    avg_snowfall_in: 354,
     lift_count: 34,
     run_count: 195,
     name: 'Vail',
@@ -489,6 +496,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'aspen-snowmass',
+    avg_snowfall_in: 300,
     lift_count: 21,
     run_count: 98,
     name: 'Aspen Snowmass',
@@ -509,6 +517,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'breckenridge',
+    avg_snowfall_in: 350,
     lift_count: 35,
     run_count: 187,
     name: 'Breckenridge',
@@ -529,6 +538,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'steamboat',
+    avg_snowfall_in: 336,
     lift_count: 23,
     run_count: 181,
     name: 'Steamboat',
@@ -549,6 +559,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'telluride',
+    avg_snowfall_in: 280,
     lift_count: 17,
     run_count: 148,
     name: 'Telluride',
@@ -569,6 +580,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'arapahoe-basin',
+    avg_snowfall_in: 350,
     lift_count: 9,
     run_count: 145,
     name: 'Arapahoe Basin',
@@ -589,6 +601,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'big-sky',
+    avg_snowfall_in: 400,
     lift_count: 38,
     run_count: 300,
     name: 'Big Sky',
@@ -609,6 +622,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'sun-valley',
+    avg_snowfall_in: 220,
     lift_count: 18,
     run_count: 121,
     name: 'Sun Valley',
@@ -629,6 +643,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'palisades-tahoe',
+    avg_snowfall_in: 400,
     lift_count: 44,
     run_count: 270,
     name: 'Palisades Tahoe',
@@ -649,6 +664,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'mammoth',
+    avg_snowfall_in: 400,
     lift_count: 25,
     run_count: 175,
     name: 'Mammoth Mountain',
@@ -669,6 +685,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'stowe',
+    avg_snowfall_in: 314,
     lift_count: 12,
     run_count: 116,
     name: 'Stowe Mountain Resort',
@@ -689,6 +706,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'killington',
+    avg_snowfall_in: 250,
     lift_count: 22,
     run_count: 155,
     name: 'Killington',
@@ -709,6 +727,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'whistler-blackcomb',
+    avg_snowfall_in: 465,
     lift_count: 37,
     run_count: 200,
     name: 'Whistler Blackcomb',
@@ -729,6 +748,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'revelstoke',
+    avg_snowfall_in: 413,
     lift_count: 7,
     run_count: 75,
     name: 'Revelstoke',
@@ -749,6 +769,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'lake-louise',
+    avg_snowfall_in: 180,
     lift_count: 11,
     run_count: 160,
     name: 'Lake Louise',
@@ -769,6 +790,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'banff-sunshine',
+    avg_snowfall_in: 360,
     lift_count: 12,
     run_count: 137,
     name: 'Banff Sunshine',
@@ -789,6 +811,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'chamonix',
+    avg_snowfall_in: 380,
     lift_count: 47,
     run_count: 119,
     name: 'Chamonix-Mont-Blanc',
@@ -809,6 +832,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'val-disere',
+    avg_snowfall_in: 350,
     lift_count: 78,
     run_count: 159,
     name: 'Val d’Isère / Tignes',
@@ -829,6 +853,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'courchevel',
+    avg_snowfall_in: 280,
     lift_count: 58,
     run_count: 109,
     name: 'Courchevel (Les 3 Vallées)',
@@ -849,6 +874,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'val-thorens',
+    avg_snowfall_in: 350,
     lift_count: 32,
     run_count: 88,
     name: 'Val Thorens (Les 3 Vallées)',
@@ -869,6 +895,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'alpe-dhuez',
+    avg_snowfall_in: 315,
     lift_count: 70,
     run_count: 111,
     name: 'Alpe d’Huez',
@@ -889,6 +916,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'zermatt',
+    avg_snowfall_in: 300,
     lift_count: 52,
     run_count: 148,
     name: 'Zermatt Matterhorn',
@@ -909,6 +937,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'verbier',
+    avg_snowfall_in: 320,
     lift_count: 67,
     run_count: 142,
     name: 'Verbier (4 Vallées)',
@@ -929,6 +958,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'st-moritz',
+    avg_snowfall_in: 230,
     lift_count: 56,
     run_count: 88,
     name: 'St. Moritz (Corviglia & Diavolezza)',
@@ -949,6 +979,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'davos-klosters',
+    avg_snowfall_in: 330,
     lift_count: 54,
     run_count: 85,
     name: 'Davos Klosters',
@@ -969,6 +1000,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'saas-fee',
+    avg_snowfall_in: 320,
     lift_count: 22,
     run_count: 45,
     name: 'Saas-Fee',
@@ -989,6 +1021,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'st-anton',
+    avg_snowfall_in: 430,
     lift_count: 85,
     run_count: 130,
     name: 'St. Anton am Arlberg',
@@ -1009,6 +1042,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'kitzbuehel',
+    avg_snowfall_in: 250,
     lift_count: 57,
     run_count: 96,
     name: 'Kitzbühel',
@@ -1029,6 +1063,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'ischgl',
+    avg_snowfall_in: 300,
     lift_count: 45,
     run_count: 90,
     name: 'Ischgl (Silvretta Arena)',
@@ -1049,6 +1084,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'soelden',
+    avg_snowfall_in: 310,
     lift_count: 31,
     run_count: 39,
     name: 'Sölden',
@@ -1069,6 +1105,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'cortina',
+    avg_snowfall_in: 180,
     lift_count: 27,
     run_count: 66,
     name: 'Cortina d’Ampezzo',
@@ -1089,6 +1126,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'val-gardena',
+    avg_snowfall_in: 180,
     lift_count: 79,
     run_count: 105,
     name: 'Val Gardena / Sellaronda',
@@ -1109,6 +1147,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'hemsedal',
+    avg_snowfall_in: 240,
     lift_count: 21,
     run_count: 53,
     name: 'Hemsedal',
@@ -1129,6 +1168,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'are-sweden',
+    avg_snowfall_in: 200,
     lift_count: 42,
     run_count: 89,
     name: 'Åre',
@@ -1149,6 +1189,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'baqueira-beret',
+    avg_snowfall_in: 350,
     lift_count: 36,
     run_count: 112,
     name: 'Baqueira-Beret',
@@ -1169,6 +1210,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'niseko-united',
+    avg_snowfall_in: 600,
     lift_count: 32,
     run_count: 80,
     name: 'Niseko United',
@@ -1189,6 +1231,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'rusutsu',
+    avg_snowfall_in: 550,
     lift_count: 18,
     run_count: 37,
     name: 'Rusutsu',
@@ -1209,6 +1252,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'hakuba-happo-one',
+    avg_snowfall_in: 450,
     lift_count: 22,
     run_count: 16,
     name: 'Hakuba Happo-One',
@@ -1229,6 +1273,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'nozawa-onsen',
+    avg_snowfall_in: 400,
     lift_count: 20,
     run_count: 36,
     name: 'Nozawa Onsen',
@@ -1249,6 +1294,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'portillo',
+    avg_snowfall_in: 300,
     lift_count: 14,
     run_count: 35,
     name: 'Portillo',
@@ -1269,6 +1315,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'valle-nevado',
+    avg_snowfall_in: 280,
     lift_count: 16,
     run_count: 44,
     name: 'Valle Nevado',
@@ -1289,6 +1336,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'cerro-catedral',
+    avg_snowfall_in: 240,
     lift_count: 28,
     run_count: 60,
     name: 'Cerro Catedral (Bariloche)',
@@ -1309,6 +1357,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'treble-cone',
+    avg_snowfall_in: 220,
     lift_count: 4,
     run_count: 24,
     name: 'Treble Cone',
@@ -1329,6 +1378,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'cardrona',
+    avg_snowfall_in: 110,
     lift_count: 8,
     run_count: 60,
     name: 'Cardrona Alpine Resort',
@@ -1349,6 +1399,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
   },
   {
     id: 'perisher',
+    avg_snowfall_in: 100,
     lift_count: 47,
     run_count: 100,
     name: 'Perisher',
@@ -1377,6 +1428,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
 export const HELI_CAT_OPERATIONS: SkiResort[] = [
   {
     id: 'heli-cmh-bugaboos',
+    avg_snowfall_in: 550,
     name: 'CMH Bugaboos Heli-Skiing',
     region: 'British Columbia',
     country: 'Canada',
@@ -1398,6 +1450,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'heli-mike-wiegele',
+    avg_snowfall_in: 600,
     name: 'Mike Wiegele Helicopter Skiing',
     region: 'British Columbia',
     country: 'Canada',
@@ -1419,6 +1472,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'cat-baldface-lodge',
+    avg_snowfall_in: 500,
     name: 'Baldface Lodge Snowcat Skiing',
     region: 'British Columbia',
     country: 'Canada',
@@ -1440,6 +1494,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'cat-selkirk-snowcat',
+    avg_snowfall_in: 550,
     name: 'Selkirk Snowcat Skiing',
     region: 'British Columbia',
     country: 'Canada',
@@ -1461,6 +1516,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'heli-chugach-powder-guides',
+    avg_snowfall_in: 750,
     name: 'Chugach Powder Guides',
     region: 'Alaska',
     country: 'United States',
@@ -1482,6 +1538,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'heli-valdez-heli-ski-guides',
+    avg_snowfall_in: 800,
     name: 'Valdez Heli-Ski Guides',
     region: 'Alaska',
     country: 'United States',
@@ -1503,6 +1560,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'cat-steamboat-powdercats',
+    avg_snowfall_in: 450,
     name: 'Steamboat Powdercats',
     region: 'Colorado',
     country: 'United States',
@@ -1524,6 +1582,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'cat-silverton-powdercats',
+    avg_snowfall_in: 400,
     name: 'Silverton Mountain Cat & Heli',
     region: 'Colorado',
     country: 'United States',
@@ -1545,6 +1604,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'cat-island-lake',
+    avg_snowfall_in: 450,
     name: 'Island Lake Cat Skiing',
     region: 'British Columbia',
     country: 'Canada',
@@ -1566,6 +1626,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'cat-chatter-creek',
+    avg_snowfall_in: 550,
     name: 'Chatter Creek Snowcat Skiing',
     region: 'British Columbia',
     country: 'Canada',
@@ -1587,6 +1648,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'heli-bella-coola',
+    avg_snowfall_in: 700,
     name: 'Bella Coola Heli Sports',
     region: 'British Columbia',
     country: 'Canada',
@@ -1608,6 +1670,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'heli-southern-lakes',
+    avg_snowfall_in: 250,
     name: 'Southern Lakes Heliski',
     region: 'Otago',
     country: 'New Zealand',
@@ -1629,6 +1692,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'heli-air-zermatt',
+    avg_snowfall_in: 350,
     name: 'Air Zermatt Monte Rosa Heliski',
     region: 'Valais',
     country: 'Switzerland',
@@ -1650,6 +1714,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
   },
   {
     id: 'heli-niseko-shiribetsu',
+    avg_snowfall_in: 650,
     name: 'Hokkaido Backcountry Club Heli-Ski',
     region: 'Hokkaido',
     country: 'Japan',
@@ -3790,6 +3855,7 @@ export default function App() {
               pass_networks: passNets,
               primary_pass: primaryPass,
               pass_color: passColor,
+              avg_snowfall_in: p.avg_snowfall_in || null,
             },
           });
         }
@@ -3823,6 +3889,7 @@ export default function App() {
             run_count: props.run_count || null,
             trail_km: props.trail_km || null,
             trail_mi: props.trail_mi || null,
+            avg_snowfall_in: props.avg_snowfall_in || null,
           };
         });
 
@@ -4668,6 +4735,7 @@ export default function App() {
                           <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
                           {r.category !== 'nordic' && r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
                           {r.category !== 'nordic' && r.skiable_acres > 0 && ` · ${formatAcres(r.skiable_acres)}`}
+                          {r.avg_snowfall_in && r.avg_snowfall_in > 0 && ` · ${formatSnow(r.avg_snowfall_in)}/yr`}
                           {r.category === 'nordic' && (
                             <>
                               {r.trail_km && r.trail_km > 0 ? ` · ${formatDistance(r.trail_km)}` : ''}
@@ -5327,15 +5395,15 @@ export default function App() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-3 gap-2 text-xs text-center">
                 <div className="bg-[#F7F4ED] p-2.5 border border-[#D6D0C2] rounded-md">
-                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">72h Snow</div>
+                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider truncate">72h Snow</div>
                   <div className="text-base font-extrabold text-[#3B627E] mt-0.5">
                     {formatSnow(selectedResort.weather?.snowfall_72h_in ?? 0)}
                   </div>
                 </div>
                 <div className="bg-[#F7F4ED] p-2.5 border border-[#D6D0C2] rounded-md">
-                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">7-Day Snow</div>
+                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider truncate">7-Day Snow</div>
                   <div className="text-base font-extrabold text-[#3B627E] mt-0.5">
                     {selectedResort.weather?.daily_forecast
                       ? formatSnow(
@@ -5347,6 +5415,12 @@ export default function App() {
                           ) / 10
                         )
                       : '—'}
+                  </div>
+                </div>
+                <div className="bg-[#F7F4ED] p-2.5 border border-[#D6D0C2] rounded-md">
+                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider truncate">Avg Annual</div>
+                  <div className="text-base font-extrabold text-[#1C1B18] mt-0.5">
+                    {selectedResort.avg_snowfall_in ? formatSnow(selectedResort.avg_snowfall_in) : '—'}
                   </div>
                 </div>
               </div>
