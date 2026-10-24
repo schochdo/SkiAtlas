@@ -6,6 +6,32 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: reinstate Deer Valley and 24 world titan flagships; fix adjacent-resort duplicate suppression`
+- **Root Cause of Missing Major Resort Points**:
+  - **Overzealous Proximity Suppression**: In `fetchGlobal()`, the duplicate check previously evaluated `if (dist < 0.05 || (nameMatch && dist < 0.15))` against curated flagships. Because `0.05°` is ~3.5 miles, any real, legitimate ski area located near a curated flagship was discarded as a "duplicate" even if their names were completely distinct.
+  - **Specific Casualties**:
+    - **Deer Valley Resort** (0.034° from Park City Mountain) was completely purged from the map and directory as a false "duplicate" of Park City!
+    - **Solitude Mountain Resort** (0.045° from Alta) was purged!
+    - **Smugglers' Notch Resort** (0.043° from Stowe) was purged!
+    - **Loveland Ski Area** (0.040° from Arapahoe Basin) was purged!
+    - **El Colorado** and **La Parva** (0.022° / 0.034° from Valle Nevado) were purged!
+    - **Hakuba 47** and **Hakuba Goryu** (0.033° / 0.041° from Hakuba Happo-One) were purged!
+    - **Breuil-Cervinia** (0.033° from Zermatt) was purged!
+  - **Flagship Omissions**: World-renowned titan destinations (Deer Valley, Snowbasin, Beaver Creek, Keystone, Winter Park, Copper Mountain, Crested Butte, Grand Targhee, Heavenly, Kirkwood, Taos, Whitefish, Schweitzer, etc.) were not in `GLOBAL_SKI_ATLAS`, meaning they lacked permanent unclustered concentric markers, pass-colored rings, and startup weather prefetching.
+  - **Pass Metadata Mismatches**: 268 features in `public/data/global_ski_areas.json` had valid multi-pass networks (e.g. Deer Valley on Ikon), but their `primary_pass` was set to `"Independent"` and `pass_color` set to `#64748b` (slate grey), causing them to render in dim grey rather than their vibrant pass color.
+- **Comprehensive Fixes & Dataset Elevation**:
+  - **True Duplicate Guard in `src/App.tsx`**: Refactored the duplicate check to require either a genuine name match within vicinity (`nameMatch && dist < 0.12`) or near-identical coordinates (`dist < 0.008` / ~800m). Adjacent resorts with different names (Deer Valley, Solitude, Smugglers' Notch, Loveland, etc.) are never suppressed.
+  - **Elevated 25 Premier Titans to `GLOBAL_SKI_ATLAS`**: Expanded the curated flagship roster from 50 to 75 world-class destinations, complete with 30-year study plot snowfall averages, infrastructure telemetry, base lodge coordinates, and calibrated slope flight bearings:
+    - **Utah**: **Deer Valley Resort** (3,000' vert, 5,726 ac, 37 lifts, 300"/yr, Ikon Pass, bearing 220°), **Snowbasin Resort** (2,959' vert, 3,000 ac, 12 lifts, 300"/yr, Ikon / Mountain Collective, bearing 240°).
+    - **Colorado**: **Beaver Creek Resort** (3,340' vert, 2,082 ac, 25 lifts, 325"/yr, Epic Pass), **Keystone Resort** (3,128' vert, 3,149 ac, 21 lifts, 235"/yr, Epic Pass), **Winter Park Resort** (3,060' vert, 3,081 ac, 23 lifts, 348"/yr, Ikon Pass), **Copper Mountain** (2,738' vert, 2,507 ac, 24 lifts, 305"/yr, Ikon Pass), **Crested Butte Mountain Resort** (3,062' vert, 1,547 ac, 15 lifts, 236"/yr, Epic Pass).
+    - **Wyoming, Montana, Idaho & Washington**: **Grand Targhee Resort** (2,237' vert, 2,602 ac, 6 lifts, 500"/yr, Mountain Collective), **Whitefish Mountain Resort** (2,353' vert, 3,000 ac, 14 lifts, 300"/yr), **Schweitzer** (2,440' vert, 2,900 ac, 10 lifts, 300"/yr, Ikon Pass), **Crystal Mountain** (3,100' vert, 2,600 ac, 11 lifts, 486"/yr, Ikon Pass), **Mt. Baker Ski Area** (1,589' vert, 1,000 ac, 8 lifts, 663"/yr).
+    - **California / Lake Tahoe & Southwest**: **Heavenly Mountain Resort** (3,500' vert, 4,800 ac, 28 lifts, 360"/yr, Epic Pass), **Kirkwood Mountain Resort** (2,000' vert, 2,300 ac, 15 lifts, 500"/yr, Epic Pass), **Northstar California** (2,280' vert, 3,170 ac, 20 lifts, 350"/yr, Epic Pass), **Taos Ski Valley** (3,274' vert, 1,294 ac, 14 lifts, 300"/yr, Ikon Pass).
+    - **Canada**: **Kicking Horse Mountain Resort** (4,314' vert, 3,400 ac, 5 lifts, 295"/yr, Epic Pass), **Mont Tremblant** (2,116' vert, 755 ac, 14 lifts, 163"/yr, Ikon Pass), **Fernie Alpine Resort** (3,550' vert, 2,504 ac, 10 lifts, 360"/yr, Epic Pass).
+    - **Europe**: **Les Arcs (Paradiski)** (6,643' vert, 4,942 ac, 53 lifts, 350"/yr), **Laax (Flims Laax Falera)** (6,299' vert, 5,535 ac, 28 lifts, 380"/yr), **Breuil-Cervinia** (6,070' vert, 3,700 ac, 19 lifts, 350"/yr, Ikon Pass), **Saalbach Hinterglemm (Skicircus)** (4,154' vert, 6,670 ac, 70 lifts, 320"/yr), **Andermatt-Sedrun-Disentis** (4,973' vert, 3,000 ac, 33 lifts, 450"/yr, Epic Pass), **Madonna di Campiglio** (5,414' vert, 3,700 ac, 58 lifts, 280"/yr, Epic Pass).
+  - **Pass Hygiene in `global_ski_areas.json`**: Fixed `primary_pass` and `pass_color` across all 6,593 features to align strictly with `pass_networks[0]` (e.g. Deer Valley now correctly displays `#B84A39` Ikon vermilion).
+
+---
+
 ### `fix: calibrate camera flight bearings to look up slopes from base lodge`
 - **Authentic Skier-Orientation Flight Perspectives**:
   - **What was wrong**:
