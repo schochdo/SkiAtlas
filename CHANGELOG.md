@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: populate direct official websites for curated resorts and eliminate generic google search fallbacks`
+- **Curated Resort Official Websites**: Added direct, verified official website URLs for all 49 flagship curated resorts (e.g. Jackson Hole, Alta, Snowbird, Vail, Aspen Snowmass, Zermatt, Chamonix, Whistler) and 14 heli/cat operations in `GLOBAL_SKI_ATLAS` and `HELI_CAT_OPERATIONS`.
+- **Eliminated Generic Google Search Fallback**: Removed the fallback that redirected users to `google.com/search?q=...` when no website was present. If a ski area has no official website known, the website link is omitted entirely rather than displaying a generic search page.
+- **URL Sanitization & Validation**: Enhanced `getResortWebsite()` to sanitize common syntax typos (e.g. leading duplicate protocols like `hhttps://`), trim whitespace, and validate hostname structure before rendering. Non-URL strings in global ski data are safely filtered out.
+
 ### `feat: add backcountry touring toggle and suppress unnamed/unknown trail labels`
 - **Unnamed / Unknown Label Suppression**: Suppressed text labels for trails named "Unnamed Trail", "Unnamed", "Unknown", or blank/null strings using MapLibre expressions and label filtering. The physical trail line geometries remain rendered on the mountain, but map label clutter from placeholder names is eliminated.
 - **Dedicated Touring / Backcountry Toggle**: Split trails into three independent overlays: Alpine Downhill (default ON), Touring / Backcountry (default OFF), and Nordic / XC (default OFF).

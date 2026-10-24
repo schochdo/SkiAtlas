@@ -325,6 +325,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Aerial Tram, 2 Gondolas, 10 Quads',
     archetype: 'Steep Alpine',
     summary: 'Legendary steep and deep fall-line terrain where mountaineers, film crews, and icons have skied, crowned by Corbet\'s Couloir and the 4,139-foot vertical drop of the Aerial Tram.',
+    website: 'https://www.jacksonhole.com',
   },
   {
     id: 'grand-targhee',
@@ -344,6 +345,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '5 Quad Chairs',
     archetype: 'Powder / Tree Glades',
     summary: 'Uncrowded powder sanctuary on the western slope of the Tetons, celebrated for reliable, storm-blanketed snow cycles, open alpine bowls, and gladed tree skiing.',
+    website: 'https://www.grandtarghee.com',
   },
   {
     id: 'snowbird',
@@ -363,6 +365,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Aerial Tram, 6 High-Speed Quads',
     archetype: 'Steep Alpine',
     summary: 'Formidable high-alpine cirques and relentless powder steeps plunging off the 11,000-ft Hidden Peak Tram, blessed with over 500 inches of Wasatch storm totals.',
+    website: 'https://www.snowbird.com',
   },
   {
     id: 'alta',
@@ -382,6 +385,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '6 Quads, Skiers Only',
     archetype: 'Powder / Tree Glades',
     summary: 'Historic, skiers-only sanctuary in Little Cottonwood Canyon revered worldwide for 500+ inches of pristine Utah blower powder, timeless lodge culture, and purist alpine ethos.',
+    website: 'https://www.alta.com',
   },
   {
     id: 'powder-mountain',
@@ -401,6 +405,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Fixed-Grip Quads & Snowcats',
     archetype: 'Uncrowded / Soul Hill',
     summary: 'Sprawling, uncrowded giant spanning over 8,400 skiable acres across the Wasatch, capping daily lift tickets to preserve vast fields of untracked powder.',
+    website: 'https://powdermountain.com',
   },
   {
     id: 'vail',
@@ -420,6 +425,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '2 Gondolas, 20+ Express Chairs',
     archetype: 'Flagship Mega-Resort',
     summary: 'A vast alpine kingdom spanning seven miles of legendary Back Bowls and Blue Sky Basin, defining modern American destination ski culture since 1962.',
+    website: 'https://www.vail.com',
   },
   {
     id: 'aspen-snowmass',
@@ -439,6 +445,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '3 Gondolas, High-Speed Modern',
     archetype: 'Flagship Mega-Resort',
     summary: 'Storied 19th-century silver-mining town turned cultural alpine capital, beloved by artists, celebrities, and mountaineers for Highland Bowl powder hikes and Ajax fall lines.',
+    website: 'https://www.aspensnowmass.com',
   },
   {
     id: 'steamboat',
@@ -458,6 +465,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Wild Blue Gondola (10-passenger), Modern Express',
     archetype: 'Powder / Tree Glades',
     summary: 'Rich cowboy and ranching heritage nestled in the Yampa Valley, famous for featherlight Champagne Powder and spaced aspen tree glades.',
+    website: 'https://www.steamboat.com',
   },
   {
     id: 'arapahoe-basin',
@@ -477,6 +485,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'High-speed quads, fixed-grip chairs',
     archetype: 'High Alpine / Steeps',
     summary: 'High-altitude Continental Divide outpost rising above 13,000 ft, renowned for its gritty local vibe, Pallavicini steeps, East Wall hikes, and spring Beach tailgates.',
+    website: 'https://www.arapahoebasin.com',
   },
   {
     id: 'monarch-mountain',
@@ -496,6 +505,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '5 Double/Triple Chairs',
     archetype: 'Uncrowded / Soul Hill',
     summary: 'Pure Colorado skiing at Monarch Pass, relying exclusively on 100% natural Continental Divide snowfall across open bowls and untamed glades.',
+    website: 'https://skimonarch.com',
   },
   {
     id: 'silverton',
@@ -515,6 +525,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '1 Double Chair, Heli-Skiing',
     archetype: 'Extreme Steeps',
     summary: 'Raw, no-frills big-mountain mountaineering in the San Juans; a solitary double chair accessing sheer couloirs where avalanche gear is mandatory.',
+    website: 'https://silvertonmountain.com',
   },
   {
     id: 'big-sky',
@@ -534,6 +545,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'New Lone Peak Tram, Heated 8-Packs',
     archetype: 'Steep Alpine',
     summary: 'The biggest skiing in America beneath the rugged pyramid of Lone Mountain, delivering high-alpine tram access to sheer chutes and untamed Montana powder bowls.',
+    website: 'https://bigskyresort.com',
   },
   {
     id: 'bridger-bowl',
@@ -553,6 +565,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Non-profit community lifts',
     archetype: 'Uncrowded / Soul Hill',
     summary: 'Bozeman\'s spirited non-profit community hill, legendary for the cold-smoke powder of the Bridger Ridge where skiers hike with avalanche transceivers.',
+    website: 'https://bridgerbowl.com',
   },
   {
     id: 'sun-valley',
@@ -572,6 +585,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '1 Gondola, Modern High-Speed Chairs',
     archetype: 'Flagship Mega-Resort',
     summary: 'America\'s original 1936 destination ski resort where Hollywood stars and Olympians carved Bald Mountain\'s relentless, continuous-pitch fall lines.',
+    website: 'https://www.sunvalley.com',
   },
   {
     id: 'brundage',
@@ -591,6 +605,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Centennial Express 6-pack & quads',
     archetype: 'Uncrowded / Soul Hill',
     summary: 'Idaho powder gem overlooking Payette Lake, celebrated for reliable central Idaho storm tracks, wide uncrowded glades, and panoramic views of Salmon River mountains.',
+    website: 'https://brundage.com',
   },
 
   // US Pacific & Canada
@@ -612,6 +627,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Fixed-Grip Quads',
     archetype: 'Powder / Tree Glades',
     summary: 'World-record snowfall mecca in Washington\'s North Cascades, the birthplace of freeride culture where storms dump legendary maritime powder on volcanic bowls.',
+    website: 'https://www.mtbaker.us',
   },
   {
     id: 'whistler-blackcomb',
@@ -631,6 +647,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Peak 2 Peak 3S Gondola, 37 Lifts',
     archetype: 'Flagship Mega-Resort',
     summary: 'Mammoth coastal Canadian giant linking two towering peaks via the Peak 2 Peak Gondola, famous for Olympian steeps, alpine glaciers, and world-renowned ski energy.',
+    website: 'https://www.whistlerblackcomb.com',
   },
   {
     id: 'revelstoke',
@@ -650,6 +667,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Gondola & 4 Express Chairs',
     archetype: 'Steep Alpine',
     summary: 'North America\'s longest lift-served continuous vertical drop (5,620 ft) in British Columbia\'s Selkirks, known for deep storm skiing and steep alpine bowls.',
+    website: 'https://www.revelstokemountainresort.com',
   },
   {
     id: 'mammoth',
@@ -669,6 +687,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '3 Gondolas, 25 Chairs',
     archetype: 'Flagship Mega-Resort',
     summary: 'Iconic Eastern Sierra volcano rising to 11,053 feet, known for massive Pacific storm cycles, open summit wind-buff bowls, and vibrant California ski heritage.',
+    website: 'https://www.mammothmountain.com',
   },
   {
     id: 'palisades-tahoe',
@@ -688,6 +707,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Base-to-Base Gondola, Aerial Tram',
     archetype: 'Steep Alpine',
     summary: 'Historic host of the 1960 Winter Olympics and crucible of extreme skiing, famous for KT-22, the Palisades cliffs, and sun-drenched Sierra spring corn.',
+    website: 'https://www.palisadestahoe.com',
   },
   {
     id: 'telluride',
@@ -707,6 +727,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Free Town Gondola, Modern Express Chairs',
     archetype: 'Steep Alpine',
     summary: 'Dramatically tucked inside a stunning San Juan box canyon, fusing Victorian gold-rush architecture with hair-raising high-alpine steeps on Palmyra Peak.',
+    website: 'https://tellurideskiresort.com',
   },
 
   // European Alps
@@ -728,6 +749,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Aiguille du Midi Cable Car',
     archetype: 'Steep Alpine',
     summary: 'Spiritual home of extreme alpinism beneath Mont Blanc, celebrated for the 20-km Vallée Blanche descent and pioneering mountain guide tradition.',
+    website: 'https://www.chamonix.com',
   },
   {
     id: 'val-disere',
@@ -747,6 +769,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Over 75 Lifts, Funiculars & Cable Cars',
     archetype: 'Flagship Mega-Resort',
     summary: 'Legendary French Tarentaise high-altitude terrain linking with Tignes across the Espace Killy, famed for the Face de Bellevarde Olympic downhill and vast off-piste.',
+    website: 'https://www.valdisere.com',
   },
   {
     id: 'verbier',
@@ -766,6 +789,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Mont-Fort Cable Car & Express Network',
     archetype: 'Steep Alpine',
     summary: 'The freeride jewel of the Swiss 4 Valleys, famous for the daunting Bec des Rosses face, high-altitude Mont Fort descents, and cosmopolitan alpine nightlife.',
+    website: 'https://verbier.ch',
   },
   {
     id: 'zermatt',
@@ -785,6 +809,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Matterhorn Alpine Crossing 3S Cable Car',
     archetype: 'Flagship Mega-Resort',
     summary: 'Iconic car-free Swiss village backdropped by the majestic Matterhorn, featuring glaciated year-round ski descents and historic high-alpine trans-border terrain into Italy.',
+    website: 'https://www.zermatt.ch',
   },
   {
     id: 'st-anton',
@@ -804,6 +829,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Flexenbahn & Galzigbahn Gondolas',
     archetype: 'Steep Alpine',
     summary: 'Historic cradle of alpine ski technique in the Austrian Arlberg, famed for legendary Valluga steeps, untracked backcountry routes, and raucous Krazy Kanguruh après lore.',
+    website: 'https://www.stantonamarlberg.com',
   },
 
   // Japan
@@ -825,6 +851,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '4 Interconnected Areas, 30+ Lifts',
     archetype: 'Powder / Tree Glades',
     summary: 'Global capital of bottomless powder snow on Hokkaido, renowned for Siberian storm cycles that blanket birch glades in ultra-light dry powder.',
+    website: 'https://www.niseko.ne.jp',
   },
   {
     id: 'rusutsu',
@@ -844,6 +871,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '4 Gondolas, Express Quads',
     archetype: 'Powder / Tree Glades',
     summary: 'Hokkaido powder sanctuary spreading across three mountains, famous for magical tree glades, natural gullies, and untracked snow without the crowds.',
+    website: 'https://rusutsu.com',
   },
   {
     id: 'furano',
@@ -863,6 +891,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '100-passenger Furano Ropeway',
     archetype: 'Powder / Tree Glades',
     summary: 'Central Hokkaido destination known for exceptionally cold, dry snow, World Cup downhill heritage, and panoramic views across the Daisetsuzan mountain range.',
+    website: 'https://www.princehotels.com/en/ski/furano/',
   },
   {
     id: 'hakuba-happo-one',
@@ -882,6 +911,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Gondola & Quad Network',
     archetype: 'Steep Alpine',
     summary: 'Crown jewel of the Japanese Northern Alps in Nagano, site of the 1998 Olympic downhills with steep fall-line ridges and immense backcountry alpine access.',
+    website: 'https://www.happo-one.jp',
   },
   {
     id: 'nozawa-onsen',
@@ -901,6 +931,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Nagasaka 10-Passenger Gondola',
     archetype: 'Powder / Tree Glades',
     summary: 'Eighth-century hot-spring village where ancient bathhouse tradition meets deep Honshu snow, renowned for Yamabiko tree skiing and classic lantern-lit village streets.',
+    website: 'https://nozawaski.com',
   },
   {
     id: 'myoko-kogen',
@@ -920,6 +951,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Akakura Onsen & Kanko Combined',
     archetype: 'Powder / Tree Glades',
     summary: 'Deep-snow haven on Mount Myoko receiving immense Sea of Japan snowfall, rich in traditional Japanese ski history dating back to 1911.',
+    website: 'https://myokotourism.com',
   },
 
   // Southern Hemisphere
@@ -941,6 +973,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Home Basin 6-Pack',
     archetype: 'Steep Alpine',
     summary: 'Premier freeride mountain of New Zealand\'s South Island, famed for the legendary Motatapu Chutes, natural halfpipes, and spectacular views over Lake Wanaka.',
+    website: 'https://www.treblecone.com',
   },
   {
     id: 'valle-nevado',
@@ -960,6 +993,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Modern Gondola & High-Speed Detachables',
     archetype: 'Steep Alpine',
     summary: 'Modern high-altitude resort perched above 10,000 ft in the Chilean Andes, offering expansive above-treeline powder bowls beneath 18,000-ft glaciated peaks.',
+    website: 'https://vallenevado.com',
   },
   {
     id: 'portillo',
@@ -979,6 +1013,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Va-et-Vient slingshot lifts on 45° pitches',
     archetype: 'Steep Alpine',
     summary: 'Storied yellow hotel perched beside Laguna del Inca high in the Chilean Andes, celebrated for steep couloirs, slingshot Va et Vient lifts, and Olympic summer training.',
+    website: 'https://skiportillo.com',
   },
 
   // US East & Canada Rockies
@@ -1000,6 +1035,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Over Easy Gondola & FourRunner Quad',
     archetype: 'Steep Alpine',
     summary: 'The ski capital of the East on Mount Mansfield, featuring the fabled Front Four double-black trails and historic New England ski racing pedigree.',
+    website: 'https://www.stowe.com',
   },
   {
     id: 'killington',
@@ -1019,6 +1055,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'K-1 Express Gondola & Skyeship',
     archetype: 'Flagship Mega-Resort',
     summary: 'The Beast of the East sprawling across six peaks in Vermont\'s Green Mountains, famous for World Cup racing on Superstar and one of the longest ski seasons in the East.',
+    website: 'https://www.killington.com',
   },
   {
     id: 'lake-louise',
@@ -1038,6 +1075,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Grizzly Gondola & Juniper Express',
     archetype: 'Steep Alpine',
     summary: 'Spectacular Canadian Rockies wilderness in Banff National Park, pairing historic World Cup downhill slopes with dramatic glaciated peaks and vast back bowls.',
+    website: 'https://www.skilouise.com',
   },
 
   // European Alps & Dolomites
@@ -1059,6 +1097,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Freccia nel Cielo Cable Car & Dolomiti Superski Network',
     archetype: 'Steep Alpine',
     summary: 'Glamorous Queen of the Dolomites framed by dramatic pink limestone peaks, combining 1956 and 2026 Winter Olympic heritage with chic Italian lifestyle.',
+    website: 'https://www.dolomiti.org/en/cortina/',
   },
   {
     id: 'val-gardena',
@@ -1078,6 +1117,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Saslong World Cup gondolas & interconnected circuit',
     archetype: 'Flagship Mega-Resort',
     summary: 'Ladin cultural heart of the Dolomites and gateway to the famous Sellaronda circuit, host to the thrilling Saslong World Cup downhill.',
+    website: 'https://www.valgardena.it',
   },
   {
     id: 'courchevel',
@@ -1097,6 +1137,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Saulire Cable Car & 160 interconnected lifts',
     archetype: 'Flagship Mega-Resort',
     summary: 'The most prestigious station of the French 3 Valleys, combining north-facing high-alpine snow preservation with Michelin-starred mountain luxury.',
+    website: 'https://www.courchevel.com',
   },
   {
     id: 'st-moritz',
@@ -1116,6 +1157,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Signal Cable Car & Piz Nair Funicular',
     archetype: 'Steep Alpine',
     summary: 'The birthplace of winter tourism in 1864 in the Swiss Engadin valley, hosting two Winter Olympics and legendary Corviglia sun-drenched alpine pistes.',
+    website: 'https://www.engadin.ch',
   },
   {
     id: 'kitzbuehel',
@@ -1135,6 +1177,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '3S-Bahn Gondola & Hahnenkammbahn',
     archetype: 'Steep Alpine',
     summary: 'Legendary Tyrolean ski town host to the harrowing Hahnenkamm downhill on the Streif, blending medieval town charm with 130 years of Austrian ski prestige.',
+    website: 'https://www.kitzski.at',
   },
 
   // Scandinavia & Spain
@@ -1156,6 +1199,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Hollvin Express 8-pack & T-bars',
     archetype: 'Steep Alpine',
     summary: 'The Scandinavian Alps of Norway, renowned for its dramatic pointed peaks, snow-sure season from November to May, and vibrant ski touring scene.',
+    website: 'https://www.skistar.com',
   },
   {
     id: 'are-sweden',
@@ -1175,6 +1219,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Åre Kabinbana & VM8 Express',
     archetype: 'Flagship Mega-Resort',
     summary: 'Northern Europe\'s premier alpine resort on Mount Åreskutan, host to multiple World Championships with sweeping lake views and Nordic mountain soul.',
+    website: 'https://www.skistar.com',
   },
   {
     id: 'baqueira-beret',
@@ -1194,6 +1239,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: '36 Lifts including Baqueira Gondola',
     archetype: 'Steep Alpine',
     summary: 'The crown jewel of the Spanish Pyrenees in the Val d\'Aran, loved by the Spanish royal family for expansive high-altitude bowls and exceptional tapas culture.',
+    website: 'https://www.baqueira.es',
   },
 
   // Oceania & South America
@@ -1215,6 +1261,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'McDougall’s Chondola & Soho Basin expansion',
     archetype: 'Steep Alpine',
     summary: 'New Zealand\'s premier alpine playground between Queenstown and Wanaka, famous for wide-open rolling basins and world-class terrain parks.',
+    website: 'https://www.cardrona.com',
   },
   {
     id: 'perisher',
@@ -1234,6 +1281,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Skitube Alpine Railway & 47 Lifts',
     archetype: 'Flagship Mega-Resort',
     summary: 'The Southern Hemisphere\'s largest resort in Australia\'s Snowy Mountains, connecting four distinct villages across rolling sub-alpine snowgum glades.',
+    website: 'https://www.perisher.com.au',
   },
   {
     id: 'cerro-catedral',
@@ -1253,6 +1301,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     infrastructure: 'Amancay Gondola & 34 Lifts',
     archetype: 'Steep Alpine',
     summary: 'South America\'s premier resort towering above Lake Nahuel Huapi in Argentine Patagonia, famed for granite spires, beech forest tree runs, and vibrant Bariloche culture.',
+    website: 'https://catedralaltapatagonia.com',
   },
 ];
 
@@ -1278,6 +1327,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Luxury remote backcountry lodge · Bell 212 helicopters · Certified ACMG/IFMGA guides',
     archetype: 'Heli Skiing',
     summary: 'The birthplace of heli-skiing in 1965 in the legendary granite spires of the Bugaboo Range, with 1,000+ named runs.',
+    website: 'https://www.cmhheli.com',
     category: 'heli_cat',
     operation_type: 'heli_ski',
   },
@@ -1298,6 +1348,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Blue River heli-village resort · 10+ AStar / Bell helicopters · 1.2M acres tenure',
     archetype: 'Heli Skiing',
     summary: 'World-renowned vast wilderness heli-skiing encompassing both the Cariboo and Monashee mountain ranges.',
+    website: 'https://www.wiegele.com',
     category: 'heli_cat',
     operation_type: 'heli_ski',
   },
@@ -1318,6 +1369,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Fly-in timber backcountry lodge · Custom heated snowcats · Natural Selection venue',
     archetype: 'Cat Skiing',
     summary: 'Cult-status cat skiing mecca with legendary steeps, cliffs, and pillow lines in the Selkirks, receiving 500+ inches of snow.',
+    website: 'https://baldface.com',
     category: 'heli_cat',
     operation_type: 'cat_ski',
   },
@@ -1338,6 +1390,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Historic Meadow Creek lodge · Custom powder snowcats · Limited to 24 guests per day',
     archetype: 'Cat Skiing',
     summary: 'The world’s first snowcat skiing operation founded in 1975, offering 15,000 to 20,000 vertical feet of untracked snow per day.',
+    website: 'https://selkirksnowcatskiing.com',
     category: 'heli_cat',
     operation_type: 'cat_ski',
   },
@@ -1358,6 +1411,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Aerospatiale AStar B3 helicopters · Alyeska base · Backup snowcat powder tenure',
     archetype: 'Heli Skiing',
     summary: 'Legendary maritime steep Alaskan spine skiing and massive glaciated powder descents across 750,000 permitted acres.',
+    website: 'https://chugachpowderguides.com',
     category: 'heli_cat',
     operation_type: 'heli_ski',
   },
@@ -1378,6 +1432,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Tsaina Lodge on Thompson Pass · AStar helicopters · Founded by Doug Coombs',
     archetype: 'Heli Skiing',
     summary: 'The spiritual epicenter of extreme steep Alaskan helicopter skiing on Thompson Pass with 600–900 inches of snow.',
+    website: 'https://valdezheliskiguides.com',
     category: 'heli_cat',
     operation_type: 'heli_ski',
   },
@@ -1398,6 +1453,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Custom heated 12-passenger snowcats · Buffalo Pass USFS permit · Avalanche safety gear',
     archetype: 'Cat Skiing',
     summary: 'Colorado’s premier snowcat operation famous for the lightest Champagne Powder on snow-record-holding Buffalo Pass.',
+    website: 'https://steamboatpowdercats.com',
     category: 'heli_cat',
     operation_type: 'cat_ski',
   },
@@ -1418,6 +1474,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'AStar B3 helicopter · High-altitude Kassbohrer snowcat · Single double chairlift',
     archetype: 'Cat & Heli',
     summary: 'The highest and steepest guided ski mountain in North America with 100% expert terrain in the rugged San Juan Mountains.',
+    website: 'https://silvertonmountain.com',
     category: 'heli_cat',
     operation_type: 'cat_ski',
   },
@@ -1438,6 +1495,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Luxury log backcountry lodges · Cedar Valley cats · 5-star backcountry dining',
     archetype: 'Cat Skiing',
     summary: 'Exclusive luxury snowcat retreat set in a private cirque beneath the dramatic Lizard Range in Fernie, BC.',
+    website: 'https://islandlakelodge.com',
     category: 'heli_cat',
     operation_type: 'cat_ski',
   },
@@ -1458,6 +1516,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Spruce Meadow lodge · 4 custom PistenBully powder cats · Kinbasket Lake helicopter transfer',
     archetype: 'Cat Skiing',
     summary: 'One of the largest cat-ski tenures in the world covering 238 sq km on the western slopes of the Canadian Rockies.',
+    website: 'https://chattercreek.ca',
     category: 'heli_cat',
     operation_type: 'cat_ski',
   },
@@ -1478,6 +1537,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Tweedsmuir Park Lodge & chalets · Small group AStar B2/B3 helis · 3.25M acres tenure',
     archetype: 'Heli Skiing',
     summary: 'Winner of World’s Best Heli-Ski Operator with the largest single tenure on Earth in BC’s dramatic Coast Range.',
+    website: 'https://bellacoolahelisports.com',
     category: 'heli_cat',
     operation_type: 'heli_ski',
   },
@@ -1498,6 +1558,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Queenstown and Wanaka bases · Squirrel / AStar helicopters · 17 mountain ranges',
     archetype: 'Heli Skiing',
     summary: 'Southern Hemisphere’s premier helicopter ski operator across New Zealand’s Southern Alps chutes and glaciers.',
+    website: 'https://heliskinz.com',
     category: 'heli_cat',
     operation_type: 'heli_ski',
   },
@@ -1518,6 +1579,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Air Zermatt Bell 429 & Ecureuil helis · UIAGM Zermatt guides · High Alps glaciers',
     archetype: 'Heli Skiing',
     summary: 'Landing at 14,000 ft on Monte Rosa and skiing 8,800 vertical ft down the Grenzgletscher glacier back to Zermatt.',
+    website: 'https://www.air-zermatt.ch',
     category: 'heli_cat',
     operation_type: 'heli_ski',
   },
@@ -1538,6 +1600,7 @@ export const HELI_CAT_OPERATIONS: SkiResort[] = [
     infrastructure: 'Aerospatiale AStar helicopter · Volcano crater drops · Guided small groups',
     archetype: 'Heli Skiing',
     summary: 'Japan’s premier commercial helicopter skiing operation on the volcanic cones of Mt. Shiribetsu with bottomless Japow.',
+    website: 'https://hokkaidobackcountryclub.com',
     category: 'heli_cat',
     operation_type: 'heli_ski',
   },
@@ -1587,17 +1650,28 @@ export function getResortStats(resort: SkiResort | null | undefined): {
   return { lifts, pistes, acres };
 }
 
-export function getResortWebsite(resort: SkiResort | null | undefined): { url: string; isDirect: boolean } | null {
+export function getResortWebsite(resort: SkiResort | null | undefined): string | null {
   if (!resort) return null;
-  const direct = resort.website || (resort as any).tags?.website || (resort as any).tags?.['contact:website'];
-  if (direct) {
-    const url = direct.startsWith('http://') || direct.startsWith('https://') ? direct : `https://${direct}`;
-    return { url, isDirect: true };
+  let direct = resort.website || (resort as any).tags?.website || (resort as any).tags?.['contact:website'];
+  if (direct && typeof direct === 'string') {
+    direct = direct.trim();
+    // Correct common typo like "hhttps://"
+    if (direct.startsWith('hhttps://')) {
+      direct = direct.slice(1);
+    }
+    const withProto = direct.startsWith('http://') || direct.startsWith('https://') ? direct : `https://${direct}`;
+    try {
+      const parsed = new URL(withProto);
+      // Ensure it has a genuine domain name with at least one dot (e.g. "example.com")
+      if (parsed.hostname && parsed.hostname.includes('.') && parsed.hostname.length >= 4) {
+        return withProto;
+      }
+    } catch (_) {
+      // Invalid URL string
+    }
   }
-  if (resort.name) {
-    const q = encodeURIComponent(`${resort.name} ski resort official website`);
-    return { url: `https://www.google.com/search?q=${q}`, isDirect: false };
-  }
+
+  // Strictly do NOT redirect to generic Google search; only return genuine, verified websites
   return null;
 }
 
@@ -4638,18 +4712,18 @@ export default function App() {
 
             {/* Official Website Link */}
             {(() => {
-              const site = getResortWebsite(selectedResort);
-              if (!site) return null;
+              const url = getResortWebsite(selectedResort);
+              if (!url) return null;
               return (
                 <div className="mt-1.5">
                   <a
-                    href={site.url}
+                    href={url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-[11px] font-mono font-medium text-[#2E5A44] hover:text-[#1C1B18] hover:underline transition-colors"
                   >
                     <Globe className="w-3.5 h-3.5" />
-                    <span>{site.isDirect ? 'Official Website' : 'Search Official Site'}</span>
+                    <span>Official Website</span>
                     <ExternalLink className="w-3 h-3 opacity-80" />
                   </a>
                 </div>
