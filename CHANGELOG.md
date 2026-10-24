@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: eliminate arbitrary green color styling from slider metrics and UI controls`
+- **Removed Discordant Green Highlights**:
+  - The `Min Skiable Acres` and `Min Trail Network` slider metrics previously rendered values (e.g. `100 ac`) in pine green (`#2E5A44`), conflicting with the neutral charcoal palette of `Min Vertical Drop` (`500'`).
+  - Active `acres` sort button, active filters badge, scope tab focus ring, and card selection border also used inconsistent green styling.
+- **Unified on Natural Editorial Charcoal**:
+  - Converted slider values (`100 ac`, `km`) to `#1C1B18` charcoal, matching `Min Vertical Drop`.
+  - Replaced green text on active `Acres` sort button with `#1C1B18`.
+  - Standardized active filters pill to `#1C1B18` with cream text (`#FAF8F3`).
+  - Standardized scope tabs and card active selection borders to `#1C1B18` / `#2C2A27`.
+
 ### `style: standardize on refined rounded-md (6px) corners across panel and controls`
 - **Replaced Full Stadium Pills with Tailored 6px Rounded Corners**:
   - Overly round stadium capsules (`rounded-full`) felt too circular and bubbly.

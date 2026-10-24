@@ -4072,7 +4072,7 @@ export default function App() {
                     Terrain Filters
                   </span>
                   {activeFiltersCount > 0 && (
-                    <span className="bg-[#2E5A44] text-[#FAF8F3] text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums">
+                    <span className="bg-[#1C1B18] text-[#FAF8F3] text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums">
                       {activeFiltersCount} active
                     </span>
                   )}
@@ -4153,7 +4153,7 @@ export default function App() {
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-baseline">
                       <span className="text-[12.5px] text-[#4A463F] font-semibold">Min Skiable Acres</span>
-                      <span className="text-[13.5px] text-[#2E5A44] font-extrabold tabular-nums">
+                      <span className="text-[13.5px] text-[#1C1B18] font-extrabold tabular-nums">
                         {minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}
                       </span>
                     </div>
@@ -4177,7 +4177,7 @@ export default function App() {
                     <span className="text-[12.5px] text-[#4A463F] font-semibold">
                       {showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}
                     </span>
-                    <span className="text-[13.5px] text-[#2E5A44] font-extrabold tabular-nums">
+                    <span className="text-[13.5px] text-[#1C1B18] font-extrabold tabular-nums">
                       {minNordicKm > 0 ? formatDistance(minNordicKm) : 'Any'}
                     </span>
                   </div>
@@ -4212,7 +4212,7 @@ export default function App() {
                 <button
                   onClick={() => handleSortClick('acres')}
                   className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                    sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#2E5A44] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                    sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#1C1B18] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>{showNordic && !showDownhill && !showHeliCat ? 'Network' : 'Acres'}</span>
@@ -4258,7 +4258,7 @@ export default function App() {
               onClick={() => setDirectoryScope('all')}
               className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
                 directoryScope === 'all'
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] shadow-2xs ring-1 ring-[#2E5A44]/30'
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2C2A27] shadow-2xs'
                   : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
               }`}
               title="Show all ski areas matching current filters worldwide"
@@ -4280,7 +4280,7 @@ export default function App() {
                 {directoryScope === 'in_frame' && filteredResorts.length > 0 && (
                   <button
                     onClick={() => setDirectoryScope('all')}
-                    className="inline-block px-3 py-1.5 text-xs font-bold text-[#2E5A44] bg-[#FAF8F3] border border-[#2E5A44] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
+                    className="inline-block px-3 py-1.5 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] border border-[#2C2A27] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
                   >
                     View all {filteredResorts.length.toLocaleString()} matching areas →
                   </button>
@@ -4297,7 +4297,7 @@ export default function App() {
                     key={r.id}
                     onClick={() => handleSelectResort(r.id)}
                     className={`p-3 transition-colors cursor-pointer group ${
-                      isSelected ? 'bg-[#FAF8F3] border-l-3 border-l-[#2E5A44]' : 'hover:bg-[#FAF8F3]'
+                      isSelected ? 'bg-[#FAF8F3] border-l-3 border-l-[#1C1B18]' : 'hover:bg-[#FAF8F3]'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
