@@ -4656,8 +4656,8 @@ export default function App() {
       {/* =====================================================================
           UNIFIED CARTOGRAPHIC NAVIGATION GIMBAL & COMPASS INSTRUMENT
           Integrated concentric dual-action dial:
-          - Outer Ring (Ø 72px): Rotary Compass heading & True North snap
-          - Inner Core (Ø 42px): 3D Horizon gimbal & 2D/3D perspective tilt
+          - Outer Ring (Ø 66px): Rotary Compass heading & True North snap
+          - Inner Core (Ø 38px): 3D Horizon gimbal & 2D/3D perspective tilt
           ===================================================================== */}
       <div
         className={`absolute bottom-8 ${
@@ -4665,7 +4665,7 @@ export default function App() {
         } z-20 select-none transition-all duration-300`}
       >
         <div
-          className="relative w-[72px] h-[72px] rounded-full bg-[#FAF8F3] border border-[#2C2A27] shadow-sm flex items-center justify-center p-0"
+          className="relative w-[66px] h-[66px] rounded-full bg-[#FAF8F3] border border-[#D6D0C2] shadow-sm flex items-center justify-center p-0"
           title="Navigation Instrument: Outer ring controls heading (click to reset North) · Inner disc controls 3D tilt & perspective"
         >
           {/* 1. OUTER ROTARY COMPASS BEZEL (HEADING / BEARING) */}
@@ -4673,67 +4673,39 @@ export default function App() {
             onMouseDown={handleCompassMouseDown}
             onClick={handleResetNorth}
             className={`absolute inset-0 rounded-full flex items-center justify-center cursor-pointer transition-all ${
-              isCompassDragging ? 'cursor-grabbing scale-[1.02] ring-1 ring-[#2C2A27]' : 'cursor-grab hover:bg-[#EFECE4]'
+              isCompassDragging ? 'cursor-grabbing scale-[1.02] ring-1 ring-[#1C1B18]' : 'cursor-grab hover:bg-[#F2EFE8]'
             }`}
           >
             {/* Dynamic Rotating SVG Bezel */}
             <svg
               className="w-full h-full pointer-events-none transition-transform ease-out"
-              viewBox="0 0 72 72"
+              viewBox="0 0 66 66"
               style={{
                 transform: `rotate(${-mapBearing}deg)`,
                 transitionDuration: isCompassDragging ? '0ms' : '150ms',
               }}
             >
-              {/* Outer Calibration Rings */}
-              <circle cx="36" cy="36" r="34" fill="none" stroke="#2C2A27" strokeWidth="0.8" strokeOpacity="0.75" />
-              <circle cx="36" cy="36" r="32" fill="none" stroke="#2C2A27" strokeWidth="0.4" strokeDasharray="1.5 1.5" strokeOpacity="0.5" />
-              <circle cx="36" cy="36" r="23.5" fill="none" stroke="#2C2A27" strokeWidth="0.6" strokeOpacity="0.4" />
+              {/* Soft Calibration Ring */}
+              <circle cx="33" cy="33" r="28" fill="none" stroke="#EAE5D9" strokeWidth="1" />
 
-              {/* Degree Tick Marks on Rim */}
-              {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
-                <line
-                  key={`tick-${deg}`}
-                  x1="36"
-                  y1="2"
-                  x2="36"
-                  y2={deg % 90 === 0 ? "6" : "4"}
-                  stroke={deg === 0 ? "#B84A39" : "#2C2A27"}
-                  strokeWidth={deg % 90 === 0 ? "1" : "0.5"}
-                  strokeOpacity={deg === 0 ? "1" : "0.75"}
-                  transform={`rotate(${deg} 36 36)`}
-                />
-              ))}
+              {/* Cardinal North Indicator (Alpine Vermilion #B84A39) */}
+              <polygon points="33,5 36,11 33,9.5 30,11" fill="#B84A39" />
+              <text
+                x="33"
+                y="18.5"
+                textAnchor="middle"
+                fontSize="7.5"
+                fontWeight="800"
+                fontFamily="Plus Jakarta Sans, sans-serif"
+                fill="#B84A39"
+              >
+                N
+              </text>
 
-              {/* Secondary Faceted Points (NE, NW, SE, SW) */}
-              <g opacity="0.45">
-                <polygon points="36,36 36,24 38,36" fill="#2C2A27" transform="rotate(45 36 36)" />
-                <polygon points="36,36 36,24 34,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.4" transform="rotate(45 36 36)" />
-                <polygon points="36,36 36,24 38,36" fill="#2C2A27" transform="rotate(135 36 36)" />
-                <polygon points="36,36 36,24 34,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.4" transform="rotate(135 36 36)" />
-                <polygon points="36,36 36,24 38,36" fill="#2C2A27" transform="rotate(225 36 36)" />
-                <polygon points="36,36 36,24 34,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.4" transform="rotate(225 36 36)" />
-                <polygon points="36,36 36,24 38,36" fill="#2C2A27" transform="rotate(315 36 36)" />
-                <polygon points="36,36 36,24 34,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.4" transform="rotate(315 36 36)" />
-              </g>
-
-              {/* Cardinal East, South, West Points */}
-              <polygon points="36,36 36,54 39,36" fill="#2C2A27" opacity="0.75" />
-              <polygon points="36,36 36,54 33,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.5" opacity="0.75" />
-              <polygon points="36,36 54,36 36,39" fill="#2C2A27" opacity="0.75" />
-              <polygon points="36,36 54,36 36,33" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.5" opacity="0.75" />
-              <polygon points="36,36 18,36 36,33" fill="#2C2A27" opacity="0.75" />
-              <polygon points="36,36 18,36 36,39" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.5" opacity="0.75" />
-
-              {/* North Arrow Point (Terracotta Vermilion #B84A39 / Deep Charcoal) */}
-              <polygon points="36,36 36,11 40,36" fill="#B84A39" />
-              <polygon points="36,36 36,11 32,36" fill="#FAF8F3" stroke="#2C2A27" strokeWidth="0.6" />
-
-              {/* Cardinal Letters in Tabular/Serif */}
-              <text x="36" y="9" textAnchor="middle" fontSize="7" fontWeight="bold" fontFamily="Newsreader, serif" fill="#B84A39">N</text>
-              <text x="64" y="38.5" textAnchor="middle" fontSize="6" fontFamily="JetBrains Mono, monospace" fill="#5C5852">E</text>
-              <text x="36" y="65" textAnchor="middle" fontSize="6" fontFamily="JetBrains Mono, monospace" fill="#5C5852">S</text>
-              <text x="8" y="38.5" textAnchor="middle" fontSize="6" fontFamily="JetBrains Mono, monospace" fill="#5C5852">W</text>
+              {/* Minimal Cardinal Ticks at East, South, West */}
+              <line x1="56" y1="33" x2="60" y2="33" stroke="#8A847C" strokeWidth="1" strokeLinecap="round" />
+              <line x1="33" y1="56" x2="33" y2="60" stroke="#8A847C" strokeWidth="1" strokeLinecap="round" />
+              <line x1="6" y1="33" x2="10" y2="33" stroke="#8A847C" strokeWidth="1" strokeLinecap="round" />
             </svg>
           </div>
 
@@ -4750,34 +4722,34 @@ export default function App() {
               setMapPitch(0);
               mapRef.current.setRenderWorldCopies(false);
             }}
-            className={`relative z-10 w-[42px] h-[42px] rounded-full bg-[#FAF8F3] border border-[#2C2A27]/40 shadow-inner flex items-center justify-center transition-all ${
+            className={`relative z-10 w-[38px] h-[38px] rounded-full bg-[#FAF8F3] border border-[#D6D0C2] shadow-2xs flex items-center justify-center transition-all ${
               isTiltDragging
-                ? 'cursor-grabbing scale-105 ring-1 ring-[#2C2A27]'
+                ? 'cursor-grabbing scale-105 ring-1 ring-[#1C1B18]'
                 : 'cursor-grab hover:bg-[#EFECE4]'
             }`}
             title="Navigation Gimbal: Drag horizontally to rotate heading · Drag vertically to tilt pitch · Click to toggle 2D/3D · Double-click to flatten"
           >
             {/* SVG Perimeter Ring & Dynamic Pitch Arc Meter */}
-            <svg className="w-[34px] h-[34px] pointer-events-none" viewBox="0 0 34 34">
-              <circle cx="17" cy="17" r="14.5" fill="none" stroke="#2C2A27" strokeWidth="0.6" strokeOpacity="0.25" />
+            <svg className="w-[32px] h-[32px] pointer-events-none" viewBox="0 0 32 32">
+              <circle cx="16" cy="16" r="13.5" fill="none" stroke="#EAE5D9" strokeWidth="1" />
               {/* Pitch Arc Angle Meter */}
               <circle
-                cx="17"
-                cy="17"
-                r="14.5"
+                cx="16"
+                cy="16"
+                r="13.5"
                 fill="none"
-                stroke="#2E5A44"
-                strokeWidth="1.6"
-                strokeDasharray={`${(mapPitch / 85) * 36} 100`}
+                stroke="#B84A39"
+                strokeWidth="1.5"
+                strokeDasharray={`${(mapPitch / 85) * 34} 100`}
                 strokeLinecap="round"
-                transform="rotate(-90 17 17)"
-                opacity={is3D ? 0.95 : 0.15}
+                transform="rotate(-90 16 16)"
+                opacity={is3D ? 0.9 : 0}
               />
             </svg>
 
-            {/* Viewing Angle Display - Strictly Centered (No up/down translation) */}
+            {/* Viewing Angle Display - Strictly Centered */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-              <span className="text-[11.5px] font-extrabold tabular-nums text-[#1C1B18] tracking-tight leading-none">
+              <span className="text-[11px] font-bold tabular-nums text-[#1C1B18] tracking-tight leading-none">
                 {is3D ? `${mapPitch}°` : '2D'}
               </span>
             </div>

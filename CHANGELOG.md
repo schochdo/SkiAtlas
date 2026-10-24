@@ -6,6 +6,15 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: redesign navigation compass gimbal with minimal Mountain Editorial styling`
+- **Eliminated Cluttered Divisions & Harsh Black Ink**:
+  - The previous compass gimbal had heavy black borders (`#2C2A27`), 5 concentric rings, 12 degree tick marks, 8 faceted starburst polygons, and harsh black `2D` typography that clashed with the warm editorial palette.
+- **Applied Clean, Minimalist Cartographic Dial**:
+  - Replaced the harsh black border with subtle `#D6D0C2` warm paper border and `#EAE5D9` calibration circle.
+  - Eliminated the 8 faceted starburst polygons, dashed lines, and 30-degree subdivisions.
+  - Reduced to 4 clean cardinal divisions: a crisp Alpine Vermilion (`#B84A39`) pointer and `N` at the top, with quiet muted ticks at East, South, and West.
+  - Styled the inner gimbal with `#D6D0C2` borders, a subtle vermilion pitch arc, and clean `11px font-bold text-[#1C1B18]` viewing angle typography.
+
 ### `refactor: replace verbose unit toggle button with compact segmented ft / m control`
 - **Eliminated Clunky Text Padding**:
   - Replaced the wordy single button `Imperial (°F, ft)` / `Metric (°C, m)` with a crisp, segmented `[ ft | m ]` switch.
