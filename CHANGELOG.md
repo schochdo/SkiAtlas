@@ -6,6 +6,15 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: redesign header with tracked editorial small-caps wordmark and geodetic contour crest`
+- **Replaced Generic Header Icon with Cartographic Contour Crest**:
+  - Replaced the stock Lucide `Mountain` icon with an authentic SVG hypsometric contour crest: three nested elevation contour lines (slate, charcoal) crowned by an Alpine Vermilion (`#B84A39`) triangulation benchmark monument and inner geodetic point.
+- **Tracked Editorial Small-Caps Wordmark**:
+  - Replaced generic bold serif `SkiAtlas` with wide-tracked editorial small-caps: `S K I · A T L A S` (`tracking-[0.22em]`, bold serif), separated by an alpine vermilion interpunct dot (`·`).
+  - Aligns with Swiss National Topographic Survey / Edward Tufte publication standards, eliminating generic SaaS branding feel.
+- **Integrated Location Breadcrumb Divider**:
+  - Restyled the active mountain breadcrumb with a crisp vertical dividing rule and muted monospace metadata.
+
 ### `refactor: eliminate redundant 'Ski Directory' sub-header and consolidate active filter counter`
 - **Eliminated Redundant Sub-Header**:
   - Removed the duplicate `Ski Directory` header row and redundant mountain icon from the top of the sliding architectural tray.

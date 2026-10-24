@@ -4091,17 +4091,37 @@ export default function App() {
 
       {/* EDITORIAL TOP BAR (WARM COTTON RAG PAPER & SERIF TITLE - NO VANITY PADDING) */}
       <header className="absolute top-0 inset-x-0 z-20 h-13 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <Mountain className="w-5 h-5 text-[#2E5A44] shrink-0" />
-          <h1 className="text-lg font-bold tracking-tight text-[#1C1B18] font-serif shrink-0">
-            SkiAtlas
-          </h1>
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Custom Hypsometric Topo Contour Crest with Geodetic Triangulation Summit Monument */}
+          <svg className="w-5.5 h-5.5 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            {/* Base elevation contour */}
+            <path d="M2.5 19.5C5 17 8 16 12 16C16 16 19 17 21.5 19.5" stroke="#8A847C" strokeWidth="1.3" strokeLinecap="round" />
+            {/* Mid elevation contour */}
+            <path d="M5.5 15C7.5 13 9.5 12 12 12C14.5 12 16.5 13 18.5 15" stroke="#5A554E" strokeWidth="1.4" strokeLinecap="round" />
+            {/* High alpine contour */}
+            <path d="M8.5 10.5C9.8 9.2 10.8 8.5 12 8.5C13.2 8.5 14.2 9.2 15.5 10.5" stroke="#1C1B18" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Geodetic Summit Mark (triangular triangulation monument) */}
+            <polygon points="12,3.5 14.8,7.2 9.2,7.2" fill="#B84A39" stroke="#1C1B18" strokeWidth="1" strokeLinejoin="round" />
+            <circle cx="12" cy="5.6" r="0.75" fill="#FAF8F3" />
+          </svg>
+
+          {/* Tracked Editorial Small-Caps Wordmark */}
+          <div className="flex items-center select-none shrink-0">
+            <span className="font-serif font-black tracking-[0.22em] text-[13px] uppercase text-[#1C1B18]">
+              SKI
+            </span>
+            <span className="text-[#B84A39] mx-1.5 font-serif font-black text-[13px] select-none">·</span>
+            <span className="font-serif font-black tracking-[0.22em] text-[13px] uppercase text-[#1C1B18]">
+              ATLAS
+            </span>
+          </div>
+
           {selectedResort && (
-            <div className="hidden sm:flex items-center gap-2 font-mono text-xs text-[#5C5852] min-w-0 truncate pl-2.5 border-l border-[#D6D0C2]/80">
-              <span className="font-serif font-bold text-sm text-[#1C1B18] truncate">
+            <div className="hidden sm:flex items-center gap-2 font-mono text-xs text-[#5C5852] min-w-0 truncate pl-3 border-l border-[#D6D0C2]">
+              <span className="font-serif font-bold text-sm text-[#1C1B18] tracking-tight truncate">
                 {selectedResort.name}
               </span>
-              <span className="text-[10px] text-[#8A847C] shrink-0">
+              <span className="text-[10px] text-[#8A847C] shrink-0 font-mono">
                 ({selectedResort.region ? `${selectedResort.region}, ` : ''}{selectedResort.country})
               </span>
             </div>
