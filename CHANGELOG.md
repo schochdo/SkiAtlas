@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: redesign top-left north arrow with high-contrast alpine vermilion needle and bold N glyph`
+- **Visibility Enhancement**: Previously, the True North reorientation arrow inside the top-left zoom stack was rendered as a tiny 16px (`w-4 h-4`) black/gray diamond without color or cardinal lettering. The South tip was beige on cream paper, rendering half the needle practically invisible against the button background.
+- **Substantial Sizing**: Increased the icon footprint to 22×22px (`w-5.5 h-5.5`), comfortably filling the 32×32px button while maintaining balanced cartographic margins.
+- **Alpine Vermilion Faceting**: Styled the North pointer in vivid Alpine Vermilion (`#E04836` lit facet / `#B84A39` shaded facet), harmonizing with the vermilion palette used across SkiAtlas and in the bottom navigation dial.
+- **High-Contrast South Needle & Pivot**: Outlined the South needle with a sharp `#1C1B18` stroke and `#D6D0C2` / `#FAF8F3` fill, anchored by an ink-black pivot ring with an inner brass dot.
+- **Prominent 'N' Cardinal Stamp**: Added a bold serif `N` letter in `#B84A39` atop the North pointer tip, creating an unmistakable, immediate visual anchor for True North heading.
+
 ### `feat: adopt standard WASD + arrow navigation and replace Q/E with +/- and Z/X for zoom`
 - **Replaced Awkward Q/E Zoom Controls**: Eliminated `Q` and `E` for zoom, aligning keyboard navigation with standard 3D cartographic and gaming mental models (Option 2).
 - **WASD + Arrow Key Terrain Panning**:

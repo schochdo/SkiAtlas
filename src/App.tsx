@@ -4213,18 +4213,46 @@ export default function App() {
           aria-label="Reorient to True North"
         >
           <svg
-            className="w-4 h-4 pointer-events-none transition-transform duration-150 ease-out"
+            className="w-5.5 h-5.5 pointer-events-none transition-transform duration-150 ease-out"
             viewBox="0 0 24 24"
             style={{ transform: `rotate(${-mapBearing}deg)` }}
           >
-            {/* North needle tip (clean filled triangular needle in dark ink #1C1B18) */}
-            <polygon points="12,3 16,13 12,11.2" fill="#1C1B18" />
-            <polygon points="12,3 8,13 12,11.2" fill="#5A554E" />
-            {/* South needle tip (clean outline/subtle tint) */}
-            <polygon points="12,21 16,13 12,14.8" fill="#D6D0C2" />
-            <polygon points="12,21 8,13 12,14.8" fill="#E5E0D5" />
-            {/* Minimal center pivot */}
-            <circle cx="12" cy="13" r="1.5" fill="#1C1B18" />
+            {/* Bold North 'N' glyph in Alpine Vermilion */}
+            <text
+              x="12"
+              y="4.2"
+              textAnchor="middle"
+              fontSize="4.4"
+              fontWeight="900"
+              fontFamily="Newsreader, serif"
+              fill="#B84A39"
+            >
+              N
+            </text>
+
+            {/* North needle pointer (Alpine Vermilion #E04836 / Deep Terracotta #B84A39) */}
+            <polygon points="12,5.2 7.4,12 12,10.4" fill="#E04836" />
+            <polygon points="12,5.2 16.6,12 12,10.4" fill="#B84A39" />
+
+            {/* South needle pointer (Crisp Charcoal-outlined Cream / Silver) */}
+            <polygon
+              points="12,23 7.4,12 12,13.6"
+              fill="#FAF8F3"
+              stroke="#1C1B18"
+              strokeWidth="0.8"
+              strokeLinejoin="round"
+            />
+            <polygon
+              points="12,23 16.6,12 12,13.6"
+              fill="#D6D0C2"
+              stroke="#1C1B18"
+              strokeWidth="0.8"
+              strokeLinejoin="round"
+            />
+
+            {/* Center Pivot Ring with inner brass core */}
+            <circle cx="12" cy="12" r="2.2" fill="#1C1B18" />
+            <circle cx="12" cy="12" r="0.9" fill="#FAF8F3" />
           </svg>
         </button>
       </div>
