@@ -2367,8 +2367,21 @@ export default function App() {
       setMapBearing(Math.round(map.getBearing()));
     };
 
-    // Shift + Two-Finger Scroll: Tilt 3D Camera Pitch directly
+    // Trackpad & Mouse Wheel Controller (Pinch Zoom, Shift-Tilt, Option-Rotate)
+    // Works across Brave, Chrome, Safari, and Firefox
     const onWheel = (e: WheelEvent) => {
+      // 1. Pinch-to-Zoom (Brave & Chrome on Mac dispatch wheel with e.ctrlKey = true)
+      if (e.ctrlKey) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const zoomDelta = -e.deltaY * 0.015;
+        const curZoom = map.getZoom();
+        const nextZoom = Math.max(1.2, Math.min(16.5, curZoom + zoomDelta));
+        map.setZoom(nextZoom);
+        return;
+      }
+
+      // 2. Shift + Two-Finger Scroll: Tilt 3D Camera Pitch directly
       if (e.shiftKey) {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -2377,6 +2390,19 @@ export default function App() {
         const newPitch = Math.max(0, Math.min(85, Math.round(curPitch - pitchDelta)));
         map.setPitch(newPitch);
         setMapPitch(newPitch);
+        return;
+      }
+
+      // 3. Option (⌥) / Alt + Two-Finger Scroll: Rotate Camera Heading in Brave/Chrome
+      if (e.altKey) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const curBearing = map.getBearing();
+        const rotDelta = (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) * 0.25;
+        const nextBearing = Math.round(curBearing + rotDelta);
+        map.setBearing(nextBearing);
+        setMapBearing(nextBearing);
+        return;
       }
     };
 
@@ -4796,7 +4822,7 @@ export default function App() {
             </div>
             {/* Navigation & Gesture Guide */}
             <div className="pt-2 border-t border-[#D6D0C2] text-xs text-[#5C5852] space-y-1">
-              <div><strong className="text-[#1C1B18]">Trackpad:</strong> Pinch zoom · Twist rotate · Shift+scroll tilt</div>
+              <div><strong className="text-[#1C1B18]">Trackpad:</strong> Pinch zoom · ⌥+scroll or right-drag rotate · Shift+scroll tilt</div>
               <div><strong className="text-[#1C1B18]">Tablet:</strong> 2-finger pinch & rotate · 2-finger drag tilt</div>
               <div><strong className="text-[#1C1B18]">Keyboard:</strong> W/S tilt · A/D rotate · Arrows pan</div>
             </div>

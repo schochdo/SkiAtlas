@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: support mac trackpad pinch-zoom and rotation in Brave and Chromium browsers`
+- **Root Cause in Chromium / Brave**:
+  - WebKit's `gesturestart` and `gesturechange` APIs are exclusive to Safari and are not implemented by Chromium (Brave / Chrome on macOS).
+  - On Mac trackpads, Chromium translates pinches to `wheel` events with `e.ctrlKey = true`, which defaults to browser-level tab zooming unless intercepted with `e.preventDefault()`.
+  - Chromium completely lacks an OS-level trackpad two-finger twist recognizer (`NSRotationGestureRecognizer`).
+- **Smooth Trackpad Pinch-to-Zoom**:
+  - Intercepted `wheel` events with `e.ctrlKey = true` directly on capture, calling `preventDefault()` to block Chromium browser tab zoom and smoothly adjusting `map.setZoom()` with dynamic delta scaling.
+- **Trackpad Rotation via Option (⌥) + Scroll & Right-Click Drag**:
+  - Added `Option (⌥) + two-finger scroll` to rotate camera heading effortlessly in Brave and Chrome without requiring click-down.
+  - Two-finger click-and-drag (right-click drag) and `A` / `D` keys remain fully active as native rotation options.
+
 ### `style: remove truncated count numbers from category filter buttons`
 - **Eliminated Button Text Truncation**:
   - Removed parenthesized resort counts `(1,732)` from the 3 category filter buttons (`⛷️ Downhill`, `🎿 Nordic`, `🚁 Heli/Cat`).
