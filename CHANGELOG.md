@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: rebrand application title and masthead wordmark to Snow Globe`
+- **Updated Page & Masthead Title**:
+  - Changed `<title>` and OpenGraph title in `index.html` from `SkiAtlas` to `Snow Globe`.
+  - Updated the top masthead wordmark in `src/App.tsx` from `SKI · ATLAS` to `SNOW · GLOBE` in tracked small-caps with the hypsometric summit contour crest and alpine vermilion interpunct.
+
 ### `style: conduct page-wide sweep to eliminate heavy black outlines and soften UI chrome`
 - **Root Cause of Heavy Outlines**:
   - Elements such as the map scale pill, key toggle, zoom navigation controls, popovers, active buttons, and slider tracks retained harsh black `#2C2A27` borders and dark ink segments that felt jarring against the warm cotton rag paper palette.

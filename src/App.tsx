@@ -3990,11 +3990,11 @@ export default function App() {
           {/* Tracked Mountain Editorial Wordmark */}
           <div className="flex items-center select-none shrink-0">
             <span className="font-extrabold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
-              SKI
+              SNOW
             </span>
             <span className="text-[#B84A39] mx-1.5 font-bold text-base select-none">·</span>
             <span className="font-extrabold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
-              ATLAS
+              GLOBE
             </span>
           </div>
 
