@@ -3975,35 +3975,35 @@ export default function App() {
       <header className="absolute top-0 inset-x-0 z-20 h-13 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
         <div className="flex items-center gap-3 min-w-0">
           {/* Custom Hypsometric Topo Contour Crest with Geodetic Triangulation Summit Monument */}
-          <svg className="w-5.5 h-5.5 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <svg className="w-6.5 h-6.5 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             {/* Base elevation contour */}
-            <path d="M2.5 19.5C5 17 8 16 12 16C16 16 19 17 21.5 19.5" stroke="#8A847C" strokeWidth="1.3" strokeLinecap="round" />
+            <path d="M2.5 19.5C5 17 8 16 12 16C16 16 19 17 21.5 19.5" stroke="#8A847C" strokeWidth="1.5" strokeLinecap="round" />
             {/* Mid elevation contour */}
-            <path d="M5.5 15C7.5 13 9.5 12 12 12C14.5 12 16.5 13 18.5 15" stroke="#5A554E" strokeWidth="1.4" strokeLinecap="round" />
+            <path d="M5.5 15C7.5 13 9.5 12 12 12C14.5 12 16.5 13 18.5 15" stroke="#5A554E" strokeWidth="1.6" strokeLinecap="round" />
             {/* High alpine contour */}
-            <path d="M8.5 10.5C9.8 9.2 10.8 8.5 12 8.5C13.2 8.5 14.2 9.2 15.5 10.5" stroke="#1C1B18" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M8.5 10.5C9.8 9.2 10.8 8.5 12 8.5C13.2 8.5 14.2 9.2 15.5 10.5" stroke="#1C1B18" strokeWidth="1.7" strokeLinecap="round" />
             {/* Geodetic Summit Mark (triangular triangulation monument) */}
-            <polygon points="12,3.5 14.8,7.2 9.2,7.2" fill="#B84A39" stroke="#1C1B18" strokeWidth="1" strokeLinejoin="round" />
-            <circle cx="12" cy="5.6" r="0.75" fill="#FAF8F3" />
+            <polygon points="12,3.2 15.2,7.4 8.8,7.4" fill="#B84A39" stroke="#1C1B18" strokeWidth="1.1" strokeLinejoin="round" />
+            <circle cx="12" cy="5.6" r="0.85" fill="#FAF8F3" />
           </svg>
 
           {/* Tracked Mountain Editorial Wordmark */}
           <div className="flex items-center select-none shrink-0">
-            <span className="font-extrabold tracking-[0.16em] text-sm uppercase text-[#1C1B18]">
+            <span className="font-extrabold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
               SKI
             </span>
-            <span className="text-[#B84A39] mx-1.5 font-bold text-sm select-none">·</span>
-            <span className="font-extrabold tracking-[0.16em] text-sm uppercase text-[#1C1B18]">
+            <span className="text-[#B84A39] mx-1.5 font-bold text-base select-none">·</span>
+            <span className="font-extrabold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
               ATLAS
             </span>
           </div>
 
           {selectedResort && (
             <div className="hidden sm:flex items-center gap-2 text-xs text-[#5C5852] min-w-0 truncate pl-3 border-l border-[#D6D0C2]">
-              <span className="font-bold text-sm text-[#1C1B18] tracking-tight truncate">
+              <span className="font-bold text-[14.5px] text-[#1C1B18] tracking-tight truncate">
                 {selectedResort.name}
               </span>
-              <span className="text-[11px] text-[#8A847C] shrink-0">
+              <span className="text-xs text-[#736E67] shrink-0 font-medium">
                 ({selectedResort.region ? `${selectedResort.region}, ` : ''}{selectedResort.country})
               </span>
             </div>
@@ -4013,7 +4013,7 @@ export default function App() {
         <div className="flex items-center gap-2 text-xs font-medium">
           <button
             onClick={() => setUnitsMetric(!unitsMetric)}
-            className="px-2.5 py-1 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer font-semibold"
+            className="px-3 py-1.5 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-[3px] transition-colors cursor-pointer text-xs font-bold"
             title="Toggle Metric / Imperial units"
           >
             {unitsMetric ? 'Metric (°C, m)' : 'Imperial (°F, ft)'}
@@ -4021,7 +4021,7 @@ export default function App() {
 
           <button
             onClick={toggleFullscreen}
-            className="h-[26px] w-[26px] bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer flex items-center justify-center"
+            className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-[3px] transition-colors cursor-pointer flex items-center justify-center"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
@@ -4043,47 +4043,47 @@ export default function App() {
         {/* CLEARLY FRAMED ARCHITECTURAL TRAY BODY */}
         <div className="relative flex flex-col h-full bg-[#F7F4ED] border-r border-[#D6D0C2] shadow-2xl overflow-hidden pointer-events-auto">
           {/* CLEARLY DEFINED TERRAIN & INFRASTRUCTURE FILTERS CARD */}
-          <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-2.5 shrink-0">
+          <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-3 shrink-0">
             {/* Search Input */}
             <div className="relative flex items-center">
-              <Search className="absolute left-2.5 w-3.5 h-3.5 text-[#8A847C] pointer-events-none" />
+              <Search className="absolute left-3 w-4 h-4 text-[#8A847C] pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search alpine resorts, peaks, countries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-[2px] pl-8 pr-7 py-1.5 text-xs text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#2C2A27]"
+                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-[3px] pl-9.5 pr-8 py-2 text-sm text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#2C2A27] focus:bg-[#FAF8F3] transition-colors"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 text-[#8A847C] hover:text-[#1C1B18]"
+                  className="absolute right-2.5 text-[#8A847C] hover:text-[#1C1B18]"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
             {/* Framed Filter Box */}
-            <div className="border border-[#D6D0C2] rounded-[2px] bg-[#F7F4ED] p-2.5 space-y-2.5">
-              <div className="flex items-center justify-between text-xs border-b border-[#D6D0C2] pb-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[10px]">
+            <div className="border border-[#D6D0C2] rounded-[3px] bg-[#F7F4ED] p-3 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-[#1C1B18] uppercase tracking-wider text-[11px]">
                     Terrain Filters
                   </span>
                   {activeFiltersCount > 0 && (
-                    <span className="bg-[#2E5A44] text-[#FAF8F3] text-[9px] px-1.5 py-0.2 rounded-full font-bold">
+                    <span className="bg-[#2E5A44] text-[#FAF8F3] text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums">
                       {activeFiltersCount} active
                     </span>
                   )}
-                  <span className="text-[10px] text-[#8A847C] font-medium">
+                  <span className="text-xs text-[#736E67] font-semibold tabular-nums">
                     ({filteredResorts.length.toLocaleString()})
                   </span>
                 </div>
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={handleResetFilters}
-                    className="text-[#B84A39] hover:underline cursor-pointer text-[10px] font-bold"
+                    className="text-[#B84A39] hover:underline cursor-pointer text-xs font-bold"
                   >
                     Reset
                   </button>
@@ -4091,39 +4091,39 @@ export default function App() {
               </div>
 
               {/* Categories (Downhill default ON, Nordic/Cat-Heli default OFF) */}
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-3 gap-1.5">
                 <button
                   onClick={() => setShowDownhill(!showDownhill)}
-                  className={`py-1.5 px-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     showDownhill
-                      ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] font-bold shadow-xs'
-                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-70'
+                      ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] shadow-2xs'
+                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
                   }`}
                   title="Toggle Downhill Ski Areas, Trails & Lifts"
                 >
-                  <span>⛷️ Downhill ({categoryFilterCounts.downhill.toLocaleString()})</span>
+                  <span className="truncate">⛷️ Downhill ({categoryFilterCounts.downhill.toLocaleString()})</span>
                 </button>
                 <button
                   onClick={() => setShowNordic(!showNordic)}
-                  className={`py-1.5 px-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     showNordic
-                      ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] font-bold shadow-xs'
-                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-70'
+                      ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] shadow-2xs'
+                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
                   }`}
                   title="Toggle Nordic Centers & XC Trails"
                 >
-                  <span>🎿 Nordic ({categoryFilterCounts.nordic.toLocaleString()})</span>
+                  <span className="truncate">🎿 Nordic ({categoryFilterCounts.nordic.toLocaleString()})</span>
                 </button>
                 <button
                   onClick={() => setShowHeliCat(!showHeliCat)}
-                  className={`py-1.5 px-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     showHeliCat
-                      ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] font-bold shadow-xs'
-                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-70'
+                      ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] shadow-2xs'
+                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
                   }`}
                   title="Toggle Guided Heli/Cat Operations & Backcountry Routes"
                 >
-                  <span>🚁 Heli/Cat ({categoryFilterCounts.heli_cat.toLocaleString()})</span>
+                  <span className="truncate">🚁 Heli/Cat ({categoryFilterCounts.heli_cat.toLocaleString()})</span>
                 </button>
               </div>
 
@@ -4131,10 +4131,12 @@ export default function App() {
               {showDownhill && (
                 <>
                   {/* Min Vertical Slider (Default 500') */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#5C5852] font-medium">Min Vertical Drop</span>
-                      <span className="text-[#1C1B18] font-bold">{minVertical > 0 ? formatVert(minVertical) : 'Any'}</span>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-[12.5px] text-[#4A463F] font-semibold">Min Vertical Drop</span>
+                      <span className="text-[13.5px] text-[#1C1B18] font-extrabold tabular-nums">
+                        {minVertical > 0 ? formatVert(minVertical) : 'Any'}
+                      </span>
                     </div>
                     <input
                       type="range"
@@ -4148,10 +4150,12 @@ export default function App() {
                   </div>
 
                   {/* Min Acreage Slider (Default 100 ac) */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#5C5852] font-medium">Min Skiable Acres</span>
-                      <span className="text-[#2E5A44] font-bold">{minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}</span>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-[12.5px] text-[#4A463F] font-semibold">Min Skiable Acres</span>
+                      <span className="text-[13.5px] text-[#2E5A44] font-extrabold tabular-nums">
+                        {minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}
+                      </span>
                     </div>
                     <input
                       type="range"
@@ -4168,10 +4172,14 @@ export default function App() {
 
               {/* Nordic Cross-Country Trail Network Slider (shown when Nordic is active) */}
               {showNordic && (
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-[#5C5852] font-medium">{showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}</span>
-                    <span className="text-[#2E5A44] font-bold">{minNordicKm > 0 ? formatDistance(minNordicKm) : 'Any'}</span>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[12.5px] text-[#4A463F] font-semibold">
+                      {showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}
+                    </span>
+                    <span className="text-[13.5px] text-[#2E5A44] font-extrabold tabular-nums">
+                      {minNordicKm > 0 ? formatDistance(minNordicKm) : 'Any'}
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -4187,72 +4195,76 @@ export default function App() {
             </div>
 
             {/* Sort Controls Row */}
-            <div className="flex items-center justify-between gap-1 text-xs pt-0.5">
-              <span className="text-[#8A847C] uppercase tracking-wider font-bold text-[10px] shrink-0">Sort:</span>
-              <div className="flex items-center gap-0.5 bg-[#FAF8F3] p-0.5 rounded-md border border-[#D6D0C2]">
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <span className="text-[#736E67] uppercase tracking-wider font-extrabold text-[11px] shrink-0">
+                Sort:
+              </span>
+              <div className="flex items-center gap-1 bg-[#FAF8F3] p-0.5 rounded-md border border-[#D6D0C2]">
                 <button
                   onClick={() => handleSortClick('vert')}
-                  className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
-                    sortBy === 'vert' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
+                    sortBy === 'vert' ? 'bg-[#F7F4ED] text-[#1C1B18] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>Vert</span>
-                  {sortBy === 'vert' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                  {sortBy === 'vert' && <span className="text-[10px] ml-1">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
                 </button>
                 <button
                   onClick={() => handleSortClick('acres')}
-                  className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
-                    sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#2E5A44] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
+                    sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#2E5A44] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>{showNordic && !showDownhill && !showHeliCat ? 'Network' : 'Acres'}</span>
-                  {sortBy === 'acres' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                  {sortBy === 'acres' && <span className="text-[10px] ml-1">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
                 </button>
                 <button
                   onClick={() => handleSortClick('name')}
-                  className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
-                    sortBy === 'name' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
+                    sortBy === 'name' ? 'bg-[#F7F4ED] text-[#1C1B18] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>A-Z</span>
-                  {sortBy === 'name' && <span className="text-[9px] ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  {sortBy === 'name' && <span className="text-[10px] ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                 </button>
                 <button
                   onClick={() => handleSortClick('snow')}
-                  className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
-                    sortBy === 'snow' ? 'bg-[#F7F4ED] text-[#3B627E] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
+                    sortBy === 'snow' ? 'bg-[#F7F4ED] text-[#3B627E] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>7-Day ❄</span>
-                  {sortBy === 'snow' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                  {sortBy === 'snow' && <span className="text-[10px] ml-1">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
                 </button>
               </div>
             </div>
           </div>
 
           {/* Directory Scope Category Tabs: In Frame vs All Matching Filters */}
-          <div className="px-3 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center gap-1.5 text-xs shrink-0">
+          <div className="px-3 py-2 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center gap-2 shrink-0">
             <button
               onClick={() => setDirectoryScope('in_frame')}
-              className={`flex-1 py-1 px-2 rounded-[2px] border text-center transition-all cursor-pointer font-bold tracking-tight ${
+              className={`flex-1 py-1.5 px-3 rounded-[3px] border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
                 directoryScope === 'in_frame'
                   ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2C2A27] shadow-2xs'
                   : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
               }`}
               title="Show only ski areas currently inside the map view frame"
             >
-              <span>{inViewResorts.length.toLocaleString()} IN FRAME</span>
+              <span className="tabular-nums">{inViewResorts.length.toLocaleString()}</span>
+              <span>IN FRAME</span>
             </button>
             <button
               onClick={() => setDirectoryScope('all')}
-              className={`flex-1 py-1 px-2 rounded-[2px] border text-center transition-all cursor-pointer font-bold tracking-tight ${
+              className={`flex-1 py-1.5 px-3 rounded-[3px] border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
                 directoryScope === 'all'
                   ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] shadow-2xs ring-1 ring-[#2E5A44]/30'
                   : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
               }`}
               title="Show all ski areas matching current filters worldwide"
             >
-              <span>{filteredResorts.length.toLocaleString()} ALL MATCHING</span>
+              <span className="tabular-nums">{filteredResorts.length.toLocaleString()}</span>
+              <span>ALL MATCHING</span>
             </button>
           </div>
 

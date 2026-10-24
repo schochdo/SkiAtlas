@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: scale up header, search, filter labels, and sort controls to balance with directory cards`
+- **Root Cause of Visual Hierarchy Mismatch**:
+  - While directory cards were scaled up to warm, confident typography (14px bold titles, readable badges, proportional stats), the header, search input, filter section, and sort controls retained ultra-dense micro-typography (`text-[9px]`, `text-[10px]`, `text-[11px]`, and `h-5` icons).
+  - This caused the top controls to feel spindly, cramped, and diminutive compared to the cards below.
+- **Proportional Scaling & Balanced Editorial Hierarchy**:
+  - **Masthead Wordmark & Crest**: Enlarged the topographic contour crest (`w-6.5 h-6.5`) and scaled `SKI · ATLAS` wordmark to `text-[15.5px]` with wide tracking (`tracking-[0.18em]`) and a bold vermilion interpunct, giving the top header clear authority over card content.
+  - **Search Input**: Scaled input text to `text-sm` (14px), increased padding (`py-2 pl-9.5`), and enlarged the search icon to `w-4 h-4` for natural typing and readability.
+  - **Terrain Filters Header & Badges**: Upgraded section label to `text-[11px] font-extrabold uppercase`, active count badge to `text-[10px]`, and reset link to `text-xs font-bold`.
+  - **Category Filter Buttons**: Scaled to `text-xs font-bold py-2` with increased padding and clear emoji labels, matching the card badge visual weight.
+  - **Sliders**: Increased metric labels to `text-[12.5px] font-semibold` and values (`500'`, `100 ac`, `10 km`) to `text-[13.5px] font-extrabold tabular-nums` to match card stat weights.
+  - **Sort & Scope Tabs**: Upgraded sort buttons to `text-xs font-bold px-2.5 py-1` and scope tabs (`IN FRAME` / `ALL MATCHING`) to `text-xs py-1.5` with proportional tabular-num counters.
+
 ### `style: implement Mountain Editorial typography across application, eliminating typewriter monospace and heavy newspaper serif`
 - **Root Cause of Contrived / Stiff Aesthetic & Eye Fatigue**:
   - The UI previously relied heavily on `JetBrains Mono` (`font-mono`) for numerical values, statistics, and badges, and `Newsreader` (`font-serif`) for headers and subheaders.
