@@ -3987,33 +3987,33 @@ export default function App() {
             <circle cx="12" cy="5.6" r="0.75" fill="#FAF8F3" />
           </svg>
 
-          {/* Tracked Editorial Small-Caps Wordmark */}
+          {/* Tracked Mountain Editorial Wordmark */}
           <div className="flex items-center select-none shrink-0">
-            <span className="font-serif font-black tracking-[0.22em] text-[13px] uppercase text-[#1C1B18]">
+            <span className="font-extrabold tracking-[0.16em] text-sm uppercase text-[#1C1B18]">
               SKI
             </span>
-            <span className="text-[#B84A39] mx-1.5 font-serif font-black text-[13px] select-none">·</span>
-            <span className="font-serif font-black tracking-[0.22em] text-[13px] uppercase text-[#1C1B18]">
+            <span className="text-[#B84A39] mx-1.5 font-bold text-sm select-none">·</span>
+            <span className="font-extrabold tracking-[0.16em] text-sm uppercase text-[#1C1B18]">
               ATLAS
             </span>
           </div>
 
           {selectedResort && (
-            <div className="hidden sm:flex items-center gap-2 font-mono text-xs text-[#5C5852] min-w-0 truncate pl-3 border-l border-[#D6D0C2]">
-              <span className="font-serif font-bold text-sm text-[#1C1B18] tracking-tight truncate">
+            <div className="hidden sm:flex items-center gap-2 text-xs text-[#5C5852] min-w-0 truncate pl-3 border-l border-[#D6D0C2]">
+              <span className="font-bold text-sm text-[#1C1B18] tracking-tight truncate">
                 {selectedResort.name}
               </span>
-              <span className="text-[10px] text-[#8A847C] shrink-0 font-mono">
+              <span className="text-[11px] text-[#8A847C] shrink-0">
                 ({selectedResort.region ? `${selectedResort.region}, ` : ''}{selectedResort.country})
               </span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex items-center gap-2 text-xs font-medium">
           <button
             onClick={() => setUnitsMetric(!unitsMetric)}
-            className="px-2.5 py-1 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer"
+            className="px-2.5 py-1 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer font-semibold"
             title="Toggle Metric / Imperial units"
           >
             {unitsMetric ? 'Metric (°C, m)' : 'Imperial (°F, ft)'}
@@ -4052,7 +4052,7 @@ export default function App() {
                 placeholder="Search alpine resorts, peaks, countries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-[2px] pl-8 pr-7 py-1.5 text-xs text-[#1C1B18] placeholder-[#8A847C] font-mono focus:outline-none focus:border-[#2C2A27]"
+                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-[2px] pl-8 pr-7 py-1.5 text-xs text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#2C2A27]"
               />
               {searchQuery && (
                 <button
@@ -4066,24 +4066,24 @@ export default function App() {
 
             {/* Framed Filter Box */}
             <div className="border border-[#D6D0C2] rounded-[2px] bg-[#F7F4ED] p-2.5 space-y-2.5">
-              <div className="flex items-center justify-between text-[10px] font-mono border-b border-[#D6D0C2] pb-1.5">
+              <div className="flex items-center justify-between text-xs border-b border-[#D6D0C2] pb-1.5">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[9px]">
+                  <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[10px]">
                     Terrain Filters
                   </span>
                   {activeFiltersCount > 0 && (
-                    <span className="bg-[#2E5A44] text-[#FAF8F3] font-mono text-[8px] px-1 py-0.2 rounded-[2px] font-bold">
+                    <span className="bg-[#2E5A44] text-[#FAF8F3] text-[9px] px-1.5 py-0.2 rounded-full font-bold">
                       {activeFiltersCount} active
                     </span>
                   )}
-                  <span className="text-[9px] text-[#8A847C] font-normal">
+                  <span className="text-[10px] text-[#8A847C] font-medium">
                     ({filteredResorts.length.toLocaleString()})
                   </span>
                 </div>
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={handleResetFilters}
-                    className="text-[#B84A39] hover:underline cursor-pointer text-[9px]"
+                    className="text-[#B84A39] hover:underline cursor-pointer text-[10px] font-bold"
                   >
                     Reset
                   </button>
@@ -4094,10 +4094,10 @@ export default function App() {
               <div className="grid grid-cols-3 gap-1">
                 <button
                   onClick={() => setShowDownhill(!showDownhill)}
-                  className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-1.5 px-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     showDownhill
                       ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] font-bold shadow-xs'
-                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
+                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-70'
                   }`}
                   title="Toggle Downhill Ski Areas, Trails & Lifts"
                 >
@@ -4105,10 +4105,10 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setShowNordic(!showNordic)}
-                  className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-1.5 px-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     showNordic
                       ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] font-bold shadow-xs'
-                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
+                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-70'
                   }`}
                   title="Toggle Nordic Centers & XC Trails"
                 >
@@ -4116,10 +4116,10 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setShowHeliCat(!showHeliCat)}
-                  className={`py-1 px-1 rounded-[2px] text-[10px] font-mono border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  className={`py-1.5 px-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     showHeliCat
                       ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] font-bold shadow-xs'
-                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
+                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-70'
                   }`}
                   title="Toggle Guided Heli/Cat Operations & Backcountry Routes"
                 >
@@ -4132,8 +4132,8 @@ export default function App() {
                 <>
                   {/* Min Vertical Slider (Default 500') */}
                   <div className="space-y-1">
-                    <div className="flex justify-between items-center text-[10px] font-mono">
-                      <span className="text-[#5C5852]">Min Vertical Drop</span>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-[#5C5852] font-medium">Min Vertical Drop</span>
                       <span className="text-[#1C1B18] font-bold">{minVertical > 0 ? formatVert(minVertical) : 'Any'}</span>
                     </div>
                     <input
@@ -4149,8 +4149,8 @@ export default function App() {
 
                   {/* Min Acreage Slider (Default 100 ac) */}
                   <div className="space-y-1">
-                    <div className="flex justify-between items-center text-[10px] font-mono">
-                      <span className="text-[#5C5852]">Min Skiable Acres</span>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-[#5C5852] font-medium">Min Skiable Acres</span>
                       <span className="text-[#2E5A44] font-bold">{minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}</span>
                     </div>
                     <input
@@ -4169,8 +4169,8 @@ export default function App() {
               {/* Nordic Cross-Country Trail Network Slider (shown when Nordic is active) */}
               {showNordic && (
                 <div className="space-y-1">
-                  <div className="flex justify-between items-center text-[10px] font-mono">
-                    <span className="text-[#5C5852]">{showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}</span>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-[#5C5852] font-medium">{showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}</span>
                     <span className="text-[#2E5A44] font-bold">{minNordicKm > 0 ? formatDistance(minNordicKm) : 'Any'}</span>
                   </div>
                   <input
@@ -4187,51 +4187,51 @@ export default function App() {
             </div>
 
             {/* Sort Controls Row */}
-            <div className="flex items-center justify-between gap-1 text-[10px] font-mono pt-0.5">
-              <span className="text-[#8A847C] uppercase tracking-wider font-semibold text-[9px] shrink-0">Sort:</span>
-              <div className="flex items-center gap-0.5 bg-[#FAF8F3] p-0.5 rounded-[2px] border border-[#D6D0C2]">
+            <div className="flex items-center justify-between gap-1 text-xs pt-0.5">
+              <span className="text-[#8A847C] uppercase tracking-wider font-bold text-[10px] shrink-0">Sort:</span>
+              <div className="flex items-center gap-0.5 bg-[#FAF8F3] p-0.5 rounded-md border border-[#D6D0C2]">
                 <button
                   onClick={() => handleSortClick('vert')}
-                  className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                  className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
                     sortBy === 'vert' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>Vert</span>
-                  {sortBy === 'vert' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                  {sortBy === 'vert' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
                 </button>
                 <button
                   onClick={() => handleSortClick('acres')}
-                  className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                  className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
                     sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#2E5A44] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>{showNordic && !showDownhill && !showHeliCat ? 'Network' : 'Acres'}</span>
-                  {sortBy === 'acres' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                  {sortBy === 'acres' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
                 </button>
                 <button
                   onClick={() => handleSortClick('name')}
-                  className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                  className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
                     sortBy === 'name' ? 'bg-[#F7F4ED] text-[#1C1B18] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>A-Z</span>
-                  {sortBy === 'name' && <span className="text-[8px] ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  {sortBy === 'name' && <span className="text-[9px] ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                 </button>
                 <button
                   onClick={() => handleSortClick('snow')}
-                  className={`px-1.5 py-0.5 rounded-[2px] transition-colors cursor-pointer ${
+                  className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
                     sortBy === 'snow' ? 'bg-[#F7F4ED] text-[#3B627E] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>7-Day ❄</span>
-                  {sortBy === 'snow' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+                  {sortBy === 'snow' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
                 </button>
               </div>
             </div>
           </div>
 
           {/* Directory Scope Category Tabs: In Frame vs All Matching Filters */}
-          <div className="px-3 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center gap-1.5 text-[10.5px] font-mono shrink-0">
+          <div className="px-3 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center gap-1.5 text-xs shrink-0">
             <button
               onClick={() => setDirectoryScope('in_frame')}
               className={`flex-1 py-1 px-2 rounded-[2px] border text-center transition-all cursor-pointer font-bold tracking-tight ${
@@ -4256,10 +4256,10 @@ export default function App() {
             </button>
           </div>
 
-          {/* Directory Cards List (Engraved Ledger Cards) */}
+          {/* Directory Cards List (Mountain Editorial Ledger Cards) */}
           <div className="flex-1 overflow-y-auto divide-y divide-[#D6D0C2] bg-[#F7F4ED]">
             {displayedResorts.length === 0 ? (
-              <div className="p-4 text-center text-xs font-mono text-[#8A847C] space-y-2">
+              <div className="p-4 text-center text-xs text-[#8A847C] space-y-2">
                 <div>
                   {directoryScope === 'in_frame'
                     ? '0 ski areas in current map view frame.'
@@ -4268,7 +4268,7 @@ export default function App() {
                 {directoryScope === 'in_frame' && filteredResorts.length > 0 && (
                   <button
                     onClick={() => setDirectoryScope('all')}
-                    className="inline-block px-2.5 py-1 text-[11px] font-mono font-bold text-[#2E5A44] bg-[#FAF8F3] border border-[#2E5A44] rounded-[2px] hover:bg-[#EAE5D9] transition-colors cursor-pointer"
+                    className="inline-block px-3 py-1.5 text-xs font-bold text-[#2E5A44] bg-[#FAF8F3] border border-[#2E5A44] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
                   >
                     View all {filteredResorts.length.toLocaleString()} matching areas →
                   </button>
@@ -4284,21 +4284,21 @@ export default function App() {
                   <div
                     key={r.id}
                     onClick={() => handleSelectResort(r.id)}
-                    className={`p-2.5 transition-colors cursor-pointer group ${
-                      isSelected ? 'bg-[#FAF8F3] border-l-2 border-l-[#2E5A44]' : 'hover:bg-[#FAF8F3]'
+                    className={`p-3 transition-colors cursor-pointer group ${
+                      isSelected ? 'bg-[#FAF8F3] border-l-3 border-l-[#2E5A44]' : 'hover:bg-[#FAF8F3]'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-1">
+                    <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <h3 className="font-serif font-bold text-sm text-[#1C1B18] tracking-tight truncate">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h3 className="font-bold text-sm text-[#1C1B18] tracking-tight truncate">
                             {r.name}
                           </h3>
-                          <span className={`text-[8px] font-mono px-1 py-0.2 rounded-[2px] border ${badge.bg} ${badge.text} ${badge.border} shrink-0`}>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.bg} ${badge.text} ${badge.border} shrink-0`}>
                             {badge.icon} {badge.label}
                           </span>
                         </div>
-                        <div className="text-[10px] font-mono text-[#5C5852] mt-0.5">
+                        <div className="text-xs text-[#5C5852] font-medium mt-1 flex items-center flex-wrap gap-x-1.5">
                           <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
                           {r.category !== 'nordic' && r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
                           {r.category !== 'nordic' && r.skiable_acres > 0 && ` · ${formatAcres(r.skiable_acres)}`}
@@ -4314,16 +4314,16 @@ export default function App() {
 
                       {/* Live Upcoming Snowfall Forecast Chip (NO TEMPERATURE) */}
                       {r.weather?.is_live && (
-                        <div className="shrink-0 flex items-center font-mono text-[10px]">
+                        <div className="shrink-0 flex items-center text-xs">
                           <span
-                            className={`px-1.5 py-0.5 rounded-[2px] border flex items-center gap-1 ${
+                            className={`px-2 py-1 rounded-md border flex items-center gap-1 text-xs font-bold ${
                               snow7d > 0
-                                ? 'bg-[#3B627E]/10 border-[#3B627E]/40 text-[#3B627E] font-bold'
+                                ? 'bg-[#3B627E]/10 border-[#3B627E]/40 text-[#3B627E]'
                                 : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C]'
                             }`}
                             title="Upcoming 7-day forecast snowfall"
                           >
-                            <Snowflake className="w-2.5 h-2.5 text-[#3B627E]" />
+                            <Snowflake className="w-3 h-3 text-[#3B627E]" />
                             <span>{formatSnow(snow7d)}</span>
                           </span>
                         </div>
@@ -4431,7 +4431,7 @@ export default function App() {
         <div className="relative">
           <button
             onClick={() => setMapMenuOpen(!mapMenuOpen)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] border text-xs font-mono transition-all cursor-pointer shadow-xs ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
               mapMenuOpen
                 ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-semibold'
                 : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
@@ -4439,16 +4439,16 @@ export default function App() {
             title="Basemap Styles & Earth Projection"
           >
             <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
-            <span className="font-mono text-[11px] font-semibold">Basemap</span>
+            <span className="text-xs font-semibold">Basemap</span>
           </button>
 
           {mapMenuOpen && (
-            <div className="absolute right-0 top-10 w-80 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3 space-y-3 z-30 text-xs font-mono shadow-2xl animate-in fade-in duration-150 max-h-[calc(100vh-5.5rem)] overflow-y-auto">
+            <div className="absolute right-0 top-10 w-80 bg-[#FAF8F3] border border-[#2C2A27] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-2xl animate-in fade-in duration-150 max-h-[calc(100vh-5.5rem)] overflow-y-auto">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-1.5">
+              <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
                 <div className="flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
-                  <span className="font-serif text-xs font-bold text-[#1C1B18] tracking-tight">
+                  <span className="text-xs font-bold text-[#1C1B18] tracking-tight">
                     Cartographic Controls
                   </span>
                 </div>
@@ -4465,7 +4465,7 @@ export default function App() {
               <div>
                 <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
                   <span>Earth Projection</span>
-                  <span className="text-[9px] text-[#5C5852] font-normal">Geometry</span>
+                  <span className="text-[10px] text-[#5C5852] font-normal">Geometry</span>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
@@ -4476,7 +4476,7 @@ export default function App() {
                         setMapPitch(0);
                       }
                     }}
-                    className={`p-2 rounded-[2px] border text-left transition-all cursor-pointer ${
+                    className={`p-2 rounded-md border text-left transition-all cursor-pointer ${
                       earthProjection === 'globe'
                         ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-bold'
                         : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
@@ -4484,15 +4484,15 @@ export default function App() {
                   >
                     <div className="flex items-center gap-1.5">
                       <Globe className="w-3.5 h-3.5 text-[#2E5A44]" />
-                      <span className="text-[11px]">3D Globe</span>
+                      <span className="text-xs font-semibold">3D Globe</span>
                     </div>
-                    <div className="text-[9px] text-[#5C5852] mt-0.5 font-normal leading-tight">
+                    <div className="text-[10px] text-[#5C5852] mt-0.5 font-normal leading-tight">
                       Spherical Earth
                     </div>
                   </button>
                   <button
                     onClick={() => setEarthProjection('mercator')}
-                    className={`p-2 rounded-[2px] border text-left transition-all cursor-pointer ${
+                    className={`p-2 rounded-md border text-left transition-all cursor-pointer ${
                       earthProjection === 'mercator'
                         ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-bold'
                         : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
@@ -4500,9 +4500,9 @@ export default function App() {
                   >
                     <div className="flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5 text-[#3B627E]" />
-                      <span className="text-[11px]">Flat Map</span>
+                      <span className="text-xs font-semibold">Flat Map</span>
                     </div>
-                    <div className="text-[9px] text-[#5C5852] mt-0.5 font-normal leading-tight">
+                    <div className="text-[10px] text-[#5C5852] mt-0.5 font-normal leading-tight">
                       Planar Mercator
                     </div>
                   </button>
@@ -4513,7 +4513,7 @@ export default function App() {
               <div>
                 <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
                   <span>Cartographic Base</span>
-                  <span className="text-[9px] text-[#5C5852] font-normal">Select style</span>
+                  <span className="text-[10px] text-[#5C5852] font-normal">Select style</span>
                 </div>
                 <div className="space-y-1">
                   {[
@@ -4526,21 +4526,21 @@ export default function App() {
                       <button
                         key={item.id}
                         onClick={() => setBasemapMode(item.id as BasemapMode)}
-                        className={`w-full text-left p-2 rounded-[2px] border transition-all cursor-pointer ${
+                        className={`w-full text-left p-2.5 rounded-md border transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30'
+                            ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-bold'
                             : 'bg-[#F7F4ED] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-[#1C1B18]">{item.label}</span>
+                          <span className="text-xs font-bold text-[#1C1B18]">{item.label}</span>
                           {isSelected && (
-                            <span className="text-[8.5px] font-mono uppercase font-bold px-1.5 py-0.2 rounded-[2px] bg-[#2E5A44] text-[#FAF8F3]">
+                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-[#2E5A44] text-[#FAF8F3]">
                               Active
                             </span>
                           )}
                         </div>
-                        <div className="text-[9.5px] text-[#5C5852] mt-0.5 leading-tight">
+                        <div className="text-[10px] text-[#5C5852] mt-0.5 leading-tight font-normal">
                           {item.desc}
                         </div>
                       </button>
@@ -4556,15 +4556,15 @@ export default function App() {
       {/* CARTOGRAPHIC MAP FURNITURE: ALTERNATING BAR SCALE & LEGEND */}
       <div ref={mapLegendRef} className={`absolute bottom-5 ${leftDockOpen ? 'left-88 md:left-106' : 'left-8'} z-20 transition-all duration-300 select-none`}>
         {mapLegendOpen && (
-          <div className="absolute bottom-11 left-0 w-72 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] p-3.5 space-y-3 z-30 text-xs animate-in fade-in duration-150">
+          <div className="absolute bottom-11 left-0 w-72 bg-[#FAF8F3] border border-[#2C2A27] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150">
             <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
-              <span className="font-serif text-sm font-bold text-[#1C1B18]">Cartographic Key</span>
+              <span className="text-xs font-bold text-[#1C1B18] tracking-tight">Cartographic Key</span>
               <button onClick={() => setMapLegendOpen(false)} className="text-[#8A847C] hover:text-[#1C1B18]">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
             {/* Piste Key */}
-            <div className="space-y-1 font-mono text-[9px]">
+            <div className="space-y-1.5 text-xs text-[#5C5852] font-medium">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-1.5 rounded-xs bg-[#2E7D32]" />
                 <span>Novice (Green)</span>
@@ -4587,7 +4587,7 @@ export default function App() {
               </div>
             </div>
             {/* Keyboard Guide */}
-            <div className="pt-2 border-t border-[#D6D0C2] font-mono text-[9px] text-[#5C5852] space-y-1">
+            <div className="pt-2 border-t border-[#D6D0C2] text-xs text-[#5C5852] space-y-1">
               <div><strong className="text-[#1C1B18]">W / S:</strong> Tilt camera pitch (3D / 2D)</div>
               <div><strong className="text-[#1C1B18]">A / D:</strong> Rotate camera heading</div>
               <div><strong className="text-[#1C1B18]">Arrows:</strong> Pan across mountain</div>
@@ -4597,7 +4597,7 @@ export default function App() {
         )}
 
         {/* Alternating Scale Bar */}
-        <div className="flex items-center gap-2 bg-[#FAF8F3] border border-[#2C2A27] rounded-[2px] px-2.5 py-1.5 font-mono text-[10px] text-[#1C1B18] shadow-xs">
+        <div className="flex items-center gap-2 bg-[#FAF8F3] border border-[#2C2A27] rounded-md px-3 py-1.5 text-xs font-semibold text-[#1C1B18] shadow-xs">
           <button
             onClick={() => setMapLegendOpen(!mapLegendOpen)}
             className="flex items-center gap-1 hover:text-[#2E5A44] transition-colors cursor-pointer mr-1"
@@ -4743,7 +4743,7 @@ export default function App() {
 
             {/* Viewing Angle Display - Strictly Centered (No up/down translation) */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-              <span className="text-[11.5px] font-mono font-bold text-[#1C1B18] tracking-tight leading-none">
+              <span className="text-[11.5px] font-extrabold tabular-nums text-[#1C1B18] tracking-tight leading-none">
                 {is3D ? `${mapPitch}°` : '2D'}
               </span>
             </div>
@@ -4765,13 +4765,13 @@ export default function App() {
             title="Map Attribution & Data Sources"
             aria-label="Toggle map attribution"
           >
-            <span className="font-serif italic font-bold text-[11px] leading-none">i</span>
+            <span className="font-sans italic font-bold text-[11px] leading-none">i</span>
           </button>
         ) : (
-          <div className="flex items-center gap-1.5 text-[9px] font-mono px-2 py-0.5 rounded-[2px] bg-[#FAF8F3]/95 backdrop-blur-xs border border-[#D6D0C2] text-[#8A847C] shadow-sm animate-in fade-in duration-150">
+          <div className="flex items-center gap-1.5 text-[9.5px] font-medium px-2 py-0.5 rounded-[2px] bg-[#FAF8F3]/95 backdrop-blur-xs border border-[#D6D0C2] text-[#8A847C] shadow-sm animate-in fade-in duration-150">
             <button
               onClick={() => setAttributionOpen(false)}
-              className="text-[#5C5852] hover:text-[#1C1B18] cursor-pointer font-serif italic font-bold text-[10px] pr-0.5"
+              className="text-[#5C5852] hover:text-[#1C1B18] cursor-pointer font-sans italic font-bold text-[10px] pr-0.5"
               title="Collapse attribution"
             >
               i
@@ -4798,19 +4798,19 @@ export default function App() {
       {selectedResort && (
         <div className="absolute top-13 bottom-0 right-0 z-20 w-84 md:w-96 flex flex-col bg-[#F7F4ED] border-l border-[#D6D0C2] shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="p-3.5 border-b border-[#D6D0C2] bg-[#F7F4ED]">
+          <div className="p-4 border-b border-[#D6D0C2] bg-[#F7F4ED]">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <div className="text-[10px] font-mono text-[#5C5852]">
+                <div className="text-xs text-[#5C5852] font-medium">
                   {selectedResort.region ? `${selectedResort.region}, ` : ''}{selectedResort.country}
                 </div>
-                <h2 className="text-base font-serif font-bold text-[#1C1B18] tracking-tight mt-0.5 truncate">
+                <h2 className="text-lg font-bold text-[#1C1B18] tracking-tight mt-0.5 truncate">
                   {selectedResort.name}
                 </h2>
               </div>
               <button
                 onClick={handleDeselectResort}
-                className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-[2px] transition-colors cursor-pointer shrink-0"
+                className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-md transition-colors cursor-pointer shrink-0"
                 title="Close (Esc)"
               >
                 <X className="w-4 h-4" />
@@ -4822,12 +4822,12 @@ export default function App() {
               const url = getResortWebsite(selectedResort);
               if (!url) return null;
               return (
-                <div className="mt-1.5">
+                <div className="mt-2">
                   <a
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[11px] font-mono font-medium text-[#2E5A44] hover:text-[#1C1B18] hover:underline transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2E5A44] hover:text-[#1C1B18] hover:underline transition-colors"
                   >
                     <Globe className="w-3.5 h-3.5" />
                     <span>Official Website</span>
@@ -4839,10 +4839,10 @@ export default function App() {
           </div>
 
           {/* Dossier Body */}
-          <div className="flex-1 overflow-y-auto p-3.5 space-y-3 bg-[#F7F4ED]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#F7F4ED]">
             {/* Mountain Overview / Summary */}
             {selectedResort.summary && (
-              <div className="bg-[#FAF8F3] p-3 rounded-[2px] border border-[#D6D0C2] text-xs font-serif text-[#1C1B18] leading-relaxed">
+              <div className="bg-[#FAF8F3] p-3.5 rounded-md border border-[#D6D0C2] text-xs text-[#2C2A27] leading-relaxed font-normal">
                 <p>{selectedResort.summary}</p>
               </div>
             )}
@@ -4851,36 +4851,36 @@ export default function App() {
             {(() => {
               const stats = getResortStats(selectedResort);
               return (
-                <div className="bg-[#FAF8F3] border border-[#D6D0C2] rounded-[2px] overflow-hidden font-mono text-center">
+                <div className="bg-[#FAF8F3] border border-[#D6D0C2] rounded-md overflow-hidden text-center shadow-2xs">
                   {/* Row 1: Infrastructure */}
-                  <div className="grid grid-cols-3 divide-x divide-[#D6D0C2] border-b border-[#D6D0C2] p-2">
+                  <div className="grid grid-cols-3 divide-x divide-[#D6D0C2] border-b border-[#D6D0C2] p-2.5">
                     {selectedResort.category === 'nordic' ? (
                       <>
                         <div>
-                          <div className="text-[9px] text-[#5C5852] uppercase">Trails</div>
+                          <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Trails</div>
                           <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{selectedResort.run_count ?? stats.pistes ?? '—'}</div>
                         </div>
                         <div>
-                          <div className="text-[9px] text-[#5C5852] uppercase">Network</div>
+                          <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Network</div>
                           <div className="text-sm font-bold text-[#2E5A44] mt-0.5">{selectedResort.trail_km ? formatDistance(selectedResort.trail_km) : '—'}</div>
                         </div>
                         <div>
-                          <div className="text-[9px] text-[#5C5852] uppercase">Type</div>
+                          <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Type</div>
                           <div className="text-sm font-bold text-[#1C1B18] mt-0.5">Nordic XC</div>
                         </div>
                       </>
                     ) : (
                       <>
                         <div>
-                          <div className="text-[9px] text-[#5C5852] uppercase">Lifts</div>
+                          <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Lifts</div>
                           <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.lifts ?? '—'}</div>
                         </div>
                         <div>
-                          <div className="text-[9px] text-[#5C5852] uppercase">Pistes</div>
+                          <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Pistes</div>
                           <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.pistes ?? selectedResort.run_count ?? '—'}</div>
                         </div>
                         <div>
-                          <div className="text-[9px] text-[#5C5852] uppercase">Acres</div>
+                          <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Acres</div>
                           <div className="text-sm font-bold text-[#1C1B18] mt-0.5">
                             {stats.acres && stats.acres > 0 ? formatAcres(stats.acres) : '—'}
                           </div>
@@ -4889,17 +4889,17 @@ export default function App() {
                     )}
                   </div>
                   {/* Row 2: Elevations */}
-                  <div className="grid grid-cols-3 divide-x divide-[#D6D0C2] p-2 bg-[#F7F4ED]">
+                  <div className="grid grid-cols-3 divide-x divide-[#D6D0C2] p-2.5 bg-[#F7F4ED]">
                     <div>
-                      <div className="text-[9px] text-[#5C5852] uppercase">Vertical</div>
+                      <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Vertical</div>
                       <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{formatVert(selectedResort.vertical_drop_ft)}</div>
                     </div>
                     <div>
-                      <div className="text-[9px] text-[#5C5852] uppercase">Summit</div>
+                      <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Summit</div>
                       <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{formatVert(selectedResort.summit_elev_ft)}</div>
                     </div>
                     <div>
-                      <div className="text-[9px] text-[#5C5852] uppercase">Base</div>
+                      <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Base</div>
                       <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{formatVert(selectedResort.base_elev_ft)}</div>
                     </div>
                   </div>
@@ -4908,27 +4908,27 @@ export default function App() {
             })()}
 
             {/* Summit Weather Forecast */}
-            <div className="bg-[#FAF8F3] p-3 rounded-[2px] border border-[#D6D0C2] space-y-2 font-mono">
-              <div className="flex items-center justify-between text-[11px]">
+            <div className="bg-[#FAF8F3] p-3.5 rounded-md border border-[#D6D0C2] space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 font-bold text-[#1C1B18]">
                   <Snowflake className="w-3.5 h-3.5 text-[#3B627E]" />
                   <span>Summit Meteorology</span>
                 </div>
                 {selectedResort.weather?.is_live && (
-                  <span className="text-[9px] text-[#8A847C]">{selectedResort.weather.last_updated}</span>
+                  <span className="text-[10px] font-medium text-[#8A847C]">{selectedResort.weather.last_updated}</span>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-[#F7F4ED] p-2 border border-[#D6D0C2] rounded-[2px]">
-                  <div className="text-[9px] text-[#5C5852] uppercase">72h Snow</div>
-                  <div className="text-base font-bold text-[#3B627E] mt-0.5">
+                <div className="bg-[#F7F4ED] p-2.5 border border-[#D6D0C2] rounded-md">
+                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">72h Snow</div>
+                  <div className="text-base font-extrabold text-[#3B627E] mt-0.5">
                     {formatSnow(selectedResort.weather?.snowfall_72h_in ?? 0)}
                   </div>
                 </div>
-                <div className="bg-[#F7F4ED] p-2 border border-[#D6D0C2] rounded-[2px]">
-                  <div className="text-[9px] text-[#5C5852] uppercase">7-Day Snow</div>
-                  <div className="text-base font-bold text-[#3B627E] mt-0.5">
+                <div className="bg-[#F7F4ED] p-2.5 border border-[#D6D0C2] rounded-md">
+                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">7-Day Snow</div>
+                  <div className="text-base font-extrabold text-[#3B627E] mt-0.5">
                     {selectedResort.weather?.daily_forecast
                       ? formatSnow(
                           Math.round(
@@ -4945,7 +4945,7 @@ export default function App() {
 
               {/* 7-Day Snowfall Bars */}
               {selectedResort.weather?.daily_forecast && selectedResort.weather.daily_forecast.length > 0 && (
-                <div className="grid grid-cols-7 gap-1 h-16 items-end bg-[#F7F4ED] p-1.5 border border-[#D6D0C2] rounded-[2px]">
+                <div className="grid grid-cols-7 gap-1 h-16 items-end bg-[#F7F4ED] p-2 border border-[#D6D0C2] rounded-md">
                   {selectedResort.weather.daily_forecast.map((day, idx) => {
                     const val = unitsMetric ? day.snowfall_cm : day.snowfall_in;
                     const maxVal = Math.max(1, ...selectedResort.weather!.daily_forecast.map((d) => (unitsMetric ? d.snowfall_cm : d.snowfall_in)));
@@ -4959,7 +4959,7 @@ export default function App() {
                           }`}
                           title={`${day.date}: ${val}${unitsMetric ? 'cm' : 'in'} snow`}
                         />
-                        <span className="text-[8px] text-[#8A847C] mt-1">
+                        <span className="text-[10px] font-bold text-[#8A847C] mt-1">
                           {new Date(day.date).toLocaleDateString([], { weekday: 'narrow' })}
                         </span>
                       </div>

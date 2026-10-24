@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: implement Mountain Editorial typography across application, eliminating typewriter monospace and heavy newspaper serif`
+- **Root Cause of Contrived / Stiff Aesthetic & Eye Fatigue**:
+  - The UI previously relied heavily on `JetBrains Mono` (`font-mono`) for numerical values, statistics, and badges, and `Newsreader` (`font-serif`) for headers and subheaders.
+  - Monospace forced fixed-character widths on numbers and stats, creating an artificial typewriter/academic zine feel that made reading numbers and data dense and fatiguing.
+  - Newsreader serif gave the interface an overly academic "New York Times / Edward Tufte" stiffness that felt out of place for modern mountain and topographic exploration.
+- **Implemented Mountain Editorial Typography**:
+  - Standardized on **Plus Jakarta Sans** (`font-sans`) across the entire application with intentional weights (`font-semibold`, `font-bold`, `font-extrabold`) and proportional numerical spacing (`tabular-nums` where vertical alignment is needed).
+  - Replaced harsh boxy monospace tags with soft, rounded enamel badges (`rounded-full`, refined typography).
+  - Preserved editorial hierarchy: crisp uppercase metadata tracking (`tracking-wider`, `text-[10px]`), clean human-scale typography for mountain titles, and warm, legible typography for snow depths, lifts, and vertical drops.
+  - Eliminated all occurrences of `font-mono` and `font-serif` from the header, left filter drawer, resort cards, right mountain dossier, basemap selector, scale bar, and attribution controls.
+
 ### `revert: remove synthetic multi-line callout layer and restore clean cartographic map labels`
 - **Root Cause of Glitched Callout and Broken Emoji**:
   - The experimental `selected-resort-callout` layer attempted to render multi-line text with an emoji prefix (`⛷️ Monarch \n 1,162' vert`) and a heavy 3.5px white halo. Because MapLibre GL glyph PBFs cannot render color emojis, it displayed a harsh black-and-white pixelated icon in an opaque white box. The 3.5px halo formed solid white blocks around letters, and printed the resort name twice (above and below the pin marker).
