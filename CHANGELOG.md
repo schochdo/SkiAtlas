@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: adopt standard WASD + arrow navigation and replace Q/E with +/- and Z/X for zoom`
+- **Replaced Awkward Q/E Zoom Controls**: Eliminated `Q` and `E` for zoom, aligning keyboard navigation with standard 3D cartographic and gaming mental models (Option 2).
+- **WASD + Arrow Key Terrain Panning**:
+  - `W / A / S / D` and `Arrow Keys`: Pan directional ground navigation across the mountain along the current camera bearing.
+  - Holding `Shift` with `WASD` or directional arrows applies a 2.5× sprint speed boost for rapid mountain exploration.
+- **Intuitive Zoom Controls**:
+  - `+` / `=` (`Equal`, `NumpadAdd`): Zoom In.
+  - `−` / `_` (`Minus`, `NumpadSubtract`): Zoom Out.
+  - `Z` / `X`: Single-hand left keyboard zoom keys directly adjacent to `WASD`.
+- **Shift + Arrow 3D Orbiting**:
+  - `Shift + ArrowLeft` / `Shift + ArrowRight`: Rotates camera heading (yaw) around the focal mountain center.
+  - `Shift + ArrowUp` / `Shift + ArrowDown`: Tilts pitch between top-down 2D and 3D oblique horizon view.
+- **Updated Cartographic Key**: Updated the on-screen Keyboard Guide in the Cartographic Key modal to reflect the new WASD, `+ / −`, and `Shift + Arrows` controls.
+
 ### `feat: move map attribution to bottom right with collapsible expansion button to eliminate overlap with scale bar`
 - **Eliminated Scale Bar Overlap**: Previously, attribution was centered at `bottom-1.5 left-1/2 -translate-x-1/2`. When the left directory dock was open, the cartographic scale bar shifted right to `left-88 md:left-106`, causing the scale bar to sit directly on top of the attribution text.
 - **Relocated to Bottom Right with Collapsible "i"**: Replaced the static center pill with a collapsible bottom-right attribution widget styled in the Swiss/Tufte archival cotton rag paper aesthetic (`#FAF8F3`, border `#D6D0C2`, text `#8A847C`, `rounded-[2px]`).

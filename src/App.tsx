@@ -3157,8 +3157,12 @@ export default function App() {
       'KeyA',
       'KeyS',
       'KeyD',
-      'KeyQ',
-      'KeyE',
+      'KeyZ',
+      'KeyX',
+      'Equal',
+      'Minus',
+      'NumpadAdd',
+      'NumpadSubtract',
       'ArrowUp',
       'ArrowDown',
       'ArrowLeft',
@@ -3188,18 +3192,33 @@ export default function App() {
       let pitchDelta = 0;
       let rotateBearing = 0;
       let zoomDelta = 0;
+      let moveForward = 0;
+      let moveStrafe = 0;
 
-      // W/S: Tilt (pitch)
-      if (activeKeys.has('KeyW')) pitchDelta += 1;
-      if (activeKeys.has('KeyS')) pitchDelta -= 1;
+      // Zoom In / Out: + / - (or Z / X for single-hand left keyboard use)
+      if (activeKeys.has('Equal') || activeKeys.has('NumpadAdd') || activeKeys.has('KeyZ')) zoomDelta += 1;
+      if (activeKeys.has('Minus') || activeKeys.has('NumpadSubtract') || activeKeys.has('KeyX')) zoomDelta -= 1;
 
-      // A/D: Rotate (yaw)
-      if (activeKeys.has('KeyA')) rotateBearing += 1;
-      if (activeKeys.has('KeyD')) rotateBearing -= 1;
+      // WASD: Directional ground navigation across terrain
+      if (activeKeys.has('KeyW')) moveForward += 1;
+      if (activeKeys.has('KeyS')) moveForward -= 1;
+      if (activeKeys.has('KeyD')) moveStrafe += 1;
+      if (activeKeys.has('KeyA')) moveStrafe -= 1;
 
-      // Q/E: Zoom
-      if (activeKeys.has('KeyQ')) zoomDelta -= 1;
-      if (activeKeys.has('KeyE')) zoomDelta += 1;
+      // Arrow Keys:
+      // If Shift is held: Rotate heading (Left/Right) & Tilt pitch (Up/Down) [Google Earth / GIS convention]
+      // If Shift is NOT held: Pan directional movement (Up/Down/Left/Right)
+      if (isShift) {
+        if (activeKeys.has('ArrowUp')) pitchDelta += 1;
+        if (activeKeys.has('ArrowDown')) pitchDelta -= 1;
+        if (activeKeys.has('ArrowLeft')) rotateBearing += 1;
+        if (activeKeys.has('ArrowRight')) rotateBearing -= 1;
+      } else {
+        if (activeKeys.has('ArrowUp')) moveForward += 1;
+        if (activeKeys.has('ArrowDown')) moveForward -= 1;
+        if (activeKeys.has('ArrowRight')) moveStrafe += 1;
+        if (activeKeys.has('ArrowLeft')) moveStrafe -= 1;
+      }
 
       if (pitchDelta !== 0) {
         const curPitch = map.getPitch();
@@ -3222,19 +3241,12 @@ export default function App() {
       if (zoomDelta !== 0) {
         lockedElevation = null;
         const curZoom = map.getZoom();
-        const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.35;
+        const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.5;
         const nextZoom = Math.max(1.0, Math.min(19.0, curZoom + zoomDelta * zoomSpeed * dt));
         map.setZoom(nextZoom);
       }
 
-      // Arrow keys: Terrain panning with fixed altitude lock
-      let moveForward = 0;
-      let moveStrafe = 0;
-
-      if (activeKeys.has('ArrowUp')) moveForward += 1;
-      if (activeKeys.has('ArrowDown')) moveForward -= 1;
-      if (activeKeys.has('ArrowRight')) moveStrafe += 1;
-      if (activeKeys.has('ArrowLeft')) moveStrafe -= 1;
+      // Terrain panning with fixed altitude lock (applied from WASD + Arrow inputs)
 
       if (moveForward !== 0 || moveStrafe !== 0) {
         const len = Math.hypot(moveForward, moveStrafe);
@@ -4542,10 +4554,10 @@ export default function App() {
             </div>
             {/* Keyboard Guide */}
             <div className="pt-2 border-t border-[#D6D0C2] font-mono text-[9px] text-[#5C5852] space-y-1">
-              <div><strong className="text-[#1C1B18]">W / S:</strong> Tilt horizon / nadir</div>
-              <div><strong className="text-[#1C1B18]">A / D:</strong> Rotate camera heading</div>
-              <div><strong className="text-[#1C1B18]">Q / E:</strong> Zoom Out / In</div>
-              <div><strong className="text-[#1C1B18]">Arrows:</strong> Pan terrain (fixed altitude)</div>
+              <div><strong className="text-[#1C1B18]">W A S D / Arrows:</strong> Pan across terrain</div>
+              <div><strong className="text-[#1C1B18]">+ / − (or Z / X):</strong> Zoom In / Out</div>
+              <div><strong className="text-[#1C1B18]">Shift + Arrows:</strong> Rotate heading & tilt 3D</div>
+              <div><strong className="text-[#1C1B18]">Right-Click Drag:</strong> Orbit & tilt camera</div>
             </div>
           </div>
         )}
