@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: elevate top 50 flagship atlas to world-class heavyweight ski titans`
+- **Flagship Alignment to World-Class Scale & Pedigree**:
+  - Replaced smaller regional and boutique hills in [`GLOBAL_SKI_ATLAS`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L353) (Monarch, Brundage, Bridger Bowl, Big Bear, Grand Targhee, Silverton, Mt. Baker, Furano, Myoko Kogen) with iconic global titan resorts:
+    - **Davos Klosters** (Graubünden, Switzerland) — Cradle of winter sports, Parsenn 12 km descent, Jakobshorn, 6,674' vert, 6,400 ac.
+    - **Park City Mountain** (Utah, USA) — Largest ski and snowboard resort in the United States (7,300 ac, 43 lifts, 3,226' vert).
+    - **Breckenridge** (Colorado, USA) — Tenmile Range icon featuring North America's highest chairlift (Imperial Express SuperChair at 12,840', 3,398' vert, 2,908 ac).
+    - **Val Thorens (Les 3 Vallées)** (Savoie, France) — Highest ski resort in Europe at 2,300m–3,230m, 600 km linked domain.
+    - **Ischgl (Silvretta Arena)** (Tyrol, Austria) — 239 km pistes, cross-border duty-free circuit to Samnaun (Switzerland), 4,905' vert.
+    - **Sölden** (Tyrol, Austria) — Two interconnected glaciers (Rettenbach & Tiefenbach), BIG3 3,000m peaks, 6,529' vert, World Cup opener.
+    - **Alpe d’Huez** (Isère, France) — Pic Blanc (3,330m), 7,250' vert, home of La Sarenne (longest black piste in the world at 16 km).
+    - **Banff Sunshine** (Alberta, Canada) — Continental Divide powder magnet, Delirium Dive freeride zone, 3,358 ac.
+    - **Saas-Fee** (Valais, Switzerland) — "Free Republic of Holidays" enclosed by 18 four-thousand-meter peaks, Fee Glacier skiing to 3,600m, 5,906' vert.
+  - Replaced areas remain 100% available and searchable with full vector trails, lifts, and live on-demand weather in the global 5,436-area atlas.
+- **Top 50 Geographical Distribution**:
+  - United States (17) · Canada (4) · France (5) · Switzerland (5) · Austria (4) · Italy (2) · Scandinavia & Spain (3) · Japan (4) · South America (3) · Oceania (3).
+
+---
+
 ### `fix: comprehensive dataset quality sweep, exclude defunct ski areas, and repair websites`
 - **Exclusion of Defunct / Closed Ski Areas**:
   - **What was wrong**: 1,049 permanently closed, defunct, or abandoned ski areas (e.g., `Snow Forest`, `Plumas Eureka Ski Bowl`, `Wolverton Ski Bowl`, `Kratka Ridge`, `Echo Summit`, `Berthoud Pass`, `Pikes Peak`, `Marble Mountain NY`) were being ingested from `global_ski_areas.json` without any closure checks, cluttering map clusters and the directory tray. Additionally, 23 historic lost ski areas (e.g. `Cortina Valley`, `Raton Ski Basin (Closed)`, `Osceola Tow`, `Pine Ridge`) were erroneously marked `status: 'operating'` with placeholder or misleading links.
