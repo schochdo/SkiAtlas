@@ -4236,9 +4236,9 @@ export default function App() {
                       ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] shadow-2xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
                   }`}
-                  title="Toggle Downhill Ski Areas, Trails & Lifts"
+                  title={`Toggle Downhill Ski Areas, Trails & Lifts (${categoryFilterCounts.downhill.toLocaleString()})`}
                 >
-                  <span className="truncate">⛷️ Downhill ({categoryFilterCounts.downhill.toLocaleString()})</span>
+                  <span className="truncate">⛷️ Downhill</span>
                 </button>
                 <button
                   onClick={() => setShowNordic(!showNordic)}
@@ -4247,9 +4247,9 @@ export default function App() {
                       ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] shadow-2xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
                   }`}
-                  title="Toggle Nordic Centers & XC Trails"
+                  title={`Toggle Nordic Centers & XC Trails (${categoryFilterCounts.nordic.toLocaleString()})`}
                 >
-                  <span className="truncate">🎿 Nordic ({categoryFilterCounts.nordic.toLocaleString()})</span>
+                  <span className="truncate">🎿 Nordic</span>
                 </button>
                 <button
                   onClick={() => setShowHeliCat(!showHeliCat)}
@@ -4258,9 +4258,9 @@ export default function App() {
                       ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] shadow-2xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
                   }`}
-                  title="Toggle Guided Heli/Cat Operations & Backcountry Routes"
+                  title={`Toggle Guided Heli/Cat Operations & Backcountry Routes (${categoryFilterCounts.heli_cat.toLocaleString()})`}
                 >
-                  <span className="truncate">🚁 Heli/Cat ({categoryFilterCounts.heli_cat.toLocaleString()})</span>
+                  <span className="truncate">🚁 Heli/Cat</span>
                 </button>
               </div>
 

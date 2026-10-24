@@ -6,6 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: remove truncated count numbers from category filter buttons`
+- **Eliminated Button Text Truncation**:
+  - Removed parenthesized resort counts `(1,732)` from the 3 category filter buttons (`⛷️ Downhill`, `🎿 Nordic`, `🚁 Heli/Cat`).
+  - In the 3-column drawer grid, the long labels caused text to truncate with an ellipsis (`Downhill (1,7...`).
+  - Total matching resort counts are already prominently displayed in the filter card header `(1,732)` and directory scope tabs; counts remain available via hover tooltips on each button.
+
 ### `feat: add native trackpad twist-to-rotate, shift-scroll tilt, and tablet gesture controls`
 - **Mac Trackpad Twist to Rotate & Pinch Zoom**:
   - Attached WebKit `gesturestart`, `gesturechange`, and `gestureend` listeners to the map container with `{ passive: false }`.
