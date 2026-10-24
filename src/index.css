@@ -69,7 +69,7 @@ body {
   width: 100%;
   height: 10px;
   background: 
-    linear-gradient(to bottom, transparent 4px, #2C2A27 4px, #2C2A27 5px, transparent 5px),
+    linear-gradient(to bottom, transparent 4px, #A8A299 4px, #A8A299 5px, transparent 5px),
     repeating-linear-gradient(to right, #8A847C 0, #8A847C 1px, transparent 1px, transparent 16px);
   background-repeat: no-repeat;
   background-position: center;
@@ -78,7 +78,7 @@ body {
   width: 100%;
   height: 10px;
   background: 
-    linear-gradient(to bottom, transparent 4px, #2C2A27 4px, #2C2A27 5px, transparent 5px),
+    linear-gradient(to bottom, transparent 4px, #A8A299 4px, #A8A299 5px, transparent 5px),
     repeating-linear-gradient(to right, #8A847C 0, #8A847C 1px, transparent 1px, transparent 16px);
 }
 .tufte-slider::-webkit-slider-thumb {
@@ -87,9 +87,9 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #2C2A27;
+  background: #5C5852;
   border: 1px solid #FAF8F3;
-  box-shadow: 0 0 0 1px #2C2A27;
+  box-shadow: 0 0 0 1px #5C5852;
   cursor: pointer;
   margin-top: 0px;
   transition: transform 0.1s ease;
@@ -101,9 +101,9 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #2C2A27;
+  background: #5C5852;
   border: 1px solid #FAF8F3;
-  box-shadow: 0 0 0 1px #2C2A27;
+  box-shadow: 0 0 0 1px #5C5852;
   cursor: pointer;
 }
 

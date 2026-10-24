@@ -4021,7 +4021,7 @@ export default function App() {
               onClick={() => setUnitsMetric(false)}
               className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-colors cursor-pointer ${
                 !unitsMetric
-                  ? 'bg-[#F7F4ED] text-[#1C1B18] border border-[#2C2A27] shadow-2xs'
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
                   : 'text-[#8A847C] hover:text-[#1C1B18]'
               }`}
               title="Imperial Units (ft, °F)"
@@ -4032,7 +4032,7 @@ export default function App() {
               onClick={() => setUnitsMetric(true)}
               className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-colors cursor-pointer ${
                 unitsMetric
-                  ? 'bg-[#F7F4ED] text-[#1C1B18] border border-[#2C2A27] shadow-2xs'
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
                   : 'text-[#8A847C] hover:text-[#1C1B18]'
               }`}
               title="Metric Units (m, °C)"
@@ -4074,7 +4074,7 @@ export default function App() {
                 placeholder="Search alpine resorts, peaks, countries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-md pl-9.5 pr-8 py-2 text-sm text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#2C2A27] focus:bg-[#FAF8F3] transition-colors"
+                className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-md pl-9.5 pr-8 py-2 text-sm text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#8A847C] focus:bg-[#FAF8F3] transition-colors"
               />
               {searchQuery && (
                 <button
@@ -4225,7 +4225,7 @@ export default function App() {
                 <button
                   onClick={() => handleSortClick('vert')}
                   className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                    sortBy === 'vert' ? 'bg-[#F7F4ED] text-[#1C1B18] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                    sortBy === 'vert' ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299] shadow-2xs' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>Vert</span>
@@ -4234,7 +4234,7 @@ export default function App() {
                 <button
                   onClick={() => handleSortClick('acres')}
                   className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                    sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#1C1B18] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                    sortBy === 'acres' ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299] shadow-2xs' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>{showNordic && !showDownhill && !showHeliCat ? 'Network' : 'Acres'}</span>
@@ -4243,7 +4243,7 @@ export default function App() {
                 <button
                   onClick={() => handleSortClick('name')}
                   className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                    sortBy === 'name' ? 'bg-[#F7F4ED] text-[#1C1B18] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                    sortBy === 'name' ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299] shadow-2xs' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>A-Z</span>
@@ -4252,7 +4252,7 @@ export default function App() {
                 <button
                   onClick={() => handleSortClick('snow')}
                   className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                    sortBy === 'snow' ? 'bg-[#F7F4ED] text-[#3B627E] font-extrabold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                    sortBy === 'snow' ? 'bg-[#EAE5D9] text-[#3B627E] font-bold border border-[#A8A299] shadow-2xs' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
                   <span>7-Day ❄</span>
@@ -4268,7 +4268,7 @@ export default function App() {
               onClick={() => setDirectoryScope('in_frame')}
               className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
                 directoryScope === 'in_frame'
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2C2A27] shadow-2xs'
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
                   : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
               }`}
               title="Show only ski areas currently inside the map view frame"
@@ -4280,7 +4280,7 @@ export default function App() {
               onClick={() => setDirectoryScope('all')}
               className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
                 directoryScope === 'all'
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2C2A27] shadow-2xs'
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
                   : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
               }`}
               title="Show all ski areas matching current filters worldwide"
@@ -4302,7 +4302,7 @@ export default function App() {
                 {directoryScope === 'in_frame' && filteredResorts.length > 0 && (
                   <button
                     onClick={() => setDirectoryScope('all')}
-                    className="inline-block px-3 py-1.5 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] border border-[#2C2A27] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
+                    className="inline-block px-3 py-1.5 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] border border-[#D6D0C2] hover:border-[#8A847C] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
                   >
                     View all {filteredResorts.length.toLocaleString()} matching areas →
                   </button>
@@ -4373,7 +4373,7 @@ export default function App() {
         {/* TRAY EDGE PULL TAB (FULL-HEIGHT SEAM RAIL ON THE EDGE OF THE TRAY) */}
         <button
           onClick={() => setLeftDockOpen(!leftDockOpen)}
-          className="absolute top-0 bottom-0 left-full pointer-events-auto z-40 flex items-center justify-center w-5 bg-[#FAF8F3] hover:bg-[#EFECE4] border-r border-[#D6D0C2] hover:border-[#2C2A27] shadow-[2px_0_6px_rgba(0,0,0,0.06)] transition-colors cursor-pointer group"
+          className="absolute top-0 bottom-0 left-full pointer-events-auto z-40 flex items-center justify-center w-5 bg-[#FAF8F3] hover:bg-[#EFECE4] border-r border-[#D6D0C2] hover:border-[#8A847C] shadow-[2px_0_6px_rgba(0,0,0,0.06)] transition-colors cursor-pointer group"
           title={leftDockOpen ? "Collapse directory tray" : "Open directory tray"}
           aria-label={leftDockOpen ? "Collapse directory tray" : "Open directory tray"}
         >
@@ -4397,7 +4397,7 @@ export default function App() {
       <div
         className={`absolute top-16 ${
           leftDockOpen ? 'left-[356px] md:left-[420px]' : 'left-8'
-        } z-20 flex flex-col bg-[#FAF8F3] border border-[#2C2A27] rounded-lg shadow-sm divide-y divide-[#D6D0C2] overflow-hidden transition-all duration-300 ease-in-out`}
+        } z-20 flex flex-col bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-sm divide-y divide-[#D6D0C2] overflow-hidden transition-all duration-300 ease-in-out`}
         role="group"
         aria-label="Map navigation controls"
       >
@@ -4467,21 +4467,21 @@ export default function App() {
             onClick={() => setMapMenuOpen(!mapMenuOpen)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
               mapMenuOpen
-                ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-semibold'
+                ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-semibold'
                 : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
             }`}
             title="Basemap Styles & Earth Projection"
           >
-            <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
+            <Layers className="w-3.5 h-3.5 text-[#5C5852]" />
             <span className="text-xs font-semibold">Basemap</span>
           </button>
 
           {mapMenuOpen && (
-            <div className="absolute right-0 top-10 w-80 bg-[#FAF8F3] border border-[#2C2A27] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-2xl animate-in fade-in duration-150 max-h-[calc(100vh-5.5rem)] overflow-y-auto">
+            <div className="absolute right-0 top-10 w-80 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150 max-h-[calc(100vh-5.5rem)] overflow-y-auto">
               {/* Header */}
               <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
                 <div className="flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
+                  <Layers className="w-3.5 h-3.5 text-[#5C5852]" />
                   <span className="text-xs font-bold text-[#1C1B18] tracking-tight">
                     Cartographic Controls
                   </span>
@@ -4512,12 +4512,12 @@ export default function App() {
                     }}
                     className={`p-2 rounded-md border text-left transition-all cursor-pointer ${
                       earthProjection === 'globe'
-                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-bold'
+                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
                         : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
                     }`}
                   >
                     <div className="flex items-center gap-1.5">
-                      <Globe className="w-3.5 h-3.5 text-[#2E5A44]" />
+                      <Globe className="w-3.5 h-3.5 text-[#5C5852]" />
                       <span className="text-xs font-semibold">3D Globe</span>
                     </div>
                     <div className="text-[10px] text-[#5C5852] mt-0.5 font-normal leading-tight">
@@ -4528,12 +4528,12 @@ export default function App() {
                     onClick={() => setEarthProjection('mercator')}
                     className={`p-2 rounded-md border text-left transition-all cursor-pointer ${
                       earthProjection === 'mercator'
-                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-bold'
+                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
                         : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
                     }`}
                   >
                     <div className="flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-[#3B627E]" />
+                      <Layers className="w-3.5 h-3.5 text-[#5C5852]" />
                       <span className="text-xs font-semibold">Flat Map</span>
                     </div>
                     <div className="text-[10px] text-[#5C5852] mt-0.5 font-normal leading-tight">
@@ -4562,14 +4562,14 @@ export default function App() {
                         onClick={() => setBasemapMode(item.id as BasemapMode)}
                         className={`w-full text-left p-2.5 rounded-md border transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-bold'
+                            ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
                             : 'bg-[#F7F4ED] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-[#1C1B18]">{item.label}</span>
                           {isSelected && (
-                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-[#2E5A44] text-[#FAF8F3]">
+                            <span className="text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-[#1C1B18] text-[#FAF8F3]">
                               Active
                             </span>
                           )}
@@ -4590,7 +4590,7 @@ export default function App() {
       {/* CARTOGRAPHIC MAP FURNITURE: ALTERNATING BAR SCALE & LEGEND */}
       <div ref={mapLegendRef} className={`absolute bottom-5 ${leftDockOpen ? 'left-88 md:left-106' : 'left-8'} z-20 transition-all duration-300 select-none`}>
         {mapLegendOpen && (
-          <div className="absolute bottom-11 left-0 w-72 bg-[#FAF8F3] border border-[#2C2A27] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150">
+          <div className="absolute bottom-11 left-0 w-72 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150">
             <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
               <span className="text-xs font-bold text-[#1C1B18] tracking-tight">Cartographic Key</span>
               <button onClick={() => setMapLegendOpen(false)} className="text-[#8A847C] hover:text-[#1C1B18]">
@@ -4631,22 +4631,22 @@ export default function App() {
         )}
 
         {/* Alternating Scale Bar */}
-        <div className="flex items-center gap-2 bg-[#FAF8F3] border border-[#2C2A27] rounded-md px-3 py-1.5 text-xs font-semibold text-[#1C1B18] shadow-xs">
+        <div className="flex items-center gap-2.5 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md px-3 py-1.5 text-xs font-semibold text-[#1C1B18] shadow-xs">
           <button
             onClick={() => setMapLegendOpen(!mapLegendOpen)}
-            className="flex items-center gap-1 hover:text-[#2E5A44] transition-colors cursor-pointer mr-1"
+            className="flex items-center gap-1 text-[#5C5852] hover:text-[#1C1B18] transition-colors cursor-pointer mr-0.5"
             title="Toggle Map Key & Controls"
           >
-            <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
-            <span className="font-bold underline">Key</span>
+            <Layers className="w-3.5 h-3.5 text-[#5C5852]" />
+            <span className="font-semibold hover:underline">Key</span>
           </button>
           <div className="h-3 w-px bg-[#D6D0C2]" />
           <div className="flex items-center gap-1.5">
-            <span className="font-bold">{mapScale.distStr}</span>
-            <div className="flex h-1.5 border border-[#2C2A27] overflow-hidden" style={{ width: `${mapScale.barWidth}px` }}>
-              <div className="h-full bg-[#1C1B18] flex-1" />
+            <span className="font-bold tabular-nums text-[#1C1B18]">{mapScale.distStr}</span>
+            <div className="flex h-1.5 border border-[#BDB7A9] rounded-[1px] overflow-hidden" style={{ width: `${mapScale.barWidth}px` }}>
+              <div className="h-full bg-[#5C5852] flex-1" />
               <div className="h-full bg-[#FAF8F3] flex-1" />
-              <div className="h-full bg-[#1C1B18] flex-1" />
+              <div className="h-full bg-[#5C5852] flex-1" />
               <div className="h-full bg-[#FAF8F3] flex-1" />
             </div>
           </div>
@@ -4848,7 +4848,7 @@ export default function App() {
           <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#F7F4ED]">
             {/* Mountain Overview / Summary */}
             {selectedResort.summary && (
-              <div className="bg-[#FAF8F3] p-3.5 rounded-md border border-[#D6D0C2] text-xs text-[#2C2A27] leading-relaxed font-normal">
+              <div className="bg-[#FAF8F3] p-3.5 rounded-md border border-[#D6D0C2] text-xs text-[#3D3A34] leading-relaxed font-normal">
                 <p>{selectedResort.summary}</p>
               </div>
             )}

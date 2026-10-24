@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: conduct page-wide sweep to eliminate heavy black outlines and soften UI chrome`
+- **Root Cause of Heavy Outlines**:
+  - Elements such as the map scale pill, key toggle, zoom navigation controls, popovers, active buttons, and slider tracks retained harsh black `#2C2A27` borders and dark ink segments that felt jarring against the warm cotton rag paper palette.
+- **Swept and Softened All Borders**:
+  - **Map Scale Bar & Key**: Replaced `#2C2A27` border with soft `#D6D0C2` paper border; softened scale bar container to `#BDB7A9`; replaced stark black scale segments with warm `#5C5852` charcoal; removed forced underline and green icon on Key button.
+  - **Map Viewport Controls (+ / −)**: Replaced heavy black border with `#D6D0C2`.
+  - **Popovers (Basemap & Key)**: Replaced `#2C2A27` border with `#D6D0C2` paper rules.
+  - **Active State Buttons**: Softened active borders on unit switch (`ft` / `m`), sort pills (`Vert`, `Acres`, `A-Z`, `7-Day ❄`), and scope tabs (`IN FRAME` / `ALL MATCHING`) to `#A8A299` over `#EAE5D9`.
+  - **Sliders**: Replaced dark `#2C2A27` slider tracks with `#A8A299` and thumbs with `#5C5852`.
+
 ### `style: redesign navigation compass gimbal with minimal Mountain Editorial styling`
 - **Eliminated Cluttered Divisions & Harsh Black Ink**:
   - The previous compass gimbal had heavy black borders (`#2C2A27`), 5 concentric rings, 12 degree tick marks, 8 faceted starburst polygons, and harsh black `2D` typography that clashed with the warm editorial palette.
