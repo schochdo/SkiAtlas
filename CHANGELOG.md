@@ -6,6 +6,28 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: separate metric and imperial filter scale bars with rounded intervals`
+- **Dedicated Metric vs Imperial Filter Scale Bars & Ticks**:
+  - **What was wrong**: When toggling from feet (`ft`) to meters (`m`), the filter scale bars simply evaluated imperial slider values through unit conversions (`formatVert(500)` produced `152 m`, with step jumps of `30.48 m` yielding awkward numbers like `183 m`, `213 m`, `244 m`). There were no dedicated metric steps, and the slider track had arbitrary tick spacing.
+  - **Dedicated Metric Scale Bars & States**:
+    - Introduced independent slider states for metric: `minVerticalM` (0 to 1,500 m, 50 m step, default 150 m), `minAreaHa` (0 to 1,200 ha, 25 ha step, default 50 ha), and `minNordicKm` (0 to 100 km, 5 km step, default 0 km).
+    - Preserved crisp imperial slider states: `minVerticalFt` (0 to 4,000', 100' step, default 500'), `minAreaAcres` (0 to 3,000 ac, 100 ac step, default 100 ac), and `minNordicMi` (0 to 60 mi, 5 mi step, default 0 mi).
+  - **Clean Harmonic Snapping on Unit Toggle**:
+    - When clicking `m`, imperial thresholds snap cleanly to the nearest harmonic round metric value (e.g. 500' -> 150 m, 1,000' -> 300 m, 1,500' -> 450 m, 2,000' -> 600 m).
+    - When clicking `ft`, metric thresholds snap cleanly to the nearest harmonic round imperial value (e.g. 150 m -> 500', 300 m -> 1,000', 450 m -> 1,500', 600 m -> 2,000').
+  - **Visual Scale Bar Benchmark Ticks**:
+    - Rendered high-precision, subtle monospace scale benchmark labels beneath each slider track:
+      - Imperial Vertical: `Any`, `1,000'`, `2,000'`, `3,000'`, `4,000'`.
+      - Metric Vertical: `Any`, `300m`, `600m`, `1,000m`, `1,500m`.
+      - Imperial Area: `Any`, `500 ac`, `1,000 ac`, `2,000 ac`, `3,000 ac`.
+      - Metric Area: `Any`, `200 ha`, `500 ha`, `800 ha`, `1,200 ha`.
+      - Imperial Nordic: `Any`, `15 mi`, `30 mi`, `45 mi`, `60 mi`.
+      - Metric Nordic: `Any`, `25 km`, `50 km`, `75 km`, `100 km`.
+  - **Unified Filtering Math**:
+    - Dynamically derived `effectiveMinVerticalFt`, `effectiveMinAcreage`, and `effectiveMinNordicKm` from active unit state to drive category counts, directory listing memos, MapLibre layer expressions, and dynamic clustered GeoJSON sources seamlessly.
+
+---
+
 ### `refactor: purge redundant explanatory subtitles from Cartographic Controls`
 - **Removed AI Explanatory Text Padding**:
   - **What was wrong**: The Cartographic Controls menu was cluttered with redundant second-line explanations beneath intuitive buttons ("Spherical Earth" under 3D Globe, "Planar Mercator" under Flat Map, "High-resolution aerial satellite imagery" under Satellite 3D, "Detailed vector roads..." under OSM, "Painted relief..." under Alpine Topo, plus a trailing paragraph explaining what an elevation multiplier does).

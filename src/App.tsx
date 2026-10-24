@@ -2521,11 +2521,38 @@ export default function App() {
   const [showNordic, setShowNordic] = useState(false);
   const [showHeliCat, setShowHeliCat] = useState(false);
 
-  // Filter Sliders (Default: 500' vertical, 100 acres for alpine downhill)
-  const [minVertical, setMinVertical] = useState(500);
-  const [minAcreage, setMinAcreage] = useState(100);
-  // Nordic Trail Network Filter (km)
+  // Dedicated Imperial and Metric Filter Slider States
+  // Imperial defaults: 500' vertical, 100 acres, 0 mi
+  const [minVerticalFt, setMinVerticalFt] = useState(500);
+  const [minAreaAcres, setMinAreaAcres] = useState(100);
+  const [minNordicMi, setMinNordicMi] = useState(0);
+
+  // Metric defaults: 150 m vertical (clean rounded equiv to 500'), 50 ha area (clean rounded equiv to 100 ac), 0 km
+  const [minVerticalM, setMinVerticalM] = useState(150);
+  const [minAreaHa, setMinAreaHa] = useState(50);
   const [minNordicKm, setMinNordicKm] = useState(0);
+
+  // Unified Effective Filtering Thresholds (derived from active unit system)
+  const effectiveMinVerticalFt = useMemo(() => {
+    if (unitsMetric) {
+      return minVerticalM > 0 ? Math.round(minVerticalM * 3.28084) : 0;
+    }
+    return minVerticalFt;
+  }, [unitsMetric, minVerticalM, minVerticalFt]);
+
+  const effectiveMinAcreage = useMemo(() => {
+    if (unitsMetric) {
+      return minAreaHa > 0 ? Math.round(minAreaHa * 2.47105) : 0;
+    }
+    return minAreaAcres;
+  }, [unitsMetric, minAreaHa, minAreaAcres]);
+
+  const effectiveMinNordicKm = useMemo(() => {
+    if (!unitsMetric) {
+      return minNordicMi > 0 ? Math.round(minNordicMi * 1.60934) : 0;
+    }
+    return minNordicKm;
+  }, [unitsMetric, minNordicMi, minNordicKm]);
 
   // Navigation Instrument (Compass/Gyro HUD)
   const [mapBearing, setMapBearing] = useState(0);
@@ -2571,12 +2598,18 @@ export default function App() {
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (selectedPasses.length < 5) count++;
-    if (minVertical !== 500) count++;
-    if (minAcreage !== 100) count++;
-    if (minNordicKm !== 0) count++;
+    if (unitsMetric) {
+      if (minVerticalM !== 150) count++;
+      if (minAreaHa !== 50) count++;
+      if (minNordicKm !== 0) count++;
+    } else {
+      if (minVerticalFt !== 500) count++;
+      if (minAreaAcres !== 100) count++;
+      if (minNordicMi !== 0) count++;
+    }
     if (!showDownhill || showNordic || showHeliCat) count++;
     return count;
-  }, [selectedPasses, minVertical, minAcreage, minNordicKm, showDownhill, showNordic, showHeliCat]);
+  }, [selectedPasses, unitsMetric, minVerticalFt, minVerticalM, minAreaAcres, minAreaHa, minNordicMi, minNordicKm, showDownhill, showNordic, showHeliCat]);
 
   // Dynamic Category Counts Matching Sliders & Pass Network Filters
   const categoryFilterCounts = useMemo(() => {
@@ -2590,24 +2623,27 @@ export default function App() {
       const cat = r.category || 'downhill';
       if (cat === 'downhill') {
         const vert = r.vertical_drop_ft || 0;
-        if (minVertical > 0 && vert < minVertical) continue;
+        if (effectiveMinVerticalFt > 0 && vert < effectiveMinVerticalFt) continue;
         const acres = r.skiable_acres || 0;
-        if (minAcreage > 0 && acres < minAcreage) continue;
+        if (effectiveMinAcreage > 0 && acres < effectiveMinAcreage) continue;
         downhill++;
       } else if (cat === 'nordic') {
-        if (minNordicKm > 0 && ((r.trail_km || 0) < minNordicKm)) continue;
+        if (effectiveMinNordicKm > 0 && ((r.trail_km || 0) < effectiveMinNordicKm)) continue;
         nordic++;
       } else if (cat === 'heli_cat') {
         heli_cat++;
       }
     }
     return { downhill, nordic, heli_cat };
-  }, [resorts, minVertical, minAcreage, minNordicKm, selectedPasses]);
+  }, [resorts, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedPasses]);
 
   const handleResetFilters = () => {
     setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent']);
-    setMinVertical(500);
-    setMinAcreage(100);
+    setMinVerticalFt(500);
+    setMinVerticalM(150);
+    setMinAreaAcres(100);
+    setMinAreaHa(50);
+    setMinNordicMi(0);
     setMinNordicKm(0);
     setShowDownhill(true);
     setShowNordic(false);
@@ -2628,11 +2664,11 @@ export default function App() {
 
       // Downhill alpine resorts filtered by vertical drop and skiable acreage
       if (cat === 'downhill') {
-        if (minVertical > 0 && (r.vertical_drop_ft === null || r.vertical_drop_ft === undefined || r.vertical_drop_ft < minVertical)) return false;
-        if (minAcreage > 0 && (r.skiable_acres === null || r.skiable_acres === undefined || r.skiable_acres < minAcreage)) return false;
+        if (effectiveMinVerticalFt > 0 && (r.vertical_drop_ft === null || r.vertical_drop_ft === undefined || r.vertical_drop_ft < effectiveMinVerticalFt)) return false;
+        if (effectiveMinAcreage > 0 && (r.skiable_acres === null || r.skiable_acres === undefined || r.skiable_acres < effectiveMinAcreage)) return false;
       } else if (cat === 'nordic') {
         // Nordic cross-country networks filtered by trail network length (km)
-        if (minNordicKm > 0 && ((r.trail_km || 0) < minNordicKm)) return false;
+        if (effectiveMinNordicKm > 0 && ((r.trail_km || 0) < effectiveMinNordicKm)) return false;
       }
 
       if (searchQuery.trim()) {
@@ -2666,7 +2702,7 @@ export default function App() {
     });
 
     return list;
-  }, [resorts, selectedPasses, minVertical, minAcreage, minNordicKm, searchQuery, showDownhill, showNordic, showHeliCat, sortBy, sortOrder]);
+  }, [resorts, selectedPasses, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, searchQuery, showDownhill, showNordic, showHeliCat, sortBy, sortOrder]);
 
   // Resorts in current map viewport bounds
   const inViewResorts = useMemo(() => {
@@ -3720,16 +3756,16 @@ export default function App() {
     if (showHeliCat) allowedCats.push('heli_cat');
 
     const downhillConditions: any[] = ['all'];
-    if (minVertical > 0) {
-      downhillConditions.push(['>=', ['coalesce', ['get', 'vertical_ft'], ['get', 'vertical_drop_ft'], 0], minVertical]);
+    if (effectiveMinVerticalFt > 0) {
+      downhillConditions.push(['>=', ['coalesce', ['get', 'vertical_ft'], ['get', 'vertical_drop_ft'], 0], effectiveMinVerticalFt]);
     }
-    if (minAcreage > 0) {
-      downhillConditions.push(['>=', ['coalesce', ['get', 'skiable_acres'], 0], minAcreage]);
+    if (effectiveMinAcreage > 0) {
+      downhillConditions.push(['>=', ['coalesce', ['get', 'skiable_acres'], 0], effectiveMinAcreage]);
     }
 
     const nordicConditions: any[] = ['all'];
-    if (minNordicKm > 0) {
-      nordicConditions.push(['>=', ['coalesce', ['get', 'trail_km'], 0], minNordicKm]);
+    if (effectiveMinNordicKm > 0) {
+      nordicConditions.push(['>=', ['coalesce', ['get', 'trail_km'], 0], effectiveMinNordicKm]);
     }
 
     const filterExpr: any[] = [
@@ -3763,7 +3799,7 @@ export default function App() {
     if (map.getLayer('global-unclustered-label')) {
       map.setFilter('global-unclustered-label', unclusteredFilter);
     }
-  }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, minNordicKm, mapLoaded]);
+  }, [showDownhill, showNordic, showHeliCat, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, mapLoaded]);
 
   /* =========================================================================
      DYNAMIC MAP GEOJSON SOURCES FILTER SYNC
@@ -3794,11 +3830,11 @@ export default function App() {
 
         if (cat === 'downhill') {
           const vert = p.vertical_ft || p.vertical_drop_ft || 0;
-          if (minVertical > 0 && vert < minVertical) return false;
+          if (effectiveMinVerticalFt > 0 && vert < effectiveMinVerticalFt) return false;
           const acres = p.skiable_acres || 0;
-          if (minAcreage > 0 && acres < minAcreage) return false;
+          if (effectiveMinAcreage > 0 && acres < effectiveMinAcreage) return false;
         } else if (cat === 'nordic') {
-          if (minNordicKm > 0 && ((p.trail_km || 0) < minNordicKm)) return false;
+          if (effectiveMinNordicKm > 0 && ((p.trail_km || 0) < effectiveMinNordicKm)) return false;
         }
 
         if (searchQuery.trim()) {
@@ -3830,11 +3866,11 @@ export default function App() {
 
         if (cat === 'downhill') {
           const vert = r.vertical_drop_ft || 0;
-          if (minVertical > 0 && vert < minVertical) return false;
+          if (effectiveMinVerticalFt > 0 && vert < effectiveMinVerticalFt) return false;
           const acres = r.skiable_acres || 0;
-          if (minAcreage > 0 && acres < minAcreage) return false;
+          if (effectiveMinAcreage > 0 && acres < effectiveMinAcreage) return false;
         } else if (cat === 'nordic') {
-          if (minNordicKm > 0 && ((r.trail_km || 0) < minNordicKm)) return false;
+          if (effectiveMinNordicKm > 0 && ((r.trail_km || 0) < effectiveMinNordicKm)) return false;
         }
 
         if (searchQuery.trim()) {
@@ -3864,7 +3900,7 @@ export default function App() {
 
       curatedSrc.setData({ type: 'FeatureCollection', features: filteredCurated as any });
     }
-  }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, minNordicKm, selectedPasses, searchQuery, mapLoaded, resorts]);
+  }, [showDownhill, showNordic, showHeliCat, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedPasses, searchQuery, mapLoaded, resorts]);
 
   /* =========================================================================
      EARTH PROJECTION TOGGLE (3D Spherical Globe vs 2D Planar Mercator)
@@ -4830,6 +4866,29 @@ export default function App() {
     return `${mi} mi`;
   };
 
+  const handleSetUnitsMetric = (toMetric: boolean) => {
+    if (toMetric === unitsMetric) return;
+    if (toMetric) {
+      // Switching to Metric: cleanly snap to nearest round metric increments
+      const newM = minVerticalFt > 0 ? Math.max(50, Math.round((minVerticalFt * 0.3048) / 50) * 50) : 0;
+      const newHa = minAreaAcres > 0 ? Math.max(25, Math.round((minAreaAcres * 0.404686) / 25) * 25) : 0;
+      const newKm = minNordicMi > 0 ? Math.max(5, Math.round((minNordicMi * 1.60934) / 5) * 5) : 0;
+      setMinVerticalM(newM);
+      setMinAreaHa(newHa);
+      setMinNordicKm(newKm);
+      setUnitsMetric(true);
+    } else {
+      // Switching to Imperial: cleanly snap to nearest round imperial increments
+      const newFt = minVerticalM > 0 ? Math.max(100, Math.round((minVerticalM * 3.28084) / 100) * 100) : 0;
+      const newAc = minAreaHa > 0 ? Math.max(100, Math.round((minAreaHa * 2.47105) / 100) * 100) : 0;
+      const newMi = minNordicKm > 0 ? Math.max(5, Math.round((minNordicKm * 0.621371) / 5) * 5) : 0;
+      setMinVerticalFt(newFt);
+      setMinAreaAcres(newAc);
+      setMinNordicMi(newMi);
+      setUnitsMetric(false);
+    }
+  };
+
   /* =========================================================================
      RENDER: EDWARD TUFTE × BERANN DAYLIGHT CARTOGRAPHY
      ========================================================================= */
@@ -4882,7 +4941,7 @@ export default function App() {
             aria-label="Unit system"
           >
             <button
-              onClick={() => setUnitsMetric(false)}
+              onClick={() => handleSetUnitsMetric(false)}
               className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-colors cursor-pointer ${
                 !unitsMetric
                   ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
@@ -4893,7 +4952,7 @@ export default function App() {
               ft
             </button>
             <button
-              onClick={() => setUnitsMetric(true)}
+              onClick={() => handleSetUnitsMetric(true)}
               className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-colors cursor-pointer ${
                 unitsMetric
                   ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
@@ -5076,47 +5135,117 @@ export default function App() {
               {/* Downhill Alpine Sliders (shown when Downhill is active) */}
               {showDownhill && (
                 <>
-                  {/* Min Vertical Slider (Default 500') */}
+                  {/* Min Vertical Drop Slider with Dedicated Metric & Imperial Scale Bars */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-baseline">
                       <span className="text-[12.5px] text-[#4A463F] font-semibold">Min Vertical Drop</span>
                       <span className="text-[13.5px] text-[#1C1B18] font-extrabold tabular-nums">
-                        {minVertical > 0 ? formatVert(minVertical) : 'Any'}
+                        {unitsMetric
+                          ? (minVerticalM > 0 ? `${minVerticalM.toLocaleString()} m` : 'Any')
+                          : (minVerticalFt > 0 ? `${minVerticalFt.toLocaleString()}'` : 'Any')}
                       </span>
                     </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="4000"
-                      step="100"
-                      value={minVertical}
-                      onChange={(e) => setMinVertical(Number(e.target.value))}
-                      className="w-full tufte-slider cursor-pointer"
-                    />
+                    {unitsMetric ? (
+                      <div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1500"
+                          step="50"
+                          value={minVerticalM}
+                          onChange={(e) => setMinVerticalM(Number(e.target.value))}
+                          className="w-full tufte-slider cursor-pointer"
+                          aria-label="Minimum vertical drop filter in meters"
+                        />
+                        <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                          <span>Any</span>
+                          <span>300m</span>
+                          <span>600m</span>
+                          <span>1,000m</span>
+                          <span>1,500m</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="4000"
+                          step="100"
+                          value={minVerticalFt}
+                          onChange={(e) => setMinVerticalFt(Number(e.target.value))}
+                          className="w-full tufte-slider cursor-pointer"
+                          aria-label="Minimum vertical drop filter in feet"
+                        />
+                        <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                          <span>Any</span>
+                          <span>1,000'</span>
+                          <span>2,000'</span>
+                          <span>3,000'</span>
+                          <span>4,000'</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Min Acreage Slider (Default 100 ac) */}
+                  {/* Min Skiable Area / Acreage Slider with Dedicated Metric & Imperial Scale Bars */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-baseline">
-                      <span className="text-[12.5px] text-[#4A463F] font-semibold">Min Skiable Acres</span>
+                      <span className="text-[12.5px] text-[#4A463F] font-semibold">
+                        {unitsMetric ? 'Min Skiable Area' : 'Min Skiable Acres'}
+                      </span>
                       <span className="text-[13.5px] text-[#1C1B18] font-extrabold tabular-nums">
-                        {minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}
+                        {unitsMetric
+                          ? (minAreaHa > 0 ? `${minAreaHa.toLocaleString()} ha` : 'Any')
+                          : (minAreaAcres > 0 ? `${minAreaAcres.toLocaleString()} ac` : 'Any')}
                       </span>
                     </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="3000"
-                      step="100"
-                      value={minAcreage}
-                      onChange={(e) => setMinAcreage(Number(e.target.value))}
-                      className="w-full tufte-slider cursor-pointer"
-                    />
+                    {unitsMetric ? (
+                      <div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1200"
+                          step="25"
+                          value={minAreaHa}
+                          onChange={(e) => setMinAreaHa(Number(e.target.value))}
+                          className="w-full tufte-slider cursor-pointer"
+                          aria-label="Minimum skiable area filter in hectares"
+                        />
+                        <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                          <span>Any</span>
+                          <span>200 ha</span>
+                          <span>500 ha</span>
+                          <span>800 ha</span>
+                          <span>1,200 ha</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="3000"
+                          step="100"
+                          value={minAreaAcres}
+                          onChange={(e) => setMinAreaAcres(Number(e.target.value))}
+                          className="w-full tufte-slider cursor-pointer"
+                          aria-label="Minimum skiable acreage filter in acres"
+                        />
+                        <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                          <span>Any</span>
+                          <span>500 ac</span>
+                          <span>1,000 ac</span>
+                          <span>2,000 ac</span>
+                          <span>3,000 ac</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
 
-              {/* Nordic Cross-Country Trail Network Slider (shown when Nordic is active) */}
+              {/* Nordic Cross-Country Trail Network Slider with Dedicated Metric & Imperial Scale Bars */}
               {showNordic && (
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-baseline">
@@ -5124,18 +5253,52 @@ export default function App() {
                       {showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}
                     </span>
                     <span className="text-[13.5px] text-[#1C1B18] font-extrabold tabular-nums">
-                      {minNordicKm > 0 ? formatDistance(minNordicKm) : 'Any'}
+                      {unitsMetric
+                        ? (minNordicKm > 0 ? `${minNordicKm} km` : 'Any')
+                        : (minNordicMi > 0 ? `${minNordicMi} mi` : 'Any')}
                     </span>
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={minNordicKm}
-                    onChange={(e) => setMinNordicKm(Number(e.target.value))}
-                    className="w-full tufte-slider cursor-pointer"
-                  />
+                  {unitsMetric ? (
+                    <div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        value={minNordicKm}
+                        onChange={(e) => setMinNordicKm(Number(e.target.value))}
+                        className="w-full tufte-slider cursor-pointer"
+                        aria-label="Minimum nordic trail network filter in kilometers"
+                      />
+                      <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                        <span>Any</span>
+                        <span>25 km</span>
+                        <span>50 km</span>
+                        <span>75 km</span>
+                        <span>100 km</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="60"
+                        step="5"
+                        value={minNordicMi}
+                        onChange={(e) => setMinNordicMi(Number(e.target.value))}
+                        className="w-full tufte-slider cursor-pointer"
+                        aria-label="Minimum nordic trail network filter in miles"
+                      />
+                      <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                        <span>Any</span>
+                        <span>15 mi</span>
+                        <span>30 mi</span>
+                        <span>45 mi</span>
+                        <span>60 mi</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
