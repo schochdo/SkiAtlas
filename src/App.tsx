@@ -4313,7 +4313,7 @@ export default function App() {
               <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
                 <div className="flex items-center gap-2">
                   <span className="font-extrabold text-[#1C1B18] uppercase tracking-wider text-[11px]">
-                    Terrain Filters
+                    Pass & Terrain Filters
                   </span>
                   {activeFiltersCount > 0 && (
                     <span className="bg-[#1C1B18] text-[#FAF8F3] text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums">
@@ -4369,6 +4369,56 @@ export default function App() {
                 >
                   <span className="truncate">🚁 Heli/Cat</span>
                 </button>
+              </div>
+
+              {/* Pass Networks Filter */}
+              <div className="space-y-1.5 pt-1 border-t border-[#D6D0C2]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[12.5px] text-[#4A463F] font-semibold">Pass Networks</span>
+                  <div className="flex items-center gap-2 text-[10px]">
+                    <button
+                      onClick={() => setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'])}
+                      className="text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer font-medium"
+                    >
+                      All
+                    </button>
+                    <span className="text-[#D6D0C2]">·</span>
+                    <button
+                      onClick={() => setSelectedPasses([])}
+                      className="text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer font-medium"
+                    >
+                      None
+                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'] as PassNetwork[]).map((pass) => {
+                    const active = selectedPasses.includes(pass);
+                    const color = PASS_COLORS[pass];
+                    return (
+                      <button
+                        key={pass}
+                        onClick={() => {
+                          setSelectedPasses((prev) =>
+                            prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass]
+                          );
+                        }}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
+                          active
+                            ? 'bg-[#FAF8F3] border-[#1C1B18] text-[#1C1B18] shadow-2xs'
+                            : 'bg-[#F2EFE8] border-[#D6D0C2] text-[#8A847C] opacity-60 hover:opacity-100'
+                        }`}
+                        title={`Filter by ${pass} pass network`}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: color }}
+                        />
+                        <span>{pass}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Downhill Alpine Sliders (shown when Downhill is active) */}
@@ -4553,6 +4603,17 @@ export default function App() {
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${badge.bg} ${badge.text} ${badge.border} shrink-0`}>
                             {badge.icon} {badge.label}
                           </span>
+                          {r.pass_networks && r.pass_networks.length > 0 && r.pass_networks[0] !== 'Independent' && (
+                            <span
+                              className="text-[9.5px] font-bold px-1.5 py-0.5 rounded border shrink-0 text-white shadow-2xs"
+                              style={{
+                                backgroundColor: PASS_COLORS[r.pass_networks[0]] || '#8A847C',
+                                borderColor: PASS_COLORS[r.pass_networks[0]] || '#8A847C',
+                              }}
+                            >
+                              {r.pass_networks[0]}
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-[#5C5852] font-medium mt-1 flex items-center flex-wrap gap-x-1.5">
                           <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
@@ -5122,6 +5183,24 @@ export default function App() {
                 </div>
               );
             })()}
+
+            {/* Pass Affiliations */}
+            {selectedResort.pass_networks && selectedResort.pass_networks.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
+                {selectedResort.pass_networks.map((pass) => (
+                  <span
+                    key={pass}
+                    className="inline-flex items-center gap-1.5 text-[10.5px] font-bold px-2 py-0.5 rounded-md border bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] shadow-2xs"
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: PASS_COLORS[pass] || '#8A847C' }}
+                    />
+                    <span>{pass}</span>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Dossier Body */}

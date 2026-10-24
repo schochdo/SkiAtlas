@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: reinstate pass network filters and render pass badges on cards and dossier`
+- **Reinstated Pass Network Filtering UI**:
+  - **What was missing**: While pass network state (`selectedPasses`), filter counters, and MapLibre source synchronization logic existed in `src/App.tsx`, the user-facing filter controls had been omitted from the Framed Filter Box during previous filter UI refactors.
+  - **Filter Controls**: Restored interactive pass network toggles in the left drawer's "Pass & Terrain Filters" box for all five affiliations: **Ikon**, **Epic**, **Indy**, **Mountain Collective**, and **Independent**, complete with pass affiliation color dots (`#B84A39`, `#2E5A44`, `#C2842F`, `#3B627E`, `#8A847C`) and instant "All" / "None" selection shortcuts.
+- **Card and Dossier Pass Affiliation Badges**:
+  - **Resort Cards**: Rendered primary pass network badge chips on cards in the left directory tray for non-independent passholders (Ikon, Epic, Indy, Mountain Collective).
+  - **Mountain Dossier Header**: Rendered pass affiliation badge chips in the mountain dossier header below the official website link, displaying all associated passes for multi-pass mountains (e.g. Ikon + Mountain Collective).
+- **Design Integrity**: Kept strictly to editorial, Swiss cartographic standards with mineral ink accents; no vanity SaaS chrome or pulsing dots.
+
+---
+
 ### `fix: purge proposed, planned, and abandoned lifts from map and vector trail layers`
 - **Root Cause of Phantom & Master-Plan Lifts**:
   - OpenSkiMap and OSM vector trail data include proposed, planned, and abandoned aerialways tagged `status: 'proposed' | 'planned' | 'abandoned' | 'disused'`.
