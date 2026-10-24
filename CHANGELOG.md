@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: restore authoritative nordic classification and eliminate phantom cross-country skiable acreage`
+- **Root Cause of Nordic Miscategorization**: In `public/data/global_ski_areas.json`, 889 cross-country areas (including Larch Hills, McCulloch, Methow, Katahdin) were already correctly flagged as `category: "nordic"`. However, during runtime ingestion in `src/App.tsx`, `classifySkiFeature()` ignored the existing `p.category` and inspected `p.statistics.runs.byActivity.nordic`. Because `p.statistics` is not included in the pre-built JSON, the function defaulted to `category: 'downhill'`, overwriting all 890+ Nordic centers as Downhill and stamping them with `⛷ Downhill` badges.
+- **Top Acreage Clogging Fixed**: When OpenSkiData calculates polygon area for Nordic trail networks, it calculates the geographic area of the entire surrounding park or forest reserve (e.g. 11,134 ac for Larch Hills, 7,825 ac for McCulloch, 19,072 ac for Katahdin). Because they were misclassified as Downhill, they falsely outranked mega alpine resorts like Whistler, Vail, and Big Sky when sorted by Acreage.
+- **Classification Engine Hardening**:
+  - `classifySkiFeature()` now strictly respects existing authoritative categories (`p.category === 'nordic'` or `p.archetype === 'Cross-Country Ski Center'`).
+  - Added robust name keyword pattern matching for Nordic centers (`nordic`, `cross-country`, `cross country`, `ski de fond`, `sci di fondo`, `langlauf`, `biathlon`, `outdoor center`) while exempting true alpine downhill resorts (e.g. Nordic Valley, Nordic Mountain, Sugarloaf Mountain).
+  - Explicitly zeroed out `skiable_acres` for all Nordic cross-country trail networks in both the ingestion engine and `global_ski_areas.json`. Nordic centers now report true trail counts (e.g. `70 trails`, `50 trails`) rather than misleading alpine skiable acreage.
+  - Corrected miscategorized Nordic centers in `global_ski_areas.json` (Ski Callaghan, China Ridge Trails, Palouse Divide, Ski de fond Mont-Tremblant, Sugarloaf Outdoor Center, National Biathlon Centre, Summit Ranger District, Quarry Road Trails).
+- **Directory and Dossier UI Cleanliness**:
+  - Downhill directory (`showDownhill: true`, `showNordic: false`) now strictly displays genuine alpine downhill ski resorts.
+  - Nordic centers only appear when the user toggles the **Nordic** category filter, displaying `🎿 Nordic XC` badges and trail counts.
+
 ### `fix: redesign top-left north arrow with high-contrast alpine vermilion needle and bold N glyph`
 - **Visibility Enhancement**: Previously, the True North reorientation arrow inside the top-left zoom stack was rendered as a tiny 16px (`w-4 h-4`) black/gray diamond without color or cardinal lettering. The South tip was beige on cream paper, rendering half the needle practically invisible against the button background.
 - **Substantial Sizing**: Increased the icon footprint to 22×22px (`w-5.5 h-5.5`), comfortably filling the 32×32px button while maintaining balanced cartographic margins.

@@ -245,10 +245,42 @@ export function classifySkiFeature(
 
   const downhillRuns = runs.downhill || 0;
   const nordicRuns = runs.nordic || 0;
-  const totalLifts = Object.values(lifts).reduce((acc: number, v: any) => acc + (Number(v) || 0), 0);
+  const totalLifts = Object.values(lifts).reduce((acc: number, v: any) => acc + (Number(v) || 0), 0) || (p.lift_count ?? 0);
 
+  const nameLower = (p.name || '').toLowerCase();
+  const xcKeywords = [
+    'nordic',
+    'cross-country',
+    'cross country',
+    'crosscountry',
+    'ski de fond',
+    'sci di fondo',
+    'langlauf',
+    'loipe',
+    'loipen',
+    'outdoor center',
+    'outdoor centre',
+    'touring center',
+    'touring centre',
+    'biathlon',
+  ];
+  const downhillExceptions = ['nordic valley', 'nordic mountain', 'sugarloaf mountain'];
+  const isDownhillException = downhillExceptions.some(
+    (ex) => nameLower === ex || (ex === 'sugarloaf mountain' && nameLower.includes('sugarloaf mountain'))
+  );
+  const hasXcName = !isDownhillException && xcKeywords.some((k) => nameLower.includes(k));
+
+  // Determine authoritative category without blindly forcing downhill
   let category: SkiActivityCategory = 'downhill';
-  if (nordicRuns > 0 && downhillRuns === 0 && totalLifts === 0) {
+  if (p.category === 'nordic' || p.archetype === 'Cross-Country Ski Center' || p.archetype === 'Nordic Center') {
+    category = 'nordic';
+  } else if (p.category === 'heli_cat') {
+    category = 'heli_cat';
+  } else if (hasXcName && totalLifts <= 1) {
+    category = 'nordic';
+  } else if (nordicRuns > 0 && downhillRuns === 0 && totalLifts <= 1) {
+    category = 'nordic';
+  } else if (nameLower.includes('callaghan') && totalLifts <= 1) {
     category = 'nordic';
   }
 
@@ -269,15 +301,15 @@ export function classifySkiFeature(
   }
 
   let infrastructure = 'Alpine Ski Area';
-  if (totalLifts > 0) {
+  if (category === 'nordic') {
+    infrastructure = p.infrastructure || (p.run_count ? `${p.run_count} Nordic cross-country trails` : 'Cross-Country Nordic Center');
+  } else if (totalLifts > 0) {
     infrastructure = `${totalLifts} Lift${totalLifts > 1 ? 's' : ''}`;
-  } else if (category === 'nordic') {
-    infrastructure = 'Cross-Country Nordic Center';
   }
 
   return {
     category,
-    archetype: category === 'nordic' ? 'Nordic Center' : 'Downhill Alpine',
+    archetype: category === 'nordic' ? (p.archetype || 'Cross-Country Ski Center') : (p.archetype || 'Downhill Alpine'),
     infrastructure,
     cleanedVertFt: verticalDropFt,
     cleanedSummitFt: summitElevFt,
@@ -3403,7 +3435,8 @@ export default function App() {
           const classified = classifySkiFeature(p, pt);
 
           const rVert = p.vertical_ft || classified.cleanedVertFt || 0;
-          const rAcres = p.skiable_acres || 0;
+          // Nordic cross-country networks do not have alpine skiable acreage; zero out to prevent clogging
+          const rAcres = classified.category === 'nordic' ? 0 : (p.skiable_acres || 0);
 
           if (classified.category === 'downhill') dhTotal++;
           else if (classified.category === 'nordic') nordTotal++;
@@ -3452,7 +3485,7 @@ export default function App() {
             vertical_drop_ft: props.vertical_ft || 0,
             summit_elev_ft: props.summit_elev_ft || 0,
             base_elev_ft: props.base_elev_ft || 0,
-            skiable_acres: props.skiable_acres || 0,
+            skiable_acres: props.category === 'nordic' ? 0 : (props.skiable_acres || 0),
             pass_networks: (props.pass_networks && props.pass_networks.length > 0 ? props.pass_networks : ['Independent']) as PassNetwork[],
             summary: props.summary || '',
             website: props.website || '',
@@ -4126,7 +4159,8 @@ export default function App() {
                         <div className="text-[10px] font-mono text-[#5C5852] mt-0.5">
                           <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
                           {r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
-                          {r.skiable_acres > 0 && ` · ${formatAcres(r.skiable_acres)}`}
+                          {r.category !== 'nordic' && r.skiable_acres > 0 && ` · ${formatAcres(r.skiable_acres)}`}
+                          {r.category === 'nordic' && r.run_count && r.run_count > 0 && ` · ${r.run_count} trails`}
                         </div>
                       </div>
 
@@ -4854,13 +4888,15 @@ export default function App() {
                       <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.lifts ?? '—'}</div>
                     </div>
                     <div>
-                      <div className="text-[9px] text-[#5C5852] uppercase">Pistes</div>
-                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.pistes ?? '—'}</div>
+                      <div className="text-[9px] text-[#5C5852] uppercase">{selectedResort.category === 'nordic' ? 'Trails' : 'Pistes'}</div>
+                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.pistes ?? selectedResort.run_count ?? '—'}</div>
                     </div>
                     <div>
-                      <div className="text-[9px] text-[#5C5852] uppercase">Acres</div>
+                      <div className="text-[9px] text-[#5C5852] uppercase">{selectedResort.category === 'nordic' ? 'Type' : 'Acres'}</div>
                       <div className="text-sm font-bold text-[#1C1B18] mt-0.5">
-                        {stats.acres && stats.acres > 0 ? formatAcres(stats.acres) : '—'}
+                        {selectedResort.category === 'nordic'
+                          ? 'Nordic XC'
+                          : stats.acres && stats.acres > 0 ? formatAcres(stats.acres) : '—'}
                       </div>
                     </div>
                   </div>
