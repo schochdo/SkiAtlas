@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `style: soften panel elements with fully rounded pills and smooth curved containers`
+- **Eliminated Discordant Hard Edges Inside Directory Panel**:
+  - Previously, category badges (`rounded-full`) were soft enamel pills, while adjacent panel controls (search input, terrain filter box, sort buttons, scope tabs, and pull tabs) retained sharp `rounded-[2px]`, `rounded-[3px]`, and `rounded` corners, creating visual friction.
+- **Unified Soft Editorial Language**:
+  - **Search Input**: Converted to `rounded-full` capsule input.
+  - **Terrain Filters Container**: Softened from `rounded-[3px]` to `rounded-2xl` for a gentle, inset card container.
+  - **Category Filter Buttons**: Converted Downhill, Nordic, and Heli/Cat toggle buttons to `rounded-full` pills matching the card badges.
+  - **Sort Segmented Control**: Transformed both the pill track container and individual sort buttons (`Vert`, `Acres`, `A-Z`, `7-Day ❄`) to `rounded-full`.
+  - **Scope Tabs**: Converted `IN FRAME` and `ALL MATCHING` buttons from sharp `rounded-[3px]` to soft `rounded-full` pills.
+  - **Card Snow Chip**: Softened forecast snowfall chip from `rounded-md` to `rounded-full px-2.5 py-1`, harmonizing with the category badges.
+  - **Tray Seam Pull Tab & Navigation Controls**: Converted drawer pull grip to `rounded-full` and map viewport controls to `rounded-lg`.
+
 ### `style: scale up header, search, filter labels, and sort controls to balance with directory cards`
 - **Root Cause of Visual Hierarchy Mismatch**:
   - While directory cards were scaled up to warm, confident typography (14px bold titles, readable badges, proportional stats), the header, search input, filter section, and sort controls retained ultra-dense micro-typography (`text-[9px]`, `text-[10px]`, `text-[11px]`, and `h-5` icons).
