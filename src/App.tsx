@@ -2572,22 +2572,16 @@ export default function App() {
         minzoom: 8.5,
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            8.5, 10,
-            11, 11,
-            14, 13
-          ],
-          'text-offset': [0, 1.3],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-size': 11,
+          'text-offset': [0, 1.2],
           'text-anchor': 'top',
-          'text-optional': false,
-          'symbol-sort-key': 1,
+          'text-optional': true,
         },
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2.5,
+          'text-halo-width': 1.5,
         },
       });
 
@@ -2711,7 +2705,7 @@ export default function App() {
         },
       });
 
-      // Global Ski Areas Name Label (Indestructible: text-optional=false ensures trail lines never suppress the area name)
+      // Global Ski Areas Name Label
       map.addLayer({
         id: 'global-unclustered-label',
         type: 'symbol',
@@ -2719,90 +2713,17 @@ export default function App() {
         filter: ['!', ['has', 'point_count']],
         minzoom: 8.5,
         layout: {
-          'text-field': [
-            'case',
-            ['==', ['get', 'category'], 'nordic'],
-            ['concat', '🎿 ', ['get', 'name']],
-            ['==', ['get', 'category'], 'heli_cat'],
-            ['concat', '🚁 ', ['get', 'name']],
-            ['get', 'name']
-          ],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            8.5, 10,
-            11, 11,
-            14, 13
-          ],
-          'text-offset': [0, 1.4],
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-size': 11,
+          'text-offset': [0, 1.2],
           'text-anchor': 'top',
-          'text-optional': false,
-          'symbol-sort-key': 1,
+          'text-optional': true,
         },
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2.5,
-        },
-      });
-
-      // 4. Dedicated Active Selection Callout & Landmark Pin
-      map.addSource('selected-resort-source', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
-      });
-
-      // Radiant outer beacon ring on selected resort
-      map.addLayer({
-        id: 'selected-resort-halo',
-        type: 'circle',
-        source: 'selected-resort-source',
-        paint: {
-          'circle-radius': [
-            'interpolate', ['linear'], ['zoom'],
-            8, 12,
-            12, 16,
-            15, 20
-          ],
-          'circle-color': ['get', 'catColor'],
-          'circle-opacity': 0.28,
-          'circle-stroke-width': 2.5,
-          'circle-stroke-color': '#FAF8F3',
-        },
-      });
-
-      // Sharp central pin dot on selected resort
-      map.addLayer({
-        id: 'selected-resort-pin',
-        type: 'circle',
-        source: 'selected-resort-source',
-        paint: {
-          'circle-radius': 5.5,
-          'circle-color': ['get', 'catColor'],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#FAF8F3',
-        },
-      });
-
-      // High-contrast callout nameplate banner that NEVER collides or drops
-      map.addLayer({
-        id: 'selected-resort-callout',
-        type: 'symbol',
-        source: 'selected-resort-source',
-        layout: {
-          'text-field': ['get', 'callout_text'],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-size': 12,
-          'text-offset': [0, -2.0],
-          'text-anchor': 'bottom',
-          'text-allow-overlap': true,
-          'text-ignore-placement': true,
-          'symbol-sort-key': 0,
-        },
-        paint: {
-          'text-color': '#1C1B18',
-          'text-halo-color': '#FAF8F3',
-          'text-halo-width': 3.5,
+          'text-halo-width': 1.5,
         },
       });
 
@@ -4037,45 +3958,6 @@ export default function App() {
     const mi = Math.round(km * 0.621371 * 10) / 10;
     return `${mi} mi`;
   };
-
-  /* =========================================================================
-     ACTIVE RESORT CALLOUT & MAP ANCHOR SYNC
-     Ensures that selecting/zooming into an area renders an indestructible,
-     high-contrast callout nameplate and glowing pin directly on the mountain.
-     ========================================================================= */
-
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const src = mapRef.current.getSource('selected-resort-source') as GeoJSONSource;
-    if (!src) return;
-
-    if (!selectedResort) {
-      src.setData({ type: 'FeatureCollection', features: [] });
-      return;
-    }
-
-    const cat = selectedResort.category || 'downhill';
-    const catColor = cat === 'nordic' ? '#2E5A44' : cat === 'heli_cat' ? '#C25916' : '#3B627E';
-    const subText = cat === 'nordic'
-      ? (selectedResort.trail_km ? `${formatDistance(selectedResort.trail_km)} network` : 'Nordic Center')
-      : (selectedResort.vertical_drop_ft ? `${formatVert(selectedResort.vertical_drop_ft)} vert` : 'Alpine Resort');
-
-    const prefix = cat === 'nordic' ? '🎿 ' : cat === 'heli_cat' ? '🚁 ' : '⛷️ ';
-
-    const feat = {
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [selectedResort.lng, selectedResort.lat] },
-      properties: {
-        id: selectedResort.id,
-        name: selectedResort.name,
-        category: cat,
-        catColor,
-        callout_text: `${prefix}${selectedResort.name}\n${subText}`,
-      },
-    };
-
-    src.setData({ type: 'FeatureCollection', features: [feat as any] });
-  }, [selectedResort, mapLoaded, unitsMetric]);
 
   /* =========================================================================
      RENDER: EDWARD TUFTE × BERANN DAYLIGHT CARTOGRAPHY

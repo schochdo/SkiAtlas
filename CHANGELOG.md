@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `revert: remove synthetic multi-line callout layer and restore clean cartographic map labels`
+- **Root Cause of Glitched Callout and Broken Emoji**:
+  - The experimental `selected-resort-callout` layer attempted to render multi-line text with an emoji prefix (`⛷️ Monarch \n 1,162' vert`) and a heavy 3.5px white halo. Because MapLibre GL glyph PBFs cannot render color emojis, it displayed a harsh black-and-white pixelated icon in an opaque white box. The 3.5px halo formed solid white blocks around letters, and printed the resort name twice (above and below the pin marker).
+- **Restored Clean, Single Map Labels**:
+  - Completely removed `selected-resort-source`, `selected-resort-halo`, `selected-resort-pin`, and `selected-resort-callout`.
+  - Removed emoji prefixes from map symbol text fields.
+  - Restored clean, subtle 1.5px halo and single name label below each resort marker.
+
 ### `style: redesign header with tracked editorial small-caps wordmark and geodetic contour crest`
 - **Replaced Generic Header Icon with Cartographic Contour Crest**:
   - Replaced the stock Lucide `Mountain` icon with an authentic SVG hypsometric contour crest: three nested elevation contour lines (slate, charcoal) crowned by an Alpine Vermilion (`#B84A39`) triangulation benchmark monument and inner geodetic point.
