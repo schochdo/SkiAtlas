@@ -6,6 +6,27 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: calibrate camera flight bearings to look up slopes from base lodge`
+- **Authentic Skier-Orientation Flight Perspectives**:
+  - **What was wrong**:
+    - Camera flight angles were unintuitive and disorienting: users were often placed looking sideways along ridges, looking down from behind the mountain peak, or aimed into side woods away from the ski slopes.
+    - **Grand Targhee**: In `handleSelectGlobalResort`, the camera flight was hardcoded to `bearing: 0` (due North). Because Grand Targhee's slopes descend from East to West (Fred's and Peaked summits in the East, base lodge in the West), facing North looked 90° sideways across the mountain, staring into Yellowstone rather than up the ski bowls.
+    - **Jackson Hole**: `default_bearing` was set to `250°` (West-Southwest), aiming 40° off-axis toward Cody Peak and Granite Canyon while `midpointKm` pushed the camera target into the southern side ridge, cutting off the Aerial Tram, Bridger Gondola, and Rendezvous Peak.
+    - **Other Major Flagships**: Multiple world-class resorts had inverted or valley-facing bearings (e.g., Steamboat was at 245° facing the flat valley instead of 105° looking up Mt. Werner; Arapahoe Basin was at 310° facing down the highway into Keystone instead of 200° looking up the East Wall/Lenawee; Lake Louise was at 200° facing the highway instead of 50° looking up Mt. Whitehorn; Niseko was at 110° facing Mount Yotei instead of 315° looking up Mount Annupuri; Åre was at 175° facing across Lake Åresjön instead of 25° looking up Åreskutan; St. Anton was at 170° facing the valley instead of 340° looking up Valluga).
+  - **Exact Lift & Fall-Line Bearing Calibration**:
+    - Audited physical OSM lift geometries across all 50 curated flagships and 31,023 chairlifts/cableways in `data_pipeline/trails.db`.
+    - Calibrated `default_bearing` for all 50 flagships in [`GLOBAL_SKI_ATLAS`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L370) so the camera always stands in the base village looking directly up the main lift corridors to the summit peaks (Jackson Hole: **290°** up Tram/Bridger lines; Grand Targhee: **92°** up Dreamcatcher/Blackfoot; Steamboat: **105°**; A-Basin: **200°**; Lake Louise: **50°**; Revelstoke: **95°**; Niseko: **315°**; St. Anton: **340°**; Åre: **25°**; Zermatt: **180°**; Breckenridge: **265°**; Big Sky: **255°**; etc.).
+  - **Global Ski Areas Dataset Enrichment**:
+    - Ran a high-performance spatial-grid lift vector analyzer over all 6,593 ski areas in [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json).
+    - Populated exact lift-derived `default_bearing` on 4,697 ski areas with local lift geometries, with hemisphere-aware fallbacks (180° for North, 0° for South) for remaining areas.
+  - **Unified & Intuitive Camera Framing**:
+    - **Pitch Elevated to 46°**: Replaced flat 38° pitch with 46°, providing the classic 3D alpine trail map perspective with peaks towering dramatically against the horizon.
+    - **Base vs Centroid Midpoint Logic**: Fixed midpoint offset calculation: only flagships whose coordinates represent the base village advance forward along bearing into the mountain amphitheater; global ski areas whose coordinates are already the mountain polygon centroid do not double-advance.
+    - **Padded Framing Balance**: Tuned bottom padding from 140px to 90px, centering the mountain sweet spot with ample base lodge foreground and towering summit background.
+    - **Unified Click Handlers**: `handleSelectGlobalResort` now forwards directly to `handleSelectResort` for loaded resorts, ensuring consistent weather, camera pitch, and lift-aligned bearing whether clicked from the map or left directory dock.
+
+---
+
 ### `feat: add verified average annual snowfall to resort cards and mountain dossier`
 - **Average Annual Snowfall Telemetry**:
   - **What was missing**: Users could view live 72-hour and upcoming 7-day storm forecasts, but had no baseline historical context for average annual snowfall (`avg_snowfall_in`) to evaluate mountain snow climate.

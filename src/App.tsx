@@ -378,7 +378,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 43.5875,
     lng: -110.8279,
-    default_bearing: 250,
+    default_bearing: 290,
     base_elev_ft: 6311,
     summit_elev_ft: 10450,
     vertical_drop_ft: 4139,
@@ -399,7 +399,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 40.58,
     lng: -111.655,
-    default_bearing: 195,
+    default_bearing: 175,
     base_elev_ft: 7760,
     summit_elev_ft: 11000,
     vertical_drop_ft: 3240,
@@ -420,7 +420,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 40.5883,
     lng: -111.6378,
-    default_bearing: 215,
+    default_bearing: 185,
     base_elev_ft: 8538,
     summit_elev_ft: 11060,
     vertical_drop_ft: 2538,
@@ -441,7 +441,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 40.6514,
     lng: -111.508,
-    default_bearing: 195,
+    default_bearing: 225,
     base_elev_ft: 6800,
     summit_elev_ft: 10026,
     vertical_drop_ft: 3226,
@@ -462,7 +462,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 41.3789,
     lng: -111.7806,
-    default_bearing: 210,
+    default_bearing: 180,
     base_elev_ft: 6900,
     summit_elev_ft: 9422,
     vertical_drop_ft: 2522,
@@ -483,7 +483,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 39.6403,
     lng: -106.3742,
-    default_bearing: 190,
+    default_bearing: 170,
     base_elev_ft: 8120,
     summit_elev_ft: 11570,
     vertical_drop_ft: 3450,
@@ -504,7 +504,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 39.2083,
     lng: -106.9497,
-    default_bearing: 220,
+    default_bearing: 205,
     base_elev_ft: 8104,
     summit_elev_ft: 12510,
     vertical_drop_ft: 4406,
@@ -525,7 +525,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 39.4802,
     lng: -106.0667,
-    default_bearing: 250,
+    default_bearing: 265,
     base_elev_ft: 9600,
     summit_elev_ft: 12998,
     vertical_drop_ft: 3398,
@@ -546,7 +546,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 40.4572,
     lng: -106.7745,
-    default_bearing: 245,
+    default_bearing: 105,
     base_elev_ft: 6900,
     summit_elev_ft: 10568,
     vertical_drop_ft: 3668,
@@ -567,7 +567,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 37.9375,
     lng: -107.8123,
-    default_bearing: 200,
+    default_bearing: 180,
     base_elev_ft: 8725,
     summit_elev_ft: 13150,
     vertical_drop_ft: 4425,
@@ -588,7 +588,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 39.6425,
     lng: -105.8719,
-    default_bearing: 310,
+    default_bearing: 200,
     base_elev_ft: 10780,
     summit_elev_ft: 13050,
     vertical_drop_ft: 2270,
@@ -609,7 +609,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 45.2858,
     lng: -111.4011,
-    default_bearing: 245,
+    default_bearing: 255,
     base_elev_ft: 6800,
     summit_elev_ft: 11166,
     vertical_drop_ft: 4366,
@@ -630,7 +630,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 43.68,
     lng: -114.36,
-    default_bearing: 210,
+    default_bearing: 215,
     base_elev_ft: 5750,
     summit_elev_ft: 9150,
     vertical_drop_ft: 3400,
@@ -651,7 +651,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 39.197,
     lng: -120.2356,
-    default_bearing: 220,
+    default_bearing: 225,
     base_elev_ft: 6200,
     summit_elev_ft: 9050,
     vertical_drop_ft: 2850,
@@ -672,7 +672,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 37.6308,
     lng: -119.0326,
-    default_bearing: 205,
+    default_bearing: 220,
     base_elev_ft: 7953,
     summit_elev_ft: 11053,
     vertical_drop_ft: 3100,
@@ -693,7 +693,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 44.53,
     lng: -72.78,
-    default_bearing: 270,
+    default_bearing: 265,
     base_elev_ft: 1280,
     summit_elev_ft: 3640,
     vertical_drop_ft: 2360,
@@ -714,7 +714,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'USA',
     lat: 43.6261,
     lng: -72.7969,
-    default_bearing: 260,
+    default_bearing: 240,
     base_elev_ft: 1165,
     summit_elev_ft: 4215,
     vertical_drop_ft: 3050,
@@ -735,7 +735,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Canada',
     lat: 50.1163,
     lng: -122.9574,
-    default_bearing: 160,
+    default_bearing: 140,
     base_elev_ft: 2214,
     summit_elev_ft: 7494,
     vertical_drop_ft: 5280,
@@ -756,7 +756,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Canada',
     lat: 50.958,
     lng: -118.163,
-    default_bearing: 200,
+    default_bearing: 95,
     base_elev_ft: 1680,
     summit_elev_ft: 7300,
     vertical_drop_ft: 5620,
@@ -777,7 +777,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Canada',
     lat: 51.4447,
     lng: -116.1608,
-    default_bearing: 200,
+    default_bearing: 50,
     base_elev_ft: 5400,
     summit_elev_ft: 8650,
     vertical_drop_ft: 3250,
@@ -798,7 +798,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Canada',
     lat: 51.1147,
     lng: -115.7644,
-    default_bearing: 210,
+    default_bearing: 180,
     base_elev_ft: 5440,
     summit_elev_ft: 8954,
     vertical_drop_ft: 3514,
@@ -819,7 +819,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'France',
     lat: 45.9237,
     lng: 6.8694,
-    default_bearing: 155,
+    default_bearing: 160,
     base_elev_ft: 3396,
     summit_elev_ft: 12601,
     vertical_drop_ft: 9205,
@@ -840,7 +840,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'France',
     lat: 45.448,
     lng: 6.9802,
-    default_bearing: 170,
+    default_bearing: 175,
     base_elev_ft: 5085,
     summit_elev_ft: 11353,
     vertical_drop_ft: 5268,
@@ -882,7 +882,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'France',
     lat: 45.2983,
     lng: 6.58,
-    default_bearing: 180,
+    default_bearing: 125,
     base_elev_ft: 7545,
     summit_elev_ft: 10597,
     vertical_drop_ft: 4691,
@@ -903,7 +903,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'France',
     lat: 45.0924,
     lng: 6.0697,
-    default_bearing: 180,
+    default_bearing: 60,
     base_elev_ft: 3675,
     summit_elev_ft: 10925,
     vertical_drop_ft: 7250,
@@ -924,7 +924,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Switzerland',
     lat: 45.9763,
     lng: 7.7317,
-    default_bearing: 175,
+    default_bearing: 180,
     base_elev_ft: 5315,
     summit_elev_ft: 12805,
     vertical_drop_ft: 7490,
@@ -945,7 +945,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Switzerland',
     lat: 46.0961,
     lng: 7.2286,
-    default_bearing: 190,
+    default_bearing: 130,
     base_elev_ft: 4920,
     summit_elev_ft: 10925,
     vertical_drop_ft: 6005,
@@ -966,7 +966,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Switzerland',
     lat: 46.498,
     lng: 9.839,
-    default_bearing: 160,
+    default_bearing: 310,
     base_elev_ft: 5971,
     summit_elev_ft: 10837,
     vertical_drop_ft: 4866,
@@ -987,7 +987,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Switzerland',
     lat: 46.8143,
     lng: 9.8528,
-    default_bearing: 170,
+    default_bearing: 270,
     base_elev_ft: 2657,
     summit_elev_ft: 9331,
     vertical_drop_ft: 6674,
@@ -1008,7 +1008,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Switzerland',
     lat: 46.1089,
     lng: 7.9289,
-    default_bearing: 170,
+    default_bearing: 175,
     base_elev_ft: 5905,
     summit_elev_ft: 11811,
     vertical_drop_ft: 5906,
@@ -1029,7 +1029,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Austria',
     lat: 47.13,
     lng: 10.268,
-    default_bearing: 170,
+    default_bearing: 340,
     base_elev_ft: 4278,
     summit_elev_ft: 9222,
     vertical_drop_ft: 4944,
@@ -1050,7 +1050,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Austria',
     lat: 47.446,
     lng: 12.392,
-    default_bearing: 185,
+    default_bearing: 145,
     base_elev_ft: 2625,
     summit_elev_ft: 6560,
     vertical_drop_ft: 3935,
@@ -1071,7 +1071,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Austria',
     lat: 47.0114,
     lng: 10.2917,
-    default_bearing: 165,
+    default_bearing: 135,
     base_elev_ft: 4518,
     summit_elev_ft: 9423,
     vertical_drop_ft: 4905,
@@ -1092,7 +1092,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Austria',
     lat: 46.9655,
     lng: 11.0076,
-    default_bearing: 175,
+    default_bearing: 270,
     base_elev_ft: 4429,
     summit_elev_ft: 10958,
     vertical_drop_ft: 6529,
@@ -1113,7 +1113,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Italy',
     lat: 46.54,
     lng: 12.135,
-    default_bearing: 170,
+    default_bearing: 265,
     base_elev_ft: 3976,
     summit_elev_ft: 10603,
     vertical_drop_ft: 6627,
@@ -1134,7 +1134,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Italy',
     lat: 46.556,
     lng: 11.756,
-    default_bearing: 195,
+    default_bearing: 200,
     base_elev_ft: 4055,
     summit_elev_ft: 8262,
     vertical_drop_ft: 4207,
@@ -1176,7 +1176,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Sweden',
     lat: 63.4,
     lng: 13.08,
-    default_bearing: 175,
+    default_bearing: 25,
     base_elev_ft: 1247,
     summit_elev_ft: 4173,
     vertical_drop_ft: 2926,
@@ -1197,7 +1197,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Spain',
     lat: 42.7,
     lng: 0.93,
-    default_bearing: 165,
+    default_bearing: 95,
     base_elev_ft: 4921,
     summit_elev_ft: 8564,
     vertical_drop_ft: 3643,
@@ -1218,7 +1218,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Japan',
     lat: 42.8622,
     lng: 140.7042,
-    default_bearing: 110,
+    default_bearing: 315,
     base_elev_ft: 853,
     summit_elev_ft: 4291,
     vertical_drop_ft: 3438,
@@ -1239,7 +1239,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Japan',
     lat: 42.7486,
     lng: 140.9039,
-    default_bearing: 290,
+    default_bearing: 285,
     base_elev_ft: 1312,
     summit_elev_ft: 3261,
     vertical_drop_ft: 1949,
@@ -1281,7 +1281,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Japan',
     lat: 36.9208,
     lng: 138.4503,
-    default_bearing: 240,
+    default_bearing: 120,
     base_elev_ft: 1853,
     summit_elev_ft: 5413,
     vertical_drop_ft: 3560,
@@ -1302,7 +1302,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Chile',
     lat: -32.836,
     lng: -70.133,
-    default_bearing: 10,
+    default_bearing: 15,
     base_elev_ft: 9450,
     summit_elev_ft: 10862,
     vertical_drop_ft: 1412,
@@ -1323,7 +1323,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Chile',
     lat: -33.354,
     lng: -70.249,
-    default_bearing: 280,
+    default_bearing: 45,
     base_elev_ft: 9925,
     summit_elev_ft: 12565,
     vertical_drop_ft: 2640,
@@ -1344,7 +1344,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Argentina',
     lat: -41.17,
     lng: -71.44,
-    default_bearing: 15,
+    default_bearing: 265,
     base_elev_ft: 3379,
     summit_elev_ft: 7152,
     vertical_drop_ft: 3773,
@@ -1365,7 +1365,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'New Zealand',
     lat: -44.634,
     lng: 168.898,
-    default_bearing: 80,
+    default_bearing: 295,
     base_elev_ft: 4133,
     summit_elev_ft: 6850,
     vertical_drop_ft: 2717,
@@ -1386,7 +1386,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'New Zealand',
     lat: -44.87,
     lng: 168.95,
-    default_bearing: 75,
+    default_bearing: 340,
     base_elev_ft: 5446,
     summit_elev_ft: 7414,
     vertical_drop_ft: 1968,
@@ -1407,7 +1407,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     country: 'Australia',
     lat: -36.4,
     lng: 148.41,
-    default_bearing: 15,
+    default_bearing: 295,
     base_elev_ft: 5262,
     summit_elev_ft: 6673,
     vertical_drop_ft: 1411,
@@ -4139,16 +4139,14 @@ export default function App() {
     const rightPad = window.innerWidth >= 768 ? 384 : 336;
 
     const isNordic = resort.category === 'nordic';
-    // Bearing: use resort's default_bearing (fall-line / valley-up direction) or 0 for nordic
-    const bearing = isNordic ? 0 : (resort.default_bearing ?? 0);
+    // Bearing: use resort's calibrated default_bearing (fall-line looking up from valley to peak)
+    const bearing = isNordic ? 0 : (resort.default_bearing ?? (resort.lat < 0 ? 0 : 180));
 
     // Zoom: scale with both vertical drop and skiable acreage so sprawling resorts (Vail, Zermatt)
     // pull back appropriately, while maintaining an intimate, framed view of the ski network.
-    // Alta (~12.5) | Snowbird (~12.4) | Jackson (~12.2) | Vail (~12.0) | Zermatt (~11.2) | Small hill (~14.3)
     let zoom: number;
     if (isNordic) {
       const km = Math.max(resort.trail_km || 20, 5);
-      // Adaptive trail network framing: 10 km -> ~13.5, 50 km -> ~12.2, 100+ km -> ~11.5
       zoom = Math.max(11.0, Math.min(14.0, 13.8 - Math.log2(km / 10) * 0.65));
     } else {
       const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
@@ -4157,21 +4155,24 @@ export default function App() {
     }
 
     // Midpoint calculation:
-    // Coordinates in GLOBAL_SKI_ATLAS point to the mountain base/village.
-    // The trails and summit rise forward in the direction of default_bearing (valley looking up to peak).
-    // Advancing from the base into the mountain along bearing centers the physical mountain.
-    // For Nordic cross-country networks, center directly on the touring center coordinates.
+    // Curated flagships in GLOBAL_SKI_ATLAS have base lodge / village coordinates.
+    // Advancing along default_bearing centers the physical mountain between base and summit.
+    // Global ski areas are already centered on the mountain polygon centroid, so do not double-advance.
     let targetCenter: [number, number] = [resort.lng, resort.lat];
     if (!isNordic) {
-      const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
-      const midpointKm = Math.min(1.8, Math.max(0.6, (vert * 0.3048) / (2 * Math.tan(22 * Math.PI / 180)) / 1000));
-      const bearingRad = (bearing * Math.PI) / 180;
-      const dLat = (midpointKm / 111.32) * Math.cos(bearingRad);
-      const dLng = (midpointKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
-      targetCenter = [resort.lng + dLng, resort.lat + dLat];
+      const isCuratedBase = GLOBAL_SKI_ATLAS.some((g) => g.id === resort.id);
+      if (isCuratedBase) {
+        const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
+        const midpointKm = Math.min(1.6, Math.max(0.5, (vert * 0.3048) / (2 * Math.tan(22 * Math.PI / 180)) / 1000));
+        const bearingRad = (bearing * Math.PI) / 180;
+        const dLat = (midpointKm / 111.32) * Math.cos(bearingRad);
+        const dLng = (midpointKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
+        targetCenter = [resort.lng + dLng, resort.lat + dLat];
+      }
     }
 
-    const pitch = isNordic ? 28 : 38;
+    // 46° pitch gives an authentic alpine skier perspective: standing at base looking up into the peaks
+    const pitch = isNordic ? 28 : 46;
 
     // Compute dynamic duration based on flight distance across the globe so transcontinental jumps don't stall
     const curCenter = mapRef.current.getCenter();
@@ -4183,7 +4184,7 @@ export default function App() {
       zoom,
       pitch,
       bearing,
-      padding: { left: leftPad, right: rightPad, top: 60, bottom: 140 },
+      padding: { left: leftPad, right: rightPad, top: 60, bottom: 90 },
       duration: flightDuration,
       essential: true,
     });
@@ -4211,11 +4212,19 @@ export default function App() {
     const id = p.id || `global-${Math.round(coords[0] * 1000)}-${Math.round(coords[1] * 1000)}`;
     setSelectedResortId(id);
 
-    const isSouth = coords[1] < 0;
+    // If already in resorts master state, forward to handleSelectResort for unified weather and geometry
+    const existing = resorts.find((r) => r.id === id);
+    if (existing) {
+      handleSelectResort(id);
+      return;
+    }
+
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = window.innerWidth >= 768 ? 384 : 336;
 
     const isNordic = p.category === 'nordic';
+    const bearing = isNordic ? 0 : (Number(p.default_bearing) || (coords[1] < 0 ? 0 : 180));
+
     let gZoom: number;
     if (isNordic) {
       const km = Math.max(p.trail_km || 20, 5);
@@ -4226,19 +4235,19 @@ export default function App() {
       gZoom = Math.max(10.8, Math.min(14.5, 13.6 - Math.log2(gVert / 1000) * 0.45 - Math.log2(gAcres / 1000) * 0.35));
     }
 
-    const pitch = isNordic ? 28 : 38;
+    const pitch = isNordic ? 28 : 46;
 
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],
       zoom: gZoom,
       pitch,
-      bearing: 0,
-      padding: { left: leftPad, right: rightPad, top: 60, bottom: 140 },
+      bearing,
+      padding: { left: leftPad, right: rightPad, top: 60, bottom: 90 },
       duration: 1800,
       essential: true,
     });
     setMapPitch(pitch);
-    setMapBearing(0);
+    setMapBearing(bearing);
 
     if (fetchOverpassBboxRef.current) {
       fetchOverpassBboxRef.current(
