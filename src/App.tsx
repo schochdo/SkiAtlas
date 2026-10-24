@@ -1994,6 +1994,7 @@ export default function App() {
     let nordic = 0;
     let heli_cat = 0;
     for (const r of resorts) {
+      if (r.is_closed) continue;
       const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
       if (!passMatch) continue;
       const cat = r.category || 'downhill';
@@ -2026,6 +2027,7 @@ export default function App() {
   // Filtered Resorts across entire world dataset
   const filteredResorts = useMemo(() => {
     const list = resorts.filter((r) => {
+      if (r.is_closed) return false;
       const cat = r.category || 'downhill';
       if (cat === 'downhill' && !showDownhill) return false;
       if (cat === 'nordic' && !showNordic) return false;
@@ -3651,8 +3653,36 @@ export default function App() {
           const p = f.properties;
           if (!p || !p.name) continue;
 
+          const pName = p.name.trim();
+          const pNameLower = pName.toLowerCase();
+
+          // Quality filter: Exclude permanently closed, defunct, or abandoned ski areas
+          if (
+            p.status === 'abandoned' ||
+            p.status === 'closed' ||
+            p.status === 'disused' ||
+            p.status === 'defunct' ||
+            p.is_closed === true ||
+            (p.archetype && (p.archetype.includes('Defunct') || p.archetype.includes('Lost Ski Area'))) ||
+            (p.infrastructure && (p.infrastructure.toLowerCase().includes('defunct') || p.infrastructure.toLowerCase().includes('abandoned'))) ||
+            pNameLower.includes('(closed)') ||
+            pNameLower.includes('(abandoned)') ||
+            pNameLower.includes('(defunct)')
+          ) {
+            continue;
+          }
+
+          // Quality filter: Exclude zero-infrastructure downhill ghost entries
+          const lifts = p.lift_count || 0;
+          const runs = p.run_count || 0;
+          const vert = p.vertical_ft || 0;
+          const acres = p.skiable_acres || 0;
+          const hasSite = !!p.website && typeof p.website === 'string' && p.website.trim().length > 0;
+          if (p.category === 'downhill' && lifts === 0 && runs === 0 && vert <= 50 && acres <= 5 && !hasSite) {
+            continue;
+          }
+
           // Check if already in curated seed list -> SKIP to prevent double label!
-          const pName = p.name.toLowerCase().trim();
           const pLng = pt[0];
           const pLat = pt[1];
 
@@ -3661,13 +3691,26 @@ export default function App() {
             const dLat = Math.abs(pLat - cr.lat);
             const dLng = Math.abs(pLng - cr.lng);
             const dist = Math.hypot(dLat, dLng);
-            const nameMatch = pName.includes(cr.name) || cr.name.includes(pName);
+            const nameMatch = pNameLower.includes(cr.name) || cr.name.includes(pNameLower);
             if (dist < 0.05 || (nameMatch && dist < 0.15)) {
               isDuplicate = true;
               break;
             }
           }
           if (isDuplicate) continue;
+
+          // Website protocol hygiene
+          let cleanSite = p.website ? String(p.website).trim() : '';
+          if (cleanSite) {
+            if (cleanSite.startsWith('hhttps://')) cleanSite = cleanSite.replace('hhttps://', 'https://');
+            else if (!cleanSite.startsWith('http://') && !cleanSite.startsWith('https://')) {
+              if (cleanSite.includes('.') && !cleanSite.includes(' ')) {
+                cleanSite = `https://${cleanSite}`;
+              } else {
+                cleanSite = '';
+              }
+            }
+          }
 
           const place = p.places?.[0]?.localized?.en;
           const country = place?.country || p.country || '';
@@ -3700,6 +3743,7 @@ export default function App() {
               summit_elev_ft: p.summit_elev_ft || classified.cleanedSummitFt || 0,
               base_elev_ft: p.base_elev_ft || classified.cleanedBaseFt || 0,
               skiable_acres: rAcres,
+              website: cleanSite || p.website || '',
               trail_km: p.trail_km || null,
               trail_mi: p.trail_mi || null,
             },

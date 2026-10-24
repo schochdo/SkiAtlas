@@ -6,6 +6,39 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: comprehensive dataset quality sweep, exclude defunct ski areas, and repair websites`
+- **Exclusion of Defunct / Closed Ski Areas**:
+  - **What was wrong**: 1,049 permanently closed, defunct, or abandoned ski areas (e.g., `Snow Forest`, `Plumas Eureka Ski Bowl`, `Wolverton Ski Bowl`, `Kratka Ridge`, `Echo Summit`, `Berthoud Pass`, `Pikes Peak`, `Marble Mountain NY`) were being ingested from `global_ski_areas.json` without any closure checks, cluttering map clusters and the directory tray. Additionally, 23 historic lost ski areas (e.g. `Cortina Valley`, `Raton Ski Basin (Closed)`, `Osceola Tow`, `Pine Ridge`) were erroneously marked `status: 'operating'` with placeholder or misleading links.
+  - **Fix**: Implemented strict multi-tier exclusion in `fetchGlobal` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) and updated dataset tags in `public/data/global_ski_areas.json`:
+    - Filtered `status === 'abandoned' | 'closed' | 'disused' | 'defunct'` or `is_closed === true`.
+    - Filtered archetypes or infrastructure marked `Defunct` / `Lost Ski Area` or names containing `(Closed)`, `(abandoned)`, or `(defunct)`.
+    - Added defense-in-depth closure guards in `filteredResorts` and `matchingCategoryCounts`.
+- **Purge of Downhill Phantom & Sledding Hill Ghost Entries**:
+  - Filtered out zero-infrastructure ghost entries where `category === 'downhill'`, lifts = 0, runs = 0, vertical $\le 50\text{ ft}$, acreage $\le 5\text{ ac}$, and no official website exists (e.g., municipal sledding hills, lake overlooks, summer hiking paths mapped as winter sports polygons).
+- **Official Website Protocol & URL Quality Repairs**:
+  - Repaired malformed, non-protocol, and typo URLs in `public/data/global_ski_areas.json`:
+    - `Malá Úpa`: `skimu.cz` $\to$ `https://www.skimu.cz`
+    - `Shirakaba 2 in 1` (Japan): `2in1.jp` $\to$ `https://www.2in1.jp/`
+    - `Park sportu Hrubá Voda`: `hrubavoda.cz` $\to$ `https://www.hrubavoda.cz/`
+    - `Hochfelln` (Germany): fixed double protocol `hhttps://` $\to$ `https://www.hochfellnseilbahn.de/`
+    - `Gudauri` (Georgia): `mta.ski` $\to$ `https://mta.ski/`
+    - `Roundtop Mountain Resort`: fixed dead domain to official `https://www.skiroundtop.com/`
+    - `Montage Mountain Ski Area`: fixed raw resort string to official `https://www.montagemountain.com/`
+    - `Sunrise Park Resort`: fixed dead domain to official `https://www.sunrise.ski/`
+    - `Boreal Mountain Resort`: updated 404 URL to `https://www.rideboreal.com/`
+    - `Mt Seymour`: updated domain to official `https://mtseymour.ca/`
+    - `Catamount Mountain Resort`: updated to `https://catamountski.com/`
+    - `Meadowlark Ski Area`: updated to `https://meadowlarkskilodge.com/`
+    - `Victor Constant Ski Area`: updated West Point MWR URL
+    - `Hickory Ski Center`: updated to `https://hickoryskicenter.com/`
+    - Ingest pipeline now automatically strips protocol typos and ensures strict `https://` formatting.
+- **Entity Name & Wikidata Normalization**:
+  - Repaired **Searchmont Resort** in Ontario (`id: 'acf98e56a3ab6ac1fdc702835ad737ae68622058'`), which was mistakenly titled `"Terrain Park"` in OSM despite having 5 lifts, 20 pistes, and official website.
+  - Cleaned Wikidata Q-ID suffix from `Ski Santa Fe, Santa Fe, Q38555` $\to$ `Ski Santa Fe`.
+  - Purged phantom `"Terrain Park"` polygon in Santa Fe.
+
+---
+
 ### `fix: clarify Big Bear Mountain Resort structure and resolve California ski area websites`
 - **Domain Clarification for Big Bear Mountain Resort**:
   - In Southern California's San Bernardino Mountains, **Big Bear Mountain Resort** is a single unified Alterra / Ikon Pass resort brand consisting of two distinct ski mountains 2 miles apart: **Snow Summit** (cruisers, family skiing, 15 lifts, 240 ac) and **Bear Mountain** (all-mountain freestyle terrain parks, 12 lifts, 198 ac), plus nearby **Snow Valley Mountain Resort** (acquired in 2023).
