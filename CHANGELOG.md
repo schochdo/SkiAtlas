@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `refactor: replace verbose unit toggle button with compact segmented ft / m control`
+- **Eliminated Clunky Text Padding**:
+  - Replaced the wordy single button `Imperial (°F, ft)` / `Metric (°C, m)` with a crisp, segmented `[ ft | m ]` switch.
+- **Improved Usability & Editorial Clarity**:
+  - Both units are now immediately visible at a glance, with the active unit clearly highlighted using standard `rounded-md` active button styling (`bg-[#F7F4ED] text-[#1C1B18] border-[#2C2A27]`).
+  - Follows standard cartographic convention seen in Swiss Topo, FATMAP, and Gaia GPS.
+
 ### `style: eliminate arbitrary green color styling from slider metrics and UI controls`
 - **Removed Discordant Green Highlights**:
   - The `Min Skiable Acres` and `Min Trail Network` slider metrics previously rendered values (e.g. `100 ac`) in pine green (`#2E5A44`), conflicting with the neutral charcoal palette of `Min Vertical Drop` (`500'`).

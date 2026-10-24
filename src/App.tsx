@@ -4011,13 +4011,35 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2 text-xs font-medium">
-          <button
-            onClick={() => setUnitsMetric(!unitsMetric)}
-            className="px-3 py-1.5 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer text-xs font-bold"
-            title="Toggle Metric / Imperial units"
+          {/* Segmented Unit Switcher: ft / m */}
+          <div
+            className="flex items-center bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-0.5"
+            role="group"
+            aria-label="Unit system"
           >
-            {unitsMetric ? 'Metric (°C, m)' : 'Imperial (°F, ft)'}
-          </button>
+            <button
+              onClick={() => setUnitsMetric(false)}
+              className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-colors cursor-pointer ${
+                !unitsMetric
+                  ? 'bg-[#F7F4ED] text-[#1C1B18] border border-[#2C2A27] shadow-2xs'
+                  : 'text-[#8A847C] hover:text-[#1C1B18]'
+              }`}
+              title="Imperial Units (ft, °F)"
+            >
+              ft
+            </button>
+            <button
+              onClick={() => setUnitsMetric(true)}
+              className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-colors cursor-pointer ${
+                unitsMetric
+                  ? 'bg-[#F7F4ED] text-[#1C1B18] border border-[#2C2A27] shadow-2xs'
+                  : 'text-[#8A847C] hover:text-[#1C1B18]'
+              }`}
+              title="Metric Units (m, °C)"
+            >
+              m
+            </button>
+          </div>
 
           <button
             onClick={toggleFullscreen}
