@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: adapt filters for nordic cross-country centers using trail network length (km) and eliminate false acreage exclusions`
+- **Root Cause of Nordic Exclusion**:
+  - The default alpine filters (`minAcreage = 100` ac, `minVertical = 500` ft) were applied uniformly to all categories. Because Nordic cross-country trail networks correctly have 0 downhill skiable acres (and mostly rolling elevation below 500 ft), 100% of the 897 worldwide Nordic centers were falsely eliminated on load.
+- **Enriched Nordic Trail Network Distance (`trail_km` & `trail_mi`)**:
+  - Computed exact geometric trail network length across all 710 Nordic centers using OpenStreetMap LineStrings from `trails.db`.
+  - Added `trail_km` and `trail_mi` properties to `public/data/global_ski_areas.json` and `SkiResort` model (ranging up to 209 km at Les Gollières, 170 km at Larch Hills, 120 km at Methow Valley).
+- **Category-Adaptive Filter Sliders**:
+  - Alpine Downhill sliders (`Min Vertical Drop` and `Min Skiable Acres`) now strictly constrain Downhill ski areas.
+  - Added a dedicated `Min Trail Network` slider (`minNordicKm`: 0 to 100 km, formatted via `formatDistance()`) that activates when Nordic is selected.
+  - When sorting by size (`sortBy === 'acres'`), Nordic areas sort by total trail network distance (`trail_km`) rather than 0 acres.
+- **Card and Dossier Display**:
+  - Directory cards for Nordic areas display real trail distance and trail count (e.g. `13.1 km (15 trails)` / `8.2 mi (15 trails)`).
+  - Dossier metric bar for Nordic areas swaps `Lifts` and `Acres` for `Trails` (count), `Network` (total distance in km / mi), and `Type` (`Nordic XC`).
+
 ### `feat: unify category buttons to toggle all associated points, trails, and infrastructure; remove redundant map overlays menu`
 - **Unified Category-Level Toggle Authority**:
   - `⛷️ Downhill`: Directly toggles all downhill curated resorts, global points, clusters, alpine pistes (green, blue, black, double-black runs), trail labels, and aerialway ski lifts.

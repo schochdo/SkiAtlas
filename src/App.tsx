@@ -96,6 +96,8 @@ export interface SkiResort {
   is_closed?: boolean;
   is_private?: boolean;
   website?: string;
+  trail_km?: number | null;
+  trail_mi?: number | null;
 }
 
 export type BasemapMode = 'satellite' | 'osm' | 'topo';
@@ -1889,9 +1891,11 @@ export default function App() {
   const [showNordic, setShowNordic] = useState(false);
   const [showHeliCat, setShowHeliCat] = useState(false);
 
-  // Filter Sliders (Default: 500' vertical, 100 acres)
+  // Filter Sliders (Default: 500' vertical, 100 acres for alpine downhill)
   const [minVertical, setMinVertical] = useState(500);
   const [minAcreage, setMinAcreage] = useState(100);
+  // Nordic Trail Network Filter (km)
+  const [minNordicKm, setMinNordicKm] = useState(0);
 
   // Navigation Instrument (Compass/Gyro HUD)
   const [mapBearing, setMapBearing] = useState(0);
@@ -1937,9 +1941,10 @@ export default function App() {
     if (selectedPasses.length < 5) count++;
     if (minVertical !== 500) count++;
     if (minAcreage !== 100) count++;
+    if (minNordicKm !== 0) count++;
     if (!showDownhill || showNordic || showHeliCat) count++;
     return count;
-  }, [selectedPasses, minVertical, minAcreage, showDownhill, showNordic, showHeliCat]);
+  }, [selectedPasses, minVertical, minAcreage, minNordicKm, showDownhill, showNordic, showHeliCat]);
 
   // Dynamic Category Counts Matching Sliders & Pass Network Filters
   const categoryFilterCounts = useMemo(() => {
@@ -1947,28 +1952,33 @@ export default function App() {
     let nordic = 0;
     let heli_cat = 0;
     for (const r of resorts) {
-      const vert = r.vertical_drop_ft || 0;
-      if (minVertical > 0 && vert < minVertical) continue;
-      const acres = r.skiable_acres || 0;
-      if (minAcreage > 0 && acres < minAcreage) continue;
       const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
       if (!passMatch) continue;
       const cat = r.category || 'downhill';
-      if (cat === 'downhill') downhill++;
-      else if (cat === 'nordic') nordic++;
-      else if (cat === 'heli_cat') heli_cat++;
+      if (cat === 'downhill') {
+        const vert = r.vertical_drop_ft || 0;
+        if (minVertical > 0 && vert < minVertical) continue;
+        const acres = r.skiable_acres || 0;
+        if (minAcreage > 0 && acres < minAcreage) continue;
+        downhill++;
+      } else if (cat === 'nordic') {
+        if (minNordicKm > 0 && ((r.trail_km || 0) < minNordicKm)) continue;
+        nordic++;
+      } else if (cat === 'heli_cat') {
+        heli_cat++;
+      }
     }
     return { downhill, nordic, heli_cat };
-  }, [resorts, minVertical, minAcreage, selectedPasses]);
+  }, [resorts, minVertical, minAcreage, minNordicKm, selectedPasses]);
 
   const handleResetFilters = () => {
     setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent']);
     setMinVertical(500);
     setMinAcreage(100);
+    setMinNordicKm(0);
     setShowDownhill(true);
     setShowNordic(false);
     setShowHeliCat(false);
-    setShowTrails(false);
   };
 
   // Filtered Resorts across entire world dataset
@@ -1982,8 +1992,14 @@ export default function App() {
       const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
       if (!passMatch) return false;
 
-      if (minVertical > 0 && (r.vertical_drop_ft === null || r.vertical_drop_ft === undefined || r.vertical_drop_ft < minVertical)) return false;
-      if (minAcreage > 0 && (r.skiable_acres === null || r.skiable_acres === undefined || r.skiable_acres < minAcreage)) return false;
+      // Downhill alpine resorts filtered by vertical drop and skiable acreage
+      if (cat === 'downhill') {
+        if (minVertical > 0 && (r.vertical_drop_ft === null || r.vertical_drop_ft === undefined || r.vertical_drop_ft < minVertical)) return false;
+        if (minAcreage > 0 && (r.skiable_acres === null || r.skiable_acres === undefined || r.skiable_acres < minAcreage)) return false;
+      } else if (cat === 'nordic') {
+        // Nordic cross-country networks filtered by trail network length (km)
+        if (minNordicKm > 0 && ((r.trail_km || 0) < minNordicKm)) return false;
+      }
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -2005,7 +2021,9 @@ export default function App() {
         const diff = (a.vertical_drop_ft || 0) - (b.vertical_drop_ft || 0);
         return diff * multiplier;
       } else if (sortBy === 'acres') {
-        const diff = (a.skiable_acres || 0) - (b.skiable_acres || 0);
+        const valA = a.category === 'nordic' ? (a.trail_km || a.run_count || 0) : (a.skiable_acres || 0);
+        const valB = b.category === 'nordic' ? (b.trail_km || b.run_count || 0) : (b.skiable_acres || 0);
+        const diff = valA - valB;
         return diff * multiplier;
       } else {
         return a.name.localeCompare(b.name) * multiplier;
@@ -2013,7 +2031,7 @@ export default function App() {
     });
 
     return list;
-  }, [resorts, selectedPasses, minVertical, minAcreage, searchQuery, showDownhill, showNordic, showHeliCat, sortBy, sortOrder]);
+  }, [resorts, selectedPasses, minVertical, minAcreage, minNordicKm, searchQuery, showDownhill, showNordic, showHeliCat, sortBy, sortOrder]);
 
   // Resorts in current map viewport bounds
   const inViewResorts = useMemo(() => {
@@ -2848,17 +2866,31 @@ export default function App() {
     if (showNordic) allowedCats.push('nordic');
     if (showHeliCat) allowedCats.push('heli_cat');
 
+    const downhillConditions: any[] = ['all'];
+    if (minVertical > 0) {
+      downhillConditions.push(['>=', ['coalesce', ['get', 'vertical_ft'], ['get', 'vertical_drop_ft'], 0], minVertical]);
+    }
+    if (minAcreage > 0) {
+      downhillConditions.push(['>=', ['coalesce', ['get', 'skiable_acres'], 0], minAcreage]);
+    }
+
+    const nordicConditions: any[] = ['all'];
+    if (minNordicKm > 0) {
+      nordicConditions.push(['>=', ['coalesce', ['get', 'trail_km'], 0], minNordicKm]);
+    }
+
     const filterExpr: any[] = [
       'all',
       ['in', ['get', 'category'], ['literal', allowedCats]],
+      [
+        'case',
+        ['==', ['get', 'category'], 'downhill'],
+        downhillConditions,
+        ['==', ['get', 'category'], 'nordic'],
+        nordicConditions,
+        true,
+      ],
     ];
-
-    if (minVertical > 0) {
-      filterExpr.push(['>=', ['coalesce', ['get', 'vertical_ft'], ['get', 'vertical_drop_ft'], 0], minVertical]);
-    }
-    if (minAcreage > 0) {
-      filterExpr.push(['>=', ['coalesce', ['get', 'skiable_acres'], 0], minAcreage]);
-    }
 
     // Curated layers
     ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels'].forEach((layerId) => {
@@ -2875,7 +2907,7 @@ export default function App() {
     if (map.getLayer('global-unclustered-label')) {
       map.setFilter('global-unclustered-label', unclusteredFilter);
     }
-  }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, mapLoaded]);
+  }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, minNordicKm, mapLoaded]);
 
   /* =========================================================================
      DYNAMIC MAP GEOJSON SOURCES FILTER SYNC
@@ -2898,10 +2930,16 @@ export default function App() {
         const p = f.properties;
         const cat = p.category || 'downhill';
         if (!allowedCats.has(cat)) return false;
-        const vert = p.vertical_ft || p.vertical_drop_ft || 0;
-        if (minVertical > 0 && vert < minVertical) return false;
-        const acres = p.skiable_acres || 0;
-        if (minAcreage > 0 && acres < minAcreage) return false;
+
+        if (cat === 'downhill') {
+          const vert = p.vertical_ft || p.vertical_drop_ft || 0;
+          if (minVertical > 0 && vert < minVertical) return false;
+          const acres = p.skiable_acres || 0;
+          if (minAcreage > 0 && acres < minAcreage) return false;
+        } else if (cat === 'nordic') {
+          if (minNordicKm > 0 && ((p.trail_km || 0) < minNordicKm)) return false;
+        }
+
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
           const matchName = (p.name || '').toLowerCase().includes(q);
@@ -2928,10 +2966,16 @@ export default function App() {
         if (!allowedCats.has(cat)) return false;
         const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
         if (!passMatch) return false;
-        const vert = r.vertical_drop_ft || 0;
-        if (minVertical > 0 && vert < minVertical) return false;
-        const acres = r.skiable_acres || 0;
-        if (minAcreage > 0 && acres < minAcreage) return false;
+
+        if (cat === 'downhill') {
+          const vert = r.vertical_drop_ft || 0;
+          if (minVertical > 0 && vert < minVertical) return false;
+          const acres = r.skiable_acres || 0;
+          if (minAcreage > 0 && acres < minAcreage) return false;
+        } else if (cat === 'nordic') {
+          if (minNordicKm > 0 && ((r.trail_km || 0) < minNordicKm)) return false;
+        }
+
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
           const matchName = r.name.toLowerCase().includes(q);
@@ -2952,12 +2996,14 @@ export default function App() {
           vertical_ft: r.vertical_drop_ft || 0,
           vertical_drop_ft: r.vertical_drop_ft || 0,
           skiable_acres: r.skiable_acres || 0,
+          trail_km: r.trail_km || null,
+          trail_mi: r.trail_mi || null,
         },
       }));
 
       curatedSrc.setData({ type: 'FeatureCollection', features: filteredCurated as any });
     }
-  }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, selectedPasses, searchQuery, mapLoaded, resorts]);
+  }, [showDownhill, showNordic, showHeliCat, minVertical, minAcreage, minNordicKm, selectedPasses, searchQuery, mapLoaded, resorts]);
 
   /* =========================================================================
      EARTH PROJECTION TOGGLE (3D Spherical Globe vs 2D Planar Mercator)
@@ -3424,6 +3470,8 @@ export default function App() {
               summit_elev_ft: p.summit_elev_ft || classified.cleanedSummitFt || 0,
               base_elev_ft: p.base_elev_ft || classified.cleanedBaseFt || 0,
               skiable_acres: rAcres,
+              trail_km: p.trail_km || null,
+              trail_mi: p.trail_mi || null,
             },
           });
         }
@@ -3455,6 +3503,8 @@ export default function App() {
             website: props.website || '',
             lift_count: props.lift_count || null,
             run_count: props.run_count || null,
+            trail_km: props.trail_km || null,
+            trail_mi: props.trail_mi || null,
           };
         });
 
@@ -3829,6 +3879,13 @@ export default function App() {
     return `${inches}"`;
   };
 
+  const formatDistance = (km: number | null | undefined) => {
+    if (!km || km <= 0) return '—';
+    if (unitsMetric) return `${km} km`;
+    const mi = Math.round(km * 0.621371 * 10) / 10;
+    return `${mi} mi`;
+  };
+
   /* =========================================================================
      RENDER: EDWARD TUFTE × BERANN DAYLIGHT CARTOGRAPHY
      ========================================================================= */
@@ -3977,39 +4034,63 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Min Vertical Slider (Default 500') */}
-              <div className="space-y-1">
-                <div className="flex justify-between items-center text-[10px] font-mono">
-                  <span className="text-[#5C5852]">Min Vertical Drop</span>
-                  <span className="text-[#1C1B18] font-bold">{minVertical > 0 ? formatVert(minVertical) : 'Any'}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="4000"
-                  step="100"
-                  value={minVertical}
-                  onChange={(e) => setMinVertical(Number(e.target.value))}
-                  className="w-full tufte-slider cursor-pointer"
-                />
-              </div>
+              {/* Downhill Alpine Sliders (shown when Downhill is active) */}
+              {showDownhill && (
+                <>
+                  {/* Min Vertical Slider (Default 500') */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-[10px] font-mono">
+                      <span className="text-[#5C5852]">Min Vertical Drop</span>
+                      <span className="text-[#1C1B18] font-bold">{minVertical > 0 ? formatVert(minVertical) : 'Any'}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="4000"
+                      step="100"
+                      value={minVertical}
+                      onChange={(e) => setMinVertical(Number(e.target.value))}
+                      className="w-full tufte-slider cursor-pointer"
+                    />
+                  </div>
 
-              {/* Min Acreage Slider (Default 100 ac) */}
-              <div className="space-y-1">
-                <div className="flex justify-between items-center text-[10px] font-mono">
-                  <span className="text-[#5C5852]">Min Skiable Acres</span>
-                  <span className="text-[#2E5A44] font-bold">{minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}</span>
+                  {/* Min Acreage Slider (Default 100 ac) */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-[10px] font-mono">
+                      <span className="text-[#5C5852]">Min Skiable Acres</span>
+                      <span className="text-[#2E5A44] font-bold">{minAcreage > 0 ? formatAcres(minAcreage) : 'Any'}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="3000"
+                      step="100"
+                      value={minAcreage}
+                      onChange={(e) => setMinAcreage(Number(e.target.value))}
+                      className="w-full tufte-slider cursor-pointer"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Nordic Cross-Country Trail Network Slider (shown when Nordic is active) */}
+              {showNordic && (
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-[10px] font-mono">
+                    <span className="text-[#5C5852]">{showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}</span>
+                    <span className="text-[#2E5A44] font-bold">{minNordicKm > 0 ? formatDistance(minNordicKm) : 'Any'}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={minNordicKm}
+                    onChange={(e) => setMinNordicKm(Number(e.target.value))}
+                    className="w-full tufte-slider cursor-pointer"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="3000"
-                  step="100"
-                  value={minAcreage}
-                  onChange={(e) => setMinAcreage(Number(e.target.value))}
-                  className="w-full tufte-slider cursor-pointer"
-                />
-              </div>
+              )}
             </div>
 
             {/* Sort Controls Row */}
@@ -4031,7 +4112,7 @@ export default function App() {
                     sortBy === 'acres' ? 'bg-[#F7F4ED] text-[#2E5A44] font-bold border border-[#2C2A27]' : 'text-[#5C5852] hover:text-[#1C1B18]'
                   }`}
                 >
-                  <span>Acres</span>
+                  <span>{showNordic && !showDownhill && !showHeliCat ? 'Network' : 'Acres'}</span>
                   {sortBy === 'acres' && <span className="text-[8px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
                 </button>
                 <button
@@ -4126,9 +4207,15 @@ export default function App() {
                         </div>
                         <div className="text-[10px] font-mono text-[#5C5852] mt-0.5">
                           <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
-                          {r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
+                          {r.category !== 'nordic' && r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
                           {r.category !== 'nordic' && r.skiable_acres > 0 && ` · ${formatAcres(r.skiable_acres)}`}
-                          {r.category === 'nordic' && r.run_count && r.run_count > 0 && ` · ${r.run_count} trails`}
+                          {r.category === 'nordic' && (
+                            <>
+                              {r.trail_km && r.trail_km > 0 ? ` · ${formatDistance(r.trail_km)}` : ''}
+                              {r.run_count && r.run_count > 0 ? ` (${r.run_count} trails)` : ''}
+                              {r.vertical_drop_ft && r.vertical_drop_ft > 0 ? ` · ${formatVert(r.vertical_drop_ft)} vert` : ''}
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -4676,22 +4763,39 @@ export default function App() {
                 <div className="bg-[#FAF8F3] border border-[#D6D0C2] rounded-[2px] overflow-hidden font-mono text-center">
                   {/* Row 1: Infrastructure */}
                   <div className="grid grid-cols-3 divide-x divide-[#D6D0C2] border-b border-[#D6D0C2] p-2">
-                    <div>
-                      <div className="text-[9px] text-[#5C5852] uppercase">Lifts</div>
-                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.lifts ?? '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-[9px] text-[#5C5852] uppercase">{selectedResort.category === 'nordic' ? 'Trails' : 'Pistes'}</div>
-                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.pistes ?? selectedResort.run_count ?? '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-[9px] text-[#5C5852] uppercase">{selectedResort.category === 'nordic' ? 'Type' : 'Acres'}</div>
-                      <div className="text-sm font-bold text-[#1C1B18] mt-0.5">
-                        {selectedResort.category === 'nordic'
-                          ? 'Nordic XC'
-                          : stats.acres && stats.acres > 0 ? formatAcres(stats.acres) : '—'}
-                      </div>
-                    </div>
+                    {selectedResort.category === 'nordic' ? (
+                      <>
+                        <div>
+                          <div className="text-[9px] text-[#5C5852] uppercase">Trails</div>
+                          <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{selectedResort.run_count ?? stats.pistes ?? '—'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] text-[#5C5852] uppercase">Network</div>
+                          <div className="text-sm font-bold text-[#2E5A44] mt-0.5">{selectedResort.trail_km ? formatDistance(selectedResort.trail_km) : '—'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] text-[#5C5852] uppercase">Type</div>
+                          <div className="text-sm font-bold text-[#1C1B18] mt-0.5">Nordic XC</div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <div className="text-[9px] text-[#5C5852] uppercase">Lifts</div>
+                          <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.lifts ?? '—'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] text-[#5C5852] uppercase">Pistes</div>
+                          <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{stats.pistes ?? selectedResort.run_count ?? '—'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] text-[#5C5852] uppercase">Acres</div>
+                          <div className="text-sm font-bold text-[#1C1B18] mt-0.5">
+                            {stats.acres && stats.acres > 0 ? formatAcres(stats.acres) : '—'}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                   {/* Row 2: Elevations */}
                   <div className="grid grid-cols-3 divide-x divide-[#D6D0C2] p-2 bg-[#F7F4ED]">
