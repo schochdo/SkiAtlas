@@ -1876,8 +1876,6 @@ export default function App() {
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
 
   // Basemap & Layer Overlays State
-  const [showLifts, setShowLifts] = useState(true);
-  const [showResortMarkers, setShowResortMarkers] = useState(true);
   const [show3DTerrain, setShow3DTerrain] = useState(true);
   const [showHillshade, setShowHillshade] = useState(true);
   const basemapMenuRef = useRef<HTMLDivElement | null>(null);
@@ -1886,6 +1884,7 @@ export default function App() {
   const attributionRef = useRef<HTMLDivElement | null>(null);
 
   // Category Individual Toggles (Default: Downhill only)
+  // Controls all associated points, clusters, trails, and infrastructure
   const [showDownhill, setShowDownhill] = useState(true);
   const [showNordic, setShowNordic] = useState(false);
   const [showHeliCat, setShowHeliCat] = useState(false);
@@ -1893,11 +1892,6 @@ export default function App() {
   // Filter Sliders (Default: 500' vertical, 100 acres)
   const [minVertical, setMinVertical] = useState(500);
   const [minAcreage, setMinAcreage] = useState(100);
-
-  // Piste trail toggles — alpine on by default, nordic & touring off by default
-  const [showAlpineTrails, setShowAlpineTrails] = useState(true);
-  const [showNordicTrails, setShowNordicTrails] = useState(false);
-  const [showTouringTrails, setShowTouringTrails] = useState(false);
 
   // Navigation Instrument (Compass/Gyro HUD)
   const [mapBearing, setMapBearing] = useState(0);
@@ -2758,19 +2752,23 @@ export default function App() {
   }, [leftDockOpen, selectedResortId, mapLoaded]);
 
   /* =========================================================================
-     TRAILS OVERLAY VISIBILITY TOGGLE (alpine / touring / nordic individually controlled)
+     TRAILS & INFRASTRUCTURE OVERLAY VISIBILITY
+     Directly tied to the 3 category master toggles:
+     - Downhill: alpine pistes (green/blue/black) + aerialway lifts
+     - Nordic: cross-country & skate ski trails (piste:type == 'nordic')
+     - Heli/Cat: backcountry ski tours & freeride routes
      ========================================================================= */
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
 
-    const anyTrails = showAlpineTrails || showNordicTrails || showTouringTrails;
+    const anyTrails = showDownhill || showNordic || showHeliCat;
 
-    // Build conditions for each active trail type
+    // Build conditions for each active category
     const allowedConditions: any[] = [];
 
-    if (showAlpineTrails) {
+    if (showDownhill) {
       allowedConditions.push([
         'all',
         ['!=', ['get', 'piste:type'], 'nordic'],
@@ -2779,7 +2777,7 @@ export default function App() {
       ]);
     }
 
-    if (showNordicTrails) {
+    if (showNordic) {
       allowedConditions.push([
         'all',
         ['==', ['get', 'piste:type'], 'nordic'],
@@ -2787,7 +2785,7 @@ export default function App() {
       ]);
     }
 
-    if (showTouringTrails) {
+    if (showHeliCat) {
       allowedConditions.push([
         'any',
         ['==', ['coalesce', ['get', 'grooming'], ''], 'backcountry'],
@@ -2830,7 +2828,12 @@ export default function App() {
       map.setLayoutProperty('live-pistes-labels', 'visibility', anyTrails ? 'visible' : 'none');
       if (anyTrails) map.setFilter('live-pistes-labels', labelFilter);
     }
-  }, [showAlpineTrails, showNordicTrails, showTouringTrails, mapLoaded]);
+
+    // Aerialway Lifts are tied directly to Downhill ski infrastructure
+    if (map.getLayer('live-pistes-lifts')) {
+      map.setLayoutProperty('live-pistes-lifts', 'visibility', showDownhill ? 'visible' : 'none');
+    }
+  }, [showDownhill, showNordic, showHeliCat, mapLoaded]);
 
   /* =========================================================================
      MAP POINTS GPU FILTERING (Keeps map markers strictly in sync with filters)
@@ -3059,40 +3062,7 @@ export default function App() {
     };
   }, [attributionOpen]);
 
-  /* =========================================================================
-     AERIALWAYS & LIFTS VISIBILITY TOGGLE
-     ========================================================================= */
 
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-    if (map.getLayer('live-pistes-lifts')) {
-      map.setLayoutProperty('live-pistes-lifts', 'visibility', showLifts ? 'visible' : 'none');
-    }
-  }, [showLifts, mapLoaded]);
-
-  /* =========================================================================
-     RESORT PINS & LABELS VISIBILITY TOGGLE
-     ========================================================================= */
-
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-    const markerLayers = [
-      'resorts-outer-ring',
-      'resorts-inner-dot',
-      'resorts-labels',
-      'global-clusters',
-      'global-cluster-count',
-      'global-unclustered-point',
-      'global-unclustered-label',
-    ];
-    markerLayers.forEach((id) => {
-      if (map.getLayer(id)) {
-        map.setLayoutProperty(id, 'visibility', showResortMarkers ? 'visible' : 'none');
-      }
-    });
-  }, [showResortMarkers, mapLoaded]);
 
   /* =========================================================================
      3D TERRAIN ELEVATION MESH TOGGLE
@@ -3979,7 +3949,7 @@ export default function App() {
                       ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] font-bold shadow-xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
                   }`}
-                  title="Toggle Downhill Ski Areas"
+                  title="Toggle Downhill Ski Areas, Trails & Lifts"
                 >
                   <span>⛷️ Downhill ({categoryFilterCounts.downhill.toLocaleString()})</span>
                 </button>
@@ -3990,7 +3960,7 @@ export default function App() {
                       ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] font-bold shadow-xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
                   }`}
-                  title="Toggle Nordic / Cross-Country Ski Centers"
+                  title="Toggle Nordic Centers & XC Trails"
                 >
                   <span>🎿 Nordic ({categoryFilterCounts.nordic.toLocaleString()})</span>
                 </button>
@@ -4001,7 +3971,7 @@ export default function App() {
                       ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] font-bold shadow-xs'
                       : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-60'
                   }`}
-                  title="Toggle Guided Snowcat & Heli Ski Operations"
+                  title="Toggle Guided Heli/Cat Operations & Backcountry Routes"
                 >
                   <span>🚁 Heli/Cat ({categoryFilterCounts.heli_cat.toLocaleString()})</span>
                 </button>
@@ -4277,7 +4247,7 @@ export default function App() {
           selectedResort ? 'right-88 md:right-100' : 'right-4'
         } z-20 flex items-center gap-2 transition-all duration-300`}
       >
-        {/* Basemap & Layers Dropdown Anchor */}
+        {/* Basemap Styles & Earth Projection Dropdown Anchor */}
         <div className="relative">
           <button
             onClick={() => setMapMenuOpen(!mapMenuOpen)}
@@ -4286,10 +4256,10 @@ export default function App() {
                 ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30 font-semibold'
                 : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
             }`}
-            title="Basemap Styles & Layer Overlays"
+            title="Basemap Styles & Earth Projection"
           >
             <Layers className="w-3.5 h-3.5 text-[#2E5A44]" />
-            <span className="font-mono text-[11px] font-semibold">Basemap & Layers</span>
+            <span className="font-mono text-[11px] font-semibold">Basemap</span>
           </button>
 
           {mapMenuOpen && (
@@ -4366,197 +4336,41 @@ export default function App() {
                   <span>Cartographic Base</span>
                   <span className="text-[9px] text-[#5C5852] font-normal">Select style</span>
                 </div>
-              <div className="space-y-1">
-                {[
-                  { id: 'satellite', label: 'Satellite 3D', desc: 'High-resolution aerial satellite imagery' },
-                  { id: 'osm', label: 'OpenStreetMap', desc: 'Detailed vector roads, towns & trails' },
-                  { id: 'topo', label: 'Alpine Topo', desc: 'Painted relief zooming to detailed topo contours' },
-                ].map((item) => {
-                  const isSelected = basemapMode === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setBasemapMode(item.id as BasemapMode)}
-                      className={`w-full text-left p-2 rounded-[2px] border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30'
-                          : 'bg-[#F7F4ED] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-[#1C1B18]">{item.label}</span>
-                        {isSelected && (
-                          <span className="text-[8.5px] font-mono uppercase font-bold px-1.5 py-0.2 rounded-[2px] bg-[#2E5A44] text-[#FAF8F3]">
-                            Active
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[9.5px] text-[#5C5852] mt-0.5 leading-tight">
-                        {item.desc}
-                      </div>
-                    </button>
-                  );
-                })}
+                <div className="space-y-1">
+                  {[
+                    { id: 'satellite', label: 'Satellite 3D', desc: 'High-resolution aerial satellite imagery' },
+                    { id: 'osm', label: 'OpenStreetMap', desc: 'Detailed vector roads, towns & trails' },
+                    { id: 'topo', label: 'Alpine Topo', desc: 'Painted relief zooming to detailed topo contours' },
+                  ].map((item) => {
+                    const isSelected = basemapMode === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setBasemapMode(item.id as BasemapMode)}
+                        className={`w-full text-left p-2 rounded-[2px] border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#2E5A44] ring-1 ring-[#2E5A44]/30'
+                            : 'bg-[#F7F4ED] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-[#1C1B18]">{item.label}</span>
+                          {isSelected && (
+                            <span className="text-[8.5px] font-mono uppercase font-bold px-1.5 py-0.2 rounded-[2px] bg-[#2E5A44] text-[#FAF8F3]">
+                              Active
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[9.5px] text-[#5C5852] mt-0.5 leading-tight">
+                          {item.desc}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-
-            {/* MAP OVERLAYS & FEATURE TOGGLES */}
-            <div className="pt-2 border-t border-[#D6D0C2]">
-              <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5 flex items-center justify-between">
-                <span>Map Overlays</span>
-                <span className="text-[9px] text-[#5C5852] font-normal">Toggle visibility</span>
-              </div>
-              <div className="space-y-1">
-                {/* 1. Alpine Ski Trails */}
-                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
-                  <div className="pr-2">
-                    <div className="text-[11px] font-bold text-[#1C1B18]">Alpine Downhill Trails</div>
-                    <div className="text-[9px] text-[#5C5852] leading-tight">
-                      Colored downhill piste runs &amp; difficulty grades
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span className={`text-[8.5px] font-mono font-bold ${showAlpineTrails ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
-                      {showAlpineTrails ? 'ON' : 'OFF'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={showAlpineTrails}
-                      onChange={(e) => setShowAlpineTrails(e.target.checked)}
-                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
-                    />
-                  </div>
-                </label>
-
-                {/* 1b. Touring / Backcountry Trails */}
-                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
-                  <div className="pr-2">
-                    <div className="text-[11px] font-bold text-[#1C1B18]">Touring / Backcountry</div>
-                    <div className="text-[9px] text-[#5C5852] leading-tight">
-                      Backcountry ski tours, skin tracks &amp; freeride routes
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span className={`text-[8.5px] font-mono font-bold ${showTouringTrails ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
-                      {showTouringTrails ? 'ON' : 'OFF'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={showTouringTrails}
-                      onChange={(e) => setShowTouringTrails(e.target.checked)}
-                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
-                    />
-                  </div>
-                </label>
-
-                {/* 1c. Nordic / XC Trails */}
-                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
-                  <div className="pr-2">
-                    <div className="text-[11px] font-bold text-[#1C1B18]">Nordic / XC Trails</div>
-                    <div className="text-[9px] text-[#5C5852] leading-tight">
-                      Groomed cross-country &amp; skate ski tracks
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span className={`text-[8.5px] font-mono font-bold ${showNordicTrails ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
-                      {showNordicTrails ? 'ON' : 'OFF'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={showNordicTrails}
-                      onChange={(e) => setShowNordicTrails(e.target.checked)}
-                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
-                    />
-                  </div>
-                </label>
-
-                {/* 2. Ski Lifts */}
-                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
-                  <div className="pr-2">
-                    <div className="text-[11px] font-bold text-[#1C1B18]">Aerialway Lifts</div>
-                    <div className="text-[9px] text-[#5C5852] leading-tight">
-                      Trams, chairlifts, gondolas & tows
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span className={`text-[8.5px] font-mono font-bold ${showLifts ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
-                      {showLifts ? 'ON' : 'OFF'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={showLifts}
-                      onChange={(e) => setShowLifts(e.target.checked)}
-                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
-                    />
-                  </div>
-                </label>
-
-                {/* 3. Resort Markers & Labels */}
-                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
-                  <div className="pr-2">
-                    <div className="text-[11px] font-bold text-[#1C1B18]">Resort Pins & Labels</div>
-                    <div className="text-[9px] text-[#5C5852] leading-tight">
-                      Worldwide ski areas, cluster pins & titles
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span className={`text-[8.5px] font-mono font-bold ${showResortMarkers ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
-                      {showResortMarkers ? 'ON' : 'OFF'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={showResortMarkers}
-                      onChange={(e) => setShowResortMarkers(e.target.checked)}
-                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
-                    />
-                  </div>
-                </label>
-
-                {/* 4. 3D Terrain Elevation */}
-                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
-                  <div className="pr-2">
-                    <div className="text-[11px] font-bold text-[#1C1B18]">3D Topographic Terrain</div>
-                    <div className="text-[9px] text-[#5C5852] leading-tight">
-                      DEM elevation mesh (0.7x vertical relief)
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span className={`text-[8.5px] font-mono font-bold ${show3DTerrain ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
-                      {show3DTerrain ? 'ON' : 'OFF'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={show3DTerrain}
-                      onChange={(e) => setShow3DTerrain(e.target.checked)}
-                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
-                    />
-                  </div>
-                </label>
-
-                {/* 5. Hillshade Relief */}
-                <label className="flex items-start justify-between p-2 rounded-[2px] bg-[#F7F4ED] border border-[#D6D0C2] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none">
-                  <div className="pr-2">
-                    <div className="text-[11px] font-bold text-[#1C1B18]">Hillshade Relief</div>
-                    <div className="text-[9px] text-[#5C5852] leading-tight">
-                      Sun-angled slope shadows (Topo & OSM)
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span className={`text-[8.5px] font-mono font-bold ${showHillshade ? 'text-[#2E5A44]' : 'text-[#8A847C]'}`}>
-                      {showHillshade ? 'ON' : 'OFF'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={showHillshade}
-                      onChange={(e) => setShowHillshade(e.target.checked)}
-                      className="accent-[#2E5A44] w-3.5 h-3.5 cursor-pointer rounded-[2px]"
-                    />
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-        )}
+          )}
         </div>
       </div>
 

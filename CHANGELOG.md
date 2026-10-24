@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: unify category buttons to toggle all associated points, trails, and infrastructure; remove redundant map overlays menu`
+- **Unified Category-Level Toggle Authority**:
+  - `⛷️ Downhill`: Directly toggles all downhill curated resorts, global points, clusters, alpine pistes (green, blue, black, double-black runs), trail labels, and aerialway ski lifts.
+  - `🎿 Nordic`: Directly toggles all Nordic cross-country centers, global Nordic points, clusters, and groomed cross-country tracks (`piste:type == 'nordic'`).
+  - `🚁 Heli/Cat`: Directly toggles all guided heli-ski and snowcat operations, global backcountry areas, skin tracks, and freeride routes (`grooming == 'backcountry'` / `difficulty == 'freeride'`).
+- **Eliminated Redundant "Map Overlays" Popover Section**:
+  - Removed the redundant 7-toggle "Map Overlays" checkbox section from the top-right Cartographic Controls panel.
+  - Previously, trail and lift layers required secondary checkboxes in a separate menu, disconnecting them from the primary category filters in the left directory.
+  - Streamlined the top-right control into a clean **Basemap** popover dedicated exclusively to Earth Projection (3D Globe vs Flat Mercator) and Cartographic Base (Satellite 3D, OpenStreetMap, Alpine Topo).
+- **Clean Architecture & State Hygiene**:
+  - Removed deprecated separate states (`showAlpineTrails`, `showNordicTrails`, `showTouringTrails`, `showLifts`, `showResortMarkers`) and their redundant listeners, consolidating layer filters into a single reactive pipeline.
+
 ### `fix: increase default resort selection zoom by one full click and unify north arrow color with +/- controls`
 - **One Full Click Closer on Resort Selection**:
   - Increased the base zoom constant from `12.6` to `13.6` in `handleSelectResort()` (e.g. Alta: ~11.5 → ~12.5, Snowbird: ~11.4 → ~12.4, Jackson: ~11.2 → ~12.2, Vail: ~10.9 → ~12.0, Zermatt: ~10.2 → ~11.2, regional hills: ~13.3 → ~14.3).
