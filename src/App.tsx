@@ -2717,39 +2717,49 @@ export default function App() {
         data: { type: 'FeatureCollection', features: curatedFeatures as any },
       });
 
-      // Curated Outer Ring (Hidden when zoomed out so clusters cleanly represent regions)
+      // Curated Outer Ring (Visible across all zoom levels with smooth zoom interpolation)
       map.addLayer({
         id: 'resorts-outer-ring',
         type: 'circle',
         source: 'resorts-source',
-        minzoom: 8.0,
         paint: {
-          'circle-radius': 9,
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            2, 6,
+            6, 8,
+            10, 11,
+          ],
           'circle-color': ['get', 'pass_color'],
-          'circle-opacity': 0.22,
+          'circle-opacity': 0.25,
           'circle-stroke-width': 1.5,
           'circle-stroke-color': ['get', 'pass_color'],
         },
       });
 
-      // Curated Inner Ring
+      // Curated Inner Ring (Visible across all zoom levels with crisp halo)
       map.addLayer({
         id: 'resorts-inner-dot',
         type: 'circle',
         source: 'resorts-source',
-        minzoom: 8.0,
         paint: {
-          'circle-radius': 3.5,
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            2, 3,
+            6, 4,
+            10, 5,
+          ],
           'circle-color': ['get', 'pass_color'],
+          'circle-stroke-width': 1.2,
+          'circle-stroke-color': '#FAF8F3',
         },
       });
 
-      // Curated Single Label (Hidden until zoomed in to avoid map clutter & cluster collisions)
+      // Curated Single Label (Visible from zoom 6.0+)
       map.addLayer({
         id: 'resorts-labels',
         type: 'symbol',
         source: 'resorts-source',
-        minzoom: 8.5,
+        minzoom: 6.0,
         layout: {
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
@@ -2827,18 +2837,18 @@ export default function App() {
         },
       });
 
-      // Global Ski Areas Outer Concentric Ring (Matches Curated styling; Green for Nordic, Ochre for Heli, Blue for Downhill)
+      // Global Ski Areas Outer Concentric Ring
       map.addLayer({
         id: 'global-unclustered-outer-ring',
         type: 'circle',
         source: 'global-ski-areas-source',
         filter: ['!', ['has', 'point_count']],
-        minzoom: 8.5,
+        minzoom: 6.0,
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
-            8.5, 7,
-            12, 10,
+            6, 7,
+            10, 10,
             15, 14
           ],
           'circle-color': [
@@ -2846,7 +2856,7 @@ export default function App() {
             ['get', 'category'],
             'nordic', '#2E5A44',
             'heli_cat', '#C25916',
-            '#3B627E',
+            ['coalesce', ['get', 'pass_color'], '#3B627E'],
           ],
           'circle-opacity': 0.22,
           'circle-stroke-width': 1.5,
@@ -2855,7 +2865,7 @@ export default function App() {
             ['get', 'category'],
             'nordic', '#2E5A44',
             'heli_cat', '#C25916',
-            '#3B627E',
+            ['coalesce', ['get', 'pass_color'], '#3B627E'],
           ],
         },
       });
@@ -2872,15 +2882,16 @@ export default function App() {
             ['get', 'category'],
             'nordic', '#2E5A44',
             'heli_cat', '#C25916',
-            '#3B627E',
+            ['coalesce', ['get', 'pass_color'], '#3B627E'],
           ],
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
-            8.5, 3.5,
-            12, 4.5,
-            15, 6
+            2, 3,
+            6, 4,
+            10, 5,
+            15, 6.5
           ],
-          'circle-stroke-width': 1.5,
+          'circle-stroke-width': 1.2,
           'circle-stroke-color': '#FAF8F3',
         },
       });
@@ -2891,7 +2902,7 @@ export default function App() {
         type: 'symbol',
         source: 'global-ski-areas-source',
         filter: ['!', ['has', 'point_count']],
-        minzoom: 8.5,
+        minzoom: 6.5,
         layout: {
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
@@ -3169,6 +3180,11 @@ export default function App() {
         const p = f.properties;
         const cat = p.category || 'downhill';
         if (!allowedCats.has(cat)) return false;
+
+        // Pass Networks filter (matches any active pass network)
+        const passes: PassNetwork[] = p.pass_networks && p.pass_networks.length > 0 ? p.pass_networks : ['Independent'];
+        const passMatch = passes.some((pn) => selectedPasses.includes(pn));
+        if (!passMatch) return false;
 
         if (cat === 'downhill') {
           const vert = p.vertical_ft || p.vertical_drop_ft || 0;
@@ -3729,6 +3745,10 @@ export default function App() {
           if (classified.category === 'downhill') dhTotal++;
           else if (classified.category === 'nordic') nordTotal++;
 
+          const passNets = (p.pass_networks && p.pass_networks.length > 0 ? p.pass_networks : ['Independent']) as PassNetwork[];
+          const primaryPass = passNets[0] || 'Independent';
+          const passColor = PASS_COLORS[primaryPass] || '#8A847C';
+
           features.push({
             type: 'Feature',
             geometry: { type: 'Point', coordinates: pt },
@@ -3751,6 +3771,9 @@ export default function App() {
               website: cleanSite || p.website || '',
               trail_km: p.trail_km || null,
               trail_mi: p.trail_mi || null,
+              pass_networks: passNets,
+              primary_pass: primaryPass,
+              pass_color: passColor,
             },
           });
         }
@@ -4399,9 +4422,18 @@ export default function App() {
                       <button
                         key={pass}
                         onClick={() => {
-                          setSelectedPasses((prev) =>
-                            prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass]
-                          );
+                          setSelectedPasses((prev) => {
+                            // If all passes are active, clicking a single pass solo-selects that pass
+                            if (prev.length === 5) {
+                              return [pass];
+                            }
+                            // If this pass is already the ONLY one selected, clicking it resets back to all 5
+                            if (prev.length === 1 && prev.includes(pass)) {
+                              return ['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'];
+                            }
+                            // Otherwise standard toggle
+                            return prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass];
+                          });
                         }}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
                           active

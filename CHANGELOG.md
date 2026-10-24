@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: filter map dots and clusters reactively by pass network`
+- **Dynamic Map Pass Filtering**:
+  - **What was wrong**: Filtering by pass network only affected the left dock directory; the map itself continued to show all 6,000+ ski areas and clusters from `global-ski-areas-source` because the MapLibre source sync omitted `selectedPasses`. Furthermore, curated flagship dots had `minzoom: 8.0`, rendering them invisible on the globe or continental zooms.
+  - **Reactive Map Sync**: Added `selectedPasses` matching to `globalSrc` in `useEffect`, ensuring all non-selected pass areas, clusters, and dots are dynamically purged from the map when filtering.
+  - **Globe & Continental Dot Visibility**: Removed `minzoom: 8.0` on `resorts-outer-ring` and `resorts-inner-dot` with smooth zoom interpolation from zoom 2+, guaranteeing flagship dots are immediately visible across all zoom levels.
+  - **Pass-Accurate Dot Palette**: Colored unclustered ski area dots with their primary pass color (`#B84A39` for Ikon, `#2E5A44` for Epic, `#C2842F` for Indy, `#3B627E` for Mountain Collective, `#8A847C` for Independent).
+- **Frictionless Solo-Select Pass Interaction**:
+  - Clicking any pass button (e.g. "Ikon") when all passes are active now solo-selects that pass immediately with one click.
+  - Clicking the active solo pass toggles back to all 5 passes.
+- **Enriched Global Pass Dataset**:
+  - Enriched 195 ski areas in `public/data/global_ski_areas.json` with verified Ikon, Epic, and Indy pass affiliations (Winter Park, Copper Mountain, Eldora, Beaver Creek, Keystone, Crested Butte, Heavenly, Northstar, Kirkwood, Jay Peak, Tamarack, Brundage, etc.).
+
+---
+
 ### `feat: reinstate pass network filters and render pass badges on cards and dossier`
 - **Reinstated Pass Network Filtering UI**:
   - **What was missing**: While pass network state (`selectedPasses`), filter counters, and MapLibre source synchronization logic existed in `src/App.tsx`, the user-facing filter controls had been omitted from the Framed Filter Box during previous filter UI refactors.
