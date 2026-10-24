@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: clarify Big Bear Mountain Resort structure and resolve California ski area websites`
+- **Domain Clarification for Big Bear Mountain Resort**:
+  - In Southern California's San Bernardino Mountains, **Big Bear Mountain Resort** is a single unified Alterra / Ikon Pass resort brand consisting of two distinct ski mountains 2 miles apart: **Snow Summit** (cruisers, family skiing, 15 lifts, 240 ac) and **Bear Mountain** (all-mountain freestyle terrain parks, 12 lifts, 198 ac), plus nearby **Snow Valley Mountain Resort** (acquired in 2023).
+  - Previously, `Bear Mountain` was missing from `global_ski_areas.json`, and `Snow Summit` had no mention of Big Bear in its title, creating confusion over whether Big Bear existed or whether Snow Summit was an independent area.
+- **Added Big Bear Mountain Resort to Curated Seed Atlas**:
+  - Added `Big Bear Mountain Resort` to `GLOBAL_SKI_ATLAS` in [`src/App.tsx#L757-L777`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L757-L777) (27 lifts, 63 runs, 1,844' vert, 438 ac, Ikon pass, 195° fall-line bearing).
+- **Added Bear Mountain to Global Database & Updated Mountain Names**:
+  - Added `Bear Mountain (Big Bear)` feature (`id: '78bac1237b378a398d712ba2cc962ddf9d1c6479'`) to `public/data/global_ski_areas.json` with 12 lifts, 27 pistes, and 1,665' vertical, immediately linking with its 39 vector pistes in `trails.db`.
+  - Renamed `Snow Summit` to `Snow Summit (Big Bear)` and `Snow Valley` to `Snow Valley (Big Bear)` with `Ikon` pass affiliations and unified `https://www.bigbearmountainresort.com` official websites.
+- **Quality Checked California Ski Area Websites**:
+  - Updated Badger Pass Ski Area in Yosemite to official modern NPS site `https://www.travelyosemite.com/winter/badger-pass-ski-area/`.
+  - Populated Alta Sierra Ski Resort (`https://www.altasierra.com/`).
+  - Added summary keyword matching to the search filter so queries for "Big Bear" match all related peaks.
+
 ### `fix: support mac trackpad pinch-zoom and rotation in Brave and Chromium browsers`
 - **Root Cause in Chromium / Brave**:
   - WebKit's `gesturestart` and `gesturechange` APIs are exclusive to Safari and are not implemented by Chromium (Brave / Chrome on macOS).

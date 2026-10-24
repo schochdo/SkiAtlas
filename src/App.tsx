@@ -329,7 +329,18 @@ export function getPassNetworksForSkiArea(
   if (lowerName.includes('vail') || lowerName.includes('breckenridge') || lowerName.includes('whistler') || lowerName.includes('park city') || lowerName.includes('keystone')) {
     return ['Epic'];
   }
-  if (lowerName.includes('jackson hole') || lowerName.includes('palisades') || lowerName.includes('mammoth') || lowerName.includes('alta') || lowerName.includes('snowbird') || lowerName.includes('big sky')) {
+  if (
+    lowerName.includes('jackson hole') ||
+    lowerName.includes('palisades') ||
+    lowerName.includes('mammoth') ||
+    lowerName.includes('alta') ||
+    lowerName.includes('snowbird') ||
+    lowerName.includes('big sky') ||
+    lowerName.includes('big bear') ||
+    lowerName.includes('snow summit') ||
+    lowerName.includes('bear mountain') ||
+    lowerName.includes('snow valley')
+  ) {
     return ['Ikon'];
   }
   return ['Independent'];
@@ -742,6 +753,26 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     archetype: 'Steep Alpine',
     summary: 'Historic host of the 1960 Winter Olympics and crucible of extreme skiing, famous for KT-22, the Palisades cliffs, and sun-drenched Sierra spring corn.',
     website: 'https://www.palisadestahoe.com',
+  },
+  {
+    id: 'big-bear',
+    lift_count: 27,
+    run_count: 63,
+    name: 'Big Bear Mountain Resort',
+    region: 'California',
+    country: 'USA',
+    lat: 34.2276,
+    lng: -116.8905,
+    default_bearing: 195,
+    base_elev_ft: 6961,
+    summit_elev_ft: 8805,
+    vertical_drop_ft: 1844,
+    skiable_acres: 438,
+    pass_networks: ['Ikon'],
+    infrastructure: '27 Lifts · Snow Summit & Bear Mountain Twin Peaks',
+    archetype: 'Flagship Mega-Resort',
+    summary: 'Southern California\'s premier alpine destination in the San Bernardino Mountains, encompassing twin peaks: Snow Summit for wide cruisers and night skiing, and Bear Mountain for legendary all-mountain freestyle terrain parks.',
+    website: 'https://www.bigbearmountainresort.com',
   },
   {
     id: 'telluride',
@@ -2017,7 +2048,8 @@ export default function App() {
         const matchesName = r.name.toLowerCase().includes(q);
         const matchesRegion = (r.region || '').toLowerCase().includes(q);
         const matchesCountry = (r.country || '').toLowerCase().includes(q);
-        if (!matchesName && !matchesRegion && !matchesCountry) return false;
+        const matchesSummary = (r.summary || '').toLowerCase().includes(q);
+        if (!matchesName && !matchesRegion && !matchesCountry && !matchesSummary) return false;
       }
 
       return true;
