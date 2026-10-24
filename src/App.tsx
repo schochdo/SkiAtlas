@@ -4011,17 +4011,6 @@ export default function App() {
               GLOBE
             </span>
           </div>
-
-          {selectedResort && (
-            <div className="hidden sm:flex items-center gap-2 text-xs text-[#5C5852] min-w-0 truncate pl-3 border-l border-[#D6D0C2]">
-              <span className="font-bold text-[14.5px] text-[#1C1B18] tracking-tight truncate">
-                {selectedResort.name}
-              </span>
-              <span className="text-xs text-[#736E67] shrink-0 font-medium">
-                ({selectedResort.region ? `${selectedResort.region}, ` : ''}{selectedResort.country})
-              </span>
-            </div>
-          )}
         </div>
 
         <div className="flex items-center gap-2 text-xs font-medium">

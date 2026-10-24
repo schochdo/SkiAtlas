@@ -6,6 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `refactor: remove redundant selected resort name from top navigation bar`
+- **Eliminated Header Redundancy**:
+  - Removed `{selectedResort.name} ({region}, {country})` breadcrumb from the top navigation bar.
+  - The resort name and location are already prominently featured in the sliding detail dossier panel upon selection; displaying it in the masthead created visual clutter and competed with the `SNOW · GLOBE` wordmark.
+  - Keeps the top masthead clean and balanced across all viewports.
+
 ### `feat: add 3D terrain elevation relief multiplier slider to cartographic controls menu`
 - **Dynamic DEM Vertical Relief Exaggeration**:
   - Added an interactive **Terrain Relief Multiplier** slider to the top-right **Cartographic Controls** popover (`Basemap` / layers button).
