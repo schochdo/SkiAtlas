@@ -5255,13 +5255,6 @@ export default function App() {
 
           {/* Dossier Body */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#F7F4ED]">
-            {/* Mountain Overview / Summary */}
-            {selectedResort.summary && (
-              <div className="bg-[#FAF8F3] p-3.5 rounded-md border border-[#D6D0C2] text-xs text-[#3D3A34] leading-relaxed font-normal">
-                <p>{selectedResort.summary}</p>
-              </div>
-            )}
-
             {/* Metric Tables */}
             {(() => {
               const stats = getResortStats(selectedResort);

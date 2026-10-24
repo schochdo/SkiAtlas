@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `refactor: purge marketing summary blurbs from mountain dossier`
+- **Removed AI Summary Blurbs**:
+  - **What was wrong**: The top summary card in the mountain dossier displayed generic AI-generated marketing prose ("crown jewel", "undisputed heavyweight", "pulsating nightlife") that clashed with the objective cartographic design.
+  - **Direct Telemetry Layout**: Purged the narrative summary box from the dossier in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx). The dossier now leads directly into verified infrastructure metrics (trails, lifts, vertical drop, summit/base elevation, skiable acreage), official links, verified pass badges, and elevation-aware live weather telemetry.
+
+---
+
 ### `fix: disambiguate Indy Pass vs Unaffiliated and audit global pass rosters`
 - **Disambiguated "Indy" vs "Independent" Terminology**:
   - **What was confusing**: Having "Indy" and "Independent" side by side confused users between the multi-resort commercial pass product (Indy Pass®) and standalone mountains not affiliated with any pass network.
