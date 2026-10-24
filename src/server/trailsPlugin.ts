@@ -125,6 +125,26 @@ export function localTrailsPlugin(): Plugin {
             }
           }
 
+          // Strictly filter out non-operating (proposed, planned, abandoned, disused) lifts
+          features = features.filter((f) => {
+            const p = f.properties;
+            if (!p) return true;
+            if (p.kind === 'lift') {
+              if (p.status && p.status !== 'operating') return false;
+              const nameLower = (p.name || '').toLowerCase();
+              if (
+                nameLower.includes('(proposed)') ||
+                nameLower.includes('(planned)') ||
+                nameLower.includes('(abandoned)') ||
+                nameLower.includes('(disused)') ||
+                nameLower.includes('(in project)')
+              ) {
+                return false;
+              }
+            }
+            return true;
+          });
+
           const responseData = {
             type: 'FeatureCollection',
             features,

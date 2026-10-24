@@ -2109,6 +2109,14 @@ export default function App() {
       if (!data.features || !data.features.length || !mapRef.current) return;
 
       for (const f of data.features) {
+        const p = f.properties;
+        if (p?.kind === 'lift') {
+          if (p.status && p.status !== 'operating') continue;
+          const n = (p.name || '').toLowerCase();
+          if (n.includes('proposed') || n.includes('planned') || n.includes('abandoned') || n.includes('disused') || n.includes('in project')) {
+            continue;
+          }
+        }
         liveFeaturesMapRef.current.set(String(f.id || f.properties?.id), f);
       }
 
@@ -2590,7 +2598,15 @@ export default function App() {
         id: 'live-pistes-lifts',
         type: 'line',
         source: 'live-pistes-vector',
-        filter: ['==', ['get', 'kind'], 'lift'],
+        filter: [
+          'all',
+          ['==', ['get', 'kind'], 'lift'],
+          ['==', ['coalesce', ['get', 'status'], 'operating'], 'operating'],
+          ['!', ['in', 'proposed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'planned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'abandoned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'disused', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+        ],
         paint: {
           'line-color': '#B84A39',
           'line-width': 2.5,
@@ -2642,10 +2658,15 @@ export default function App() {
         filter: [
           'all',
           ['==', ['get', 'kind'], 'lift'],
+          ['==', ['coalesce', ['get', 'status'], 'operating'], 'operating'],
           ['has', 'name'],
           ['!=', ['coalesce', ['get', 'name'], ''], ''],
           ['!', ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
           ['!', ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'proposed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'planned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'abandoned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'disused', ['downcase', ['coalesce', ['get', 'name'], '']]]],
         ],
         layout: {
           'visibility': showDownhill ? 'visible' : 'none',

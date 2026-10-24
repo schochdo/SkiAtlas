@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: purge proposed, planned, and abandoned lifts from map and vector trail layers`
+- **Root Cause of Phantom & Master-Plan Lifts**:
+  - OpenSkiMap and OSM vector trail data include proposed, planned, and abandoned aerialways tagged `status: 'proposed' | 'planned' | 'abandoned' | 'disused'`.
+  - Previously, neither `trails.db`, `trailsPlugin.ts`, nor the MapLibre layers (`live-pistes-lifts` and `live-pistes-lifts-labels`) filtered on lift status.
+  - This caused phantom master-plan lifts to render as active chairlifts:
+    - **Ski Cooper**: *"Hoyt's"* (a proposed double chair from Cooper's master plan that was never built) and a duplicate proposed 10th Mountain line.
+    - **Winter Park**: 4 proposed lifts (*"Town Gondola"*, *"Cooper Creek South"*, *"Cooper Surface"*, *"Pony Express [Proposed]"*).
+    - **Tamarack**: 9 proposed lifts (*"Gondola (Proposed)"*, *"Canoe Express (Proposed)"*, *"Overlook Express (Proposed)"*, *"Lift A/D/E/F/G"*).
+    - Across the dataset: 2,323 non-operating lifts (1,042 abandoned, 907 disused, 331 proposed, 13 planned, 30 under construction).
+- **Comprehensive Multi-Tier Lift Operational Filtering**:
+  - **Database Cleanup**: Purged all 2,323 non-operating lifts from `data_pipeline/trails.db` (`DELETE FROM trails WHERE kind = 'lift' AND status != 'operating'`).
+  - **API Middleware Filtering**: Added strict operational check in [`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts), ensuring `/api/trails` drops any non-operating lifts and features containing `(proposed)`, `(planned)`, `(abandoned)`, etc.
+  - **MapLibre GPU Layer Filters**: Updated `live-pistes-lifts` and `live-pistes-lifts-labels` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) with strict status and name guards (`['==', ['coalesce', ['get', 'status'], 'operating'], 'operating']`).
+  - **Static Trail JSON Sanitization**: Scrubbed 166 non-operating lifts across 47 pre-exported files in `public/data/trails/`.
+
+---
+
 ### `feat: elevate top 50 flagship atlas to world-class heavyweight ski titans`
 - **Flagship Alignment to World-Class Scale & Pedigree**:
   - Replaced smaller regional and boutique hills in [`GLOBAL_SKI_ATLAS`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L353) (Monarch, Brundage, Bridger Bowl, Big Bear, Grand Targhee, Silverton, Mt. Baker, Furano, Myoko Kogen) with iconic global titan resorts:
