@@ -1848,7 +1848,6 @@ export default function App() {
   const mapRef = useRef<MapLibreMap | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const [is3D, setIs3D] = useState(false);
   const [earthProjection, setEarthProjection] = useState<EarthProjectionMode>('globe');
   const [basemapMode, setBasemapMode] = useState<BasemapMode>('satellite');
   const [unitsMetric, setUnitsMetric] = useState(false);
@@ -1900,6 +1899,8 @@ export default function App() {
   // Navigation Instrument (Compass/Gyro HUD)
   const [mapBearing, setMapBearing] = useState(0);
   const [mapPitch, setMapPitch] = useState(0);
+  // Derived 3D perspective state based on camera tilt angle (> 3° is oblique 3D perspective)
+  const is3D = mapPitch > 3;
   const [mapScale, setMapScale] = useState({ distStr: '500 km', barWidth: 80 });
   const isDraggingCompassRef = useRef(false);
   const didDragCompassRef = useRef(false);
@@ -2340,7 +2341,6 @@ export default function App() {
         if (curPitch > maxAllowedPitch) {
           map.setPitch(maxAllowedPitch);
           setMapPitch(Math.round(maxAllowedPitch));
-          setIs3D(maxAllowedPitch > 10);
         }
       }
     };
@@ -2374,6 +2374,8 @@ export default function App() {
     const handleMapMoveEnd = () => {
       updateBounds();
       updateScale();
+      setMapBearing(Math.round(map.getBearing()));
+      setMapPitch(Math.round(map.getPitch()));
       const z = map.getZoom();
       // Ensure camera does not dip below terrain surface when pitched steeply at high zoom
       if (z > 16.0 && map.getPitch() > 65) {
@@ -3019,7 +3021,6 @@ export default function App() {
         if (map.getZoom() < 5 && map.getPitch() > 0) {
           safeEaseTo(map, { pitch: 0, duration: 400 });
           setMapPitch(0);
-          setIs3D(false);
         }
       } else {
         map.setProjection({ type: 'mercator' });
@@ -3042,7 +3043,7 @@ export default function App() {
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     mapRef.current.setRenderWorldCopies(false);
-  }, [is3D, mapPitch, earthProjection, mapLoaded]);
+  }, [mapPitch, earthProjection, mapLoaded]);
 
   /* =========================================================================
      OUTSIDE-CLICK DISMISSAL FOR BASEMAP & MAP KEY FLOATING PANELS
@@ -3268,7 +3269,6 @@ export default function App() {
         const nextPitch = Math.max(0, Math.min(85, curPitch + pitchDelta * pitchSpeed * dt));
         map.setPitch(nextPitch);
         setMapPitch(Math.round(nextPitch));
-        setIs3D(nextPitch > 10);
       }
 
       if (rotateBearing !== 0) {
@@ -3701,7 +3701,6 @@ export default function App() {
       const newPitch = Math.max(0, Math.min(maxAllowedPitch, startPitch - dy * 0.5));
       mapRef.current.setPitch(newPitch);
       setMapPitch(Math.round(newPitch));
-      setIs3D(newPitch > 10);
     };
 
     const onMouseUp = () => {
@@ -3731,7 +3730,6 @@ export default function App() {
         duration: 500,
       });
       setMapPitch(0);
-      setIs3D(false);
       mapRef.current.setRenderWorldCopies(false);
     } else {
       safeEaseTo(mapRef.current, {
@@ -3739,7 +3737,6 @@ export default function App() {
         duration: 600,
       });
       setMapPitch(62);
-      setIs3D(true);
       mapRef.current.setRenderWorldCopies(false);
     }
   }, []);
@@ -3792,6 +3789,8 @@ export default function App() {
       duration: flightDuration,
       essential: true,
     });
+    setMapPitch(pitch);
+    setMapBearing(bearing);
 
     // Stream trails for this mountain AND adjacent mountains in bounding box
     if (fetchOverpassBboxRef.current) {
@@ -3831,6 +3830,8 @@ export default function App() {
       duration: 1800,
       essential: true,
     });
+    setMapPitch(38);
+    setMapBearing(0);
 
     if (fetchOverpassBboxRef.current) {
       fetchOverpassBboxRef.current(
@@ -4381,7 +4382,6 @@ export default function App() {
                       if (mapRef.current && mapRef.current.getZoom() < 5) {
                         safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
                         setMapPitch(0);
-                        setIs3D(false);
                       }
                     }}
                     className={`p-2 rounded-[2px] border text-left transition-all cursor-pointer ${
@@ -4622,7 +4622,6 @@ export default function App() {
               safeEaseTo(mapRef.current, { bearing: 0, pitch: 0, duration: 400 });
               setMapBearing(0);
               setMapPitch(0);
-              setIs3D(false);
               mapRef.current.setRenderWorldCopies(false);
             }}
             className={`relative z-10 w-[42px] h-[42px] rounded-full bg-[#FAF8F3] border border-[#2C2A27]/40 shadow-inner flex items-center justify-center transition-all ${

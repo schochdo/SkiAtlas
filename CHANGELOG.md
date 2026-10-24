@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: derive gyroscope 3D perspective state from camera pitch angle to eliminate stuck 2D indicator`
+- **Root Cause of Stuck '2D' Gyroscope**:
+  - `is3D` was previously managed as an independent `useState(false)`. When zooming into a resort via `safeFlyTo` (which tilts the camera to `pitch: 38`), `map.on('pitch')` updated `mapPitch`, but `setIs3D` was never called during programmatic camera flight.
+  - The gyroscope HUD evaluated `{is3D ? `${mapPitch}°` : '2D'}`, displaying `2D` and dimming the pitch arc meter despite the camera already resting in 38° oblique 3D terrain perspective.
+- **Derived Reactive Perspective State**:
+  - Replaced the disconnected boolean with pure derived state (`const is3D = mapPitch > 3;`), ensuring the gyroscope is mathematically guaranteed to reflect the camera's actual tilt angle in real time.
+  - Removed all error-prone `setIs3D` call sites across the application.
+- **Synchronous Orientation on Flight & MoveEnd**:
+  - Updated `handleSelectResort()` and `handleSelectGlobalResort()` to synchronously dispatch `setMapPitch(pitch)` and `setMapBearing(bearing)` at flight initiation.
+  - Added pitch and bearing synchronization to `handleMapMoveEnd()`.
+
 ### `fix: adapt filters for nordic cross-country centers using trail network length (km) and eliminate false acreage exclusions`
 - **Root Cause of Nordic Exclusion**:
   - The default alpine filters (`minAcreage = 100` ac, `minVertical = 500` ft) were applied uniformly to all categories. Because Nordic cross-country trail networks correctly have 0 downhill skiable acres (and mostly rolling elevation below 500 ft), 100% of the 897 worldwide Nordic centers were falsely eliminated on load.
