@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: add native trackpad twist-to-rotate, shift-scroll tilt, and tablet gesture controls`
+- **Mac Trackpad Twist to Rotate & Pinch Zoom**:
+  - Attached WebKit `gesturestart`, `gesturechange`, and `gestureend` listeners to the map container with `{ passive: false }`.
+  - Calling `e.preventDefault()` prevents Safari from zooming or rotating the HTML page, routing two-finger trackpad twists directly into `map.setBearing(startBearing + e.rotation)`.
+  - Simultaneously supports continuous trackpad pinch-to-zoom via `Math.log2(e.scale)`.
+- **Shift + Two-Finger Scroll 3D Tilt**:
+  - Intercepts `wheel` events when `e.shiftKey` is held, smoothly tilting the 3D camera pitch (`setPitch`) without zooming.
+- **Tablet & Touchscreen Gestures**:
+  - Enabled native two-finger rotation (`map.touchZoomRotate.enableRotation()`), center-locked pinch zoom, and two-finger vertical drag tilt (`map.touchPitch.enable()`).
+- **Updated Cartographic Key Guide**:
+  - Updated the modal guide to display concise instructions for Trackpad, Tablet, and Keyboard navigation.
+
 ### `feat: add cable-aligned ski lift labels with editorial vermilion styling`
 - **Cable-Aligned Aerialway Labels**:
   - Added dedicated vector symbol layer `live-pistes-lifts-labels` in [`src/App.tsx#L2529-L2571`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L2529-L2571) displaying official lift names (*"Aerial Tram"*, *"Sublette Quad Chair"*, etc.) centered directly along the aerialway cable lines (`symbol-placement: 'line-center'`).

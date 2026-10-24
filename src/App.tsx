@@ -2322,6 +2322,69 @@ export default function App() {
       map.dragRotate.enable({ around: 'center', movement: 'linear' });
     } catch (_) {}
 
+    // Tablet & Touchscreen Controls (two-finger pitch tilt, rotate & pinch-zoom)
+    try {
+      map.touchZoomRotate.enable({ around: 'center' });
+      map.touchZoomRotate.enableRotation();
+      map.touchPitch.enable();
+    } catch (_) {}
+
+    // Mac Trackpad Gestures (Twist to rotate, Pinch to zoom, Shift + Scroll to tilt)
+    const container = map.getContainer();
+    let gestureStartBearing = 0;
+    let gestureStartZoom = 0;
+    let isGestureActive = false;
+
+    const onGestureStart = (e: any) => {
+      e.preventDefault();
+      gestureStartBearing = map.getBearing();
+      gestureStartZoom = map.getZoom();
+      isGestureActive = true;
+    };
+
+    const onGestureChange = (e: any) => {
+      e.preventDefault();
+      if (!isGestureActive) return;
+
+      // 1. Twist to rotate heading (in degrees)
+      if (typeof e.rotation === 'number') {
+        const nextBearing = Math.round(gestureStartBearing + e.rotation);
+        map.setBearing(nextBearing);
+        setMapBearing(nextBearing);
+      }
+
+      // 2. Continuous pinch to zoom
+      if (typeof e.scale === 'number' && e.scale > 0) {
+        const nextZoom = gestureStartZoom + Math.log2(e.scale);
+        const clampedZoom = Math.max(1.2, Math.min(16.5, nextZoom));
+        map.setZoom(clampedZoom);
+      }
+    };
+
+    const onGestureEnd = (e: any) => {
+      e.preventDefault();
+      isGestureActive = false;
+      setMapBearing(Math.round(map.getBearing()));
+    };
+
+    // Shift + Two-Finger Scroll: Tilt 3D Camera Pitch directly
+    const onWheel = (e: WheelEvent) => {
+      if (e.shiftKey) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const curPitch = map.getPitch();
+        const pitchDelta = e.deltaY * 0.15;
+        const newPitch = Math.max(0, Math.min(85, Math.round(curPitch - pitchDelta)));
+        map.setPitch(newPitch);
+        setMapPitch(newPitch);
+      }
+    };
+
+    container.addEventListener('gesturestart', onGestureStart as any, { passive: false });
+    container.addEventListener('gesturechange', onGestureChange as any, { passive: false });
+    container.addEventListener('gestureend', onGestureEnd as any, { passive: false });
+    container.addEventListener('wheel', onWheel, { passive: false, capture: true });
+
     const canvas = map.getCanvas();
     const onContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -2835,6 +2898,10 @@ export default function App() {
 
     return () => {
       canvas.removeEventListener('contextmenu', onContextMenu);
+      container.removeEventListener('gesturestart', onGestureStart as any);
+      container.removeEventListener('gesturechange', onGestureChange as any);
+      container.removeEventListener('gestureend', onGestureEnd as any);
+      container.removeEventListener('wheel', onWheel as any, { capture: true } as any);
       map.remove();
     };
   }, []);
@@ -4727,12 +4794,11 @@ export default function App() {
                 <span>Aerialway / Ski Lift</span>
               </div>
             </div>
-            {/* Keyboard Guide */}
+            {/* Navigation & Gesture Guide */}
             <div className="pt-2 border-t border-[#D6D0C2] text-xs text-[#5C5852] space-y-1">
-              <div><strong className="text-[#1C1B18]">W / S:</strong> Tilt camera pitch (3D / 2D)</div>
-              <div><strong className="text-[#1C1B18]">A / D:</strong> Rotate camera heading</div>
-              <div><strong className="text-[#1C1B18]">Arrows:</strong> Pan across mountain</div>
-              <div><strong className="text-[#1C1B18]">+ / −:</strong> Zoom In / Out</div>
+              <div><strong className="text-[#1C1B18]">Trackpad:</strong> Pinch zoom · Twist rotate · Shift+scroll tilt</div>
+              <div><strong className="text-[#1C1B18]">Tablet:</strong> 2-finger pinch & rotate · 2-finger drag tilt</div>
+              <div><strong className="text-[#1C1B18]">Keyboard:</strong> W/S tilt · A/D rotate · Arrows pan</div>
             </div>
           </div>
         )}
