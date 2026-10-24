@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `fix: restore visible map points, persistent area nameplates, and centered framing for nordic ski areas`
+- **Root Cause of Missing Nordic Points & Anonymous Terrain**:
+  - `global-unclustered-label` had `text-optional: true`. As soon as the camera zoomed into a Nordic area and `/api/trails` loaded 20–50 cross-country trail LineStrings, MapLibre GL collision avoidance prioritized trail lines and dropped the ski area's name label completely, leaving the user with anonymous trails.
+  - Nordic points were rendered as generic 4.5px blue dots with no outer ring or category badge, making them virtually invisible against satellite terrain.
+  - In `handleSelectResort()`, an alpine fall-line midpoint offset (`midpointKm`) designed for vertical peaks shifted the camera ~0.6 km south away from the Nordic touring center coordinates, pushing the center point out of the framed viewport.
+- **Dedicated Concentric Ring Points for Nordic & Global Areas**:
+  - Added `global-unclustered-outer-ring` (`minzoom: 8.5`, radius 7–14px) and updated `global-unclustered-point`, dynamically styled in Pine Forest Green (`#2E5A44`) for Nordic, Heli Ochre (`#C25916`), and Alpine Slate Blue (`#3B627E`).
+- **Indestructible Area Name Labels**:
+  - Changed `text-optional` to `false` and set `symbol-sort-key: 1` on area labels so MapLibre GL never drops the ski area name in favor of individual trails.
+  - Prefixed Nordic centers with `🎿 ` and rendered in high-contrast bold typography with 2.5px crisp white halo.
+- **Active Area Callout Pin & Top Editorial Breadcrumb**:
+  - Added `selected-resort-source` with a high-contrast radiant ring, central pin, and multi-line callout badge (`text-allow-overlap: true`, `text-ignore-placement: true`) floating directly above the selected area's coordinates.
+  - Added a quiet editorial breadcrumb in the top header (`SkiAtlas / [Area Name] ([Region], [Country])`) so the active area is always immediately identifiable at a glance.
+- **Accurate Framing for Nordic Cross-Country Networks**:
+  - Centered directly on `[resort.lng, resort.lat]` without alpine midpoint offset, set True North bearing (`bearing: 0`), and applied adaptive zoom scaling based on total trail network length (`trail_km`) with low-oblique $28^\circ$ pitch.
+
 ### `fix: derive gyroscope 3D perspective state from camera pitch angle to eliminate stuck 2D indicator`
 - **Root Cause of Stuck '2D' Gyroscope**:
   - `is3D` was previously managed as an independent `useState(false)`. When zooming into a resort via `safeFlyTo` (which tilts the camera to `pitch: 38`), `map.on('pitch')` updated `mapPitch`, but `setIs3D` was never called during programmatic camera flight.

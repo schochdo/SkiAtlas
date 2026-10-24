@@ -2572,16 +2572,22 @@ export default function App() {
         minzoom: 8.5,
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-          'text-size': 11,
-          'text-offset': [0, 1.2],
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            8.5, 10,
+            11, 11,
+            14, 13
+          ],
+          'text-offset': [0, 1.3],
           'text-anchor': 'top',
-          'text-optional': true,
+          'text-optional': false,
+          'symbol-sort-key': 1,
         },
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2,
+          'text-halo-width': 2.5,
         },
       });
 
@@ -2647,19 +2653,65 @@ export default function App() {
         },
       });
 
+      // Global Ski Areas Outer Concentric Ring (Matches Curated styling; Green for Nordic, Ochre for Heli, Blue for Downhill)
+      map.addLayer({
+        id: 'global-unclustered-outer-ring',
+        type: 'circle',
+        source: 'global-ski-areas-source',
+        filter: ['!', ['has', 'point_count']],
+        minzoom: 8.5,
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            8.5, 7,
+            12, 10,
+            15, 14
+          ],
+          'circle-color': [
+            'match',
+            ['get', 'category'],
+            'nordic', '#2E5A44',
+            'heli_cat', '#C25916',
+            '#3B627E',
+          ],
+          'circle-opacity': 0.22,
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': [
+            'match',
+            ['get', 'category'],
+            'nordic', '#2E5A44',
+            'heli_cat', '#C25916',
+            '#3B627E',
+          ],
+        },
+      });
+
+      // Global Ski Areas Core Point
       map.addLayer({
         id: 'global-unclustered-point',
         type: 'circle',
         source: 'global-ski-areas-source',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-color': '#3B627E',
-          'circle-radius': 4.5,
-          'circle-stroke-width': 1.2,
+          'circle-color': [
+            'match',
+            ['get', 'category'],
+            'nordic', '#2E5A44',
+            'heli_cat', '#C25916',
+            '#3B627E',
+          ],
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            8.5, 3.5,
+            12, 4.5,
+            15, 6
+          ],
+          'circle-stroke-width': 1.5,
           'circle-stroke-color': '#FAF8F3',
         },
       });
 
+      // Global Ski Areas Name Label (Indestructible: text-optional=false ensures trail lines never suppress the area name)
       map.addLayer({
         id: 'global-unclustered-label',
         type: 'symbol',
@@ -2667,17 +2719,90 @@ export default function App() {
         filter: ['!', ['has', 'point_count']],
         minzoom: 8.5,
         layout: {
-          'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-          'text-size': 10,
-          'text-offset': [0, 1.2],
+          'text-field': [
+            'case',
+            ['==', ['get', 'category'], 'nordic'],
+            ['concat', '🎿 ', ['get', 'name']],
+            ['==', ['get', 'category'], 'heli_cat'],
+            ['concat', '🚁 ', ['get', 'name']],
+            ['get', 'name']
+          ],
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            8.5, 10,
+            11, 11,
+            14, 13
+          ],
+          'text-offset': [0, 1.4],
           'text-anchor': 'top',
-          'text-optional': true,
+          'text-optional': false,
+          'symbol-sort-key': 1,
         },
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 1.5,
+          'text-halo-width': 2.5,
+        },
+      });
+
+      // 4. Dedicated Active Selection Callout & Landmark Pin
+      map.addSource('selected-resort-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+
+      // Radiant outer beacon ring on selected resort
+      map.addLayer({
+        id: 'selected-resort-halo',
+        type: 'circle',
+        source: 'selected-resort-source',
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            8, 12,
+            12, 16,
+            15, 20
+          ],
+          'circle-color': ['get', 'catColor'],
+          'circle-opacity': 0.28,
+          'circle-stroke-width': 2.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      // Sharp central pin dot on selected resort
+      map.addLayer({
+        id: 'selected-resort-pin',
+        type: 'circle',
+        source: 'selected-resort-source',
+        paint: {
+          'circle-radius': 5.5,
+          'circle-color': ['get', 'catColor'],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      // High-contrast callout nameplate banner that NEVER collides or drops
+      map.addLayer({
+        id: 'selected-resort-callout',
+        type: 'symbol',
+        source: 'selected-resort-source',
+        layout: {
+          'text-field': ['get', 'callout_text'],
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': 12,
+          'text-offset': [0, -2.0],
+          'text-anchor': 'bottom',
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'symbol-sort-key': 0,
+        },
+        paint: {
+          'text-color': '#1C1B18',
+          'text-halo-color': '#FAF8F3',
+          'text-halo-width': 3.5,
         },
       });
 
@@ -2700,6 +2825,7 @@ export default function App() {
         handleSelectGlobalResort(p, coords);
       };
 
+      map.on('click', 'global-unclustered-outer-ring', onGlobalClick);
       map.on('click', 'global-unclustered-point', onGlobalClick);
       map.on('click', 'global-unclustered-label', onGlobalClick);
 
@@ -2722,7 +2848,7 @@ export default function App() {
       });
 
       // Pointer cursor
-      ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels', 'global-clusters', 'global-unclustered-point', 'global-unclustered-label'].forEach((layerId) => {
+      ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels', 'global-clusters', 'global-unclustered-outer-ring', 'global-unclustered-point', 'global-unclustered-label'].forEach((layerId) => {
         map.on('mouseenter', layerId, () => {
           map.getCanvas().style.cursor = 'pointer';
         });
@@ -2903,6 +3029,9 @@ export default function App() {
 
     // Unclustered global points & labels (must retain ['!', ['has', 'point_count']])
     const unclusteredFilter: any = ['all', ['!', ['has', 'point_count']], filterExpr];
+    if (map.getLayer('global-unclustered-outer-ring')) {
+      map.setFilter('global-unclustered-outer-ring', unclusteredFilter);
+    }
     if (map.getLayer('global-unclustered-point')) {
       map.setFilter('global-unclustered-point', unclusteredFilter);
     }
@@ -3753,27 +3882,40 @@ export default function App() {
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = window.innerWidth >= 768 ? 384 : 336;
 
-    // Bearing: use resort's default_bearing (fall-line / valley-up direction)
-    const bearing = resort.default_bearing ?? 0;
+    const isNordic = resort.category === 'nordic';
+    // Bearing: use resort's default_bearing (fall-line / valley-up direction) or 0 for nordic
+    const bearing = isNordic ? 0 : (resort.default_bearing ?? 0);
 
     // Zoom: scale with both vertical drop and skiable acreage so sprawling resorts (Vail, Zermatt)
     // pull back appropriately, while maintaining an intimate, framed view of the ski network.
     // Alta (~12.5) | Snowbird (~12.4) | Jackson (~12.2) | Vail (~12.0) | Zermatt (~11.2) | Small hill (~14.3)
-    const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
-    const acres = Math.max(resort.skiable_acres || 500, 200);
-    const zoom = Math.max(10.8, Math.min(14.5, 13.6 - Math.log2(vert / 1000) * 0.45 - Math.log2(acres / 1000) * 0.35));
+    let zoom: number;
+    if (isNordic) {
+      const km = Math.max(resort.trail_km || 20, 5);
+      // Adaptive trail network framing: 10 km -> ~13.5, 50 km -> ~12.2, 100+ km -> ~11.5
+      zoom = Math.max(11.0, Math.min(14.0, 13.8 - Math.log2(km / 10) * 0.65));
+    } else {
+      const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
+      const acres = Math.max(resort.skiable_acres || 500, 200);
+      zoom = Math.max(10.8, Math.min(14.5, 13.6 - Math.log2(vert / 1000) * 0.45 - Math.log2(acres / 1000) * 0.35));
+    }
 
     // Midpoint calculation:
     // Coordinates in GLOBAL_SKI_ATLAS point to the mountain base/village.
     // The trails and summit rise forward in the direction of default_bearing (valley looking up to peak).
     // Advancing from the base into the mountain along bearing centers the physical mountain.
-    const midpointKm = Math.min(1.8, Math.max(0.6, (vert * 0.3048) / (2 * Math.tan(22 * Math.PI / 180)) / 1000));
-    const bearingRad = (bearing * Math.PI) / 180;
-    const dLat = (midpointKm / 111.32) * Math.cos(bearingRad);
-    const dLng = (midpointKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
-    const targetCenter: [number, number] = [resort.lng + dLng, resort.lat + dLat];
+    // For Nordic cross-country networks, center directly on the touring center coordinates.
+    let targetCenter: [number, number] = [resort.lng, resort.lat];
+    if (!isNordic) {
+      const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
+      const midpointKm = Math.min(1.8, Math.max(0.6, (vert * 0.3048) / (2 * Math.tan(22 * Math.PI / 180)) / 1000));
+      const bearingRad = (bearing * Math.PI) / 180;
+      const dLat = (midpointKm / 111.32) * Math.cos(bearingRad);
+      const dLng = (midpointKm / (111.32 * Math.cos((resort.lat * Math.PI) / 180))) * Math.sin(bearingRad);
+      targetCenter = [resort.lng + dLng, resort.lat + dLat];
+    }
 
-    const pitch = 38;
+    const pitch = isNordic ? 28 : 38;
 
     // Compute dynamic duration based on flight distance across the globe so transcontinental jumps don't stall
     const curCenter = mapRef.current.getCenter();
@@ -3817,20 +3959,29 @@ export default function App() {
     const leftPad = leftDockOpen ? (window.innerWidth >= 768 ? 404 : 340) : 20;
     const rightPad = window.innerWidth >= 768 ? 384 : 336;
 
-    const gVert = Math.max(p.vertical_ft || 1500, 500);
-    const gAcres = Math.max(p.skiable_acres || 500, 200);
-    const gZoom = Math.max(10.8, Math.min(14.5, 13.6 - Math.log2(gVert / 1000) * 0.45 - Math.log2(gAcres / 1000) * 0.35));
+    const isNordic = p.category === 'nordic';
+    let gZoom: number;
+    if (isNordic) {
+      const km = Math.max(p.trail_km || 20, 5);
+      gZoom = Math.max(11.0, Math.min(14.0, 13.8 - Math.log2(km / 10) * 0.65));
+    } else {
+      const gVert = Math.max(p.vertical_ft || 1500, 500);
+      const gAcres = Math.max(p.skiable_acres || 500, 200);
+      gZoom = Math.max(10.8, Math.min(14.5, 13.6 - Math.log2(gVert / 1000) * 0.45 - Math.log2(gAcres / 1000) * 0.35));
+    }
+
+    const pitch = isNordic ? 28 : 38;
 
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],
       zoom: gZoom,
-      pitch: 38,
+      pitch,
       bearing: 0,
       padding: { left: leftPad, right: rightPad, top: 60, bottom: 140 },
       duration: 1800,
       essential: true,
     });
-    setMapPitch(38);
+    setMapPitch(pitch);
     setMapBearing(0);
 
     if (fetchOverpassBboxRef.current) {
@@ -3888,6 +4039,45 @@ export default function App() {
   };
 
   /* =========================================================================
+     ACTIVE RESORT CALLOUT & MAP ANCHOR SYNC
+     Ensures that selecting/zooming into an area renders an indestructible,
+     high-contrast callout nameplate and glowing pin directly on the mountain.
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const src = mapRef.current.getSource('selected-resort-source') as GeoJSONSource;
+    if (!src) return;
+
+    if (!selectedResort) {
+      src.setData({ type: 'FeatureCollection', features: [] });
+      return;
+    }
+
+    const cat = selectedResort.category || 'downhill';
+    const catColor = cat === 'nordic' ? '#2E5A44' : cat === 'heli_cat' ? '#C25916' : '#3B627E';
+    const subText = cat === 'nordic'
+      ? (selectedResort.trail_km ? `${formatDistance(selectedResort.trail_km)} network` : 'Nordic Center')
+      : (selectedResort.vertical_drop_ft ? `${formatVert(selectedResort.vertical_drop_ft)} vert` : 'Alpine Resort');
+
+    const prefix = cat === 'nordic' ? '🎿 ' : cat === 'heli_cat' ? '🚁 ' : '⛷️ ';
+
+    const feat = {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [selectedResort.lng, selectedResort.lat] },
+      properties: {
+        id: selectedResort.id,
+        name: selectedResort.name,
+        category: cat,
+        catColor,
+        callout_text: `${prefix}${selectedResort.name}\n${subText}`,
+      },
+    };
+
+    src.setData({ type: 'FeatureCollection', features: [feat as any] });
+  }, [selectedResort, mapLoaded, unitsMetric]);
+
+  /* =========================================================================
      RENDER: EDWARD TUFTE × BERANN DAYLIGHT CARTOGRAPHY
      ========================================================================= */
 
@@ -3901,11 +4091,21 @@ export default function App() {
 
       {/* EDITORIAL TOP BAR (WARM COTTON RAG PAPER & SERIF TITLE - NO VANITY PADDING) */}
       <header className="absolute top-0 inset-x-0 z-20 h-13 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
-        <div className="flex items-center gap-2.5">
-          <Mountain className="w-5 h-5 text-[#2E5A44]" />
-          <h1 className="text-lg font-bold tracking-tight text-[#1C1B18] font-serif">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Mountain className="w-5 h-5 text-[#2E5A44] shrink-0" />
+          <h1 className="text-lg font-bold tracking-tight text-[#1C1B18] font-serif shrink-0">
             SkiAtlas
           </h1>
+          {selectedResort && (
+            <div className="hidden sm:flex items-center gap-2 font-mono text-xs text-[#5C5852] min-w-0 truncate pl-2.5 border-l border-[#D6D0C2]/80">
+              <span className="font-serif font-bold text-sm text-[#1C1B18] truncate">
+                {selectedResort.name}
+              </span>
+              <span className="text-[10px] text-[#8A847C] shrink-0">
+                ({selectedResort.region ? `${selectedResort.region}, ` : ''}{selectedResort.country})
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2 font-mono text-xs">
