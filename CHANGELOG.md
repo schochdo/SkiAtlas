@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-23
 
+### `feat: add 3D terrain elevation relief multiplier slider to cartographic controls menu`
+- **Dynamic DEM Vertical Relief Exaggeration**:
+  - Added an interactive **Terrain Relief Multiplier** slider to the top-right **Cartographic Controls** popover (`Basemap` / layers button).
+  - Allows adjusting the MapLibre 3D DEM mesh vertical exaggeration continuously from `0.00×` (completely planar flat) to `2.50×` (dramatic alpine relief) in `0.05×` increments.
+  - Formatted using the Edward Tufte engraved scale range slider (`.tufte-slider`) on warm paper tones with a live tabular multiplier readout (e.g. `0.70×`).
+- **One-Click Cartographic Presets**:
+  - Provided 4 quick-select chips: **Flat (0×)**, **Calibrated (0.7×)**, **1:1 Scale (1.0×)**, and **Alpine (2.0×)** for instant terrain profile switching.
+- **60fps Real-Time Updates**:
+  - Wired direct synchronous dispatch to `map.setTerrain({ source: 'terrain-dem', exaggeration: val })` on slider scrub, updating the shader's `u_terrain_exaggeration` uniform immediately without reloading DEM tiles.
+  - Retains user-selected multiplier across projection toggles (3D Globe vs Planar Mercator).
+
 ### `style: replace Christmas-tree contour icon with Alpine Snow Globe crest`
 - **Replaced Confusing Contour Mark**:
   - The previous 3-tiered elevation contour curves crowned by a red triangular monument resembled a decorated Christmas tree at small navbar sizes (26px).

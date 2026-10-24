@@ -1878,11 +1878,21 @@ export default function App() {
 
   // Basemap & Layer Overlays State
   const [show3DTerrain, setShow3DTerrain] = useState(true);
+  const [terrainExaggeration, setTerrainExaggeration] = useState<number>(0.70);
   const [showHillshade, setShowHillshade] = useState(true);
   const basemapMenuRef = useRef<HTMLDivElement | null>(null);
   const mapLegendRef = useRef<HTMLDivElement | null>(null);
   const [attributionOpen, setAttributionOpen] = useState(false);
   const attributionRef = useRef<HTMLDivElement | null>(null);
+
+  const handleTerrainExaggerationChange = (val: number) => {
+    setTerrainExaggeration(val);
+    if (mapRef.current && mapLoaded && show3DTerrain) {
+      try {
+        mapRef.current.setTerrain({ source: 'terrain-dem', exaggeration: val });
+      } catch (_) {}
+    }
+  };
 
   // Category Individual Toggles (Default: Downhill only)
   // Controls all associated points, clusters, trails, and infrastructure
@@ -2414,10 +2424,10 @@ export default function App() {
       updateBounds();
       updateScale();
 
-      // Enable 3D Terrain mesh (0.7x natural mountain relief)
+      // Enable 3D Terrain mesh (calibrated mountain relief)
       try {
         if (show3DTerrain) {
-          map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 });
+          map.setTerrain({ source: 'terrain-dem', exaggeration: terrainExaggeration });
         }
       } catch (e) {
         console.warn('SetTerrain error:', e);
@@ -3076,7 +3086,7 @@ export default function App() {
         map.setProjection({ type: 'mercator' });
       }
       if (show3DTerrain) {
-        try { map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 }); } catch (_) {}
+        try { map.setTerrain({ source: 'terrain-dem', exaggeration: terrainExaggeration }); } catch (_) {}
       } else {
         try { map.setTerrain(null); } catch (_) {}
       }
@@ -3084,7 +3094,7 @@ export default function App() {
     } catch (err) {
       console.warn('Projection transition error:', err);
     }
-  }, [earthProjection, show3DTerrain, mapLoaded]);
+  }, [earthProjection, show3DTerrain, terrainExaggeration, mapLoaded]);
 
   /* =========================================================================
      SINGLE PLANET ENFORCEMENT (ZERO REPEATING EARTHS IN 2D OR 3D)
@@ -3170,7 +3180,7 @@ export default function App() {
     const map = mapRef.current;
     try {
       if (show3DTerrain) {
-        map.setTerrain({ source: 'terrain-dem', exaggeration: 0.70 });
+        map.setTerrain({ source: 'terrain-dem', exaggeration: terrainExaggeration });
       } else {
         map.setTerrain(null);
       }
@@ -3178,7 +3188,7 @@ export default function App() {
     } catch (err) {
       console.warn('SetTerrain toggle error:', err);
     }
-  }, [show3DTerrain, mapLoaded]);
+  }, [show3DTerrain, terrainExaggeration, mapLoaded]);
 
   /* =========================================================================
      HILLSHADE RELIEF TOGGLE
@@ -4584,6 +4594,65 @@ export default function App() {
                       </button>
                     );
                   })}
+                </div>
+              </div>
+
+              {/* 3D TERRAIN RELIEF (DEM EXAGGERATION MULTIPLIER) */}
+              <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
+                    Terrain Relief Multiplier
+                  </span>
+                  <span className="text-xs font-extrabold text-[#1C1B18] tabular-nums">
+                    {terrainExaggeration.toFixed(2)}×
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <input
+                    type="range"
+                    min="0"
+                    max="2.5"
+                    step="0.05"
+                    value={terrainExaggeration}
+                    onChange={(e) => handleTerrainExaggerationChange(parseFloat(e.target.value))}
+                    className="w-full tufte-slider cursor-pointer"
+                    aria-label="3D terrain relief vertical exaggeration multiplier"
+                  />
+
+                  {/* Preset Quick Toggles */}
+                  <div className="grid grid-cols-4 gap-1 pt-0.5">
+                    {[
+                      { label: 'Flat', val: 0.0, desc: '0×' },
+                      { label: 'Calib.', val: 0.7, desc: '0.7×' },
+                      { label: '1:1', val: 1.0, desc: '1.0×' },
+                      { label: 'Alpine', val: 2.0, desc: '2.0×' },
+                    ].map((preset) => {
+                      const isActive = Math.abs(terrainExaggeration - preset.val) < 0.04;
+                      return (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => handleTerrainExaggerationChange(preset.val)}
+                          className={`py-1 px-1 text-center rounded-[4px] border text-[10px] transition-all cursor-pointer ${
+                            isActive
+                              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-extrabold'
+                              : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
+                          }`}
+                          title={`Set elevation multiplier to ${preset.desc}`}
+                        >
+                          <div>{preset.label}</div>
+                          <div className={`text-[9px] ${isActive ? 'text-[#1C1B18]' : 'text-[#8A847C]'} font-normal`}>
+                            {preset.desc}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="text-[10px] text-[#736E67] leading-tight font-normal">
+                  Scales the vertical elevation mesh of mountain summits, ridges, and valleys.
                 </div>
               </div>
             </div>
