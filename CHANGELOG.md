@@ -6,6 +6,28 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: unified Mountain Guide panel with mobile bottom sheet and full-bleed 3D map`
+- **Eliminated Dual-Sidebar Map Crushing**:
+  - **What was wrong**: The previous UI architecture used two competing sidebars: a 384px sliding Directory on the left and a 384px Dossier on the right. When both were open, they consumed 768px of screen width, leaving only a tiny sliver for the 3D map on smaller laptops and completely obliterating mobile viewports (where a 390px iPhone had 676px of hardcoded sidebar padding, pushing floating controls and map features entirely offscreen).
+  - **Single Unified Mountain Guide Architecture**:
+    - **Single Panel Context**: Replaced the separate right dossier sidebar with a single unified panel that seamlessly transitions between **Directory View** (search, pass/terrain filters, sliders, and resort ledger cards) and **Dossier View** (header with `← Directory` back button, official website, pass affiliations, metric tables, summit meteorology, and 7-day snowfall bars).
+    - **Desktop Left Dock (`md:` / ≥ 768px)**: Docks cleanly on the left (`w-80 md:w-96`) with a full-height seam rail pull-tab for sliding open/closed. The entire right side of the screen is now 100% unobstructed, full-bleed 3D alpine terrain.
+    - **Mobile Bottom Sheet (`< 768px`)**: Docks at the bottom with three responsive states:
+      - `peek` (h-20 / 80px): Minimal glance showing search summary or active resort name with 7-day snow chip, maximizing the map canvas for gesture exploration.
+      - `half` (h-[50vh]): Perfect 50/50 split where the 3D peaks tower above in the upper half while the directory list or resort dossier sits in the lower half.
+      - `full` (h-[88vh]): Deep reading view for comprehensive resort dossiers or filter adjustments.
+    - **Collapsible Mobile Filter Box**: On mobile, the Pass & Terrain Filters box collapses into a single tap bar (`PASS & TERRAIN FILTERS (1,654) ▾`) to maximize resort card browsing space, while remaining expanded by default on desktop.
+    - **Active Viewing Banner**: If a user returns to the Directory list while a resort remains active on the map, a subtle warm stone banner appears at the top (`Viewing: [Name] · Dossier →`) allowing instant 1-tap navigation back to the dossier.
+- **Cartographic Controls Repositioning**:
+  - Top-left navigation stack (Zoom `+`/`-` and outlined North arrow) dynamically floats at `left-3 top-16` on mobile and `left-8` / `md:left-[420px]` on desktop.
+  - Basemap & projection popover button floats at `right-3 md:right-4 top-16` permanently without right-sidebar displacement.
+  - Navigational gimbal dial and map scale bar automatically hide on small screens (`hidden md:block`) where native touch gestures (pinch, rotate, two-finger pitch) supersede screen chrome.
+- **Deep Linking & URL Sync**:
+  - Added URL parameter support: `?resort=<id>` directly opens and focuses the target resort dossier, and `?sheet=<peek|half|full>` restores mobile sheet height.
+  - Automatically updates browser URL on resort selection/deselection via `window.history.replaceState`.
+
+---
+
 ### `style: standardize visual weight and darkness across North arrow, badges, and typography`
 - **Replaced Heavy Solid North Arrow with Outlined Cartographic Chevron**:
   - **What was wrong**: While `+` and `-` buttons in the map navigation stack were thin open strokes (`strokeWidth={2.2}` with ~450 dark pixels), the North arrow was rendered as a solid filled black polygon (`points="12,2 4.5,20 12,15.5 19.5,20" fill="currentColor"` with 2,161 dark pixels). This made the North arrow appear ~4.5x darker and heavier than the `+` and `-` buttons above it.
