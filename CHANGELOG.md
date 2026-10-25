@@ -6,6 +6,58 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: correct peak summit coordinates, clean Wikipedia disambiguation artifacts, and enforce elevation hygiene`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In the Bernese Alps (Jungfrau region) and other mountain regions, summits exhibited geographic displacement and toponymic artifacts. Specifically:
+    1. **Mönch coordinate displacement**: The vermilion summit dot for Mönch was displaced by $1.41\text{ km}$ to the west-northwest (`[7.9833, 46.5667]`), placing it down on the snowy cirque of the Guggigletscher glacier rather than on the true 4,107 m summit peak.
+    2. **Wikipedia disambiguation suffix artifact**: Silberhorn appeared as `▲ Silberhorn (Alps) · 12,123'` because the upstream open peaks dataset retained raw Wikipedia article titles intended to disambiguate against `Silberhorn (New Zealand)`. Across the dataset, 56 features suffered from parenthetical disambiguations (`Storm Mountain (Kananaskis)`, `Breithorn (Simplon)`) or inverted Romance toponyms (`Canali (Cima)`, `Castello (Torre)`, `Nero (Monte)`, `Roma (Punta)`).
+    3. **Legacy elevation conversion mismatch**: Mönch was scraped with `elevation_m: 4107` and `elevation_ft: 13448`. $4,107\text{ m} \times 3.28084 = 13,474\text{ ft}$, but English Wikipedia retained an outdated 19th-century $4,099\text{ m}$ figure ($13,448'$) in text. Across the dataset, 47 features exhibited severe elevation discrepancies (e.g., Mount Kanlaon listed at 8 ft instead of 8,038 ft; Säntis at 7 ft instead of 8,209 ft; Dreiherrnspitze at 1,066 ft instead of 11,476 ft; Siula Grande at 2,115 ft instead of 20,814 ft).
+  - **The Scraper Mechanism**: The original upstream repository (`open-peaks/data`) scraped Wikipedia infoboxes. Older Wikipedia articles entered coordinates as `{{coord|46|34|N|7|59|E}}` (degrees and minutes only, omitting seconds). Because $1'$ of latitude is $\sim 1.85\text{ km}$ ($1\text{ nautical mile}$) and $1'$ of longitude at $46^\circ\text{N}$ is $\sim 1.28\text{ km}$, truncating seconds placed summits into valleys, glaciers, and neighboring slopes.
+- **Cartographic & Data Pipeline Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Cleaned All 56 Toponymic Artifacts**:
+    - Disambiguations removed: `Silberhorn (Alps)` $\to$ `Silberhorn`, `Storm Mountain (Kananaskis)` $\to$ `Storm Mountain`, `Point Lookout (New South Wales)` $\to$ `Point Lookout`, `Denali (Mount McKinley)` $\to$ `Denali`, `Borah Peak (Mount Borah)` $\to$ `Borah Peak`.
+    - Distinct geographic peaks given proper toponyms: `Breithorn (Simplon)` $\to$ `Simplon-Breithorn`.
+    - Romance language inversions rectified: `Canali (Cima)` $\to$ `Cima Canali`, `Castello (Torre)` $\to$ `Torre Castello`, `Nero (Monte)` $\to$ `Monte Nero`, `Roma (Punta)` $\to$ `Punta Roma`, `Scotoni (Cima)` $\to$ `Cima Scotoni`, `Sesvenna (Piz)` $\to$ `Piz Sesvenna`, `Udine (Punta)` $\to$ `Punta Udine`, `Dos Picos (Cerro)` $\to$ `Cerro Dos Picos`, `Nato (Cerro)` $\to$ `Cerro Nato`.
+    - Dual-name pairs standardized: `Dreiherrnspitze (Picco dei Tre Signori)` $\to$ `Dreiherrnspitze`, `Geisterspitze (Punta degli Spiriti)` $\to$ `Geisterspitze`, `Sasso Nero (Schwarzenstein)` $\to$ `Schwarzenstein`, `Roetlspitz (Rötlspitz; Punta Rosa)` $\to$ `Rötlspitz`, `Klinovec (Keilberg)` $\to$ `Klínovec`.
+  - **Precise Summit Coordinates Replaced**:
+    - Sourced high-precision geodetic coordinates from OpenStreetMap and swisstopo official surveys for major European and Alpine summits:
+      - `Mönch`: `[7.997271, 46.558506]`, elevation `4107 m` / `13,474'` (snaps directly onto the summit pinnacle).
+      - `Jungfrau`: `[7.962591, 46.536774]`, elevation `4158 m` / `13,642'`.
+      - `Silberhorn`: `[7.948989, 46.541964]`, elevation `3695 m` / `12,123'`.
+      - `Finsteraarhorn`: `[8.126114, 46.537347]`, elevation `4274 m` / `14,022'`.
+      - `Aletschhorn`: `[7.993212, 46.465198]`, elevation `4195 m` / `13,763'`.
+      - `Wetterhorn`: `[8.115604, 46.638666]`, elevation `3692 m` / `12,113'`.
+      - `Schilthorn`: `[7.835175, 46.557282]`, elevation `2970 m` / `9,744'`.
+      - `Matterhorn`: `[7.658602, 45.976426]`, elevation `4478 m` / `14,692'`.
+      - `Breithorn`: `[7.747732, 45.941013]`, elevation `4164 m` / `13,661'`.
+      - `Dom`: `[7.858889, 46.093889]`, elevation `4545 m` / `14,911'`.
+      - `Weisshorn`: `[7.716070, 46.101250]`, elevation `4505 m` / `14,780'`.
+      - `Dent Blanche`: `[7.611931, 46.034176]`, elevation `4357 m` / `14,295'`.
+      - `Grand Combin`: `[7.299224, 45.937576]`, elevation `4314 m` / `14,154'`.
+      - `Dufourspitze`: `[7.866757, 45.936924]`, elevation `4634 m` / `15,203'`.
+      - `Mont Blanc`: `[6.864350, 45.832620]`, elevation `4809 m` / `15,777'`.
+      - `Gran Paradiso`: `[7.251944, 45.518611]`, elevation `4061 m` / `13,323'`.
+      - `Piz Bernina`: `[9.908052, 46.382428]`, elevation `4049 m` / `13,284'`.
+      - `Grossglockner`: `[12.693883, 47.074546]`, elevation `3798 m` / `12,461'`.
+      - `Zugspitze`: `[10.986297, 47.421215]`, elevation `2962 m` / `9,718'`.
+      - `Ortler`: `[10.544930, 46.509096]`, elevation `3905 m` / `12,812'`.
+      - `Marmolada`: `[11.851348, 46.434546]`, elevation `3343 m` / `10,968'`.
+      - `Aiguille Verte`: `[6.973056, 45.936389]`, elevation `4122 m` / `13,524'` (rectified a 30 km displacement error).
+      - `Piz Buin`: `[10.118889, 46.844167]`, elevation `3312 m` / `10,866'` (rectified a 65 km displacement error).
+  - **Strict Mathematical Unit Hygiene Enforced**:
+    - Harmonized all 3,002 features to ensure $elevation_{ft} = \text{round}(elevation_m \times 3.28084)$ (and preserved official USGS 14er benchmarks in North America).
+    - Regenerated formatted elevation labels (`label_ft`, `label_m`, `label_stacked_ft`, `label_stacked_m`) and dynamic depth-sort collision keys (`sort_key = 40000 - elevation_ft`).
+- **Verification**:
+  - Validated in headless Chrome CDP across Topo and Satellite basemaps at the Jungfraujoch viewpoint (`[7.975, 46.550]`, zoom 13.0):
+    1. Mönch (`▲ Mönch · 13,474'`) moved from the Guggigletscher glacier directly onto the crest ridge of the 4,107 m summit peak.
+    2. Silberhorn (`▲ Silberhorn · 12,123'`) displays without `(Alps)` disambiguation.
+    3. Metric toggle dynamically displays `▲ Mönch · 4,107 m` and `▲ Silberhorn · 3,695 m` with zero formatting artifacts.
+  - Zero build warnings or errors on `npm run build`.
+
+---
+
+## 2026-10-25
+
 ### `fix: eliminate map panning freeze and mini back-and-forth movement caused by missing mouseupWindow and flight loop conflict`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: Occasionally, trying to pan the map with a left-click drag would get stuck, doing a mini movement back and forth while refusing to pan across the screen. Refreshing the page fixed the issue.
