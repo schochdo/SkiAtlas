@@ -167,6 +167,7 @@ export default function App() {
   const [show3DTerrain, setShow3DTerrain] = useState(true);
   const [terrainExaggeration, setTerrainExaggeration] = useState<number>(0.70);
   const [showHillshade, setShowHillshade] = useState(true);
+  const [showPeaks, setShowPeaks] = useState<boolean>(true);
   const basemapMenuRef = useRef<HTMLDivElement | null>(null);
   const mapLegendRef = useRef<HTMLDivElement | null>(null);
   const [attributionOpen, setAttributionOpen] = useState(false);
@@ -1309,6 +1310,68 @@ export default function App() {
         },
       });
 
+      // 4. Global Major Mountain Summits (Peakfinder Horizon Mode)
+      map.addSource('major-peaks-source', {
+        type: 'geojson',
+        promoteId: 'id',
+        data: '/data/major_peaks.geojson',
+      });
+
+      map.addLayer({
+        id: 'major-peaks-marker',
+        type: 'circle',
+        source: 'major-peaks-source',
+        minzoom: 7.5,
+        layout: {
+          visibility: showPeaks ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            7.5, 2.0,
+            11.0, 3.2,
+            14.0, 4.0,
+          ],
+          'circle-color': '#B84A39',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      map.addLayer({
+        id: 'major-peaks-label',
+        type: 'symbol',
+        source: 'major-peaks-source',
+        minzoom: 7.5,
+        layout: {
+          'visibility': showPeaks ? 'visible' : 'none',
+          'symbol-sort-key': ['get', 'sort_key'],
+          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            7.5, 9.5,
+            11.0, 10.5,
+            14.0, 11.5,
+          ],
+          'text-max-width': 26,
+          'text-offset': [0, -1.2],
+          'text-anchor': 'bottom',
+          'text-letter-spacing': 0.04,
+          'text-keep-upright': true,
+          'text-pitch-alignment': 'viewport',
+          'text-rotation-alignment': 'viewport',
+          'text-padding': 10,
+          'text-optional': true,
+        },
+        paint: {
+          'text-color': '#1C1B18',
+          'text-halo-color': '#FAF8F3',
+          'text-halo-width': 2.2,
+          'text-halo-blur': 0.5,
+        },
+      });
+
       // Click on curated resort
       const onResortClick = (e: any) => {
         if (!e.features || !e.features[0]) return;
@@ -1927,6 +1990,24 @@ export default function App() {
       map.setPaintProperty('overlay-aspect', 'raster-opacity', terrainOverlayOpacity);
     }
   }, [terrainOverlay, terrainOverlayOpacity, mapLoaded]);
+
+  /* =========================================================================
+     MAJOR MOUNTAIN SUMMITS (PEAKFINDER HORIZON MODE)
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+
+    const visibility = showPeaks ? 'visible' : 'none';
+    if (map.getLayer('major-peaks-marker')) {
+      map.setLayoutProperty('major-peaks-marker', 'visibility', visibility);
+    }
+    if (map.getLayer('major-peaks-label')) {
+      map.setLayoutProperty('major-peaks-label', 'visibility', visibility);
+      map.setLayoutProperty('major-peaks-label', 'text-field', ['get', unitsMetric ? 'label_m' : 'label_ft']);
+    }
+  }, [showPeaks, unitsMetric, mapLoaded]);
 
   /* =========================================================================
      60 FPS KEYBOARD CAMERA FLIGHT ENGINE (WASD + QE + ARROW KEYS)
@@ -3066,6 +3147,8 @@ export default function App() {
         onCloseMenu={() => setMapMenuOpen(false)}
         basemapMode={basemapMode}
         onSelectBasemap={setBasemapMode}
+        showPeaks={showPeaks}
+        onTogglePeaks={() => setShowPeaks((prev) => !prev)}
         terrainExaggeration={terrainExaggeration}
         onChangeTerrainExaggeration={handleTerrainExaggerationChange}
         terrainOverlay={terrainOverlay}

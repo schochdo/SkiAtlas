@@ -6,6 +6,28 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `feat: reinstate Peakfinder mode for prominent mountain summits on 3D alpine horizon`
+- **User Intent & Problem Context**:
+  - **What was wrong before**: When viewing resorts in 3D terrain perspective—particularly with the Satellite basemap (e.g. looking south/southwest across the horizon from Vail)—distant peaks and mountain ranges (such as Mount of the Holy Cross, Notch Mountain, Mount Jackson, Sawatch Range, Gore Range) appeared completely unlabeled. In Alpine Topo, spot elevations are rasterized into 2D tiles, but Satellite basemaps contain pure photography with zero baked-in summit labels, and there was no vector summit layer.
+- **Global Mountain Summits Dataset (`public/data/major_peaks.geojson`)**:
+  - Sourced and structured a global index of 3,002 major summits (>10,000' / >3,000m and iconic ski peaks worldwide across North America, the Alps, Pyrenees, Dolomites, Andes, Japanese Alps, New Zealand Southern Alps, and Himalayas).
+  - Enriched with flagship ski summits (Lone Mountain at Big Sky, Aiguille du Midi at Chamonix, Tofana di Mezzo at Cortina, Whistler Peak, Blackcomb Peak, Mount Werner at Steamboat, Notch Mountain, Mount Jackson).
+  - Pre-computed dual-unit labels (`label_ft`: `▲ [Name] · [Elev]'` and `label_m`: `▲ [Name] · [Elev] m`), formatted strings, and an inverse elevation collision sort key (`sort_key = 40000 - elevation_ft`).
+- **MapLibre 3D Elevation Clamping & Collision Management ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - Added `major-peaks-source`, `major-peaks-marker` (vermilion `#B84A39` pinpoint dot with warm white halo), and `major-peaks-label` (Open Sans Bold, halo 2.2px, single-line `text-max-width: 26`, anchored above the marker).
+  - Because MapLibre GL JS projects GeoJSON points onto the active 3D DEM elevation surface (`projectTileWithElevation`), summit markers naturally clamp directly to the physical peaks on the horizon.
+  - Enabled ascending `symbol-sort-key: ['get', 'sort_key']`, guaranteeing prominent 14ers and major skyline summits take precedence over lower foothills during collision detection.
+  - Added unit reactivity: dynamically swaps between imperial (`label_ft`) and metric (`label_m`) whenever `unitsMetric` changes.
+- **Cartographic Horizon Summits Control ([`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx))**:
+  - Added a dedicated "Horizon Summits" section with a "Mountain Summits" toggle in the Cartographic Controls menu (defaulting to ON).
+  - Styled with editorial anti-SaaS cartographic aesthetics (warm paper tones, vermilion `Mountain` icon, `Active` / `Off` state pill).
+- **Verification**:
+  - Verified in headless Chrome CDP at Vail looking south-southwest at Mount of the Holy Cross (`[-106.372, 39.605]`, pitch 74°, bearing 216°): Mount of the Holy Cross (`▲ Mount of the Holy Cross · 14,005'`) renders cleanly on the horizon ridge.
+  - Verified metric reactivity: toggling to metric dynamically updates text to `▲ Mount of the Holy Cross · 4,269 m`.
+  - Verified toggle reactivity: toggling Mountain Summits in the Basemap menu switches visibility between `visible` and `none`.
+
+---
+
 ### `fix: tone down trail and lift label repeat frequency with promoteId tracking and increased symbol spacing`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: At Palisades Tahoe (and other resorts worldwide), chairlifts and ski trails displayed multiple duplicate labels within a few inches on screen. For example, "Shirley Lake Express" appeared 3 separate times along an 840m lift, while adjacent trails like "Shirley Bowl" and "Tomlinson's - 1st" displayed repeated duplicate labels back-to-back.

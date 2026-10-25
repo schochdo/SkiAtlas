@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Layers, X } from 'lucide-react';
+import { Layers, X, Mountain } from 'lucide-react';
 import type { BasemapMode, TerrainOverlayMode } from '../../types';
 
 interface BasemapMenuProps {
@@ -8,6 +8,8 @@ interface BasemapMenuProps {
   onCloseMenu: () => void;
   basemapMode: BasemapMode;
   onSelectBasemap: (mode: BasemapMode) => void;
+  showPeaks: boolean;
+  onTogglePeaks: () => void;
   terrainExaggeration: number;
   onChangeTerrainExaggeration: (val: number) => void;
   terrainOverlay: TerrainOverlayMode;
@@ -22,6 +24,8 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
   onCloseMenu,
   basemapMode,
   onSelectBasemap,
+  showPeaks,
+  onTogglePeaks,
   terrainExaggeration,
   onChangeTerrainExaggeration,
   terrainOverlay,
@@ -115,6 +119,42 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                   );
                 })}
               </div>
+            </div>
+
+            {/* MOUNTAIN SUMMITS (PEAKFINDER HORIZON LABELS) */}
+            <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
+                  Horizon Summits
+                </span>
+                <span
+                  className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
+                    showPeaks
+                      ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299]'
+                      : 'bg-[#F2EFE8] text-[#8A847C] border-[#D6D0C2]'
+                  }`}
+                >
+                  {showPeaks ? 'Active' : 'Off'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={onTogglePeaks}
+                className={`w-full flex items-center justify-between p-2 rounded-md border text-xs transition-all cursor-pointer ${
+                  showPeaks
+                    ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
+                    : 'bg-[#F7F4ED] text-[#736E67] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
+                }`}
+                title="Toggle prominent mountain summits and elevations on the 3D horizon"
+              >
+                <div className="flex items-center gap-2">
+                  <Mountain className="w-3.5 h-3.5 text-[#B84A39]" />
+                  <span>Mountain Summits</span>
+                </div>
+                <span className="text-[10px] font-semibold text-[#5C5852]">
+                  {showPeaks ? 'Visible' : 'Hidden'}
+                </span>
+              </button>
             </div>
 
             {/* TERRAIN ANALYSIS OVERLAYS (SLOPE & ASPECT) */}
