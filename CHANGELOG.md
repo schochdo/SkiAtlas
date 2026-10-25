@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: purge fictional Mount Madoriama and corrupt sub-1,000ft entries from peaks index`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: The user identified "Mount Madoriama · 2,999'" appearing on a mountain ridge in Japan displaced down on the slope.
+  - **Dataset Audit Findings**:
+    - "Mount Madoriama" is not a real mountain; it is the obstacle course tower from the Japanese television special *Sasuke* / *American Ninja Warrior* (Mt. Midoriyama) that was scraped from Wikipedia into `open-peaks/data`.
+    - An automated audit of `public/data/major_peaks.geojson` identified 28 corrupted peaks under 1,000 ft, including famous 12,000–18,000 ft volcanoes with botched scrape elevations (e.g., `Mount Rinjani` listed at 13 ft instead of 12,224 ft, `Antisana` listed at 16 ft instead of 18,875 ft, `Mount Baloy` at 7 ft), as well as road culverts and flat state high points (e.g., Delaware's 443 ft `Ebright Azimuth`, Florida's 344 ft `Britton Hill`).
+    - Furthermore, over 410 peaks in the dataset possess coordinates truncated to whole arcminutes, causing $\pm 1.5\text{ km}$ displacement off actual mountain summits worldwide.
+- **Immediate Fix ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson))**:
+  - Purged `peak-199` (Mount Madoriama, 2,999 ft) and all 28 corrupted sub-1,000 ft entries, reducing total features from 3,002 to 2,973.
+- **Systematic Architecture Proposed**:
+  - Outlined automated DEM summit-snapping via raster local-maximum hill climbing, prominence filtering ($\ge 1,000\text{ ft}$ / $300\text{ m}$), and migration to authoritative geodetic survey benchmarks (USGS GNIS, Swisstopo, Andrew Kirmse Global Prominence) to permanently end manual coordinate fixes.
+
+---
+
+## 2026-10-25
+
 ### `fix: restore ground clamping on flight end to lock mouse pivot to terrain`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: When zoomed in close to mountain terrain (e.g. z=14–16), right-click drag (pitch/bearing rotation), panning, and scroll-zooming felt "way too loose and disconnected". Reloading the page restored tight, anchored navigation.

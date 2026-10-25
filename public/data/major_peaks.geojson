@@ -1628,31 +1628,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-65",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          114.872,
-          4.04647
-        ]
-      },
-      "properties": {
-        "id": "peak-65",
-        "name": "Bukit Batu Bujang Pahang",
-        "elevation_ft": 230,
-        "elevation_m": 70,
-        "elevation_formatted_ft": "230'",
-        "elevation_formatted_m": "70 m",
-        "label_ft": "▲ Bukit Batu Bujang Pahang · 230'",
-        "label_m": "▲ Bukit Batu Bujang Pahang · 70 m",
-        "label_stacked_ft": "▲ Bukit Batu Bujang Pahang\n230'",
-        "label_stacked_m": "▲ Bukit Batu Bujang Pahang\n70 m",
-        "sort_key": 39770,
-        "continent": "Asia"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-66",
       "geometry": {
         "type": "Point",
@@ -3878,31 +3853,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-155",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          116.467,
-          -8.41667
-        ]
-      },
-      "properties": {
-        "id": "peak-155",
-        "name": "Mount Rinjani",
-        "elevation_ft": 13,
-        "elevation_m": 4,
-        "elevation_formatted_ft": "13'",
-        "elevation_formatted_m": "4 m",
-        "label_ft": "▲ Mount Rinjani · 13'",
-        "label_m": "▲ Mount Rinjani · 4 m",
-        "label_stacked_ft": "▲ Mount Rinjani\n13'",
-        "label_stacked_m": "▲ Mount Rinjani\n4 m",
-        "sort_key": 39987,
-        "continent": "Asia"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-156",
       "geometry": {
         "type": "Point",
@@ -4973,31 +4923,6 @@
         "label_stacked_ft": "▲ Mount Aso\n5,223'",
         "label_stacked_m": "▲ Mount Aso\n1,592 m",
         "sort_key": 34777,
-        "continent": "Asia"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-199",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          137.825,
-          36.2561
-        ]
-      },
-      "properties": {
-        "id": "peak-199",
-        "name": "Mount Madoriama",
-        "elevation_ft": 2999,
-        "elevation_m": 914,
-        "elevation_formatted_ft": "2,999'",
-        "elevation_formatted_m": "914 m",
-        "label_ft": "▲ Mount Madoriama · 2,999'",
-        "label_m": "▲ Mount Madoriama · 914 m",
-        "label_stacked_ft": "▲ Mount Madoriama\n2,999'",
-        "label_stacked_m": "▲ Mount Madoriama\n914 m",
-        "sort_key": 37001,
         "continent": "Asia"
       }
     },
@@ -8628,31 +8553,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-345",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          122.706349,
-          11.042576
-        ]
-      },
-      "properties": {
-        "id": "peak-345",
-        "name": "Hamugnaw Peak",
-        "elevation_ft": 755,
-        "elevation_m": 230,
-        "elevation_formatted_ft": "755'",
-        "elevation_formatted_m": "230 m",
-        "label_ft": "▲ Hamugnaw Peak · 755'",
-        "label_m": "▲ Hamugnaw Peak · 230 m",
-        "label_stacked_ft": "▲ Hamugnaw Peak\n755'",
-        "label_stacked_m": "▲ Hamugnaw Peak\n230 m",
-        "sort_key": 39245,
-        "continent": "Asia"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-346",
       "geometry": {
         "type": "Point",
@@ -8928,31 +8828,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-357",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          122.235,
-          11.1406
-        ]
-      },
-      "properties": {
-        "id": "peak-357",
-        "name": "Mount Baloy",
-        "elevation_ft": 7,
-        "elevation_m": 2,
-        "elevation_formatted_ft": "7'",
-        "elevation_formatted_m": "2 m",
-        "label_ft": "▲ Mount Baloy · 7'",
-        "label_m": "▲ Mount Baloy · 2 m",
-        "label_stacked_ft": "▲ Mount Baloy\n7'",
-        "label_stacked_m": "▲ Mount Baloy\n2 m",
-        "sort_key": 39993,
-        "continent": "Asia"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-358",
       "geometry": {
         "type": "Point",
@@ -9078,31 +8953,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-363",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          122.178,
-          11.3963
-        ]
-      },
-      "properties": {
-        "id": "peak-363",
-        "name": "Mount Madias",
-        "elevation_ft": 7,
-        "elevation_m": 2,
-        "elevation_formatted_ft": "7'",
-        "elevation_formatted_m": "2 m",
-        "label_ft": "▲ Mount Madias · 7'",
-        "label_m": "▲ Mount Madias · 2 m",
-        "label_stacked_ft": "▲ Mount Madias\n7'",
-        "label_stacked_m": "▲ Mount Madias\n2 m",
-        "sort_key": 39993,
-        "continent": "Asia"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-364",
       "geometry": {
         "type": "Point",
@@ -9148,31 +8998,6 @@
         "label_stacked_ft": "▲ Mount Masaraga\n4,357'",
         "label_stacked_m": "▲ Mount Masaraga\n1,328 m",
         "sort_key": 35643,
-        "continent": "Asia"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-366",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          122.208,
-          11.268
-        ]
-      },
-      "properties": {
-        "id": "peak-366",
-        "name": "Mount Nangtud",
-        "elevation_ft": 7,
-        "elevation_m": 2,
-        "elevation_formatted_ft": "7'",
-        "elevation_formatted_m": "2 m",
-        "label_ft": "▲ Mount Nangtud · 7'",
-        "label_m": "▲ Mount Nangtud · 2 m",
-        "label_stacked_ft": "▲ Mount Nangtud\n7'",
-        "label_stacked_m": "▲ Mount Nangtud\n2 m",
-        "sort_key": 39993,
         "continent": "Asia"
       }
     },
@@ -12928,31 +12753,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-517",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          174.764167,
-          -36.879722
-        ]
-      },
-      "properties": {
-        "id": "peak-517",
-        "name": "Mount Eden",
-        "elevation_ft": 643,
-        "elevation_m": 196,
-        "elevation_formatted_ft": "643'",
-        "elevation_formatted_m": "196 m",
-        "label_ft": "▲ Mount Eden · 643'",
-        "label_m": "▲ Mount Eden · 196 m",
-        "label_stacked_ft": "▲ Mount Eden\n643'",
-        "label_stacked_m": "▲ Mount Eden\n196 m",
-        "sort_key": 39357,
-        "continent": "Australia/Oceania"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-518",
       "geometry": {
         "type": "Point",
@@ -15978,31 +15778,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-639",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          4.96667,
-          50.9667
-        ]
-      },
-      "properties": {
-        "id": "peak-639",
-        "name": "Scherpenheuvel",
-        "elevation_ft": 164,
-        "elevation_m": 50,
-        "elevation_formatted_ft": "164'",
-        "elevation_formatted_m": "50 m",
-        "label_ft": "▲ Scherpenheuvel · 164'",
-        "label_m": "▲ Scherpenheuvel · 50 m",
-        "label_stacked_ft": "▲ Scherpenheuvel\n164'",
-        "label_stacked_m": "▲ Scherpenheuvel\n50 m",
-        "sort_key": 39836,
-        "continent": "Europe"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-640",
       "geometry": {
         "type": "Point",
@@ -16753,31 +16528,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-670",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          17,
-          49
-        ]
-      },
-      "properties": {
-        "id": "peak-670",
-        "name": "Jochy",
-        "elevation_ft": 682,
-        "elevation_m": 208,
-        "elevation_formatted_ft": "682'",
-        "elevation_formatted_m": "208 m",
-        "label_ft": "▲ Jochy · 682'",
-        "label_m": "▲ Jochy · 208 m",
-        "label_stacked_ft": "▲ Jochy\n682'",
-        "label_stacked_m": "▲ Jochy\n208 m",
-        "sort_key": 39318,
-        "continent": "Europe"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-671",
       "geometry": {
         "type": "Point",
@@ -16898,31 +16648,6 @@
         "label_stacked_ft": "▲ Snezka\n5,256'",
         "label_stacked_m": "▲ Snezka\n1,602 m",
         "sort_key": 34744,
-        "continent": "Europe"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-676",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          9.826228,
-          55.997189
-        ]
-      },
-      "properties": {
-        "id": "peak-676",
-        "name": "Mollehoj",
-        "elevation_ft": 558,
-        "elevation_m": 170,
-        "elevation_formatted_ft": "558'",
-        "elevation_formatted_m": "170 m",
-        "label_ft": "▲ Mollehoj · 558'",
-        "label_m": "▲ Mollehoj · 170 m",
-        "label_stacked_ft": "▲ Mollehoj\n558'",
-        "label_stacked_m": "▲ Mollehoj\n170 m",
-        "sort_key": 39442,
         "continent": "Europe"
       }
     },
@@ -21353,56 +21078,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-854",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -8.112668,
-          55.033889
-        ]
-      },
-      "properties": {
-        "id": "peak-854",
-        "name": "Mount Errigal",
-        "elevation_ft": 751,
-        "elevation_m": 229,
-        "elevation_formatted_ft": "751'",
-        "elevation_formatted_m": "229 m",
-        "label_ft": "▲ Mount Errigal · 751'",
-        "label_m": "▲ Mount Errigal · 229 m",
-        "label_stacked_ft": "▲ Mount Errigal\n751'",
-        "label_stacked_m": "▲ Mount Errigal\n229 m",
-        "sort_key": 39249,
-        "continent": "Europe"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-855",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -9.830913,
-          53.637375
-        ]
-      },
-      "properties": {
-        "id": "peak-855",
-        "name": "Mweelrea",
-        "elevation_ft": 814,
-        "elevation_m": 248,
-        "elevation_formatted_ft": "814'",
-        "elevation_formatted_m": "248 m",
-        "label_ft": "▲ Mweelrea · 814'",
-        "label_m": "▲ Mweelrea · 248 m",
-        "label_stacked_ft": "▲ Mweelrea\n814'",
-        "label_stacked_m": "▲ Mweelrea\n248 m",
-        "sort_key": 39186,
-        "continent": "Europe"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-856",
       "geometry": {
         "type": "Point",
@@ -21423,31 +21098,6 @@
         "label_stacked_ft": "▲ Ago di Tredenus\n9,022'",
         "label_stacked_m": "▲ Ago di Tredenus\n2,750 m",
         "sort_key": 30978,
-        "continent": "Europe"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-857",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          9.706682,
-          40.089199
-        ]
-      },
-      "properties": {
-        "id": "peak-857",
-        "name": "Aguglia di Goloritzè",
-        "elevation_ft": 541,
-        "elevation_m": 165,
-        "elevation_formatted_ft": "541'",
-        "elevation_formatted_m": "165 m",
-        "label_ft": "▲ Aguglia di Goloritzè · 541'",
-        "label_m": "▲ Aguglia di Goloritzè · 165 m",
-        "label_stacked_ft": "▲ Aguglia di Goloritzè\n541'",
-        "label_stacked_m": "▲ Aguglia di Goloritzè\n165 m",
-        "sort_key": 39459,
         "continent": "Europe"
       }
     },
@@ -24848,56 +24498,6 @@
         "label_stacked_ft": "▲ Schönberg\n6,903'",
         "label_stacked_m": "▲ Schönberg\n2,104 m",
         "sort_key": 33097,
-        "continent": "Europe"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-994",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          25.634444,
-          54.529444
-        ]
-      },
-      "properties": {
-        "id": "peak-994",
-        "name": "Aukstojas",
-        "elevation_ft": 961,
-        "elevation_m": 293,
-        "elevation_formatted_ft": "961'",
-        "elevation_formatted_m": "293 m",
-        "label_ft": "▲ Aukstojas · 961'",
-        "label_m": "▲ Aukstojas · 293 m",
-        "label_stacked_ft": "▲ Aukstojas\n961'",
-        "label_stacked_m": "▲ Aukstojas\n293 m",
-        "sort_key": 39039,
-        "continent": "Europe"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-995",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          25.5667,
-          54.4667
-        ]
-      },
-      "properties": {
-        "id": "peak-995",
-        "name": "Juozapine",
-        "elevation_ft": 965,
-        "elevation_m": 294,
-        "elevation_formatted_ft": "965'",
-        "elevation_formatted_m": "294 m",
-        "label_ft": "▲ Juozapine · 965'",
-        "label_m": "▲ Juozapine · 294 m",
-        "label_stacked_ft": "▲ Juozapine\n965'",
-        "label_stacked_m": "▲ Juozapine\n294 m",
-        "sort_key": 39035,
         "continent": "Europe"
       }
     },
@@ -44553,31 +44153,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-1782",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -149.74317,
-          61.141229
-        ]
-      },
-      "properties": {
-        "id": "peak-1782",
-        "name": "Hilltop",
-        "elevation_ft": 892,
-        "elevation_m": 272,
-        "elevation_formatted_ft": "892'",
-        "elevation_formatted_m": "272 m",
-        "label_ft": "▲ Hilltop · 892'",
-        "label_m": "▲ Hilltop · 272 m",
-        "label_stacked_ft": "▲ Hilltop\n892'",
-        "label_stacked_m": "▲ Hilltop\n272 m",
-        "sort_key": 39108,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-1783",
       "geometry": {
         "type": "Point",
@@ -47798,31 +47373,6 @@
         "label_stacked_ft": "▲ Milestone Mountain\n13,642'",
         "label_stacked_m": "▲ Milestone Mountain\n4,158 m",
         "sort_key": 26358,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-1912",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -120.86755,
-          35.36943
-        ]
-      },
-      "properties": {
-        "id": "peak-1912",
-        "name": "Morro Rock",
-        "elevation_ft": 581,
-        "elevation_m": 177,
-        "elevation_formatted_ft": "581'",
-        "elevation_formatted_m": "177 m",
-        "label_ft": "▲ Morro Rock · 581'",
-        "label_m": "▲ Morro Rock · 177 m",
-        "label_stacked_ft": "▲ Morro Rock\n581'",
-        "label_stacked_m": "▲ Morro Rock\n177 m",
-        "sort_key": 39419,
         "continent": "North America"
       }
     },
@@ -52778,31 +52328,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-2111",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -75.520592,
-          39.836476
-        ]
-      },
-      "properties": {
-        "id": "peak-2111",
-        "name": "Ebright Azimuth",
-        "elevation_ft": 443,
-        "elevation_m": 135,
-        "elevation_formatted_ft": "443'",
-        "elevation_formatted_m": "135 m",
-        "label_ft": "▲ Ebright Azimuth · 443'",
-        "label_m": "▲ Ebright Azimuth · 135 m",
-        "label_stacked_ft": "▲ Ebright Azimuth\n443'",
-        "label_stacked_m": "▲ Ebright Azimuth\n135 m",
-        "sort_key": 39557,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-2112",
       "geometry": {
         "type": "Point",
@@ -52823,31 +52348,6 @@
         "label_stacked_ft": "▲ Flattop Mountain\n12,493'",
         "label_stacked_m": "▲ Flattop Mountain\n3,808 m",
         "sort_key": 27507,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-2113",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -86.281867,
-          30.987719
-        ]
-      },
-      "properties": {
-        "id": "peak-2113",
-        "name": "Britton Hill",
-        "elevation_ft": 344,
-        "elevation_m": 105,
-        "elevation_formatted_ft": "344'",
-        "elevation_formatted_m": "105 m",
-        "label_ft": "▲ Britton Hill · 344'",
-        "label_m": "▲ Britton Hill · 105 m",
-        "label_stacked_ft": "▲ Britton Hill\n344'",
-        "label_stacked_m": "▲ Britton Hill\n105 m",
-        "sort_key": 39656,
         "continent": "North America"
       }
     },
@@ -53478,31 +52978,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-2139",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -92.89669,
-          32.424856
-        ]
-      },
-      "properties": {
-        "id": "peak-2139",
-        "name": "Driskill Mountain",
-        "elevation_ft": 535,
-        "elevation_m": 163,
-        "elevation_formatted_ft": "535'",
-        "elevation_formatted_m": "163 m",
-        "label_ft": "▲ Driskill Mountain · 535'",
-        "label_m": "▲ Driskill Mountain · 163 m",
-        "label_stacked_ft": "▲ Driskill Mountain\n535'",
-        "label_stacked_m": "▲ Driskill Mountain\n163 m",
-        "sort_key": 39465,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-2140",
       "geometry": {
         "type": "Point",
@@ -53523,31 +52998,6 @@
         "label_stacked_ft": "▲ Barren Mountain\n2,671'",
         "label_stacked_m": "▲ Barren Mountain\n814 m",
         "sort_key": 37329,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-2141",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -68.1889,
-          44.3333
-        ]
-      },
-      "properties": {
-        "id": "peak-2141",
-        "name": "Beehive",
-        "elevation_ft": 518,
-        "elevation_m": 158,
-        "elevation_formatted_ft": "518'",
-        "elevation_formatted_m": "158 m",
-        "label_ft": "▲ Beehive · 518'",
-        "label_m": "▲ Beehive · 158 m",
-        "label_stacked_ft": "▲ Beehive\n518'",
-        "label_stacked_m": "▲ Beehive\n158 m",
-        "sort_key": 39482,
         "continent": "North America"
       }
     },
@@ -53803,31 +53253,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-2152",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -71.106266,
-          42.641003
-        ]
-      },
-      "properties": {
-        "id": "peak-2152",
-        "name": "Holt Hill",
-        "elevation_ft": 420,
-        "elevation_m": 128,
-        "elevation_formatted_ft": "420'",
-        "elevation_formatted_m": "128 m",
-        "label_ft": "▲ Holt Hill · 420'",
-        "label_m": "▲ Holt Hill · 128 m",
-        "label_stacked_ft": "▲ Holt Hill\n420'",
-        "label_stacked_m": "▲ Holt Hill\n128 m",
-        "sort_key": 39580,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-2153",
       "geometry": {
         "type": "Point",
@@ -53923,31 +53348,6 @@
         "label_stacked_ft": "▲ Eagle Mountain\n2,300'",
         "label_stacked_m": "▲ Eagle Mountain\n701 m",
         "sort_key": 37700,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-2157",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -88.241625,
-          34.787745
-        ]
-      },
-      "properties": {
-        "id": "peak-2157",
-        "name": "Woodall Mountain",
-        "elevation_ft": 807,
-        "elevation_m": 246,
-        "elevation_formatted_ft": "807'",
-        "elevation_formatted_m": "246 m",
-        "label_ft": "▲ Woodall Mountain · 807'",
-        "label_m": "▲ Woodall Mountain · 246 m",
-        "label_stacked_ft": "▲ Woodall Mountain\n807'",
-        "label_stacked_m": "▲ Woodall Mountain\n246 m",
-        "sort_key": 39193,
         "continent": "North America"
       }
     },
@@ -58803,31 +58203,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-2352",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -123.031196,
-          44.053736
-        ]
-      },
-      "properties": {
-        "id": "peak-2352",
-        "name": "Kelly Butte",
-        "elevation_ft": 646,
-        "elevation_m": 197,
-        "elevation_formatted_ft": "646'",
-        "elevation_formatted_m": "197 m",
-        "label_ft": "▲ Kelly Butte · 646'",
-        "label_m": "▲ Kelly Butte · 197 m",
-        "label_stacked_ft": "▲ Kelly Butte\n646'",
-        "label_stacked_m": "▲ Kelly Butte\n197 m",
-        "sort_key": 39354,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-2353",
       "geometry": {
         "type": "Point",
@@ -59553,31 +58928,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-2382",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -123.09306,
-          44.05861
-        ]
-      },
-      "properties": {
-        "id": "peak-2382",
-        "name": "Skinner Butte",
-        "elevation_ft": 682,
-        "elevation_m": 208,
-        "elevation_formatted_ft": "682'",
-        "elevation_formatted_m": "208 m",
-        "label_ft": "▲ Skinner Butte · 682'",
-        "label_m": "▲ Skinner Butte · 208 m",
-        "label_stacked_ft": "▲ Skinner Butte\n682'",
-        "label_stacked_m": "▲ Skinner Butte\n208 m",
-        "sort_key": 39318,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-2383",
       "geometry": {
         "type": "Point",
@@ -60148,31 +59498,6 @@
         "label_stacked_ft": "▲ Mount Davis\n3,212'",
         "label_stacked_m": "▲ Mount Davis\n979 m",
         "sort_key": 36788,
-        "continent": "North America"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-2406",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -71.778896,
-          41.849603
-        ]
-      },
-      "properties": {
-        "id": "peak-2406",
-        "name": "Jerimoth Hill",
-        "elevation_ft": 810,
-        "elevation_m": 247,
-        "elevation_formatted_ft": "810'",
-        "elevation_formatted_m": "247 m",
-        "label_ft": "▲ Jerimoth Hill · 810'",
-        "label_m": "▲ Jerimoth Hill · 247 m",
-        "label_stacked_ft": "▲ Jerimoth Hill\n810'",
-        "label_stacked_m": "▲ Jerimoth Hill\n247 m",
-        "sort_key": 39190,
         "continent": "North America"
       }
     },
@@ -72228,31 +71553,6 @@
     },
     {
       "type": "Feature",
-      "id": "peak-2889",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -109.283447,
-          -27.124245
-        ]
-      },
-      "properties": {
-        "id": "peak-2889",
-        "name": "Volcan Ranu Raraku",
-        "elevation_ft": 820,
-        "elevation_m": 250,
-        "elevation_formatted_ft": "820'",
-        "elevation_formatted_m": "250 m",
-        "label_ft": "▲ Volcan Ranu Raraku · 820'",
-        "label_m": "▲ Volcan Ranu Raraku · 250 m",
-        "label_stacked_ft": "▲ Volcan Ranu Raraku\n820'",
-        "label_stacked_m": "▲ Volcan Ranu Raraku\n250 m",
-        "sort_key": 39180,
-        "continent": "South America"
-      }
-    },
-    {
-      "type": "Feature",
       "id": "peak-2890",
       "geometry": {
         "type": "Point",
@@ -72448,31 +71748,6 @@
         "label_stacked_ft": "▲ Santa Isabel\n17,093'",
         "label_stacked_m": "▲ Santa Isabel\n5,210 m",
         "sort_key": 22907,
-        "continent": "South America"
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "peak-2898",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -78.141,
-          -0.481
-        ]
-      },
-      "properties": {
-        "id": "peak-2898",
-        "name": "Antisana",
-        "elevation_ft": 16,
-        "elevation_m": 5,
-        "elevation_formatted_ft": "16'",
-        "elevation_formatted_m": "5 m",
-        "label_ft": "▲ Antisana · 16'",
-        "label_m": "▲ Antisana · 5 m",
-        "label_stacked_ft": "▲ Antisana\n16'",
-        "label_stacked_m": "▲ Antisana\n5 m",
-        "sort_key": 39984,
         "continent": "South America"
       }
     },
