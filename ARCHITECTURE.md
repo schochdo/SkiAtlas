@@ -29,48 +29,71 @@ These are permanent constraints. Do not violate them.
 ```
 SkiAtlas/
 ├── src/
-│   ├── App.tsx              ← ENTIRE app: types, data, map, UI (monolithic by design)
-│   ├── main.tsx             ← React root mount
-│   ├── index.css            ← Tailwind base + MapLibre overrides
+│   ├── App.tsx                    ← Core orchestrator & map viewport (~2,800 lines)
+│   ├── main.tsx                   ← React root mount
+│   ├── index.css                  ← Tailwind base + MapLibre overrides
+│   ├── types/
+│   │   └── index.ts               ← SkiResort, PassNetwork, BasemapMode, SortBy, etc.
+│   ├── utils/
+│   │   ├── formatters.ts          ← Unit hygiene helpers: formatSnow, formatVert, formatAcres, formatDistance
+│   │   ├── camera.ts              ← safeFlyTo, safeEaseTo, programmatic flight coordination
+│   │   ├── geometry.ts            ← extractPointCoordinates, haversineDistanceKm
+│   │   ├── classification.ts      ← PASS_COLORS, PASS_DISPLAY_NAMES, getResortStats, getCategoryBadge
+│   │   └── mapStyles.ts           ← MapLibre style JSON factory (satellite, osm, topo, Mapterhorn DEM)
 │   ├── data/
-│   │   └── curatedTrails.ts ← Pre-exported OSM piste/lift GeoJSON (loaded on resort select)
+│   │   ├── resorts.ts             ← Curated flagship ski atlas (GLOBAL_SKI_ATLAS)
+│   │   ├── heliCat.ts             ← Curated heli/cat operators (HELI_CAT_OPERATIONS)
+│   │   └── curatedTrails.ts       ← Pre-exported OSM piste/lift GeoJSON
+│   ├── services/
+│   │   └── weather.ts             ← Open-Meteo live meteorology service & neutral forecast builder
+│   ├── components/
+│   │   ├── header/
+│   │   │   ├── TopNavBar.tsx      ← Editorial brand wordmark, extent reset, fullscreen, popover triggers
+│   │   │   └── FilterModal.tsx    ← Sliders, unit toggles, pass network filters, projection selector
+│   │   ├── sidebar/
+│   │   │   ├── LeftDock.tsx       ← Collapsible desktop drawer container with pull tab
+│   │   │   ├── DirectoryList.tsx  ← Search input, sort bar, scope tabs, active selection banner, resort list
+│   │   │   ├── ResortCard.tsx     ← 3-row editorial resort card with pass chips and 7-day snow chip
+│   │   │   ├── ActiveSelectionBanner.tsx ← Sticky selection & quick deselect banner
+│   │   │   └── MobileSheet.tsx    ← Mobile bottom drawer (peek, half, full states)
+│   │   ├── profile/
+│   │   │   └── MountainProfile.tsx← Mountain profile view: lifts/pistes/acres, vertical/summit/base, 7-day meteorology bars
+│   │   └── map/
+│   │       ├── NavigationControls.tsx ← Vertical [ + ] [ − ] [ ▲ ] zoom and true north snap
+│   │       ├── RegionalLocator.tsx    ← Collapsible 2D MapLibre overview inset (Esri Light Gray Canvas)
+│   │       ├── BasemapMenu.tsx        ← Basemap selector & 3D terrain exaggeration slider
+│   │       ├── CartographicLegend.tsx ← Map key popover & alternating scale bar
+│   │       ├── CompassGimbal.tsx      ← Concentric rotary compass heading & 3D tilt horizon gimbal
+│   │       └── AttributionBadge.tsx   ← Collapsible map attribution pill
 │   └── server/
-│       └── trailsPlugin.ts  ← Vite dev plugin: serves local SQLite trails DB via HTTP
+│       └── trailsPlugin.ts        ← Vite dev plugin: serves local SQLite trails DB via HTTP
 ├── data_pipeline/
-│   ├── trails.db            ← SQLite: OSM piste + lift geometries keyed by resort bbox
-│   ├── build_trails_db.cjs  ← Script: build trails.db from Overpass API
-│   └── export_resort_trails.cjs ← Script: export per-resort GeoJSON from DB
-├── public/                  ← Static assets served as-is
+│   ├── trails.db                  ← SQLite: OSM piste + lift geometries keyed by resort bbox
+│   ├── build_trails_db.cjs        ← Script: build trails.db from Overpass API
+│   └── export_resort_trails.cjs   ← Script: export per-resort GeoJSON from DB
+├── public/                        ← Static assets served as-is
 ├── index.html
 ├── vite.config.ts
-└── CHANGELOG.md             ← Every feature/fix logged here
+└── CHANGELOG.md                   ← Every feature/fix logged here
 ```
 
 ---
 
-## 4. App.tsx Internal Structure (in order)
+## 4. Architectural Organization & Responsibilities
 
-`App.tsx` is a single large file (~4600+ lines). Sections are delimited by `/* === ... === */` banners.
+The codebase follows clean separation of concerns, isolating heavy data sets, domain formatters, network calls, and UI components from the main MapLibre viewport orchestrator.
 
-| Section | Lines (approx) | Purpose |
+| Layer / Directory | Primary Files | Responsibilities |
 |---|---|---|
-| **TYPES** | 35–115 | `SkiResort`, `ResortWeatherData`, `DailyForecast`, `PisteFeature`, etc. |
-| **GEOMETRY HELPERS** | 116–156 | `extractPointCoordinates()` — safe centroid from Point/Polygon geom |
-| **SAFE CAMERA** | 158–210 | `safeFlyTo()` — validates coords before any `map.flyTo()` call |
-| **DATA: GLOBAL_SKI_ATLAS** | 306–~1630 | Static array of ~91 curated `SkiResort` objects |
-| **DATA: HELI_CAT_OPERATIONS** | ~1630–1640 | Heli/cat ski operators (separate from downhill resorts) |
-| **getNeutralWeather()** | ~1639 | Returns zeroed `ResortWeatherData` as placeholder before live fetch |
-| **fetchLiveWeather()** | 1658–1721 | Async: calls Open-Meteo API, returns `ResortWeatherData` |
-| **APP COMPONENT** | 1727+ | Main `export default function App()` |
-| ↳ State declarations | 1727–1810 | All `useState` / `useRef` hooks |
-| ↳ **Weather prefetch** | ~1967 | `useEffect` — on mount, batch-fetches weather for ALL resorts (5 concurrent) |
-| ↳ Map initialization | ~2008 | MapLibre GL map setup, globe/mercator, terrain, sources, layers |
-| ↳ Layer effects | ~2619+ | `useEffect` hooks for basemap changes, 3D terrain, cluster updates, etc. |
-| ↳ `handleSelectResort` | ~3520 | Click handler: flies to resort, fetches fresh weather, loads trails |
-| ↳ `displayedResorts` memo | ~1905 | Combines `filteredResorts` (sorted) with `directoryScope` (in_frame vs all) |
-| ↳ Render: Left dock | ~3620 | Directory tray with resort cards |
-| ↳ Render: Unified dock | ~4100 | Directory list or Mountain Profile with weather, stats table, forecast bars |
-| ↳ Render: Map controls | ~3960 | North arrow, zoom +/-, basemap picker, compass gyro |
+| **Types** | `src/types/index.ts` | Complete TypeScript domain interfaces (`SkiResort`, `PassNetwork`, `DailyForecast`, `ResortWeatherData`, etc.) |
+| **Data Modules** | `src/data/resorts.ts`, `src/data/heliCat.ts` | Static curated flagship resorts (~91 global ski areas) and heli/cat operators. Separated from component closures to prevent HMR recompilation slowdowns. |
+| **Utilities** | `src/utils/` | Formatters (unit hygiene), camera bounds validation (`safeFlyTo`), geometry math (`haversineDistanceKm`), pass & badge classifications (`classifySkiFeature`), and MapLibre style factories. |
+| **Services** | `src/services/weather.ts` | Asynchronous Open-Meteo live weather queries, temperature/snowfall caching, and batch prefetch orchestration. |
+| **Header Components** | `src/components/header/` | `TopNavBar` (brand crest, global extent reset, display popover triggers) and `FilterModal` (pass toggles, sliders, unit selectors). |
+| **Sidebar Components** | `src/components/sidebar/` | `LeftDock`, `DirectoryList`, `ResortCard`, `ActiveSelectionBanner`, and `MobileSheet`. Manages directory search, sorting, and responsive drawer transitions. |
+| **Profile Components** | `src/components/profile/` | `MountainProfile` provides deep editorial inspection of selected mountains (elevation profiles, lifts/pistes stats, official website links, and 7-day meteorology bars). |
+| **Map Instruments** | `src/components/map/` | `NavigationControls`, `RegionalLocator`, `BasemapMenu`, `CartographicLegend`, `CompassGimbal`, and `AttributionBadge`. Self-contained cartographic instruments with click-outside handlers and independent 2D MapLibre instances. |
+| **Core Orchestrator** | `src/App.tsx` | Main application coordinating the primary 3D MapLibre GL map canvas, real-time Overpass SQLite trail streaming, camera gestures, and shared selection state. |
 
 ---
 

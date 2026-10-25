@@ -37,7 +37,7 @@ This is the primary mechanism for preserving context across sessions and model s
 - **Editorial cartographic layout** — not a dashboard grid
 - **Unit hygiene** — always use `formatSnow()`, `formatVert()`, `formatAcres()` helpers; never raw numbers
 - **No temperature on resort cards** — snow quantity only; temperature belongs in the detail mountain profile
-- **Monolithic `src/App.tsx`** — do not split into components without explicit instruction
+- **Modular Architecture** — `src/App.tsx` orchestrates dedicated sub-components (`src/components/`), services (`src/services/`), data modules (`src/data/`), types (`src/types/`), and utilities (`src/utils/`). Do not re-collapse into a single monolithic file.
 - **No backend** — client-side only; no server dependencies
 - **Always use `safeFlyTo()`** — never call `map.flyTo()` directly
 
