@@ -49,5 +49,6 @@ This is the primary mechanism for preserving context across sessions and model s
 - **Default sort is `'snow'` (7-day), not `'vert'`**
 - **Default projection is `'mercator'` (flat map)** at global scope `[12, 28]` z=1.8, with OpenStreetMap (OSM) basemap by default
 - **Default directory scope is `'all'` (All Matching)**, with `[ ALL MATCHING ]` positioned before `[ IN FRAME ]`
+- **Sort bar lists `'A-Z'` first**: `[ A-Z ] [ Vert ] [ Acres ] [ 7-Day ❄ ]`, while keeping `'snow'` as the default active sort
 - **Selected resort card outline**: Whole box is outlined with a prominent 2px border and shadow
 - **Weather prefetch fires on mount** (batches of 5, 200ms apart) — do not remove this

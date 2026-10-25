@@ -5305,6 +5305,15 @@ export default function App() {
             </span>
             <div className="flex items-center gap-1 bg-[#FAF8F3] p-0.5 rounded-md border border-[#D6D0C2]">
               <button
+                onClick={() => handleSortClick('name')}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                  sortBy === 'name' ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299] shadow-2xs' : 'text-[#5C5852] hover:text-[#1C1B18]'
+                }`}
+              >
+                <span>A-Z</span>
+                {sortBy === 'name' && <span className="text-[10px] ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+              </button>
+              <button
                 onClick={() => handleSortClick('vert')}
                 className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                   sortBy === 'vert' ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299] shadow-2xs' : 'text-[#5C5852] hover:text-[#1C1B18]'
@@ -5321,15 +5330,6 @@ export default function App() {
               >
                 <span>{showNordic && !showDownhill && !showHeliCat ? 'Network' : 'Acres'}</span>
                 {sortBy === 'acres' && <span className="text-[10px] ml-1">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
-              </button>
-              <button
-                onClick={() => handleSortClick('name')}
-                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                  sortBy === 'name' ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299] shadow-2xs' : 'text-[#5C5852] hover:text-[#1C1B18]'
-                }`}
-              >
-                <span>A-Z</span>
-                {sortBy === 'name' && <span className="text-[10px] ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
               </button>
               <button
                 onClick={() => handleSortClick('snow')}

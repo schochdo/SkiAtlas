@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: list A-Z first in sort controls while preserving default 7-day snow ranking`
+- **Reordered Sort Control Options**:
+  - Repositioned the **`[ A-Z ]`** sort button to the first (far-left) slot in the directory sort bar: `[ A-Z ] [ Vert ] [ Acres ] [ 7-Day ❄ ]`.
+  - Maintained the default sort state as **`snow`** (`sortBy = 'snow'`, descending) so the application continues to prioritize live 7-day snowfall forecasts on initial mount.
+
+---
+
 ### `fix: purge "A venir" placeholder and filter out lone trail traces lacking ski infrastructure`
 - **Purged "A venir" Pseudo-Ski Area**:
   - **What was wrong**: A feature labeled "A venir" with a single trail labeled "La leçon" appeared on the map in Quebec, Canada as a downhill ski area. "À venir" is French for "Coming soon / TBD / Proposed". It was an isolated backcountry/hiking trace in the woods with 0 lifts, 0 infrastructure, and 1 trail, erroneously tagged in OpenStreetMap as an operating downhill skiArea relation.
