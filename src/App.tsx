@@ -3241,10 +3241,12 @@ export default function App() {
             'match',
             ['get', 'difficulty'],
             'novice', '#2E7D32',       // Alpine Green
+            'easy', '#2E7D32',         // Alpine Green
             'intermediate', '#1565C0', // Cobalt Blue
             'advanced', '#1C1B18',     // Black Diamond
             'expert', '#B84A39',       // Double Black Vermilion
-            'freeride', '#C25916',     // Backcountry / Freeride Ochre
+            'extreme', '#B84A39',      // Double Black Vermilion
+            'freeride', '#B84A39',     // Double Black / Freeride Vermilion
             '#8A847C',
           ],
           'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.2, 14, 2.2, 17, 3.0],
@@ -3691,28 +3693,15 @@ export default function App() {
     const allowedConditions: any[] = [];
 
     if (showDownhill) {
-      allowedConditions.push([
-        'all',
-        ['!=', ['get', 'piste:type'], 'nordic'],
-        ['!=', ['coalesce', ['get', 'grooming'], ''], 'backcountry'],
-        ['!=', ['coalesce', ['get', 'difficulty'], ''], 'freeride'],
-      ]);
+      allowedConditions.push(['!=', ['get', 'piste:type'], 'nordic']);
     }
 
     if (showNordic) {
-      allowedConditions.push([
-        'all',
-        ['==', ['get', 'piste:type'], 'nordic'],
-        ['!=', ['coalesce', ['get', 'grooming'], ''], 'backcountry'],
-      ]);
+      allowedConditions.push(['==', ['get', 'piste:type'], 'nordic']);
     }
 
-    if (showHeliCat) {
-      allowedConditions.push([
-        'any',
-        ['==', ['coalesce', ['get', 'grooming'], ''], 'backcountry'],
-        ['==', ['coalesce', ['get', 'difficulty'], ''], 'freeride'],
-      ]);
+    if (showHeliCat && !showDownhill) {
+      allowedConditions.push(['!=', ['get', 'piste:type'], 'nordic']);
     }
 
     // Restrict piste strokes to LineStrings to avoid stroking perimeter boundaries of clearing polygons

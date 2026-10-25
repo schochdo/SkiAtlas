@@ -6,6 +6,15 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `fix: restore expert & freeride downhill terrain to Downhill category toggle`
+- **Decoupled Downhill Expert Terrain from Heli/Cat Toggle**:
+  - **What was wrong**: At downhill resorts like Taos Ski Valley and Jackson Hole, world-famous double-black chutes, bowls, and ridge runs (e.g. *Corbet's Couloir*, *S&S Couloir*, *Rendezvous Bowl*, *West Basin Ridge*, *Highline Ridge*, *Wild West Glade*) were disappearing when Heli/Cat was off, and only appeared when the user toggled "Heli / Cat". This occurred because the trail layer visibility filter in `src/App.tsx` incorrectly excluded `grooming === 'backcountry'` and `difficulty === 'freeride'` from `showDownhill`, and delegated them to `showHeliCat`. In OpenStreetMap, un-groomed hike-to bowls, glades, and steep chutes at downhill ski areas are routinely tagged as `piste:grooming=backcountry` or `piste:difficulty=freeride`.
+  - **The fix**: Simplified `showDownhill` trail conditions to `['!=', ['get', 'piste:type'], 'nordic']`, ensuring that ALL downhill pistes—from greens and blues to double-black chutes, freeride bowls, and glades—remain visible whenever the Downhill category is active. Toggling "Heli / Cat" now solely affects Heli/Cat operations and no longer alters downhill ski resort terrain.
+- **Enhanced Piste Difficulty Styling**:
+  - Added support for `easy` (`#2E7D32` Alpine Green) alongside `novice`, and mapped `extreme` and `freeride` to `#B84A39` (Double Black / Vermilion), preventing 71,635 green runs and steep chutes from falling back to slate gray.
+
+---
+
 ### `fix: filter out random backcountry trails and enforce tight resort bounding boxes`
 - **Filtered Out Random Trails & Orphan Backcountry Traces**:
   - **What was wrong**: When panning the map or selecting a resort (e.g. Stowe, VT), random backcountry hiking loops, woods paths, and orphaned OpenStreetMap ways (such as *Papa's Trail*, *Upper Gorge Loop*, and disconnected forest segments in Vermont's Sterling Forest) were rendered over the trees. This occurred because `/api/trails?bbox=` queried the `trails` table without joining `resort_trails`, dumping thousands of unlinked non-resort routes onto the map.
