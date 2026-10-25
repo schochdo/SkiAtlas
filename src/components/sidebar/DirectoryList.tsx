@@ -2,7 +2,6 @@ import React from 'react';
 import { Search, X } from 'lucide-react';
 import type { SkiResort, SortBy, SortOrder, DirectoryScope } from '../../types';
 import { ResortCard } from './ResortCard';
-import { ActiveSelectionBanner } from './ActiveSelectionBanner';
 
 interface DirectoryListProps {
   searchQuery: string;
@@ -153,11 +152,6 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
         </button>
       </div>
 
-      {/* Sticky Active Selection Banner when a ski area is selected */}
-      <ActiveSelectionBanner
-        selectedResort={selectedResort}
-        onDeselect={onDeselectResort}
-      />
 
       {/* Directory Cards List */}
       <div className="flex-1 min-h-0 overflow-y-auto bg-[#F7F4ED] p-2.5 space-y-2">

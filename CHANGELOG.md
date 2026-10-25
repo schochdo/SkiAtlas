@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `refactor: remove redundant Selected Area banner above active resort card`
+- **Eliminated Duplicate Header in Left Sidebar Directory**:
+  - **What was wrong before**: When a resort was selected, the directory list displayed a sticky banner `● SELECTED AREA / [Resort Name] [✕ Deselect]` directly above the selected resort card, which already contained the identical resort title, pass chips, geographic location, stats, and its own `[✕ Deselect]` and `[Mountain Profile >]` buttons. This created visual noise, redundant layout chrome, and duplicate action targets.
+  - **Cleanup in [`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx)**: Removed `<ActiveSelectionBanner />` and its component file, allowing the prominent active resort card (with its 2px editorial outline, drop shadow, and embedded deselect/profile controls) to display cleanly beneath the directory scope tabs (`[ ALL MATCHING ] [ IN FRAME ]`).
+  - **Verification**: Verified via headless Chrome CDP visual inspection and screenshot comparison that the active resort card displays cleanly and directly under the directory controls without duplicated headers.
+
+---
+
 ### `fix: eliminate map panning freeze and stuck left-button/trackpad dragPan state`
 - **Root Cause Diagnosis for Intermittent Drag Pan Freezes**:
   - **What was wrong before**: Occasionally, panning the map with the left mouse button or trackpad would stop working completely and become frozen/stuck, while arrow keys and right-mouse rotation movements continued to work normally.
