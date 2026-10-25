@@ -95,6 +95,17 @@ export const AttributionBadge: React.FC<AttributionBadgeProps> = ({
               Mapterhorn
             </a>
           </span>
+          <span>·</span>
+          <span>
+            <a
+              href="https://open-meteo.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[#1C1B18]"
+            >
+              Open-Meteo
+            </a>
+          </span>
           <button
             onClick={onClose}
             className="ml-0.5 text-[#8A847C] hover:text-[#1C1B18] cursor-pointer"

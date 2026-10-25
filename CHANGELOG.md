@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `docs: add Open-Meteo attribution badge link for open data licensing compliance`
+- Added Open-Meteo link and attribution to `AttributionBadge.tsx` alongside OpenStreetMap (ODbL), OpenSkiData (ODbL / CC-BY-SA), Esri, and Mapterhorn, fulfilling CC-BY 4.0 meteorology attribution compliance for open-source distribution.
+
+---
+
 ### `fix: center overview world map on active region and pin current area on overview inset`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: When viewing Tyrol, Austria (or other regions without a selected resort card), clicking "World" on the Regional Overview inset map centered at `[0, 25]` (in the Sahara Desert, Algeria), shoving Tyrol and the Alps off the upper border of the inset map. Additionally, when unselected at regional zoom, there was no pin dot on the overview map to identify where the user was looking.
