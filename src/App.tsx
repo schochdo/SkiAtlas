@@ -5814,7 +5814,45 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-medium">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-medium">
+          {/* Segmented Projection Switcher: 3D Globe / Flat Map (Icons Only) */}
+          <div
+            className="flex items-center bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-0.5"
+            role="group"
+            aria-label="Earth projection"
+          >
+            <button
+              onClick={() => {
+                setEarthProjection('globe');
+                if (mapRef.current && mapRef.current.getZoom() < 5) {
+                  safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
+                  setMapPitch(0);
+                }
+              }}
+              className={`p-1.5 rounded-[4px] transition-colors cursor-pointer flex items-center justify-center ${
+                earthProjection === 'globe'
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                  : 'text-[#8A847C] hover:text-[#1C1B18]'
+              }`}
+              title="3D Globe Projection"
+              aria-label="3D Globe Projection"
+            >
+              <Globe className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setEarthProjection('mercator')}
+              className={`p-1.5 rounded-[4px] transition-colors cursor-pointer flex items-center justify-center ${
+                earthProjection === 'mercator'
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                  : 'text-[#8A847C] hover:text-[#1C1B18]'
+              }`}
+              title="Flat Map Projection"
+              aria-label="Flat Map Projection"
+            >
+              <Layers className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
           {/* Segmented Unit Switcher: ft / m */}
           <div
             className="flex items-center bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-0.5"
@@ -6103,43 +6141,6 @@ export default function App() {
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
-              </div>
-
-              {/* EARTH PROJECTION SELECTION */}
-              <div>
-                <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider mb-1.5">
-                  Earth Projection
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <button
-                    onClick={() => {
-                      setEarthProjection('globe');
-                      if (mapRef.current && mapRef.current.getZoom() < 5) {
-                        safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
-                        setMapPitch(0);
-                      }
-                    }}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-md border text-xs font-semibold transition-all cursor-pointer ${
-                      earthProjection === 'globe'
-                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
-                        : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
-                    }`}
-                  >
-                    <Globe className="w-3.5 h-3.5 text-[#5C5852]" />
-                    <span>3D Globe</span>
-                  </button>
-                  <button
-                    onClick={() => setEarthProjection('mercator')}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-md border text-xs font-semibold transition-all cursor-pointer ${
-                      earthProjection === 'mercator'
-                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
-                        : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4]'
-                    }`}
-                  >
-                    <Layers className="w-3.5 h-3.5 text-[#5C5852]" />
-                    <span>Flat Map</span>
-                  </button>
-                </div>
               </div>
 
               {/* BASEMAP STYLE SELECTION */}

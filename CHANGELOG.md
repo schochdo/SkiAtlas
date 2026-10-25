@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: move 3D globe and flat map toggles to top nav bar next to ft/m as icon-only switcher`
+- **Icon-Only Projection Switcher in Top Navigation Bar**:
+  - Added a segmented pill switcher (`[ 🌐 | 🥞 ]`) directly to the top-right navigation bar alongside `[ ft | m ]` and the fullscreen button.
+  - Sized and styled with identical container dimensions (`bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-0.5`), active pill styling (`bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs`), and hover states as the unit switcher.
+  - Features icon-only triggers: `<Globe className="w-3.5 h-3.5" />` for 3D Globe and `<Layers className="w-3.5 h-3.5" />` for Flat Map (Mercator), with accessible `title` and `aria-label` attributes.
+- **Removed Earth Projection from Basemap Popover**:
+  - Removed the `Earth Projection` block from the floating Basemap menu. The popover now focuses cleanly on Cartographic Base layers (Satellite 3D, OpenStreetMap, Alpine Topo) and Terrain Relief exaggeration.
+- **Verification**:
+  - Verified with `npm run build` (passed in 313ms).
+  - Captured screenshots verifying layout across desktop and mobile screens (`top_nav_desktop.png`, `top_nav_mobile.png`, `basemap_popover_clean.png`).
+
+---
+
 ### `style: increase scale of SNOW GLOBE typography and center crest icon`
 - **Larger Wordmark & Center Crest**:
   - Increased font size of `SNOW` and `GLOBE` from `text-[15px]` to `text-[17px]` with `tracking-[0.16em]` and `leading-none`.
