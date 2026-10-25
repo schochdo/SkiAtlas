@@ -6,6 +6,27 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: add collapsible cartographic world locator inset map`
+- **Added Collapsible Cartographic World Locator Inset Map**:
+  - **Problem Addressed**: Clicking a resort card triggered rapid camera flights across oceans and continents, leaving users disoriented as to where in the world the camera had landed.
+  - **The Solution**: Designed and integrated a standalone, high-performance Equirectangular world overview map widget (`360×180` viewBox) positioned in the bottom-right corner (`bottom-28 right-6`) directly above the rotary navigation dial.
+  - **Real-Time Camera Viewport Indicator**:
+    - Projecting `viewportBounds` and `mapCenter` onto the locator map tracks the main map's view frame smoothly during flights.
+    - At continental zooms, renders a dashed camera bounding box; at high mountain zooms, transitions seamlessly to a centered reticle framing the mountain.
+  - **Selected Resort Locator Beacon**:
+    - When a resort is selected, places an alpine vermilion (`#B84A39`) concentric beacon pin at the resort's coordinates.
+    - Displays resort title, administrative region, country, and precise formatted coordinates (e.g. `Hemsedal · Viken, Norway · 60.9°N, 8.6°E` or `Treble Cone · Otago, New Zealand · 44.6°S, 168.9°E`).
+  - **Collapsible Ergonomics**:
+    - Minimizes to a sleek, archival pill (`[ 🌐 World Locator | Resort Name + ]`) via a collapse button (`−`) to preserve screen real estate.
+    - Clicking the collapsed pill or selecting any resort card smoothly expands the full locator map.
+  - **Interactive Continent Navigation & Global Reset**:
+    - Clicking any location on the world map automatically executes `safeFlyTo` to fly the camera directly to that continent (`zoom: 4.5`).
+    - Dedicated `[ ↺ Global ]` action instantly resets camera to the default global flat map overview (`[12, 28]` z=1.8).
+  - **Pure Vector Implementation**:
+    - Uses Natural Earth 110m simplified land polygons compiled into an SVG path (`WORLD_LAND_PATH`), avoiding secondary WebGL map instances, tile network requests, or memory overhead.
+
+---
+
 ### `feat: streamline resort card category badges to icon-only chips`
 - **Dropped Redundant Category Text Labels on Cards**:
   - Replaced the wordy category badges on resort cards (e.g. `[ ⛷ Downhill ]`, `[ 🎿 Nordic XC ]`, `[ 🚁 Cat & Heli ]`) with compact, icon-only chips (`⛷`, `🎿`, `🚁`).

@@ -35,6 +35,7 @@ import {
   Minimize,
   ArrowLeft,
 } from 'lucide-react';
+import { WORLD_LAND_PATH, projectEquirect, unprojectEquirect } from './data/worldMapData';
 
 /* =========================================================================
    TYPES
@@ -2606,6 +2607,13 @@ export default function App() {
   // Viewport bounds for In Viewport listing
   const [viewportBounds, setViewportBounds] = useState<[number, number, number, number] | null>(null);
 
+  // Collapsible Cartographic World Locator Inset Map
+  const [locatorOpen, setLocatorOpen] = useState<boolean>(() => {
+    return typeof window !== 'undefined' ? window.innerWidth >= 768 : true;
+  });
+  const [mapCenter, setMapCenter] = useState<[number, number]>([12, 28]);
+  const [mapZoom, setMapZoom] = useState<number>(1.8);
+
   // Global Points Ref & Features
   const [showGlobalPoints, setShowGlobalPoints] = useState(true);
   const [categoryCounts, setCategoryCounts] = useState({ downhill: 6955, nordic: 5276, heli_cat: 15 });
@@ -3159,7 +3167,21 @@ export default function App() {
       try {
         const b = map.getBounds();
         setViewportBounds([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
+        const c = map.getCenter();
+        setMapCenter([c.lng, c.lat]);
+        setMapZoom(map.getZoom());
       } catch (_) {}
+    };
+
+    let lastMoveThrottleTime = 0;
+    const handleMapMove = () => {
+      const now = performance.now();
+      if (now - lastMoveThrottleTime > 50) {
+        lastMoveThrottleTime = now;
+        updateBounds();
+        setMapBearing(Math.round(map.getBearing()));
+        setMapPitch(Math.round(map.getPitch()));
+      }
     };
 
     const handleMapMoveEnd = () => {
@@ -3191,6 +3213,7 @@ export default function App() {
       }
     };
 
+    map.on('move', handleMapMove);
     map.on('moveend', handleMapMoveEnd);
 
     map.on('load', () => {
@@ -4802,8 +4825,12 @@ export default function App() {
 
   const handleSelectResort = async (id: string) => {
     setSelectedResortId(id);
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setMobileSheetState('half');
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 768) {
+        setMobileSheetState('half');
+      } else {
+        setLocatorOpen(true);
+      }
     }
     try {
       window.history.replaceState({}, '', `?resort=${encodeURIComponent(id)}`);
@@ -5027,6 +5054,98 @@ export default function App() {
     const mi = Math.round(km * 0.621371 * 10) / 10;
     return `${mi} mi`;
   };
+
+  const formatCoords = (lat: number, lng: number) => {
+    const latStr = `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'}`;
+    const lngStr = `${Math.abs(lng).toFixed(1)}°${lng >= 0 ? 'E' : 'W'}`;
+    return `${latStr}, ${lngStr}`;
+  };
+
+  const handleResetToGlobal = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    safeFlyTo(mapRef.current, {
+      center: [12, 28],
+      zoom: 1.8,
+      pitch: 0,
+      bearing: 0,
+      duration: 1400,
+      essential: true,
+    });
+    setMapPitch(0);
+    setMapBearing(0);
+  };
+
+  const handleLocatorMapClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    const normX = (clickX / rect.width) * 360;
+    const normY = (clickY / rect.height) * 180;
+    const [lng, lat] = unprojectEquirect(normX, normY);
+    safeFlyTo(mapRef.current, {
+      center: [lng, lat],
+      zoom: 4.5,
+      pitch: 0,
+      bearing: 0,
+      duration: 1800,
+      essential: true,
+    });
+    setMapPitch(0);
+    setMapBearing(0);
+  };
+
+  const selectedResortSvgPos = useMemo(() => {
+    if (!selectedResort) return null;
+    return projectEquirect(selectedResort.lng, selectedResort.lat);
+  }, [selectedResort]);
+
+  const viewportSvgRects = useMemo(() => {
+    if (!viewportBounds) return [];
+    const [west, south, east, north] = viewportBounds;
+
+    const spanLng = east >= west ? east - west : 360 - west + east;
+    const spanLat = Math.max(0, north - south);
+    const [cx, cy] = projectEquirect(mapCenter[0], mapCenter[1]);
+
+    if (mapZoom > 7 || spanLng < 10 || spanLat < 6) {
+      const w = 12;
+      const h = 8;
+      return [
+        {
+          type: 'reticle' as const,
+          cx,
+          cy,
+          x: cx - w / 2,
+          y: cy - h / 2,
+          w,
+          h,
+        },
+      ];
+    }
+
+    const minLat = Math.max(-85, Math.min(85, south));
+    const maxLat = Math.max(-85, Math.min(85, north));
+    const y = 90 - maxLat;
+    const h = Math.max(4, maxLat - minLat);
+
+    if (east < west) {
+      // Crosses antimeridian: two boxes
+      const w1 = Math.max(2, 180 - west);
+      const x1 = west + 180;
+      const w2 = Math.max(2, east + 180);
+      const x2 = 0;
+      return [
+        { type: 'box' as const, cx, cy, x: x1, y, w: w1, h },
+        { type: 'box' as const, cx, cy, x: x2, y, w: w2, h },
+      ];
+    } else {
+      const minLng = Math.max(-180, Math.min(180, west));
+      const maxLng = Math.max(-180, Math.min(180, east));
+      const x = minLng + 180;
+      const w = Math.max(4, maxLng - minLng);
+      return [{ type: 'box' as const, cx, cy, x, y, w, h }];
+    }
+  }, [viewportBounds, mapCenter, mapZoom]);
 
   const handleSetUnitsMetric = (toMetric: boolean) => {
     if (toMetric === unitsMetric) return;
@@ -6361,6 +6480,168 @@ export default function App() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* =====================================================================
+          CARTOGRAPHIC WORLD LOCATOR INSET MAP
+          Collapsible global context overview with real-time camera tracking,
+          selected resort beacon, and click-to-fly continent navigation.
+          ===================================================================== */}
+      <div
+        className="hidden sm:block absolute bottom-28 right-6 z-20 select-none transition-all duration-200"
+      >
+        {!locatorOpen ? (
+          <button
+            onClick={() => setLocatorOpen(true)}
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#FAF8F3] hover:bg-[#F2EFE8] border border-[#D6D0C2] hover:border-[#1C1B18] shadow-md text-xs font-semibold text-[#1C1B18] transition-all cursor-pointer group"
+            title="Expand World Locator Map"
+          >
+            <Globe className="w-3.5 h-3.5 text-[#5C5852] group-hover:text-[#1C1B18] transition-colors" />
+            <span className="text-[11px] font-bold tracking-tight">World Locator</span>
+            {selectedResort && (
+              <span className="text-[10px] font-medium text-[#5C5852] max-w-[110px] truncate border-l border-[#D6D0C2] pl-1.5">
+                {selectedResort.name}
+              </span>
+            )}
+            <Plus className="w-3 h-3 text-[#8A847C] group-hover:text-[#1C1B18] ml-0.5" />
+          </button>
+        ) : (
+          <div className="w-60 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-lg overflow-hidden animate-in fade-in duration-150">
+            {/* Header */}
+            <div className="px-2.5 py-1.5 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-[#5C5852]" />
+                <span className="text-[10px] font-bold tracking-wider text-[#1C1B18] uppercase">
+                  World Locator
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handleResetToGlobal}
+                  className="px-1.5 py-0.5 rounded text-[10px] font-semibold text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EFECE6] transition-colors flex items-center gap-1 cursor-pointer"
+                  title="Reset to Global Overview"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  <span>Global</span>
+                </button>
+                <button
+                  onClick={() => setLocatorOpen(false)}
+                  className="p-0.5 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE6] transition-colors cursor-pointer"
+                  title="Collapse World Locator"
+                >
+                  <Minus className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            {/* SVG Inset Canvas */}
+            <div className="relative w-60 h-[120px] bg-[#FAF8F3] overflow-hidden">
+              <svg
+                viewBox="0 0 360 180"
+                className="w-full h-full cursor-crosshair block"
+                onClick={handleLocatorMapClick}
+                title="Click any continent to fly there"
+              >
+                {/* Cartographic Graticules */}
+                <line x1="0" y1="90" x2="360" y2="90" stroke="#E5E0D5" strokeWidth="0.6" strokeDasharray="2,2" />
+                <line x1="180" y1="0" x2="180" y2="180" stroke="#E5E0D5" strokeWidth="0.6" strokeDasharray="2,2" />
+                <line x1="0" y1="66.5" x2="360" y2="66.5" stroke="#EDE8DE" strokeWidth="0.4" strokeDasharray="1,3" />
+                <line x1="0" y1="113.5" x2="360" y2="113.5" stroke="#EDE8DE" strokeWidth="0.4" strokeDasharray="1,3" />
+
+                {/* Natural Earth Land Vector */}
+                <path d={WORLD_LAND_PATH} fill="#E2DDD2" stroke="#C4BEB1" strokeWidth="0.5" />
+
+                {/* Camera Viewport Indicator */}
+                {viewportSvgRects.map((r, i) =>
+                  r.type === 'reticle' ? (
+                    <g key={i} className="pointer-events-none">
+                      <rect
+                        x={r.x}
+                        y={r.y}
+                        width={r.w}
+                        height={r.h}
+                        fill="#2C4C64"
+                        fillOpacity="0.22"
+                        stroke="#2C4C64"
+                        strokeWidth="0.9"
+                        rx="1"
+                      />
+                      <line x1={r.cx - 2.5} y1={r.cy} x2={r.cx + 2.5} y2={r.cy} stroke="#2C4C64" strokeWidth="0.75" />
+                      <line x1={r.cx} y1={r.cy - 2} x2={r.cx} y2={r.cy + 2} stroke="#2C4C64" strokeWidth="0.75" />
+                    </g>
+                  ) : (
+                    <g key={i} className="pointer-events-none">
+                      <rect
+                        x={r.x}
+                        y={r.y}
+                        width={r.w}
+                        height={r.h}
+                        fill="#2C4C64"
+                        fillOpacity="0.12"
+                        stroke="#2C4C64"
+                        strokeWidth="0.8"
+                        strokeDasharray="2,1"
+                        rx="1"
+                      />
+                      <circle cx={r.cx} cy={r.cy} r="1" fill="#2C4C64" />
+                    </g>
+                  )
+                )}
+
+                {/* Selected Resort Locator Beacon */}
+                {selectedResortSvgPos && (
+                  <g className="pointer-events-none">
+                    <circle
+                      cx={selectedResortSvgPos[0]}
+                      cy={selectedResortSvgPos[1]}
+                      r="7.5"
+                      fill="#B84A39"
+                      fillOpacity="0.25"
+                    />
+                    <circle
+                      cx={selectedResortSvgPos[0]}
+                      cy={selectedResortSvgPos[1]}
+                      r="4.2"
+                      fill="none"
+                      stroke="#B84A39"
+                      strokeWidth="0.8"
+                    />
+                    <circle
+                      cx={selectedResortSvgPos[0]}
+                      cy={selectedResortSvgPos[1]}
+                      r="2"
+                      fill="#B84A39"
+                      stroke="#FAF8F3"
+                      strokeWidth="0.6"
+                    />
+                  </g>
+                )}
+              </svg>
+            </div>
+
+            {/* Footer / Geographic Context Caption */}
+            <div className="px-2.5 py-1.5 bg-[#FAF8F3] border-t border-[#D6D0C2] flex items-center justify-between text-[10px]">
+              {selectedResort ? (
+                <div className="min-w-0 flex-1 pr-1">
+                  <div className="font-bold text-[#1C1B18] truncate leading-tight">
+                    {selectedResort.name}
+                  </div>
+                  <div className="text-[#5C5852] truncate text-[9px] font-medium leading-tight">
+                    {[selectedResort.region, selectedResort.country].filter(Boolean).join(', ')}
+                    {' · '}
+                    <span className="font-mono text-[#8A847C]">
+                      {formatCoords(selectedResort.lat, selectedResort.lng)}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[#8A847C] text-[9.5px] truncate">
+                  Click globe to jump · <span className="font-mono">{formatCoords(mapCenter[1], mapCenter[0])}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* =====================================================================
