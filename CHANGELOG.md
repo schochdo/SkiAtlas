@@ -6,7 +6,28 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
-### `feat: default to flat map at global scope with OSM basemap and full card box outline`
+### `fix: reclassify Pyhätunturi - Luosto and sweep dataset to eliminate phantom cross-country acreage`
+- **Reclassified Pyhätunturi - Luosto to Nordic XC**:
+  - **What was wrong**: "Pyhätunturi – Luosto" in Lapland, Finland was listed as a Downhill ski resort with 30,000 acres—putting it at #1 in the world alongside mega European lift circuses. In reality, the downhill ski slopes at Pyhä and Luosto cover only ~211 and ~70 acres respectively, while the 30,000 acres represented the entire geographic boundary of Pyhä-Luosto National Park (*Pyhä-Luoston kansallispuisto*, ~142 km²). Because the OSM relation enclosed both downhill lifts and the park's 150+ km cross-country trails, OpenSkiData categorized it as Downhill with the full national park acreage.
+  - **The fix**: Reclassified `Pyhätunturi - Luosto` to `category: "nordic"`, `archetype: "National Park Nordic Center"`, and zeroed out its `skiable_acres` to 0. Calculated and populated its true **174 km (108 mi)** groomed trail network distance across 143 tracks from `trails.db` LineStrings.
+- **Dataset-Wide Sweep of Nordic Networks & Phantom Acreages**:
+  - Swept all 6,593 features in `public/data/global_ski_areas.json` cross-referenced with `data_pipeline/trails.db` piste-type telemetry:
+  - Reclassified **71 cross-country centers and touring networks** that were falsely marked as `downhill`:
+    - **Le Revard** (France): Reclassified to Nordic XC, zeroed out 2,929 phantom acres, and assigned its true 127-track Nordic domain.
+    - **Gräftåvallen** (Sweden): Reclassified to Nordic XC, zeroed out 2,040 phantom acres, and assigned its 24 km trail network.
+    - **Vålådalen** (Sweden): Reclassified to Nordic XC, zeroed out 1,806 phantom acres, and assigned its 73 km trail network.
+    - **Bessans** (France): Reclassified to Nordic XC, zeroed out 1,311 phantom acres, and assigned its 63 km biathlon/cross-country network.
+    - **Pragelato** (Italy): Zeroed out 2,482 phantom acres on the 2006 Olympic Nordic plain.
+    - **Sjusjøen** (Norway): Reclassified from Downhill to Nordic XC with its colossal 1,482 km interconnected trail network (996 tracks, 0 downhill runs).
+    - **Holmenkollen National Ski Arena** (Oslo, Norway): Reclassified from Downhill to Nordic XC (57 tracks, 0 downhill runs).
+    - **Planica** (Slovenia): Reclassified from Downhill to Nordic XC.
+    - **Espace Nordique du Val d'Azun** (France), **Puijon hyppyrimäet** (Finland), and 60+ additional cross-country centers correctly transitioned to `category: "nordic"` with true network distance (`trail_km`) and `skiable_acres: 0`.
+- **Restored Sun Peaks Resort in British Columbia**:
+  - Discovered that Sun Peaks Resort (Canada's second largest ski area, 4,270 ac, 13 lifts, 138 pistes, Ikon Pass) had been erroneously ingested under the name of one of its terrain parks ("Drop Zone Terrain Park") and marked as Nordic.
+  - Restored full authoritative metadata: `Sun Peaks Resort`, `downhill`, `4,270 ac`, `2,894' vert`, `Ikon Pass`, `#B84A39` vermilion pass badge.
+- **Hardened Runtime Classification Engine in `src/App.tsx`**:
+  - Updated `classifySkiFeature()` to recognize `National Park Nordic Center` and detect predominantly cross-country centers (`nordicRuns >= 20 && nordicRuns > downhillRuns * 2.5 && totalLifts <= 6`).
+  - Ensured `skiable_acres` is strictly zeroed out for all Nordic classifications, permanently preventing touring networks from inflating downhill acreage rankings.
 - **Default Flat Map (Mercator) at Global Scope**:
   - Initialized `earthProjection` to `'mercator'` and set map center to `[12, 28]` at zoom `1.8`, framing the global extent of alpine ski destinations worldwide on load.
   - Set default `basemapMode` to `'osm'` (OpenStreetMap) with clean hillshade relief.

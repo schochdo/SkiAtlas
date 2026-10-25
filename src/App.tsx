@@ -293,13 +293,20 @@ export function classifySkiFeature(
 
   // Determine authoritative category without blindly forcing downhill
   let category: SkiActivityCategory = 'downhill';
-  if (p.category === 'nordic' || p.archetype === 'Cross-Country Ski Center' || p.archetype === 'Nordic Center') {
+  if (
+    p.category === 'nordic' ||
+    p.archetype === 'Cross-Country Ski Center' ||
+    p.archetype === 'Nordic Center' ||
+    p.archetype === 'National Park Nordic Center'
+  ) {
     category = 'nordic';
   } else if (p.category === 'heli_cat') {
     category = 'heli_cat';
-  } else if (hasXcName && totalLifts <= 1) {
+  } else if (hasXcName && totalLifts <= 4) {
     category = 'nordic';
-  } else if (nordicRuns > 0 && downhillRuns === 0 && totalLifts <= 1) {
+  } else if (nordicRuns > 0 && downhillRuns === 0) {
+    category = 'nordic';
+  } else if (nordicRuns >= 20 && nordicRuns > downhillRuns * 2.5 && totalLifts <= 6) {
     category = 'nordic';
   } else if (nameLower.includes('callaghan') && totalLifts <= 1) {
     category = 'nordic';

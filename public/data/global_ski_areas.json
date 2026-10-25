@@ -327,16 +327,16 @@
         "region": "Harju",
         "lng": 25.56363,
         "lat": 59.22207,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 1 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "63 km trails · 71 tracks",
         "vertical_ft": 105,
         "summit_elev_ft": 344,
         "base_elev_ft": 240,
-        "skiable_acres": 11,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -347,7 +347,9 @@
         "lift_count": 1,
         "run_count": 71,
         "avg_snowfall_in": 129,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 63,
+        "trail_mi": 39
       }
     },
     {
@@ -1838,16 +1840,16 @@
         "region": "Viken",
         "lng": 8.53226,
         "lat": 60.29676,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "4 lifts · 13 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "210 km trails · 84 tracks",
         "vertical_ft": 1677,
         "summit_elev_ft": 3966,
         "base_elev_ft": 2288,
-        "skiable_acres": 1,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -1858,7 +1860,9 @@
         "lift_count": 4,
         "run_count": 84,
         "avg_snowfall_in": 219,
-        "default_bearing": 222
+        "default_bearing": 222,
+        "trail_km": 210,
+        "trail_mi": 130
       }
     },
     {
@@ -14433,16 +14437,16 @@
         "region": "Baden-Württemberg",
         "lng": 9.09886,
         "lat": 48.25368,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 1 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "61 km trails · 75 tracks",
         "vertical_ft": 101,
         "summit_elev_ft": 2932,
         "base_elev_ft": 2831,
-        "skiable_acres": 3,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -14452,7 +14456,9 @@
         "lift_count": 1,
         "run_count": 75,
         "avg_snowfall_in": 99,
-        "default_bearing": 206
+        "default_bearing": 206,
+        "trail_km": 61,
+        "trail_mi": 38
       }
     },
     {
@@ -14855,16 +14861,16 @@
         "region": "Liberec",
         "lng": 15.19171,
         "lat": 50.77792,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "0 lifts · 2 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "204 km trails · 248 tracks",
         "vertical_ft": 1574,
         "summit_elev_ft": 3285,
         "base_elev_ft": 1711,
-        "skiable_acres": 3,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -14874,7 +14880,9 @@
         "lift_count": null,
         "run_count": 248,
         "avg_snowfall_in": 200,
-        "default_bearing": 197
+        "default_bearing": 197,
+        "trail_km": 204,
+        "trail_mi": 127
       }
     },
     {
@@ -19476,16 +19484,16 @@
         "region": "Doubs",
         "lng": 6.21702,
         "lat": 46.70314,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "4 lifts · 7 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "24 km trails · 39 tracks",
         "vertical_ft": 802,
         "summit_elev_ft": 3882,
         "base_elev_ft": 3080,
-        "skiable_acres": 148,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -19496,7 +19504,9 @@
         "lift_count": 4,
         "run_count": 39,
         "avg_snowfall_in": 202,
-        "default_bearing": 126
+        "default_bearing": 126,
+        "trail_km": 24,
+        "trail_mi": 15
       }
     },
     {
@@ -25521,16 +25531,16 @@
         "region": "Savoie",
         "lng": 5.86496,
         "lat": 45.47196,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 10 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "28 km trails · 50 tracks",
         "vertical_ft": 1049,
         "summit_elev_ft": 4674,
         "base_elev_ft": 3625,
-        "skiable_acres": 689,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -25541,7 +25551,9 @@
         "lift_count": 3,
         "run_count": 50,
         "avg_snowfall_in": 222,
-        "default_bearing": 134
+        "default_bearing": 134,
+        "trail_km": 28,
+        "trail_mi": 17
       }
     },
     {
@@ -26839,16 +26851,16 @@
         "region": "Møre and Romsdal",
         "lng": 6.55674,
         "lat": 62.0098,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 2 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "19 km trails · 24 tracks",
         "vertical_ft": 1150,
         "summit_elev_ft": 2428,
         "base_elev_ft": 1279,
-        "skiable_acres": 4,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -26859,7 +26871,9 @@
         "lift_count": 1,
         "run_count": 24,
         "avg_snowfall_in": 181,
-        "default_bearing": 290
+        "default_bearing": 290,
+        "trail_km": 19,
+        "trail_mi": 12
       }
     },
     {
@@ -27072,16 +27086,16 @@
         "region": "Karlovy Vary",
         "lng": 12.8339,
         "lat": 50.35415,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 7 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "561 km trails · 1007 tracks",
         "vertical_ft": 361,
         "summit_elev_ft": 3093,
         "base_elev_ft": 2732,
-        "skiable_acres": 13,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -27092,7 +27106,9 @@
         "lift_count": 3,
         "run_count": 1007,
         "avg_snowfall_in": 102,
-        "default_bearing": 76
+        "default_bearing": 76,
+        "trail_km": 561,
+        "trail_mi": 349
       }
     },
     {
@@ -27383,16 +27399,16 @@
         "region": "Victoria",
         "lng": 146.78475,
         "lat": -36.76173,
-        "category": "downhill",
+        "category": "nordic",
         "status": "abandoned",
         "is_closed": true,
         "is_private": false,
-        "archetype": "Defunct / Lost Ski Area",
-        "infrastructure": "Defunct ski hill · 5 historic lifts",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "5 km trails · 6 tracks",
         "vertical_ft": 90,
         "summit_elev_ft": 4913,
         "base_elev_ft": 4823,
-        "skiable_acres": 36,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -27402,7 +27418,9 @@
         "lift_count": 5,
         "run_count": 6,
         "avg_snowfall_in": 203,
-        "default_bearing": 0
+        "default_bearing": 0,
+        "trail_km": 5,
+        "trail_mi": 3
       }
     },
     {
@@ -29591,16 +29609,16 @@
         "region": "Lapland",
         "lng": 27.45899,
         "lat": 68.42452,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 7 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "153 km trails · 93 tracks",
         "vertical_ft": 545,
         "summit_elev_ft": 1422,
         "base_elev_ft": 877,
-        "skiable_acres": 29,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -29611,7 +29629,9 @@
         "lift_count": 3,
         "run_count": 93,
         "avg_snowfall_in": 156,
-        "default_bearing": 332
+        "default_bearing": 332,
+        "trail_km": 153,
+        "trail_mi": 95
       }
     },
     {
@@ -32466,16 +32486,16 @@
         "region": "Tyrol",
         "lng": 10.60027,
         "lat": 47.27987,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "3 km trails · 6 tracks",
         "vertical_ft": 79,
         "summit_elev_ft": 4479,
         "base_elev_ft": 4400,
-        "skiable_acres": 6,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -32485,7 +32505,9 @@
         "lift_count": 1,
         "run_count": 6,
         "avg_snowfall_in": 217,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 3,
+        "trail_mi": 2
       }
     },
     {
@@ -32738,16 +32760,16 @@
         "region": "Vaud",
         "lng": 6.61653,
         "lat": 46.86731,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "6 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "77 km trails · 29 tracks",
         "vertical_ft": 951,
         "summit_elev_ft": 4880,
         "base_elev_ft": 3929,
-        "skiable_acres": 456,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -32757,7 +32779,9 @@
         "lift_count": 6,
         "run_count": 29,
         "avg_snowfall_in": 227,
-        "default_bearing": 16
+        "default_bearing": 16,
+        "trail_km": 77,
+        "trail_mi": 48
       }
     },
     {
@@ -32891,27 +32915,29 @@
         "region": "Lapland",
         "lng": 26.98934,
         "lat": 67.09856,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "13 lifts · 52 pistes",
+        "archetype": "National Park Nordic Center",
+        "infrastructure": "174 km trails · 143 tracks",
         "vertical_ft": 966,
         "summit_elev_ft": 1603,
         "base_elev_ft": 636,
-        "skiable_acres": 30000,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
         "primary_pass": "Independent",
         "pass_color": "#8A847C",
-        "summary": "Nordic ski destination in Lapland, Finland, celebrated for reliable snow-sure winter seasons, sweeping views, and arctic mountain spirit.",
+        "summary": "Pristine arctic national park in Finnish Lapland featuring 174 km of groomed cross-country ski tracks winding through ancient fells, taiga forests, and silent arctic valleys.",
         "website": "https://www.luosto.fi/",
         "lift_count": 13,
         "run_count": 143,
         "avg_snowfall_in": 160,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 174,
+        "trail_mi": 108
       }
     },
     {
@@ -33280,16 +33306,16 @@
         "region": "Innlandet",
         "lng": 9.67882,
         "lat": 61.80485,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 3 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "348 km trails · 275 tracks",
         "vertical_ft": 466,
         "summit_elev_ft": 3348,
         "base_elev_ft": 2882,
-        "skiable_acres": 3,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -33299,7 +33325,9 @@
         "lift_count": 1,
         "run_count": 275,
         "avg_snowfall_in": 204,
-        "default_bearing": 187
+        "default_bearing": 187,
+        "trail_km": 348,
+        "trail_mi": 216
       }
     },
     {
@@ -39391,16 +39419,16 @@
         "region": "Jamtland",
         "lng": 12.97706,
         "lat": 63.15598,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 2 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "73 km trails · 41 tracks",
         "vertical_ft": 480,
         "summit_elev_ft": 2463,
         "base_elev_ft": 1983,
-        "skiable_acres": 1806,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -39410,7 +39438,9 @@
         "lift_count": 1,
         "run_count": 41,
         "avg_snowfall_in": 182,
-        "default_bearing": 346
+        "default_bearing": 346,
+        "trail_km": 73,
+        "trail_mi": 45
       }
     },
     {
@@ -48157,16 +48187,16 @@
         "region": "Bern",
         "lng": 7.40426,
         "lat": 46.73456,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "0 lifts · 2 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "33 km trails · 34 tracks",
         "vertical_ft": 1932,
         "summit_elev_ft": 5368,
         "base_elev_ft": 3436,
-        "skiable_acres": 47,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -48177,7 +48207,9 @@
         "lift_count": 2,
         "run_count": 34,
         "avg_snowfall_in": 239,
-        "default_bearing": 235
+        "default_bearing": 235,
+        "trail_km": 33,
+        "trail_mi": 21
       }
     },
     {
@@ -56115,16 +56147,16 @@
         "region": "Victoria",
         "lng": 147.30226,
         "lat": -36.90424,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "44 km trails · 25 tracks",
         "vertical_ft": 196,
         "summit_elev_ft": 5456,
         "base_elev_ft": 5260,
-        "skiable_acres": 16,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -56134,7 +56166,9 @@
         "lift_count": 1,
         "run_count": 25,
         "avg_snowfall_in": 210,
-        "default_bearing": 345
+        "default_bearing": 345,
+        "trail_km": 44,
+        "trail_mi": 27
       }
     },
     {
@@ -56192,16 +56226,16 @@
         "region": "Bratislava",
         "lng": 17.19355,
         "lat": 48.3445,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "5 lifts · 6 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "40 km trails · 32 tracks",
         "vertical_ft": 619,
         "summit_elev_ft": 1943,
         "base_elev_ft": 1323,
-        "skiable_acres": 437,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -56212,7 +56246,9 @@
         "lift_count": 5,
         "run_count": 32,
         "avg_snowfall_in": 79,
-        "default_bearing": 224
+        "default_bearing": 224,
+        "trail_km": 40,
+        "trail_mi": 25
       }
     },
     {
@@ -57316,16 +57352,16 @@
         "region": "Bolzano/Bozen",
         "lng": 12.15448,
         "lat": 46.88267,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 1 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "12 km trails · 40 tracks",
         "vertical_ft": 1173,
         "summit_elev_ft": 5252,
         "base_elev_ft": 4078,
-        "skiable_acres": 18,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -57335,7 +57371,9 @@
         "lift_count": 1,
         "run_count": 40,
         "avg_snowfall_in": 236,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 12,
+        "trail_mi": 7
       }
     },
     {
@@ -59184,16 +59222,16 @@
         "region": "Saxony",
         "lng": 13.92034,
         "lat": 50.73446,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "6 lifts · 27 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "503 km trails · 899 tracks",
         "vertical_ft": 699,
         "summit_elev_ft": 2608,
         "base_elev_ft": 1909,
-        "skiable_acres": 88,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -59204,7 +59242,9 @@
         "lift_count": 6,
         "run_count": 899,
         "avg_snowfall_in": 92,
-        "default_bearing": 208
+        "default_bearing": 208,
+        "trail_km": 503,
+        "trail_mi": 313
       }
     },
     {
@@ -62131,16 +62171,16 @@
         "region": "Innlandet",
         "lng": 10.74835,
         "lat": 61.11929,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "1482 km trails · 996 tracks",
         "vertical_ft": 687,
         "summit_elev_ft": 3105,
         "base_elev_ft": 2418,
-        "skiable_acres": 53,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -62150,7 +62190,9 @@
         "lift_count": 3,
         "run_count": 996,
         "avg_snowfall_in": 198,
-        "default_bearing": 12
+        "default_bearing": 12,
+        "trail_km": 1482,
+        "trail_mi": 921
       }
     },
     {
@@ -62324,16 +62366,16 @@
         "region": "Vasterbotten County",
         "lng": 18.75869,
         "lat": 65.17953,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "5 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "23 km trails · 22 tracks",
         "vertical_ft": 235,
         "summit_elev_ft": 1286,
         "base_elev_ft": 1051,
-        "skiable_acres": 86,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -62344,7 +62386,9 @@
         "lift_count": 5,
         "run_count": 22,
         "avg_snowfall_in": 152,
-        "default_bearing": 126
+        "default_bearing": 126,
+        "trail_km": 23,
+        "trail_mi": 14
       }
     },
     {
@@ -65784,16 +65828,16 @@
         "region": "Satakunta",
         "lng": 22.14743,
         "lat": 61.2964,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "15 km trails · 1 tracks",
         "vertical_ft": 115,
         "summit_elev_ft": 239,
         "base_elev_ft": 124,
-        "skiable_acres": 28,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -65804,7 +65848,9 @@
         "lift_count": 3,
         "run_count": null,
         "avg_snowfall_in": 126,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 15,
+        "trail_mi": 9
       }
     },
     {
@@ -70819,16 +70865,16 @@
         "region": "Moravian-Silesian",
         "lng": 17.23668,
         "lat": 50.07134,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "5 lifts · 9 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "57 km trails · 33 tracks",
         "vertical_ft": 676,
         "summit_elev_ft": 4728,
         "base_elev_ft": 4052,
-        "skiable_acres": 165,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -70839,7 +70885,9 @@
         "lift_count": 5,
         "run_count": 33,
         "avg_snowfall_in": 135,
-        "default_bearing": 231
+        "default_bearing": 231,
+        "trail_km": 57,
+        "trail_mi": 35
       }
     },
     {
@@ -71398,16 +71446,16 @@
         "region": "Idaho",
         "lng": -116.11718,
         "lat": 44.86732,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "11 km trails · 5 tracks",
         "vertical_ft": 77,
         "summit_elev_ft": 5063,
         "base_elev_ft": 4986,
-        "skiable_acres": 159,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -71417,7 +71465,9 @@
         "lift_count": 1,
         "run_count": 5,
         "avg_snowfall_in": 140,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 11,
+        "trail_mi": 7
       }
     },
     {
@@ -72174,16 +72224,16 @@
         "region": "Northern Savonia",
         "lng": 27.64967,
         "lat": 62.9087,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "224 km trails · 231 tracks",
         "vertical_ft": 306,
         "summit_elev_ft": 750,
         "base_elev_ft": 444,
-        "skiable_acres": 8,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -72193,7 +72243,9 @@
         "lift_count": 1,
         "run_count": 231,
         "avg_snowfall_in": 139,
-        "default_bearing": 259
+        "default_bearing": 259,
+        "trail_km": 224,
+        "trail_mi": 139
       }
     },
     {
@@ -74200,16 +74252,16 @@
         "region": "Bavaria",
         "lng": 12.98945,
         "lat": 49.16303,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 4 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "53 km trails · 89 tracks",
         "vertical_ft": 710,
         "summit_elev_ft": 3469,
         "base_elev_ft": 2758,
-        "skiable_acres": 35,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -74220,7 +74272,9 @@
         "lift_count": 2,
         "run_count": 89,
         "avg_snowfall_in": 109,
-        "default_bearing": 295
+        "default_bearing": 295,
+        "trail_km": 53,
+        "trail_mi": 33
       }
     },
     {
@@ -82376,12 +82430,12 @@
         "region": "Budapest",
         "lng": 19.12831,
         "lat": 47.52238,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "15 km trails · 1 tracks",
         "vertical_ft": null,
         "summit_elev_ft": null,
         "base_elev_ft": null,
@@ -82396,7 +82450,9 @@
         "lift_count": 1,
         "run_count": null,
         "avg_snowfall_in": 40,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 15,
+        "trail_mi": 9
       }
     },
     {
@@ -82609,16 +82665,16 @@
         "region": "Upper Carniola",
         "lng": 13.72659,
         "lat": 46.4782,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "9 km trails · 20 tracks",
         "vertical_ft": 216,
         "summit_elev_ft": 3273,
         "base_elev_ft": 3057,
-        "skiable_acres": 35,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -82628,7 +82684,9 @@
         "lift_count": 2,
         "run_count": 20,
         "avg_snowfall_in": 187,
-        "default_bearing": 202
+        "default_bearing": 202,
+        "trail_km": 9,
+        "trail_mi": 6
       }
     },
     {
@@ -85557,16 +85615,16 @@
         "region": "Bergamo",
         "lng": 9.59853,
         "lat": 46.00398,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "4 km trails · 2 tracks",
         "vertical_ft": 190,
         "summit_elev_ft": 5727,
         "base_elev_ft": 5537,
-        "skiable_acres": 15,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -85576,7 +85634,9 @@
         "lift_count": 1,
         "run_count": 2,
         "avg_snowfall_in": 248,
-        "default_bearing": 165
+        "default_bearing": 165,
+        "trail_km": 4,
+        "trail_mi": 2
       }
     },
     {
@@ -86449,16 +86509,16 @@
         "region": "Obwalden",
         "lng": 8.13421,
         "lat": 46.90379,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "20 km trails · 21 tracks",
         "vertical_ft": 87,
         "summit_elev_ft": 4839,
         "base_elev_ft": 4752,
-        "skiable_acres": 7,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -86468,7 +86528,9 @@
         "lift_count": 1,
         "run_count": 21,
         "avg_snowfall_in": 226,
-        "default_bearing": 267
+        "default_bearing": 267,
+        "trail_km": 20,
+        "trail_mi": 12
       }
     },
     {
@@ -92827,16 +92889,16 @@
         "region": "Trøndelag",
         "lng": 11.30703,
         "lat": 63.68602,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 1 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "70 km trails · 28 tracks",
         "vertical_ft": 569,
         "summit_elev_ft": 1303,
         "base_elev_ft": 734,
-        "skiable_acres": 1,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -92846,7 +92908,9 @@
         "lift_count": 1,
         "run_count": 28,
         "avg_snowfall_in": 153,
-        "default_bearing": 154
+        "default_bearing": 154,
+        "trail_km": 70,
+        "trail_mi": 43
       }
     },
     {
@@ -98494,16 +98558,16 @@
         "region": "Doubs",
         "lng": 6.42004,
         "lat": 46.82233,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "6 lifts · 14 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "109 km trails · 133 tracks",
         "vertical_ft": 427,
         "summit_elev_ft": 4020,
         "base_elev_ft": 3593,
-        "skiable_acres": 67,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -98514,7 +98578,9 @@
         "lift_count": 6,
         "run_count": 133,
         "avg_snowfall_in": 206,
-        "default_bearing": 178
+        "default_bearing": 178,
+        "trail_km": 109,
+        "trail_mi": 68
       }
     },
     {
@@ -107195,16 +107261,16 @@
         "region": "South Karelia",
         "lng": 29.3283,
         "lat": 61.43926,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "4 km trails · 8 tracks",
         "vertical_ft": 125,
         "summit_elev_ft": 363,
         "base_elev_ft": 238,
-        "skiable_acres": 10,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -107215,7 +107281,9 @@
         "lift_count": 1,
         "run_count": 8,
         "avg_snowfall_in": 47,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 4,
+        "trail_mi": 2
       }
     },
     {
@@ -110304,16 +110372,16 @@
         "region": "dolnoslaskie",
         "lng": 16.36002,
         "lat": 50.29971,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "6 lifts · 15 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "165 km trails · 121 tracks",
         "vertical_ft": 734,
         "summit_elev_ft": 2850,
         "base_elev_ft": 2117,
-        "skiable_acres": 70,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -110324,7 +110392,9 @@
         "lift_count": 6,
         "run_count": 121,
         "avg_snowfall_in": 97,
-        "default_bearing": 223
+        "default_bearing": 223,
+        "trail_km": 165,
+        "trail_mi": 103
       }
     },
     {
@@ -112963,16 +113033,16 @@
         "region": "Tyrol",
         "lng": 10.53337,
         "lat": 47.2642,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "3 km trails · 7 tracks",
         "vertical_ft": 81,
         "summit_elev_ft": 4448,
         "base_elev_ft": 4368,
-        "skiable_acres": 6,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -112982,7 +113052,9 @@
         "lift_count": 1,
         "run_count": 7,
         "avg_snowfall_in": 216,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 3,
+        "trail_mi": 2
       }
     },
     {
@@ -113193,16 +113265,16 @@
         "region": "Hautes-Pyrénées",
         "lng": -0.23029,
         "lat": 42.98446,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "28 km trails · 15 tracks",
         "vertical_ft": 41,
         "summit_elev_ft": 4556,
         "base_elev_ft": 4515,
-        "skiable_acres": 3,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -113212,7 +113284,9 @@
         "lift_count": 1,
         "run_count": 15,
         "avg_snowfall_in": 131,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 28,
+        "trail_mi": 17
       }
     },
     {
@@ -124130,32 +124204,30 @@
       },
       "properties": {
         "id": "78894cbccdf53f39d418fe3f5dee39ecf89cdf01",
-        "name": "Drop Zone Terrain Park",
+        "name": "Sun Peaks Resort",
         "country": "Canada",
         "region": "British Columbia",
         "lng": -119.88498,
         "lat": 50.88818,
-        "category": "nordic",
+        "category": "downhill",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Cross-Country Ski Center",
-        "infrastructure": "Designated Nordic cross-country trail network",
-        "vertical_ft": null,
-        "summit_elev_ft": null,
-        "base_elev_ft": null,
-        "skiable_acres": 0,
+        "archetype": "Alpine Ski Area",
+        "infrastructure": "13 lifts · 138 pistes",
+        "vertical_ft": 2894,
+        "summit_elev_ft": 7060,
+        "base_elev_ft": 4166,
+        "skiable_acres": 4270,
         "pass_networks": [
-          "Independent"
+          "Ikon"
         ],
-        "primary_pass": "Independent",
-        "pass_color": "#8A847C",
-        "summary": "Dedicated cross-country ski center in British Columbia, Canada, featuring groomed skate and classic tracks set through tranquil winter forests.",
+        "primary_pass": "Ikon",
+        "pass_color": "#B84A39",
+        "summary": "Canada's second-largest ski resort in British Columbia, featuring 4,270 acres of skiable terrain across three mountain peaks with light dry powder and European ski-in/ski-out village.",
         "website": "https://www.sunpeaksresort.com/",
         "lift_count": 13,
-        "run_count": 301,
-        "trail_km": 662.2,
-        "trail_mi": 411.5,
+        "run_count": 138,
         "avg_snowfall_in": 250,
         "default_bearing": 338
       }
@@ -127511,16 +127583,16 @@
         "region": "Norrbotten",
         "lng": 19.05373,
         "lat": 65.57829,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "21 km trails · 9 tracks",
         "vertical_ft": 212,
         "summit_elev_ft": 1916,
         "base_elev_ft": 1704,
-        "skiable_acres": 51,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -127531,7 +127603,9 @@
         "lift_count": 3,
         "run_count": 9,
         "avg_snowfall_in": 168,
-        "default_bearing": 257
+        "default_bearing": 257,
+        "trail_km": 21,
+        "trail_mi": 13
       }
     },
     {
@@ -128052,16 +128126,16 @@
         "region": "Ontario",
         "lng": -80.96168,
         "lat": 46.42832,
-        "category": "downhill",
+        "category": "nordic",
         "status": "abandoned",
         "is_closed": true,
         "is_private": false,
-        "archetype": "Defunct / Lost Ski Area",
-        "infrastructure": "Defunct ski hill · 1 historic lifts",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "15 km trails · 1 tracks",
         "vertical_ft": 241,
         "summit_elev_ft": 1003,
         "base_elev_ft": 761,
-        "skiable_acres": 29,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -128071,7 +128145,9 @@
         "lift_count": 1,
         "run_count": null,
         "avg_snowfall_in": 60,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 15,
+        "trail_mi": 9
       }
     },
     {
@@ -128284,16 +128360,16 @@
         "region": "Valga",
         "lng": 26.5175,
         "lat": 58.04892,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "5 lifts · 5 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "21 km trails · 42 tracks",
         "vertical_ft": 250,
         "summit_elev_ft": 677,
         "base_elev_ft": 428,
-        "skiable_acres": 1,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -128304,7 +128380,9 @@
         "lift_count": 5,
         "run_count": 42,
         "avg_snowfall_in": 137,
-        "default_bearing": 133
+        "default_bearing": 133,
+        "trail_km": 21,
+        "trail_mi": 13
       }
     },
     {
@@ -134856,16 +134934,16 @@
         "region": "Tyrol",
         "lng": 12.44507,
         "lat": 46.99709,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 1 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "11 km trails · 25 tracks",
         "vertical_ft": 228,
         "summit_elev_ft": 3867,
         "base_elev_ft": 3639,
-        "skiable_acres": 6,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -134875,7 +134953,9 @@
         "lift_count": 1,
         "run_count": 25,
         "avg_snowfall_in": 202,
-        "default_bearing": 22
+        "default_bearing": 22,
+        "trail_km": 11,
+        "trail_mi": 7
       }
     },
     {
@@ -139830,16 +139910,16 @@
         "region": "Styria",
         "lng": 13.62668,
         "lat": 47.47263,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "13 km trails · 7 tracks",
         "vertical_ft": 326,
         "summit_elev_ft": 8694,
         "base_elev_ft": 8368,
-        "skiable_acres": 26,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -139849,7 +139929,9 @@
         "lift_count": 1,
         "run_count": 7,
         "avg_snowfall_in": 322,
-        "default_bearing": 21
+        "default_bearing": 21,
+        "trail_km": 13,
+        "trail_mi": 8
       }
     },
     {
@@ -142150,16 +142232,16 @@
         "region": "Bavaria",
         "lng": 10.57019,
         "lat": 47.55483,
-        "category": "downhill",
+        "category": "nordic",
         "status": "abandoned",
         "is_closed": true,
         "is_private": false,
-        "archetype": "Defunct / Lost Ski Area",
-        "infrastructure": "Defunct ski hill · 5 historic lifts",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "7 km trails · 2 tracks",
         "vertical_ft": 122,
         "summit_elev_ft": 2879,
         "base_elev_ft": 2758,
-        "skiable_acres": 744,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -142170,7 +142252,9 @@
         "lift_count": 5,
         "run_count": 2,
         "avg_snowfall_in": 180,
-        "default_bearing": 213
+        "default_bearing": 213,
+        "trail_km": 7,
+        "trail_mi": 4
       }
     },
     {
@@ -145498,16 +145582,16 @@
         "region": "Vosges",
         "lng": 6.85551,
         "lat": 47.9235,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "0 lifts · 1 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "22 km trails · 24 tracks",
         "vertical_ft": 821,
         "summit_elev_ft": 3636,
         "base_elev_ft": 2816,
-        "skiable_acres": 293,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -145518,7 +145602,9 @@
         "lift_count": null,
         "run_count": 24,
         "avg_snowfall_in": 196,
-        "default_bearing": 243
+        "default_bearing": 243,
+        "trail_km": 22,
+        "trail_mi": 14
       }
     },
     {
@@ -146354,16 +146440,16 @@
         "region": "Jura",
         "lng": 6.02608,
         "lat": 46.5619,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "1 km trails · 3 tracks",
         "vertical_ft": 60,
         "summit_elev_ft": 3240,
         "base_elev_ft": 3180,
-        "skiable_acres": 16,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -146374,7 +146460,9 @@
         "lift_count": 2,
         "run_count": 3,
         "avg_snowfall_in": 186,
-        "default_bearing": 116
+        "default_bearing": 116,
+        "trail_km": 1,
+        "trail_mi": 1
       }
     },
     {
@@ -147249,16 +147337,16 @@
         "region": "Tyrol",
         "lng": 11.79702,
         "lat": 47.51033,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 5 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "41 km trails · 51 tracks",
         "vertical_ft": 799,
         "summit_elev_ft": 4121,
         "base_elev_ft": 3322,
-        "skiable_acres": 23,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -147268,7 +147356,9 @@
         "lift_count": 3,
         "run_count": 51,
         "avg_snowfall_in": 208,
-        "default_bearing": 204
+        "default_bearing": 204,
+        "trail_km": 41,
+        "trail_mi": 25
       }
     },
     {
@@ -147946,16 +148036,16 @@
         "region": "Kainuu",
         "lng": 27.69944,
         "lat": 64.20876,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "15 km trails · 13 tracks",
         "vertical_ft": 167,
         "summit_elev_ft": 630,
         "base_elev_ft": 463,
-        "skiable_acres": 13,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -147965,7 +148055,9 @@
         "lift_count": 1,
         "run_count": 13,
         "avg_snowfall_in": 136,
-        "default_bearing": 69
+        "default_bearing": 69,
+        "trail_km": 15,
+        "trail_mi": 9
       }
     },
     {
@@ -156250,16 +156342,16 @@
         "region": "Hautes-Alpes",
         "lng": 6.73732,
         "lat": 44.78549,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "6 lifts · 29 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "76 km trails · 110 tracks",
         "vertical_ft": 1356,
         "summit_elev_ft": 6906,
         "base_elev_ft": 5550,
-        "skiable_acres": 172,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -156270,7 +156362,9 @@
         "lift_count": 6,
         "run_count": 110,
         "avg_snowfall_in": 278,
-        "default_bearing": 94
+        "default_bearing": 94,
+        "trail_km": 76,
+        "trail_mi": 47
       }
     },
     {
@@ -159000,16 +159094,16 @@
         "region": "Quebec",
         "lng": -70.10216,
         "lat": 47.77197,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 13 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "156 km trails · 65 tracks",
         "vertical_ft": 1090,
         "summit_elev_ft": 2386,
         "base_elev_ft": 1297,
-        "skiable_acres": 720,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -159020,7 +159114,9 @@
         "lift_count": 3,
         "run_count": 65,
         "avg_snowfall_in": 184,
-        "default_bearing": 97
+        "default_bearing": 97,
+        "trail_km": 156,
+        "trail_mi": 97
       }
     },
     {
@@ -163733,16 +163829,16 @@
         "region": "Lower Saxony",
         "lng": 10.53316,
         "lat": 51.62118,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 11 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "340 km trails · 411 tracks",
         "vertical_ft": 427,
         "summit_elev_ft": 2118,
         "base_elev_ft": 1691,
-        "skiable_acres": 28,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -163753,7 +163849,9 @@
         "lift_count": 3,
         "run_count": 411,
         "avg_snowfall_in": 82,
-        "default_bearing": 251
+        "default_bearing": 251,
+        "trail_km": 340,
+        "trail_mi": 211
       }
     },
     {
@@ -164396,16 +164494,16 @@
         "region": "Minnesota",
         "lng": -93.14859,
         "lat": 44.98526,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "5 km trails · 1 tracks",
         "vertical_ft": 49,
         "summit_elev_ft": 935,
         "base_elev_ft": 886,
-        "skiable_acres": 8,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -164416,7 +164514,9 @@
         "lift_count": 2,
         "run_count": 1,
         "avg_snowfall_in": 73,
-        "default_bearing": 54
+        "default_bearing": 54,
+        "trail_km": 5,
+        "trail_mi": 3
       }
     },
     {
@@ -169658,16 +169758,16 @@
         "region": "Dalarna",
         "lng": 14.24688,
         "lat": 61.09433,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "170 km trails · 145 tracks",
         "vertical_ft": 613,
         "summit_elev_ft": 1426,
         "base_elev_ft": 813,
-        "skiable_acres": 51,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -169677,7 +169777,9 @@
         "lift_count": 2,
         "run_count": 145,
         "avg_snowfall_in": 156,
-        "default_bearing": 149
+        "default_bearing": 149,
+        "trail_km": 170,
+        "trail_mi": 106
       }
     },
     {
@@ -172495,16 +172597,16 @@
         "region": "Udine",
         "lng": 13.48312,
         "lat": 46.5003,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "3 km trails · 1 tracks",
         "vertical_ft": 51,
         "summit_elev_ft": 2617,
         "base_elev_ft": 2566,
-        "skiable_acres": 4,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -172514,7 +172616,9 @@
         "lift_count": 3,
         "run_count": 1,
         "avg_snowfall_in": 180,
-        "default_bearing": 214
+        "default_bearing": 214,
+        "trail_km": 3,
+        "trail_mi": 2
       }
     },
     {
@@ -179004,16 +179108,16 @@
         "region": "Alberta",
         "lng": -113.4728,
         "lat": 54.30604,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "4 lifts · 26 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "23 km trails · 44 tracks",
         "vertical_ft": 221,
         "summit_elev_ft": 2244,
         "base_elev_ft": 2023,
-        "skiable_acres": 270,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -179024,7 +179128,9 @@
         "lift_count": 4,
         "run_count": 44,
         "avg_snowfall_in": 85,
-        "default_bearing": 80
+        "default_bearing": 80,
+        "trail_km": 23,
+        "trail_mi": 14
       }
     },
     {
@@ -181304,16 +181410,16 @@
         "region": "Orebro",
         "lng": 14.92647,
         "lat": 59.32876,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "5 lifts · 12 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "66 km trails · 44 tracks",
         "vertical_ft": 327,
         "summit_elev_ft": 890,
         "base_elev_ft": 564,
-        "skiable_acres": 44,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -181323,7 +181429,9 @@
         "lift_count": 5,
         "run_count": 44,
         "avg_snowfall_in": 142,
-        "default_bearing": 31
+        "default_bearing": 31,
+        "trail_km": 66,
+        "trail_mi": 41
       }
     },
     {
@@ -182856,16 +182964,16 @@
         "region": "Banska Bystrica",
         "lng": 18.9901,
         "lat": 48.74014,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 4 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "118 km trails · 91 tracks",
         "vertical_ft": 805,
         "summit_elev_ft": 4029,
         "base_elev_ft": 3224,
-        "skiable_acres": 390,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -182876,7 +182984,9 @@
         "lift_count": 2,
         "run_count": 91,
         "avg_snowfall_in": 121,
-        "default_bearing": 77
+        "default_bearing": 77,
+        "trail_km": 118,
+        "trail_mi": 73
       }
     },
     {
@@ -187338,16 +187448,16 @@
         "region": "Minnesota",
         "lng": -93.44891,
         "lat": 47.28399,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 2 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "10 km trails · 34 tracks",
         "vertical_ft": 179,
         "summit_elev_ft": 1493,
         "base_elev_ft": 1315,
-        "skiable_acres": 9,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -187358,7 +187468,9 @@
         "lift_count": 2,
         "run_count": 34,
         "avg_snowfall_in": 90,
-        "default_bearing": 203
+        "default_bearing": 203,
+        "trail_km": 10,
+        "trail_mi": 6
       }
     },
     {
@@ -193557,16 +193669,16 @@
         "region": "Vaud",
         "lng": 6.26298,
         "lat": 46.52284,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 7 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "31 km trails · 28 tracks",
         "vertical_ft": 546,
         "summit_elev_ft": 3751,
         "base_elev_ft": 3205,
-        "skiable_acres": 25,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -193577,7 +193689,9 @@
         "lift_count": 2,
         "run_count": 28,
         "avg_snowfall_in": 199,
-        "default_bearing": 303
+        "default_bearing": 303,
+        "trail_km": 31,
+        "trail_mi": 19
       }
     },
     {
@@ -199909,16 +200023,16 @@
         "region": "Savoie",
         "lng": 6.99811,
         "lat": 45.32363,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 4 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "63 km trails · 160 tracks",
         "vertical_ft": 444,
         "summit_elev_ft": 6042,
         "base_elev_ft": 5597,
-        "skiable_acres": 1311,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -199928,7 +200042,9 @@
         "lift_count": 2,
         "run_count": 160,
         "avg_snowfall_in": 256,
-        "default_bearing": 322
+        "default_bearing": 322,
+        "trail_km": 63,
+        "trail_mi": 39
       }
     },
     {
@@ -205308,16 +205424,16 @@
         "region": "Oslo",
         "lng": 10.67187,
         "lat": 59.96513,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "9 km trails · 57 tracks",
         "vertical_ft": 140,
         "summit_elev_ft": 1177,
         "base_elev_ft": 1037,
-        "skiable_acres": 108,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -205328,7 +205444,9 @@
         "lift_count": 3,
         "run_count": 57,
         "avg_snowfall_in": 200,
-        "default_bearing": 126
+        "default_bearing": 126,
+        "trail_km": 9,
+        "trail_mi": 6
       }
     },
     {
@@ -212900,16 +213018,16 @@
         "region": "Carinthia",
         "lng": 12.62135,
         "lat": 46.7169,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "5 lifts · 26 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "64 km trails · 115 tracks",
         "vertical_ft": 2608,
         "summit_elev_ft": 7301,
         "base_elev_ft": 4693,
-        "skiable_acres": 745,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -212920,7 +213038,9 @@
         "lift_count": 5,
         "run_count": 115,
         "avg_snowfall_in": 288,
-        "default_bearing": 360
+        "default_bearing": 360,
+        "trail_km": 64,
+        "trail_mi": 40
       }
     },
     {
@@ -221653,16 +221773,16 @@
         "region": "Lesser Poland Voivodeship",
         "lng": 19.96773,
         "lat": 49.28043,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "10 km trails · 42 tracks",
         "vertical_ft": 102,
         "summit_elev_ft": 3112,
         "base_elev_ft": 3010,
-        "skiable_acres": 77,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -221672,7 +221792,9 @@
         "lift_count": 1,
         "run_count": 42,
         "avg_snowfall_in": 102,
-        "default_bearing": 234
+        "default_bearing": 234,
+        "trail_km": 10,
+        "trail_mi": 6
       }
     },
     {
@@ -227019,12 +227141,12 @@
         "region": "Tyrol",
         "lng": 12.18558,
         "lat": 47.59013,
-        "category": "downhill",
+        "category": "nordic",
         "status": "abandoned",
         "is_closed": true,
         "is_private": false,
-        "archetype": "Defunct / Lost Ski Area",
-        "infrastructure": "Defunct ski hill · 4 historic lifts",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "2 km trails · 1 tracks",
         "vertical_ft": null,
         "summit_elev_ft": null,
         "base_elev_ft": null,
@@ -227038,7 +227160,9 @@
         "lift_count": 4,
         "run_count": 1,
         "avg_snowfall_in": 180,
-        "default_bearing": 124
+        "default_bearing": 124,
+        "trail_km": 2,
+        "trail_mi": 1
       }
     },
     {
@@ -227679,16 +227803,16 @@
         "region": "Baden-Württemberg",
         "lng": 9.66478,
         "lat": 48.4388,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 1 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "38 km trails · 34 tracks",
         "vertical_ft": 89,
         "summit_elev_ft": 2552,
         "base_elev_ft": 2462,
-        "skiable_acres": 2,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -227698,7 +227822,9 @@
         "lift_count": 1,
         "run_count": 34,
         "avg_snowfall_in": 91,
-        "default_bearing": 198
+        "default_bearing": 198,
+        "trail_km": 38,
+        "trail_mi": 24
       }
     },
     {
@@ -228028,16 +228154,16 @@
         "region": "Thuringia",
         "lng": 10.96611,
         "lat": 50.51557,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 5 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "758 km trails · 926 tracks",
         "vertical_ft": 269,
         "summit_elev_ft": 2699,
         "base_elev_ft": 2430,
-        "skiable_acres": 11,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -228047,7 +228173,9 @@
         "lift_count": 1,
         "run_count": 926,
         "avg_snowfall_in": 94,
-        "default_bearing": 212
+        "default_bearing": 212,
+        "trail_km": 758,
+        "trail_mi": 471
       }
     },
     {
@@ -228491,16 +228619,16 @@
         "region": "Upper Carniola",
         "lng": 13.93298,
         "lat": 46.35065,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "6 lifts · 7 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "35 km trails · 44 tracks",
         "vertical_ft": 990,
         "summit_elev_ft": 5131,
         "base_elev_ft": 4141,
-        "skiable_acres": 25,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -228510,7 +228638,9 @@
         "lift_count": 6,
         "run_count": 44,
         "avg_snowfall_in": 233,
-        "default_bearing": 295
+        "default_bearing": 295,
+        "trail_km": 35,
+        "trail_mi": 22
       }
     },
     {
@@ -230154,16 +230284,16 @@
         "region": "Savoie",
         "lng": 6.01122,
         "lat": 45.67819,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "5 lifts · 17 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "64 km trails · 144 tracks",
         "vertical_ft": 895,
         "summit_elev_ft": 5079,
         "base_elev_ft": 4184,
-        "skiable_acres": 2929,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -230174,7 +230304,9 @@
         "lift_count": 5,
         "run_count": 144,
         "avg_snowfall_in": 232,
-        "default_bearing": 258
+        "default_bearing": 258,
+        "trail_km": 64,
+        "trail_mi": 40
       }
     },
     {
@@ -233955,16 +234087,16 @@
         "region": "Jamtland",
         "lng": 13.96106,
         "lat": 63.00638,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 9 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "24 km trails · 32 tracks",
         "vertical_ft": 355,
         "summit_elev_ft": 2510,
         "base_elev_ft": 2155,
-        "skiable_acres": 2040,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -233974,7 +234106,9 @@
         "lift_count": 2,
         "run_count": 32,
         "avg_snowfall_in": 183,
-        "default_bearing": 271
+        "default_bearing": 271,
+        "trail_km": 24,
+        "trail_mi": 15
       }
     },
     {
@@ -235503,16 +235637,16 @@
         "region": "Tyrol",
         "lng": 12.14055,
         "lat": 47.53441,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "2 lifts · 4 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "17 km trails · 31 tracks",
         "vertical_ft": 301,
         "summit_elev_ft": 2366,
         "base_elev_ft": 2065,
-        "skiable_acres": 15,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -235523,7 +235657,9 @@
         "lift_count": 2,
         "run_count": 31,
         "avg_snowfall_in": 180,
-        "default_bearing": 168
+        "default_bearing": 168,
+        "trail_km": 17,
+        "trail_mi": 11
       }
     },
     {
@@ -237253,16 +237389,16 @@
         "region": "Baden-Württemberg",
         "lng": 9.10323,
         "lat": 48.35374,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "3 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "11 km trails · 12 tracks",
         "vertical_ft": 280,
         "summit_elev_ft": 2905,
         "base_elev_ft": 2625,
-        "skiable_acres": 67,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -237272,7 +237408,9 @@
         "lift_count": 3,
         "run_count": 12,
         "avg_snowfall_in": 98,
-        "default_bearing": 152
+        "default_bearing": 152,
+        "trail_km": 11,
+        "trail_mi": 7
       }
     },
     {
@@ -240700,16 +240838,16 @@
         "region": "Vestfold og Telemark",
         "lng": 9.67155,
         "lat": 59.27799,
-        "category": "downhill",
+        "category": "nordic",
         "status": "operating",
         "is_closed": false,
         "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "1 lifts · 0 pistes",
+        "archetype": "Cross-Country Ski Center",
+        "infrastructure": "3 km trails · 2 tracks",
         "vertical_ft": 38,
         "summit_elev_ft": 704,
         "base_elev_ft": 666,
-        "skiable_acres": 111,
+        "skiable_acres": 0,
         "pass_networks": [
           "Independent"
         ],
@@ -240719,7 +240857,9 @@
         "lift_count": 1,
         "run_count": 2,
         "avg_snowfall_in": 138,
-        "default_bearing": 180
+        "default_bearing": 180,
+        "trail_km": 3,
+        "trail_mi": 2
       }
     },
     {
