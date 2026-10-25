@@ -525,7 +525,11 @@ export default function App() {
       bearing: 0,
       maxPitch: 85,
       dragRotate: true,
+      boxZoom: false, // Prevents Shift-key from hijacking left-click panning into a box-zoom box
     });
+
+    // Disable boxZoom explicitly to prevent Shift-key conflicts
+    try { map.boxZoom.disable(); } catch (_) {}
 
     // Apply viewport padding synchronously before first render so globe never slides on start
     map.setPadding({ left: initialLeftPad, right: initialRightPad, top: 44, bottom: initialIsMobile ? 80 : 0 });
@@ -546,11 +550,25 @@ export default function App() {
       map.touchPitch.enable();
     } catch (_) {}
 
+    // Failsafe Watchdog: Guarantees map.dragPan never gets orphaned, frozen, or locked
+    // If a mouseup/pointerup was lost outside the browser window or over an overlay,
+    // this immediately clears any stuck state so left-click and trackpad drag always work.
+    const ensureDragPanReady = () => {
+      if (!map.dragPan) return;
+      if (!map.dragPan.isEnabled()) {
+        map.dragPan.enable();
+      } else if (map.dragPan.isActive()) {
+        map.dragPan.disable();
+        map.dragPan.enable();
+      }
+    };
+
     // Mac Trackpad Gestures (Twist to rotate, Pinch to zoom, Shift + Scroll to tilt)
     const container = map.getContainer();
     let gestureStartBearing = 0;
     let gestureStartZoom = 0;
     let isGestureActive = false;
+    let gestureWatchdogTimeout: any = null;
 
     const onGestureStart = (e: any) => {
       e.preventDefault();
@@ -562,6 +580,14 @@ export default function App() {
     const onGestureChange = (e: any) => {
       e.preventDefault();
       if (!isGestureActive) return;
+
+      if (gestureWatchdogTimeout) clearTimeout(gestureWatchdogTimeout);
+      gestureWatchdogTimeout = setTimeout(() => {
+        if (isGestureActive) {
+          isGestureActive = false;
+          ensureDragPanReady();
+        }
+      }, 400);
 
       // 1. Twist to rotate heading (in degrees)
       if (typeof e.rotation === 'number') {
@@ -580,8 +606,10 @@ export default function App() {
 
     const onGestureEnd = (e: any) => {
       e.preventDefault();
+      if (gestureWatchdogTimeout) clearTimeout(gestureWatchdogTimeout);
       isGestureActive = false;
       setMapBearing(Math.round(map.getBearing()));
+      ensureDragPanReady();
     };
 
     // Trackpad & Mouse Wheel Controller (Pinch Zoom, Shift-Tilt, Option-Rotate)
@@ -629,6 +657,52 @@ export default function App() {
     container.addEventListener('wheel', onWheel, { passive: false, capture: true });
 
     const canvas = map.getCanvas();
+    const canvasContainer = map.getCanvasContainer();
+
+    // 1. Intercept pointerdown / mousedown at capture phase on canvasContainer:
+    // If dragPan is still marked active from an orphaned previous drag, reset it immediately before this new click
+    const onCanvasPointerDown = (e: PointerEvent | MouseEvent) => {
+      if (e.button === 0 && map.dragPan.isActive()) {
+        ensureDragPanReady();
+      }
+    };
+
+    canvasContainer.addEventListener('mousedown', onCanvasPointerDown as any, { capture: true });
+    canvasContainer.addEventListener('pointerdown', onCanvasPointerDown as any, { capture: true });
+
+    // 2. Window-level cleanup when mouse button is released outside canvas or window
+    const onGlobalPointerUp = (e: PointerEvent | MouseEvent) => {
+      if (e.button === 0 || (e.buttons !== undefined && (e.buttons & 1) === 0)) {
+        setTimeout(() => {
+          if ((e.buttons !== undefined && (e.buttons & 1) === 0) && map.dragPan.isActive()) {
+            ensureDragPanReady();
+          }
+        }, 32);
+      }
+    };
+
+    window.addEventListener('mouseup', onGlobalPointerUp, { capture: true });
+    window.addEventListener('pointerup', onGlobalPointerUp, { capture: true });
+
+    // 3. Window blur / visibility change: reset stuck drag state on Alt-Tab or switching windows
+    const onWindowBlur = () => {
+      ensureDragPanReady();
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) ensureDragPanReady();
+    };
+    window.addEventListener('blur', onWindowBlur);
+    window.addEventListener('focus', onWindowBlur);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    // 4. Mouse re-enters window with no buttons pressed: heal orphaned drag
+    const onWindowMouseEnter = (e: MouseEvent) => {
+      if ((e.buttons & 1) === 0 && map.dragPan.isActive()) {
+        ensureDragPanReady();
+      }
+    };
+    window.addEventListener('mouseenter', onWindowMouseEnter);
+
     const onContextMenu = (e: MouseEvent) => {
       e.preventDefault();
     };
@@ -1298,6 +1372,14 @@ export default function App() {
       container.removeEventListener('gesturechange', onGestureChange as any);
       container.removeEventListener('gestureend', onGestureEnd as any);
       container.removeEventListener('wheel', onWheel as any, { capture: true } as any);
+      canvasContainer.removeEventListener('mousedown', onCanvasPointerDown as any, { capture: true } as any);
+      canvasContainer.removeEventListener('pointerdown', onCanvasPointerDown as any, { capture: true } as any);
+      window.removeEventListener('mouseup', onGlobalPointerUp, { capture: true } as any);
+      window.removeEventListener('pointerup', onGlobalPointerUp, { capture: true } as any);
+      window.removeEventListener('blur', onWindowBlur);
+      window.removeEventListener('focus', onWindowBlur);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('mouseenter', onWindowMouseEnter);
       map.remove();
     };
   }, []);

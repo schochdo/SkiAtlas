@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: eliminate map panning freeze and stuck left-button/trackpad dragPan state`
+- **Root Cause Diagnosis for Intermittent Drag Pan Freezes**:
+  - **What was wrong before**: Occasionally, panning the map with the left mouse button or trackpad would stop working completely and become frozen/stuck, while arrow keys and right-mouse rotation movements continued to work normally.
+  - **Root Cause #1 (Orphaned Drag State from Missed Mouseup)**: In MapLibre's `DragPanHandler`, a pan begins on `mousedown` by setting `this._lastPoint` and `this._active = true`. If the user dragged towards the edge of the window, over the `LeftDock` directory drawer, or if a trackpad gesture was interrupted, the browser would miss or swallow the corresponding `mouseup`. Because `this._lastPoint` was never cleared, all subsequent `dragStart` calls immediately returned without initiating a pan (`if (this._lastPoint) return`). Right-mouse rotation (`mouseRotate`) and arrow keys (`jumpTo` requestAnimationFrame loop) bypass `mousePan`, which is why they continued working.
+  - **Root Cause #2 (Shift-Key BoxZoom Interception)**: MapLibre had `boxZoom` enabled by default. Holding `Shift` (e.g. from Shift-scroll 3D camera pitch tilt or keyboard acceleration) when left-clicking would trigger `BoxZoomHandler`, which has higher priority than `DragPanHandler` and locks out panning.
+  - **Root Cause #3 (Trackpad Gesture Lifecycle Desync)**: WebKit/Blink proprietary trackpad gestures (`gesturestart`, `gesturechange`, `gestureend`) called `e.preventDefault()`. If gestures were interrupted mid-pinch or mid-twist, `gestureend` could fail to fire cleanly, leaving trackpad event tracking desynchronized.
+- **Implementation of Comprehensive Self-Healing Watchdog ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L550-L650))**:
+  - **Canvas PointerDown Capture Healing**: Intercepts `mousedown` and `pointerdown` at the capture phase on `map.getCanvasContainer()`. If `map.dragPan.isActive()` is unexpectedly true at the start of a new click (proving a previous `mouseup` was dropped), it immediately resets `dragPan` (`disable()` then `enable()`), instantly clearing `_lastPoint` so the new drag starts seamlessly.
+  - **Disabled `boxZoom`**: Set `boxZoom: false` in MapLibre constructor and explicitly called `map.boxZoom.disable()`, preventing Shift key usage from ever hijacking left-click panning.
+  - **Global Window Lifecycle Safety Net**: Added listeners on `window` and `document` for `mouseup`, `pointerup`, `blur`, `focus`, `visibilitychange`, and `mouseenter`. If mouse buttons are released outside the canvas or window, `dragPan` is cleanly verified and recovered without aborting smooth inertia glides.
+  - **Trackpad Gesture Watchdog**: Added an automatic 400ms gesture watchdog in `onGestureChange` and explicit `ensureDragPanReady()` on `onGestureEnd`, guaranteeing trackpad gestures always cleanly hand control back to the pan handler.
+- **Verification**:
+  - Verified via CDP test automation that simulating an orphaned drag state with missing `mouseReleased` immediately self-heals on the next left-click drag, successfully updating map center coordinates without getting stuck.
+
+---
+
 ### `fix: restore steep freeride runs, bowls, chutes, and glade piste polygons with difficulty styling and area labels`
 - **Root Cause Diagnosis for Missing Extreme Terrain at Crested Butte & Worldwide**:
   - **What was wrong before**: At Crested Butte Mountain Resort (and other freeride destinations like Snowbird, Alta, Telluride), looking above The High Lift, The North Face, and around the peak showed an empty mountain surface missing all steep terrain, bowls, chutes, and glades (`Headwall`, `Spellbound Bowl`, `Phoenix Bowl`, `Rambo`, `Body Bag`, `The Peak`, `Banana`, `Peel`, etc.).
