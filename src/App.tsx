@@ -239,10 +239,10 @@ export const PASS_DISPLAY_NAMES: Record<PassNetwork, string> = {
 };
 
 export const PASS_SHORT_LABELS: Record<PassNetwork, string> = {
-  Epic: 'Epic Pass',
-  Ikon: 'Ikon Pass',
-  'Mountain Collective': 'Mountain Collective',
-  Indy: 'Indy Pass',
+  Epic: 'Epic',
+  Ikon: 'Ikon',
+  'Mountain Collective': 'Mtn Collective',
+  Indy: 'Indy',
   Independent: 'Unaffiliated',
 };
 
@@ -5555,6 +5555,8 @@ export default function App() {
                               backgroundColor: PASS_COLORS[r.pass_networks[0]] || '#8A847C',
                               borderColor: PASS_COLORS[r.pass_networks[0]] || '#8A847C',
                             }}
+                            title={PASS_DISPLAY_NAMES[r.pass_networks[0]] || r.pass_networks[0]}
+                            aria-label={PASS_DISPLAY_NAMES[r.pass_networks[0]] || r.pass_networks[0]}
                           >
                             {PASS_SHORT_LABELS[r.pass_networks[0]] || r.pass_networks[0]}
                           </span>

@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: shorten pass badges to "Epic", "Ikon", "Indy" to prevent card header wrapping`
+- **Shortened Multi-Pass Badges on Resort Cards**:
+  - **What changed**: Updated multi-pass badges from `"Epic Pass"`, `"Ikon Pass"`, `"Indy Pass"`, and `"Mountain Collective"` to clean, concise labels: `"Epic"`, `"Ikon"`, `"Indy"`, and `"Mtn Collective"`.
+  - **Why**: The redundant `"Pass"` suffix caused titles with moderate-to-long resort names (e.g. Whistler Blackcomb, Kicking Horse, Aspen Snowmass) to wrap onto a second line, introducing visual clutter and vertical card expansion.
+  - **Accessibility & Hover Context Preserved**: Added `title` and `aria-label` with the full network names (e.g. `Epic Pass (Vail Resorts & Global Partners)`), preserving complete context on hover and screen-reader access.
+
+---
+
 ### `feat: clear selections on page refresh to load global extent & enable navbar title click reset`
 - **Clear Existing Selections on Page Refresh**:
   - Removed persistent `?resort=` URL parameter writing during resort selection and stripped any query parameters on mount (`window.history.replaceState({}, '', window.location.pathname)`).
