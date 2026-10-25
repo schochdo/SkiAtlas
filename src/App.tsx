@@ -5417,8 +5417,12 @@ export default function App() {
                         <h3 className="font-bold text-sm text-[#1C1B18] tracking-tight truncate">
                           {r.name}
                         </h3>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${badge.bg} ${badge.text} ${badge.border} shrink-0`}>
-                          {badge.icon} {badge.label}
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-md border ${badge.bg} ${badge.border} shrink-0`}
+                          title={badge.label}
+                          aria-label={badge.label}
+                        >
+                          {badge.icon}
                         </span>
                         {r.pass_networks && r.pass_networks.length > 0 && r.pass_networks[0] !== 'Independent' && (
                           <span

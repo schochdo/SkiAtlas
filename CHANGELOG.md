@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: streamline resort card category badges to icon-only chips`
+- **Dropped Redundant Category Text Labels on Cards**:
+  - Replaced the wordy category badges on resort cards (e.g. `[ ⛷ Downhill ]`, `[ 🎿 Nordic XC ]`, `[ 🚁 Cat & Heli ]`) with compact, icon-only chips (`⛷`, `🎿`, `🚁`).
+  - Preserved full accessibility and hover clarity by retaining category names in the chip's `title` and `aria-label` attributes.
+  - Significantly reduces visual noise and header wrapping on dense multi-pass resort cards.
+
+---
+
 ### `feat: list A-Z first in sort controls while preserving default 7-day snow ranking`
 - **Reordered Sort Control Options**:
   - Repositioned the **`[ A-Z ]`** sort button to the first (far-left) slot in the directory sort bar: `[ A-Z ] [ Vert ] [ Acres ] [ 7-Day ❄ ]`.
