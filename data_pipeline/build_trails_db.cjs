@@ -34,6 +34,7 @@ db.exec(`
   );
 
   CREATE INDEX idx_rt_resort ON resort_trails(resort_id);
+  CREATE INDEX idx_rt_trail ON resort_trails(trail_id);
   CREATE INDEX idx_trails_bbox ON trails(min_lng, max_lng, min_lat, max_lat);
 `);
 

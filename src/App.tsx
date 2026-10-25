@@ -2746,7 +2746,7 @@ export default function App() {
      ========================================================================= */
 
   const fetchOverpassBbox = useCallback(async (south: number, west: number, north: number, east: number) => {
-    if (north - south > 1.2 || east - west > 1.5) return;
+    if (north - south > 0.35 || east - west > 0.45) return;
     const bboxKey = `${south.toFixed(2)},${west.toFixed(2)},${north.toFixed(2)},${east.toFixed(2)}`;
     if (lastFetchedBboxKeyRef.current === bboxKey) return;
 
@@ -3166,14 +3166,14 @@ export default function App() {
         map.setPitch(65);
         setMapPitch(65);
       }
-      if (z >= 9.5 && fetchOverpassBboxRef.current) {
+      if (z >= 10.5 && fetchOverpassBboxRef.current) {
         try {
           const center = map.getCenter();
           const b = map.getBounds();
           const rawHalfLng = Math.abs(b.getEast() - b.getWest()) / 2;
           const rawHalfLat = Math.abs(b.getNorth() - b.getSouth()) / 2;
-          const halfLng = Math.min(0.35, Math.max(0.08, rawHalfLng));
-          const halfLat = Math.min(0.28, Math.max(0.06, rawHalfLat));
+          const halfLng = Math.min(0.12, rawHalfLng * 1.15);
+          const halfLat = Math.min(0.10, rawHalfLat * 1.15);
           fetchOverpassBboxRef.current(
             center.lat - halfLat,
             center.lng - halfLng,
@@ -4864,13 +4864,13 @@ export default function App() {
     setMapPitch(pitch);
     setMapBearing(bearing);
 
-    // Stream trails for this mountain AND adjacent mountains in bounding box
+    // Stream trails for this mountain with tight resort bounding box
     if (fetchOverpassBboxRef.current) {
       fetchOverpassBboxRef.current(
-        resort.lat - 0.22,
-        resort.lng - 0.25,
-        resort.lat + 0.22,
-        resort.lng + 0.25
+        resort.lat - 0.05,
+        resort.lng - 0.06,
+        resort.lat + 0.05,
+        resort.lng + 0.06
       );
     }
 
@@ -4930,10 +4930,10 @@ export default function App() {
 
     if (fetchOverpassBboxRef.current) {
       fetchOverpassBboxRef.current(
-        coords[1] - 0.20,
-        coords[0] - 0.22,
-        coords[1] + 0.20,
-        coords[0] + 0.22
+        coords[1] - 0.05,
+        coords[0] - 0.06,
+        coords[1] + 0.05,
+        coords[0] + 0.06
       );
     }
   };
@@ -5316,41 +5316,8 @@ export default function App() {
             )}
           </div>
 
-          {/* Quick Filter Status Bar & Trigger */}
-          <div className="flex items-center justify-between text-xs px-0.5">
-            <div className="flex items-center gap-1.5 text-[#5C5852]">
-              <span className="font-bold text-[#1C1B18] tabular-nums">
-                {filteredResorts.length.toLocaleString()}
-              </span>
-              <span className="text-[#736E67]">ski areas</span>
-              {activeFiltersCount > 0 && (
-                <span className="bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] text-[10px] px-1.5 py-0.2 rounded-full font-bold tabular-nums">
-                  {activeFiltersCount} active
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-1.5">
-              {activeFiltersCount > 0 && (
-                <button
-                  onClick={handleResetFilters}
-                  className="text-xs font-bold text-[#B84A39] hover:underline cursor-pointer mr-1"
-                >
-                  Reset
-                </button>
-              )}
-              <button
-                onClick={() => setFiltersMenuOpen(true)}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer"
-                title="Open Display Settings & Resort Filters"
-              >
-                <Sliders className="w-3 h-3 text-[#5C5852]" />
-                <span>Filters</span>
-              </button>
-            </div>
-          </div>
-
           {/* Sort Controls Row */}
-          <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#D6D0C2]">
+          <div className="flex items-center justify-between gap-2 pt-0.5">
             <span className="text-[#736E67] uppercase tracking-wider font-bold text-[11px] shrink-0">
               Sort:
             </span>

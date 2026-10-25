@@ -93,10 +93,11 @@ export function localTrailsPlugin(): Plugin {
               const pt = coordsMap?.get(resort);
               if (pt) {
                 const [lng, lat] = pt;
-                const dDeg = 0.055; // ~5-6 km radius
+                const dDeg = 0.045; // ~4-5 km radius
                 const bboxStmt = database.prepare(`
-                  SELECT geojson FROM trails
-                  WHERE min_lng <= ? AND max_lng >= ? AND min_lat <= ? AND max_lat >= ?
+                  SELECT DISTINCT t.geojson FROM trails t
+                  JOIN resort_trails rt ON t.id = rt.trail_id
+                  WHERE t.min_lng <= ? AND t.max_lng >= ? AND t.min_lat <= ? AND t.max_lat >= ?
                   LIMIT 600
                 `);
                 const bboxRows = bboxStmt.all(lng + dDeg, lng - dDeg, lat + dDeg, lat - dDeg) as { geojson: string }[];
@@ -111,17 +112,22 @@ export function localTrailsPlugin(): Plugin {
             const parts = bbox.split(',').map(Number);
             if (parts.length === 4 && parts.every((n) => !isNaN(n))) {
               const [minLng, minLat, maxLng, maxLat] = parts;
-              const stmt = database.prepare(`
-                SELECT geojson FROM trails
-                WHERE min_lng <= ? AND max_lng >= ? AND min_lat <= ? AND max_lat >= ?
-                LIMIT 3000
-              `);
-              const rows = stmt.all(maxLng, minLng, maxLat, minLat) as { geojson: string }[];
-              features = rows.map((r) => {
-                const f = JSON.parse(r.geojson);
-                delete f.id;
-                return f;
-              });
+              // Only query valid, tight bounding boxes (ignore massive state/continent queries)
+              if (Math.abs(maxLng - minLng) <= 0.6 && Math.abs(maxLat - minLat) <= 0.5) {
+                // Strictly join resort_trails to filter out random backcountry / hiking trails
+                const stmt = database.prepare(`
+                  SELECT DISTINCT t.geojson FROM trails t
+                  JOIN resort_trails rt ON t.id = rt.trail_id
+                  WHERE t.min_lng <= ? AND t.max_lng >= ? AND t.min_lat <= ? AND t.max_lat >= ?
+                  LIMIT 3000
+                `);
+                const rows = stmt.all(maxLng, minLng, maxLat, minLat) as { geojson: string }[];
+                features = rows.map((r) => {
+                  const f = JSON.parse(r.geojson);
+                  delete f.id;
+                  return f;
+                });
+              }
             }
           }
 

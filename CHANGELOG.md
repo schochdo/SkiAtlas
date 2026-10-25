@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `fix: filter out random backcountry trails and enforce tight resort bounding boxes`
+- **Filtered Out Random Trails & Orphan Backcountry Traces**:
+  - **What was wrong**: When panning the map or selecting a resort (e.g. Stowe, VT), random backcountry hiking loops, woods paths, and orphaned OpenStreetMap ways (such as *Papa's Trail*, *Upper Gorge Loop*, and disconnected forest segments in Vermont's Sterling Forest) were rendered over the trees. This occurred because `/api/trails?bbox=` queried the `trails` table without joining `resort_trails`, dumping thousands of unlinked non-resort routes onto the map.
+  - **The fix**: Updated `/api/trails` in [`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts) to strictly `JOIN resort_trails rt ON t.id = rt.trail_id`. Every trail returned is now verified to belong to a recognized, mapped ski area.
+  - **Indexed Speed**: Added `idx_rt_trail` index on `resort_trails(trail_id)` in SQLite and [`data_pipeline/build_trails_db.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/data_pipeline/build_trails_db.cjs), reducing bounding box query time from 136ms down to 3.2ms.
+- **Tightened Resort & Viewport Bounding Boxes**:
+  - **What was wrong**: Resort selection previously requested a massive 50 km × 40 km bounding box (`+/- 0.22` lat, `+/- 0.25` lng), sweeping up trails across whole mountain ranges and adjacent valleys. Map panning clamped bounding boxes to an arbitrary minimum of 18 km (`Math.max(0.08)`), expanding queries into distant forests even when zoomed in tight on a single lift.
+  - **The fix**:
+    - Tightened resort selection bounding boxes in `handleSelectResort` and `handleSelectGlobalResort` to `+/- 0.05` lat and `+/- 0.06` lng (~5–6 km radius), accurately framing the resort footprint.
+    - Updated `handleMapMoveEnd` to query trails only when `z >= 10.5` (when trails become legible), using the actual viewport bounds with 15% margin (`rawHalfLng * 1.15`, capped at `0.12`), eliminating artificial expansions into surrounding wilderness.
+    - Added safety guard in `fetchOverpassBbox` to ignore oversized queries (`> 0.35` lat or `> 0.45` lng).
+- **Streamlined Directory Header**:
+  - Removed the redundant quick filter status bar strip (`1,654 ski areas · Filters`) between the search input and sort controls in the Mountain Directory tray per user request.
+
+---
+
 ### `feat: consolidate display and filters popover panel and decouple mountain profile auto-open`
 - **Consolidated "Display & Filters" Floating Panel in Top Navigation Bar**:
   - Combined `Earth Projection` (3D Globe vs Flat Map), `Units of Measure` (Imperial ft/°F vs Metric m/°C), and the full suite of `Resort Filters` (Categories, Pass Networks, Min Vertical Drop, Min Skiable Area/Acres, and Min Nordic Network) into a single unified popover panel in the top-right header bar.
