@@ -13482,21 +13482,21 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7,
-          45.8333
+          6.959972,
+          45.862102
         ]
       },
       "properties": {
         "id": "peak-539",
-        "name": "Aiguille De Rochefort",
+        "name": "Aiguille de Rochefort",
         "elevation_ft": 13127,
         "elevation_m": 4001,
         "elevation_formatted_ft": "13,127'",
         "elevation_formatted_m": "4,001 m",
-        "label_ft": "▲ Aiguille De Rochefort · 13,127'",
-        "label_m": "▲ Aiguille De Rochefort · 4,001 m",
-        "label_stacked_ft": "▲ Aiguille De Rochefort\n13,127'",
-        "label_stacked_m": "▲ Aiguille De Rochefort\n4,001 m",
+        "label_ft": "▲ Aiguille de Rochefort · 13,127'",
+        "label_m": "▲ Aiguille de Rochefort · 4,001 m",
+        "label_stacked_ft": "▲ Aiguille de Rochefort\n13,127'",
+        "label_stacked_m": "▲ Aiguille de Rochefort\n4,001 m",
         "sort_key": 26873,
         "continent": "Europe"
       }
@@ -13607,8 +13607,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          10.2,
-          46.8667
+          10.203855,
+          46.864624
         ]
       },
       "properties": {
@@ -13632,8 +13632,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          9.81667,
-          47.0167
+          9.809874,
+          47.024655
         ]
       },
       "properties": {
@@ -14407,8 +14407,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          9.8,
-          47.3
+          9.777654,
+          47.306903
         ]
       },
       "properties": {
@@ -17657,8 +17657,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          6.88333,
-          45.85
+          6.875986,
+          45.847439
         ]
       },
       "properties": {
@@ -19032,8 +19032,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          10.25,
-          47.2667
+          10.232368,
+          47.270566
         ]
       },
       "properties": {
@@ -19807,8 +19807,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          10.295833,
-          47.3
+          10.29568,
+          47.299925
         ]
       },
       "properties": {
@@ -21582,8 +21582,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.866667,
-          45.915751
+          7.858134,
+          45.913836
         ]
       },
       "properties": {
@@ -22482,8 +22482,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          9.36667,
-          46
+          9.390717,
+          45.921896
         ]
       },
       "properties": {
@@ -23032,21 +23032,21 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          9.75,
-          46.2667
+          9.749624,
+          46.269535
         ]
       },
       "properties": {
         "id": "peak-921",
-        "name": "Monte Dizgrazia",
+        "name": "Monte Disgrazia",
         "elevation_ft": 12067,
         "elevation_m": 3678,
         "elevation_formatted_ft": "12,067'",
         "elevation_formatted_m": "3,678 m",
-        "label_ft": "▲ Monte Dizgrazia · 12,067'",
-        "label_m": "▲ Monte Dizgrazia · 3,678 m",
-        "label_stacked_ft": "▲ Monte Dizgrazia\n12,067'",
-        "label_stacked_m": "▲ Monte Dizgrazia\n3,678 m",
+        "label_ft": "▲ Monte Disgrazia · 12,067'",
+        "label_m": "▲ Monte Disgrazia · 3,678 m",
+        "label_stacked_ft": "▲ Monte Disgrazia\n12,067'",
+        "label_stacked_m": "▲ Monte Disgrazia\n3,678 m",
         "sort_key": 27933,
         "continent": "Europe"
       }
@@ -23882,8 +23882,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          9.41667,
-          45.8667
+          9.471216,
+          45.857585
         ]
       },
       "properties": {
@@ -30982,22 +30982,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.76667,
-          46.5
+          7.772511,
+          46.488896
         ]
       },
       "properties": {
         "id": "peak-1239",
-        "name": "Blemlisalphorn",
-        "elevation_ft": 12008,
-        "elevation_m": 3660,
-        "elevation_formatted_ft": "12,008'",
-        "elevation_formatted_m": "3,660 m",
-        "label_ft": "▲ Blemlisalphorn · 12,008'",
-        "label_m": "▲ Blemlisalphorn · 3,660 m",
-        "label_stacked_ft": "▲ Blemlisalphorn\n12,008'",
-        "label_stacked_m": "▲ Blemlisalphorn\n3,660 m",
-        "sort_key": 27992,
+        "name": "Blüemlisalphorn",
+        "elevation_ft": 12011,
+        "elevation_m": 3661,
+        "elevation_formatted_ft": "12,011'",
+        "elevation_formatted_m": "3,661 m",
+        "label_ft": "▲ Blüemlisalphorn · 12,011'",
+        "label_m": "▲ Blüemlisalphorn · 3,661 m",
+        "label_stacked_ft": "▲ Blüemlisalphorn\n12,011'",
+        "label_stacked_m": "▲ Blüemlisalphorn\n3,661 m",
+        "sort_key": 27989,
         "continent": "Europe"
       }
     },
@@ -31132,21 +31132,21 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.26667,
-          46.6167
+          7.268844,
+          46.629724
         ]
       },
       "properties": {
         "id": "peak-1245",
-        "name": "Chorblispitz",
+        "name": "Chörblispitz",
         "elevation_ft": 6900,
         "elevation_m": 2103,
         "elevation_formatted_ft": "6,900'",
         "elevation_formatted_m": "2,103 m",
-        "label_ft": "▲ Chorblispitz · 6,900'",
-        "label_m": "▲ Chorblispitz · 2,103 m",
-        "label_stacked_ft": "▲ Chorblispitz\n6,900'",
-        "label_stacked_m": "▲ Chorblispitz\n2,103 m",
+        "label_ft": "▲ Chörblispitz · 6,900'",
+        "label_m": "▲ Chörblispitz · 2,103 m",
+        "label_stacked_ft": "▲ Chörblispitz\n6,900'",
+        "label_stacked_m": "▲ Chörblispitz\n2,103 m",
         "sort_key": 33100,
         "continent": "Europe"
       }
@@ -31257,8 +31257,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          6.93333,
-          46.1667
+          6.925149,
+          46.162604
         ]
       },
       "properties": {
@@ -31507,8 +31507,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          9.95,
-          46.8
+          9.940556,
+          46.732778
         ]
       },
       "properties": {
@@ -31557,22 +31557,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          8.7,
-          47.0333
+          8.416957,
+          46.612621
         ]
       },
       "properties": {
         "id": "peak-1262",
         "name": "Galenstock",
-        "elevation_ft": 11755,
-        "elevation_m": 3583,
-        "elevation_formatted_ft": "11,755'",
-        "elevation_formatted_m": "3,583 m",
-        "label_ft": "▲ Galenstock · 11,755'",
-        "label_m": "▲ Galenstock · 3,583 m",
-        "label_stacked_ft": "▲ Galenstock\n11,755'",
-        "label_stacked_m": "▲ Galenstock\n3,583 m",
-        "sort_key": 28245,
+        "elevation_ft": 11765,
+        "elevation_m": 3586,
+        "elevation_formatted_ft": "11,765'",
+        "elevation_formatted_m": "3,586 m",
+        "label_ft": "▲ Galenstock · 11,765'",
+        "label_m": "▲ Galenstock · 3,586 m",
+        "label_stacked_ft": "▲ Galenstock\n11,765'",
+        "label_stacked_m": "▲ Galenstock\n3,586 m",
+        "sort_key": 28235,
         "continent": "Europe"
       }
     },
@@ -31657,8 +31657,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.11667,
-          46.2333
+          7.12615,
+          46.237167
         ]
       },
       "properties": {
@@ -31832,8 +31832,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.43333,
-          46.5333
+          7.446713,
+          46.536484
         ]
       },
       "properties": {
@@ -32282,8 +32282,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.83333,
-          46.6
+          7.84425,
+          46.602565
         ]
       },
       "properties": {
@@ -32357,22 +32357,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.26667,
-          46.35
+          7.932653,
+          46.498248
         ]
       },
       "properties": {
         "id": "peak-1294",
         "name": "Mittaghorn",
-        "elevation_ft": 7657,
-        "elevation_m": 2334,
-        "elevation_formatted_ft": "7,657'",
-        "elevation_formatted_m": "2,334 m",
-        "label_ft": "▲ Mittaghorn · 7,657'",
-        "label_m": "▲ Mittaghorn · 2,334 m",
-        "label_stacked_ft": "▲ Mittaghorn\n7,657'",
-        "label_stacked_m": "▲ Mittaghorn\n2,334 m",
-        "sort_key": 32343,
+        "elevation_ft": 12769,
+        "elevation_m": 3892,
+        "elevation_formatted_ft": "12,769'",
+        "elevation_formatted_m": "3,892 m",
+        "label_ft": "▲ Mittaghorn · 12,769'",
+        "label_m": "▲ Mittaghorn · 3,892 m",
+        "label_stacked_ft": "▲ Mittaghorn\n12,769'",
+        "label_stacked_m": "▲ Mittaghorn\n3,892 m",
+        "sort_key": 27231,
         "continent": "Europe"
       }
     },
@@ -32432,8 +32432,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.41667,
-          45.9833
+          7.417229,
+          45.993571
         ]
       },
       "properties": {
@@ -32482,21 +32482,21 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.35,
-          45.9
+          7.365899,
+          45.904139
         ]
       },
       "properties": {
         "id": "peak-1299",
-        "name": "Mont Gele",
+        "name": "Mont Gelé",
         "elevation_ft": 11542,
         "elevation_m": 3518,
         "elevation_formatted_ft": "11,542'",
         "elevation_formatted_m": "3,518 m",
-        "label_ft": "▲ Mont Gele · 11,542'",
-        "label_m": "▲ Mont Gele · 3,518 m",
-        "label_stacked_ft": "▲ Mont Gele\n11,542'",
-        "label_stacked_m": "▲ Mont Gele\n3,518 m",
+        "label_ft": "▲ Mont Gelé · 11,542'",
+        "label_m": "▲ Mont Gelé · 3,518 m",
+        "label_stacked_ft": "▲ Mont Gelé\n11,542'",
+        "label_stacked_m": "▲ Mont Gelé\n3,518 m",
         "sort_key": 28458,
         "continent": "Europe"
       }
@@ -32557,22 +32557,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          8.25,
-          46.9833
+          8.243333,
+          46.979722
         ]
       },
       "properties": {
         "id": "peak-1302",
-        "name": "Mount Pilatus",
-        "elevation_ft": 6995,
-        "elevation_m": 2132,
-        "elevation_formatted_ft": "6,995'",
-        "elevation_formatted_m": "2,132 m",
-        "label_ft": "▲ Mount Pilatus · 6,995'",
-        "label_m": "▲ Mount Pilatus · 2,132 m",
-        "label_stacked_ft": "▲ Mount Pilatus\n6,995'",
-        "label_stacked_m": "▲ Mount Pilatus\n2,132 m",
-        "sort_key": 33005,
+        "name": "Tomlishorn (Pilatus)",
+        "elevation_ft": 6982,
+        "elevation_m": 2128,
+        "elevation_formatted_ft": "6,982'",
+        "elevation_formatted_m": "2,128 m",
+        "label_ft": "▲ Tomlishorn (Pilatus) · 6,982'",
+        "label_m": "▲ Tomlishorn (Pilatus) · 2,128 m",
+        "label_stacked_ft": "▲ Tomlishorn (Pilatus)\n6,982'",
+        "label_stacked_m": "▲ Tomlishorn (Pilatus)\n2,128 m",
+        "sort_key": 33018,
         "continent": "Europe"
       }
     },
@@ -32632,8 +32632,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.9,
-          45.9167
+          7.869928,
+          45.941994
         ]
       },
       "properties": {
@@ -32757,22 +32757,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.45,
-          46
+          7.455146,
+          45.991343
         ]
       },
       "properties": {
         "id": "peak-1310",
-        "name": "Pigne D'Arolla",
-        "elevation_ft": 12454,
-        "elevation_m": 3796,
-        "elevation_formatted_ft": "12,454'",
-        "elevation_formatted_m": "3,796 m",
-        "label_ft": "▲ Pigne D'Arolla · 12,454'",
-        "label_m": "▲ Pigne D'Arolla · 3,796 m",
-        "label_stacked_ft": "▲ Pigne D'Arolla\n12,454'",
-        "label_stacked_m": "▲ Pigne D'Arolla\n3,796 m",
-        "sort_key": 27546,
+        "name": "Pigne d'Arolla",
+        "elevation_ft": 12434,
+        "elevation_m": 3790,
+        "elevation_formatted_ft": "12,434'",
+        "elevation_formatted_m": "3,790 m",
+        "label_ft": "▲ Pigne d'Arolla · 12,434'",
+        "label_m": "▲ Pigne d'Arolla · 3,790 m",
+        "label_stacked_ft": "▲ Pigne d'Arolla\n12,434'",
+        "label_stacked_m": "▲ Pigne d'Arolla\n3,790 m",
+        "sort_key": 27566,
         "continent": "Europe"
       }
     },
@@ -32807,8 +32807,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          9.86667,
-          46.6167
+          9.872788,
+          46.621297
         ]
       },
       "properties": {
@@ -32982,8 +32982,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.75,
-          45.9167
+          7.78531,
+          45.927808
         ]
       },
       "properties": {
@@ -33132,8 +33132,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.45,
-          46.3667
+          7.462209,
+          46.376254
         ]
       },
       "properties": {
@@ -33532,8 +33532,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          8.9,
-          46.8
+          8.914859,
+          46.811153
         ]
       },
       "properties": {
@@ -33632,22 +33632,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.43333,
-          46.5333
+          7.4468,
+          46.5446
         ]
       },
       "properties": {
         "id": "peak-1345",
         "name": "Vorderi Spillgerte",
-        "elevation_ft": 7392,
-        "elevation_m": 2253,
-        "elevation_formatted_ft": "7,392'",
-        "elevation_formatted_m": "2,253 m",
-        "label_ft": "▲ Vorderi Spillgerte · 7,392'",
-        "label_m": "▲ Vorderi Spillgerte · 2,253 m",
-        "label_stacked_ft": "▲ Vorderi Spillgerte\n7,392'",
-        "label_stacked_m": "▲ Vorderi Spillgerte\n2,253 m",
-        "sort_key": 32608,
+        "elevation_ft": 8123,
+        "elevation_m": 2476,
+        "elevation_formatted_ft": "8,123'",
+        "elevation_formatted_m": "2,476 m",
+        "label_ft": "▲ Vorderi Spillgerte · 8,123'",
+        "label_m": "▲ Vorderi Spillgerte · 2,476 m",
+        "label_stacked_ft": "▲ Vorderi Spillgerte\n8,123'",
+        "label_stacked_m": "▲ Vorderi Spillgerte\n2,476 m",
+        "sort_key": 31877,
         "continent": "Europe"
       }
     },
@@ -33857,8 +33857,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          7.7,
-          46.0667
+          7.690124,
+          46.064827
         ]
       },
       "properties": {

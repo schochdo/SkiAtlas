@@ -227,6 +227,223 @@ const summitOverrides = {
     elevation_m: 3933,
     elevation_ft: 12904
   },
+  // Blüemlisalphorn (Bernese Alps - fix 1.31km displacement into Blüemlisalpgletscher)
+  "peak-1239": {
+    name: "Blüemlisalphorn",
+    coords: [7.772511, 46.488896],
+    elevation_m: 3661,
+    elevation_ft: 12011
+  },
+  // Aiguille de Rochefort (Mont Blanc Massif)
+  "peak-539": {
+    name: "Aiguille de Rochefort",
+    coords: [6.959972, 45.862102],
+    elevation_m: 4001,
+    elevation_ft: 13127
+  },
+  // Augstenberg (Silvretta)
+  "peak-544": {
+    name: "Augstenberg",
+    coords: [10.203855, 46.864624],
+    elevation_m: 3228,
+    elevation_ft: 10591
+  },
+  // Drei Türme (Rätikon)
+  "peak-545": {
+    name: "Drei Türme",
+    coords: [9.809874, 47.024655],
+    elevation_m: 2830,
+    elevation_ft: 9285
+  },
+  // Hoher Freschen (Bregenz Forest)
+  "peak-576": {
+    name: "Hoher Freschen",
+    coords: [9.777654, 47.306903],
+    elevation_m: 2004,
+    elevation_ft: 6575
+  },
+  // Mont Maudit (Mont Blanc Massif)
+  "peak-706": {
+    name: "Mont Maudit",
+    coords: [6.875986, 45.847439],
+    elevation_m: 4465,
+    elevation_ft: 14649
+  },
+  // Biberkopf (Allgäu Alps)
+  "peak-761": {
+    name: "Biberkopf",
+    coords: [10.232368, 47.270566],
+    elevation_m: 2599,
+    elevation_ft: 8527
+  },
+  // Mädelegabel (Allgäu Alps)
+  "peak-792": {
+    name: "Mädelegabel",
+    coords: [10.295680, 47.299925],
+    elevation_m: 2645,
+    elevation_ft: 8678
+  },
+  // Balmenhorn (Pennine Alps)
+  "peak-863": {
+    name: "Balmenhorn",
+    coords: [7.858134, 45.913836],
+    elevation_m: 4167,
+    elevation_ft: 13671
+  },
+  // Grigna Meridionale (Bergamo Alps)
+  "peak-899": {
+    name: "Grigna Meridionale",
+    coords: [9.390717, 45.921896],
+    elevation_m: 2177,
+    elevation_ft: 7142
+  },
+  // Monte Disgrazia (Bregaglia)
+  "peak-921": {
+    name: "Monte Disgrazia",
+    coords: [9.749624, 46.269535],
+    elevation_m: 3678,
+    elevation_ft: 12067
+  },
+  // Resegone (Bergamo Alps)
+  "peak-955": {
+    name: "Resegone",
+    coords: [9.471216, 45.857585],
+    elevation_m: 1874,
+    elevation_ft: 6148
+  },
+  // Chörblispitz (Fribourg Alps)
+  "peak-1245": {
+    name: "Chörblispitz",
+    coords: [7.268844, 46.629724],
+    elevation_m: 2103,
+    elevation_ft: 6900
+  },
+  // Dents du Midi (Chablais Alps)
+  "peak-1250": {
+    name: "Dents du Midi",
+    coords: [6.925149, 46.162604],
+    elevation_m: 3257,
+    elevation_ft: 10686
+  },
+  // Flüela Schwarzhorn (Albula Alps)
+  "peak-1260": {
+    name: "Flüela Schwarzhorn",
+    coords: [9.940556, 46.732778],
+    elevation_m: 3147,
+    elevation_ft: 10325
+  },
+  // Galenstock (Urner Alps - fix 48km displacement)
+  "peak-1262": {
+    name: "Galenstock",
+    coords: [8.416957, 46.612621],
+    elevation_m: 3586,
+    elevation_ft: 11765
+  },
+  // Grand Muveran (Vaud Alps)
+  "peak-1266": {
+    name: "Grand Muveran",
+    coords: [7.126150, 46.237167],
+    elevation_m: 3051,
+    elevation_ft: 10010
+  },
+  // Hinderi Spillgerte (Bernese Alps)
+  "peak-1273": {
+    name: "Hinderi Spillgerte",
+    coords: [7.446713, 46.536484],
+    elevation_m: 2476,
+    elevation_ft: 8123
+  },
+  // Lobhörner (Bernese Alps)
+  "peak-1291": {
+    name: "Lobhörner",
+    coords: [7.844250, 46.602565],
+    elevation_m: 2566,
+    elevation_ft: 8419
+  },
+  // Mittaghorn (Bernese Alps)
+  "peak-1294": {
+    name: "Mittaghorn",
+    coords: [7.932653, 46.498248],
+    elevation_m: 3892,
+    elevation_ft: 12769
+  },
+  // Mont Blanc de Cheilon (Pennine Alps)
+  "peak-1297": {
+    name: "Mont Blanc de Cheilon",
+    coords: [7.417229, 45.993571],
+    elevation_m: 3870,
+    elevation_ft: 12697
+  },
+  // Mont Gelé (Pennine Alps)
+  "peak-1299": {
+    name: "Mont Gelé",
+    coords: [7.365899, 45.904139],
+    elevation_m: 3518,
+    elevation_ft: 11542
+  },
+  // Tomlishorn / Pilatus (Emmental Alps)
+  "peak-1302": {
+    name: "Tomlishorn (Pilatus)",
+    coords: [8.243333, 46.979722],
+    elevation_m: 2128,
+    elevation_ft: 6982
+  },
+  // Nordend (Monte Rosa)
+  "peak-1305": {
+    name: "Nordend",
+    coords: [7.869928, 45.941994],
+    elevation_m: 4609,
+    elevation_ft: 15121
+  },
+  // Pigne d'Arolla (Pennine Alps)
+  "peak-1310": {
+    name: "Pigne d'Arolla",
+    coords: [7.455146, 45.991343],
+    elevation_m: 3790,
+    elevation_ft: 12434
+  },
+  // Piz Kesch (Albula Alps)
+  "peak-1312": {
+    name: "Piz Kesch",
+    coords: [9.872788, 46.621297],
+    elevation_m: 3418,
+    elevation_ft: 11214
+  },
+  // Pollux (Pennine Alps)
+  "peak-1319": {
+    name: "Pollux",
+    coords: [7.785310, 45.927808],
+    elevation_m: 4092,
+    elevation_ft: 13425
+  },
+  // Rohrbachstein (Bernese Alps)
+  "peak-1325": {
+    name: "Rohrbachstein",
+    coords: [7.462209, 46.376254],
+    elevation_m: 2950,
+    elevation_ft: 9678
+  },
+  // Tödi (Glarus Alps)
+  "peak-1341": {
+    name: "Tödi",
+    coords: [8.914859, 46.811153],
+    elevation_m: 3614,
+    elevation_ft: 11857
+  },
+  // Vorderi Spillgerte (Bernese Alps)
+  "peak-1345": {
+    name: "Vorderi Spillgerte",
+    coords: [7.446800, 46.544600],
+    elevation_m: 2476,
+    elevation_ft: 8123
+  },
+  // Zinalrothorn (Pennine Alps)
+  "peak-1354": {
+    name: "Zinalrothorn",
+    coords: [7.690124, 46.064827],
+    elevation_m: 4221,
+    elevation_ft: 13848
+  },
   // US and other prominent mountains with known official imperial heights
   "peak-1809": { name: "Mount McGinnis", elevation_ft: 11400, elevation_m: 3475 },
   "peak-1819": { name: "Mt. Palmer", elevation_ft: 6970, elevation_m: 2124 },

@@ -6,6 +6,53 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: correct Blüemlisalphorn and Alpine peak summit coordinates from surveyed nodes`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In the Bernese Alps, `Blüemlisalphorn` was misspelled as `Blemlisalphorn` with an elevation of $12,008'$ and coordinates of `[7.76667, 46.5]`. The vermilion summit dot was placed directly onto the crevassed icefield of the Blüemlisalpgletscher glacier, approximately $1.31\text{ km}$ north-northwest of its true summit ridge.
+  - **The Scraper Mechanism**: The original Wikipedia scrape converted coordinates recorded as `46° 30′ N, 7° 46′ E` ($46.5^\circ, 7.76667^\circ$), omitting seconds. $1'$ of latitude in the Bernese Oberland is $\approx 1.85\text{ km}$. Rounding to whole arcminutes shifted the summit dot 1,230 meters north into the glacier basin. In addition, the German umlaut "ü" was stripped into "e" (`Blemlisalphorn`).
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Blüemlisalphorn Corrected**:
+    - Name updated to official Swiss German toponym: **`Blüemlisalphorn`** (Blümlisalp).
+    - Coordinates updated to swisstopo official geodetic surveyed summit node: **`[7.772511, 46.488896]`** (snaps directly onto the prominent rock pinnacle summit horn).
+    - Elevation updated to official swisstopo benchmark: **$3,661\text{ m}$ ($12,011\text{ ft}$)** with dual unit formatting.
+  - **Batch Audit & Precision Upgrades Across Alpine Peaks**:
+    - Sourced surveyed OpenStreetMap summit nodes for other arcminute-truncated Alpine peaks:
+      - `Aiguille de Rochefort`: `[6.959972, 45.862102]` (corrected a 4 km displacement from `[7, 45.8333]`).
+      - `Galenstock`: `[8.416957, 46.612621]` (corrected a 48 km displacement from `[8.7, 47.0333]`).
+      - `Drei Türme`: `[9.809874, 47.024655]`, 2,830 m.
+      - `Mont Maudit`: `[6.875986, 45.847439]`, 4,465 m.
+      - `Balmenhorn`: `[7.858134, 45.913836]`, 4,167 m.
+      - `Monte Disgrazia`: `[9.749624, 46.269535]`, 3,678 m (corrected spelling from `Monte Dizgrazia`).
+      - `Resegone`: `[9.471216, 45.857585]`, 1,874 m.
+      - `Chörblispitz`: `[7.268844, 46.629724]`, 2,103 m.
+      - `Dents du Midi`: `[6.925149, 46.162604]`, 3,257 m.
+      - `Flüela Schwarzhorn`: `[9.940556, 46.732778]`, 3,147 m.
+      - `Grand Muveran`: `[7.126150, 46.237167]`, 3,051 m.
+      - `Hinderi Spillgerte`: `[7.446713, 46.536484]`, 2,476 m.
+      - `Lobhörner`: `[7.844250, 46.602565]`, 2,566 m.
+      - `Mittaghorn`: `[7.932653, 46.498248]`, 3,892 m.
+      - `Mont Blanc de Cheilon`: `[7.417229, 45.993571]`, 3,870 m.
+      - `Mont Gelé`: `[7.365899, 45.904139]`, 3,518 m.
+      - `Tomlishorn (Pilatus)`: `[8.243333, 46.979722]`, 2,128 m.
+      - `Nordend`: `[7.869928, 45.941994]`, 4,609 m.
+      - `Pigne d'Arolla`: `[7.455146, 45.991343]`, 3,790 m.
+      - `Piz Kesch`: `[9.872788, 46.621297]`, 3,418 m.
+      - `Pollux`: `[7.785310, 45.927808]`, 4,092 m.
+      - `Rohrbachstein`: `[7.462209, 46.376254]`, 2,950 m.
+      - `Tödi`: `[8.914859, 46.811153]`, 3,614 m.
+      - `Vorderi Spillgerte`: `[7.446800, 46.544600]`, 2,476 m.
+      - `Zinalrothorn`: `[7.690124, 46.064827]`, 4,221 m.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking southwest across the Blüemlisalp massif:
+    1. The vermilion summit dot moved off the Blüemlisalpgletscher icefield and clamped directly onto the physical rock summit horn of Blüemlisalphorn.
+    2. Label renders cleanly as `▲ Blüemlisalphorn · 12,011'`.
+    3. Metric toggle renders cleanly as `▲ Blüemlisalphorn · 3,661 m`.
+  - Zero build errors with `npm run build` (573ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: eliminate flight elevation bouncing with steady-altitude cruising and minimum-clearance ground protection`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: Flying across mountain terrain with the keyboard (arrow keys or WASD) caused the camera elevation to continuously bounce up and down like a rollercoaster.
@@ -25,6 +72,53 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     4. Verified manual ascend (`KeyE`: $2,100\text{ m} \to 2,317\text{ m}$) and descend (`KeyQ`: $2,317\text{ m} \to 2,090\text{ m}$) stopping cleanly at the terrain clearance floor.
     5. Verified subsequent mouse drag panning moved smoothly with zero stickiness.
   - Clean production build with `npm run build` (355ms).
+
+---
+
+## 2026-10-25
+
+### `fix: correct Blüemlisalphorn and Alpine peak summit coordinates from surveyed nodes`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In the Bernese Alps, `Blüemlisalphorn` was misspelled as `Blemlisalphorn` with an elevation of $12,008'$ and coordinates of `[7.76667, 46.5]`. The vermilion summit dot was placed directly onto the crevassed icefield of the Blüemlisalpgletscher glacier, approximately $1.31\text{ km}$ north-northwest of its true summit ridge.
+  - **The Scraper Mechanism**: The original Wikipedia scrape converted coordinates recorded as `46° 30′ N, 7° 46′ E` ($46.5^\circ, 7.76667^\circ$), omitting seconds. $1'$ of latitude in the Bernese Oberland is $\approx 1.85\text{ km}$. Rounding to whole arcminutes shifted the summit dot 1,230 meters north into the glacier basin. In addition, the German umlaut "ü" was stripped into "e" (`Blemlisalphorn`).
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Blüemlisalphorn Corrected**:
+    - Name updated to official Swiss German toponym: **`Blüemlisalphorn`** (Blümlisalp).
+    - Coordinates updated to swisstopo official geodetic surveyed summit node: **`[7.772511, 46.488896]`** (snaps directly onto the prominent rock pinnacle summit horn).
+    - Elevation updated to official swisstopo benchmark: **$3,661\text{ m}$ ($12,011\text{ ft}$)** with dual unit formatting.
+  - **Batch Audit & Precision Upgrades Across Alpine Peaks**:
+    - Sourced surveyed OpenStreetMap summit nodes for other arcminute-truncated Alpine peaks:
+      - `Aiguille de Rochefort`: `[6.959972, 45.862102]` (corrected a 4 km displacement from `[7, 45.8333]`).
+      - `Galenstock`: `[8.416957, 46.612621]` (corrected a 48 km displacement from `[8.7, 47.0333]`).
+      - `Drei Türme`: `[9.809874, 47.024655]`, 2,830 m.
+      - `Mont Maudit`: `[6.875986, 45.847439]`, 4,465 m.
+      - `Balmenhorn`: `[7.858134, 45.913836]`, 4,167 m.
+      - `Monte Disgrazia`: `[9.749624, 46.269535]`, 3,678 m (corrected spelling from `Monte Dizgrazia`).
+      - `Resegone`: `[9.471216, 45.857585]`, 1,874 m.
+      - `Chörblispitz`: `[7.268844, 46.629724]`, 2,103 m.
+      - `Dents du Midi`: `[6.925149, 46.162604]`, 3,257 m.
+      - `Flüela Schwarzhorn`: `[9.940556, 46.732778]`, 3,147 m.
+      - `Grand Muveran`: `[7.126150, 46.237167]`, 3,051 m.
+      - `Hinderi Spillgerte`: `[7.446713, 46.536484]`, 2,476 m.
+      - `Lobhörner`: `[7.844250, 46.602565]`, 2,566 m.
+      - `Mittaghorn`: `[7.932653, 46.498248]`, 3,892 m.
+      - `Mont Blanc de Cheilon`: `[7.417229, 45.993571]`, 3,870 m.
+      - `Mont Gelé`: `[7.365899, 45.904139]`, 3,518 m.
+      - `Tomlishorn (Pilatus)`: `[8.243333, 46.979722]`, 2,128 m.
+      - `Nordend`: `[7.869928, 45.941994]`, 4,609 m.
+      - `Pigne d'Arolla`: `[7.455146, 45.991343]`, 3,790 m.
+      - `Piz Kesch`: `[9.872788, 46.621297]`, 3,418 m.
+      - `Pollux`: `[7.785310, 45.927808]`, 4,092 m.
+      - `Rohrbachstein`: `[7.462209, 46.376254]`, 2,950 m.
+      - `Tödi`: `[8.914859, 46.811153]`, 3,614 m.
+      - `Vorderi Spillgerte`: `[7.446800, 46.544600]`, 2,476 m.
+      - `Zinalrothorn`: `[7.690124, 46.064827]`, 4,221 m.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking southwest across the Blüemlisalp massif:
+    1. The vermilion summit dot moved off the Blüemlisalpgletscher icefield and clamped directly onto the physical rock summit horn of Blüemlisalphorn.
+    2. Label renders cleanly as `▲ Blüemlisalphorn · 12,011'`.
+    3. Metric toggle renders cleanly as `▲ Blüemlisalphorn · 3,661 m`.
+  - Zero build errors with `npm run build` (573ms).
 
 ---
 
@@ -82,6 +176,53 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: correct Blüemlisalphorn and Alpine peak summit coordinates from surveyed nodes`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In the Bernese Alps, `Blüemlisalphorn` was misspelled as `Blemlisalphorn` with an elevation of $12,008'$ and coordinates of `[7.76667, 46.5]`. The vermilion summit dot was placed directly onto the crevassed icefield of the Blüemlisalpgletscher glacier, approximately $1.31\text{ km}$ north-northwest of its true summit ridge.
+  - **The Scraper Mechanism**: The original Wikipedia scrape converted coordinates recorded as `46° 30′ N, 7° 46′ E` ($46.5^\circ, 7.76667^\circ$), omitting seconds. $1'$ of latitude in the Bernese Oberland is $\approx 1.85\text{ km}$. Rounding to whole arcminutes shifted the summit dot 1,230 meters north into the glacier basin. In addition, the German umlaut "ü" was stripped into "e" (`Blemlisalphorn`).
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Blüemlisalphorn Corrected**:
+    - Name updated to official Swiss German toponym: **`Blüemlisalphorn`** (Blümlisalp).
+    - Coordinates updated to swisstopo official geodetic surveyed summit node: **`[7.772511, 46.488896]`** (snaps directly onto the prominent rock pinnacle summit horn).
+    - Elevation updated to official swisstopo benchmark: **$3,661\text{ m}$ ($12,011\text{ ft}$)** with dual unit formatting.
+  - **Batch Audit & Precision Upgrades Across Alpine Peaks**:
+    - Sourced surveyed OpenStreetMap summit nodes for other arcminute-truncated Alpine peaks:
+      - `Aiguille de Rochefort`: `[6.959972, 45.862102]` (corrected a 4 km displacement from `[7, 45.8333]`).
+      - `Galenstock`: `[8.416957, 46.612621]` (corrected a 48 km displacement from `[8.7, 47.0333]`).
+      - `Drei Türme`: `[9.809874, 47.024655]`, 2,830 m.
+      - `Mont Maudit`: `[6.875986, 45.847439]`, 4,465 m.
+      - `Balmenhorn`: `[7.858134, 45.913836]`, 4,167 m.
+      - `Monte Disgrazia`: `[9.749624, 46.269535]`, 3,678 m (corrected spelling from `Monte Dizgrazia`).
+      - `Resegone`: `[9.471216, 45.857585]`, 1,874 m.
+      - `Chörblispitz`: `[7.268844, 46.629724]`, 2,103 m.
+      - `Dents du Midi`: `[6.925149, 46.162604]`, 3,257 m.
+      - `Flüela Schwarzhorn`: `[9.940556, 46.732778]`, 3,147 m.
+      - `Grand Muveran`: `[7.126150, 46.237167]`, 3,051 m.
+      - `Hinderi Spillgerte`: `[7.446713, 46.536484]`, 2,476 m.
+      - `Lobhörner`: `[7.844250, 46.602565]`, 2,566 m.
+      - `Mittaghorn`: `[7.932653, 46.498248]`, 3,892 m.
+      - `Mont Blanc de Cheilon`: `[7.417229, 45.993571]`, 3,870 m.
+      - `Mont Gelé`: `[7.365899, 45.904139]`, 3,518 m.
+      - `Tomlishorn (Pilatus)`: `[8.243333, 46.979722]`, 2,128 m.
+      - `Nordend`: `[7.869928, 45.941994]`, 4,609 m.
+      - `Pigne d'Arolla`: `[7.455146, 45.991343]`, 3,790 m.
+      - `Piz Kesch`: `[9.872788, 46.621297]`, 3,418 m.
+      - `Pollux`: `[7.785310, 45.927808]`, 4,092 m.
+      - `Rohrbachstein`: `[7.462209, 46.376254]`, 2,950 m.
+      - `Tödi`: `[8.914859, 46.811153]`, 3,614 m.
+      - `Vorderi Spillgerte`: `[7.446800, 46.544600]`, 2,476 m.
+      - `Zinalrothorn`: `[7.690124, 46.064827]`, 4,221 m.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking southwest across the Blüemlisalp massif:
+    1. The vermilion summit dot moved off the Blüemlisalpgletscher icefield and clamped directly onto the physical rock summit horn of Blüemlisalphorn.
+    2. Label renders cleanly as `▲ Blüemlisalphorn · 12,011'`.
+    3. Metric toggle renders cleanly as `▲ Blüemlisalphorn · 3,661 m`.
+  - Zero build errors with `npm run build` (573ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: eliminate flight elevation bouncing with steady-altitude cruising and minimum-clearance ground protection`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: Flying across mountain terrain with the keyboard (arrow keys or WASD) caused the camera elevation to continuously bounce up and down like a rollercoaster.
@@ -101,6 +242,53 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     4. Verified manual ascend (`KeyE`: $2,100\text{ m} \to 2,317\text{ m}$) and descend (`KeyQ`: $2,317\text{ m} \to 2,090\text{ m}$) stopping cleanly at the terrain clearance floor.
     5. Verified subsequent mouse drag panning moved smoothly with zero stickiness.
   - Clean production build with `npm run build` (355ms).
+
+---
+
+## 2026-10-25
+
+### `fix: correct Blüemlisalphorn and Alpine peak summit coordinates from surveyed nodes`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In the Bernese Alps, `Blüemlisalphorn` was misspelled as `Blemlisalphorn` with an elevation of $12,008'$ and coordinates of `[7.76667, 46.5]`. The vermilion summit dot was placed directly onto the crevassed icefield of the Blüemlisalpgletscher glacier, approximately $1.31\text{ km}$ north-northwest of its true summit ridge.
+  - **The Scraper Mechanism**: The original Wikipedia scrape converted coordinates recorded as `46° 30′ N, 7° 46′ E` ($46.5^\circ, 7.76667^\circ$), omitting seconds. $1'$ of latitude in the Bernese Oberland is $\approx 1.85\text{ km}$. Rounding to whole arcminutes shifted the summit dot 1,230 meters north into the glacier basin. In addition, the German umlaut "ü" was stripped into "e" (`Blemlisalphorn`).
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Blüemlisalphorn Corrected**:
+    - Name updated to official Swiss German toponym: **`Blüemlisalphorn`** (Blümlisalp).
+    - Coordinates updated to swisstopo official geodetic surveyed summit node: **`[7.772511, 46.488896]`** (snaps directly onto the prominent rock pinnacle summit horn).
+    - Elevation updated to official swisstopo benchmark: **$3,661\text{ m}$ ($12,011\text{ ft}$)** with dual unit formatting.
+  - **Batch Audit & Precision Upgrades Across Alpine Peaks**:
+    - Sourced surveyed OpenStreetMap summit nodes for other arcminute-truncated Alpine peaks:
+      - `Aiguille de Rochefort`: `[6.959972, 45.862102]` (corrected a 4 km displacement from `[7, 45.8333]`).
+      - `Galenstock`: `[8.416957, 46.612621]` (corrected a 48 km displacement from `[8.7, 47.0333]`).
+      - `Drei Türme`: `[9.809874, 47.024655]`, 2,830 m.
+      - `Mont Maudit`: `[6.875986, 45.847439]`, 4,465 m.
+      - `Balmenhorn`: `[7.858134, 45.913836]`, 4,167 m.
+      - `Monte Disgrazia`: `[9.749624, 46.269535]`, 3,678 m (corrected spelling from `Monte Dizgrazia`).
+      - `Resegone`: `[9.471216, 45.857585]`, 1,874 m.
+      - `Chörblispitz`: `[7.268844, 46.629724]`, 2,103 m.
+      - `Dents du Midi`: `[6.925149, 46.162604]`, 3,257 m.
+      - `Flüela Schwarzhorn`: `[9.940556, 46.732778]`, 3,147 m.
+      - `Grand Muveran`: `[7.126150, 46.237167]`, 3,051 m.
+      - `Hinderi Spillgerte`: `[7.446713, 46.536484]`, 2,476 m.
+      - `Lobhörner`: `[7.844250, 46.602565]`, 2,566 m.
+      - `Mittaghorn`: `[7.932653, 46.498248]`, 3,892 m.
+      - `Mont Blanc de Cheilon`: `[7.417229, 45.993571]`, 3,870 m.
+      - `Mont Gelé`: `[7.365899, 45.904139]`, 3,518 m.
+      - `Tomlishorn (Pilatus)`: `[8.243333, 46.979722]`, 2,128 m.
+      - `Nordend`: `[7.869928, 45.941994]`, 4,609 m.
+      - `Pigne d'Arolla`: `[7.455146, 45.991343]`, 3,790 m.
+      - `Piz Kesch`: `[9.872788, 46.621297]`, 3,418 m.
+      - `Pollux`: `[7.785310, 45.927808]`, 4,092 m.
+      - `Rohrbachstein`: `[7.462209, 46.376254]`, 2,950 m.
+      - `Tödi`: `[8.914859, 46.811153]`, 3,614 m.
+      - `Vorderi Spillgerte`: `[7.446800, 46.544600]`, 2,476 m.
+      - `Zinalrothorn`: `[7.690124, 46.064827]`, 4,221 m.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking southwest across the Blüemlisalp massif:
+    1. The vermilion summit dot moved off the Blüemlisalpgletscher icefield and clamped directly onto the physical rock summit horn of Blüemlisalphorn.
+    2. Label renders cleanly as `▲ Blüemlisalphorn · 12,011'`.
+    3. Metric toggle renders cleanly as `▲ Blüemlisalphorn · 3,661 m`.
+  - Zero build errors with `npm run build` (573ms).
 
 ---
 
