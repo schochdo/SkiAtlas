@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `fix: purge "A venir" placeholder and filter out lone trail traces lacking ski infrastructure`
+- **Purged "A venir" Pseudo-Ski Area**:
+  - **What was wrong**: A feature labeled "A venir" with a single trail labeled "La leçon" appeared on the map in Quebec, Canada as a downhill ski area. "À venir" is French for "Coming soon / TBD / Proposed". It was an isolated backcountry/hiking trace in the woods with 0 lifts, 0 infrastructure, and 1 trail, erroneously tagged in OpenStreetMap as an operating downhill skiArea relation.
+  - **The fix**: Removed `A venir` (`e7f922d11d482326888e820b57d21cf8d28711ac`) from `public/data/global_ski_areas.json` and `dist/data/global_ski_areas.json`.
+- **Enforced Quality Filter on Downhill Areas in `src/App.tsx`**:
+  - Excluded placeholder and defunct naming patterns (`a venir`, `à venir`, `unknown`, `former ...`, `(fermé)`, `touring -`, `hors-piste -`).
+  - Excluded lift-less lone trail traces: downhill features with 0 lifts and ≤ 1 run lacking an official website/verifiable infrastructure are now excluded on load, preventing stray hiking paths and phantom OSM nodes from appearing as alpine downhill ski areas.
+
+---
+
 ### `fix: reclassify Pyhätunturi - Luosto and sweep dataset to eliminate phantom cross-country acreage`
 - **Reclassified Pyhätunturi - Luosto to Nordic XC**:
   - **What was wrong**: "Pyhätunturi – Luosto" in Lapland, Finland was listed as a Downhill ski resort with 30,000 acres—putting it at #1 in the world alongside mega European lift circuses. In reality, the downhill ski slopes at Pyhä and Luosto cover only ~211 and ~70 acres respectively, while the 30,000 acres represented the entire geographic boundary of Pyhä-Luosto National Park (*Pyhä-Luoston kansallispuisto*, ~142 km²). Because the OSM relation enclosed both downhill lifts and the park's 150+ km cross-country trails, OpenSkiData categorized it as Downhill with the full national park acreage.

@@ -231556,44 +231556,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -71.18569,
-          46.99113
-        ]
-      },
-      "properties": {
-        "id": "e7f922d11d482326888e820b57d21cf8d28711ac",
-        "name": "A venir",
-        "country": "Canada",
-        "region": "Quebec",
-        "lng": -71.18569,
-        "lat": 46.99113,
-        "category": "downhill",
-        "status": "operating",
-        "is_closed": false,
-        "is_private": false,
-        "archetype": "Alpine Ski Area",
-        "infrastructure": "0 lifts · 1 pistes",
-        "vertical_ft": 709,
-        "summit_elev_ft": 1448,
-        "base_elev_ft": 739,
-        "skiable_acres": 519,
-        "pass_networks": [
-          "Independent"
-        ],
-        "primary_pass": "Independent",
-        "pass_color": "#8A847C",
-        "summary": "Mountain ski destination in Quebec, Canada, offering fall-line downhill terrain, alpine tree skiing, and local winter sports culture.",
-        "lift_count": null,
-        "run_count": 1,
-        "avg_snowfall_in": 151,
-        "default_bearing": 180
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           0.15708,
           42.7771
         ]

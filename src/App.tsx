@@ -4414,7 +4414,7 @@ export default function App() {
           const pName = p.name.trim();
           const pNameLower = pName.toLowerCase();
 
-          // Quality filter: Exclude permanently closed, defunct, or abandoned ski areas
+          // Quality filter: Exclude permanently closed, defunct, abandoned, or placeholder ski areas
           if (
             p.status === 'abandoned' ||
             p.status === 'closed' ||
@@ -4425,19 +4425,31 @@ export default function App() {
             (p.infrastructure && (p.infrastructure.toLowerCase().includes('defunct') || p.infrastructure.toLowerCase().includes('abandoned'))) ||
             pNameLower.includes('(closed)') ||
             pNameLower.includes('(abandoned)') ||
-            pNameLower.includes('(defunct)')
+            pNameLower.includes('(defunct)') ||
+            pNameLower.includes('(fermé)') ||
+            pNameLower === 'a venir' ||
+            pNameLower === 'à venir' ||
+            pNameLower === 'unknown' ||
+            pNameLower.startsWith('former ') ||
+            pNameLower.startsWith('touring -') ||
+            pNameLower.startsWith('hors-piste -')
           ) {
             continue;
           }
 
-          // Quality filter: Exclude zero-infrastructure downhill ghost entries
+          // Quality filter: Exclude zero-infrastructure downhill ghost entries and lone backcountry trail traces
           const lifts = p.lift_count || 0;
           const runs = p.run_count || 0;
           const vert = p.vertical_ft || 0;
           const acres = p.skiable_acres || 0;
           const hasSite = !!p.website && typeof p.website === 'string' && p.website.trim().length > 0;
-          if (p.category === 'downhill' && lifts === 0 && runs === 0 && vert <= 50 && acres <= 5 && !hasSite) {
-            continue;
+          if (p.category === 'downhill') {
+            if (lifts === 0 && runs <= 1 && !hasSite) {
+              continue;
+            }
+            if (lifts === 0 && runs === 0 && vert <= 50 && acres <= 5 && !hasSite) {
+              continue;
+            }
           }
 
           // Check if already in curated seed list -> SKIP to prevent double label!
