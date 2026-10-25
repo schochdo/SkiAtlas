@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: correct Esri tile URL coordinate transposition in Regional Overview locator map`
+- **Root Cause & Fix for Inset Map Centering on Greenland**:
+  - **What was wrong before**: When selecting Steamboat Powdercats (or viewing resorts in North America), the Regional Overview locator map displayed Arctic / Greenland tiles and text reading `GREENLAND` with a pin placed near the Greenland coast instead of northern Colorado.
+  - **Root Cause**: In `src/components/map/RegionalLocator.tsx`, the Esri Canvas raster source URLs were configured as `.../MapServer/tile/{z}/{x}/{y}` instead of Esri's standard ArcGIS REST endpoint format `.../MapServer/tile/{z}/{y}/{x}`. Slippy map columns ($x$) and rows ($y$) were transposed. For Steamboat Powdercats ($x=6, y=12$ at zoom 5), MapLibre requested tile row 6 and column 12 from Esri, which corresponds to the high Arctic / east coast of Greenland!
+  - **Tile Template Correction**: Fixed both `esri-canvas-base` and `esri-canvas-ref` endpoints to use the standard `{z}/{y}/{x}` schema.
+  - **Immediate Load Synchronization**: Added explicit `jumpTo({ center: targetCenter, zoom: targetZoom })` inside the locator's `map.on('load')` event to ensure correct initial framing even if style compilation resolves after component render.
+  - **Preset Re-Centering**: Updated `handleSetLocatorPreset` (`State / Country`, `Continent`, `Global`) to explicitly pass `center: targetCenter` in `easeTo`, ensuring zoom preset clicks preserve and focus on the selected resort.
+  - **Heli & Cat Operations State Initialization**: Included `HELI_CAT_OPERATIONS` in the synchronous initial state of `resorts` in `src/App.tsx` alongside `GLOBAL_SKI_ATLAS` so operations like Steamboat Powdercats are immediately available before the asynchronous 7.5 MB global ski dataset finishes fetching.
+  - **Verification**: Verified via headless Chrome CDP inspection that selecting Steamboat Powdercats displays Colorado with Denver and Cheyenne clearly visible, the state boundary cleanly delineated, and the pin accurately placed in northern Colorado.
+
+---
+
 ### `refactor: modularize codebase into dedicated components, services, and utilities`
 - **Architectural Reorganization & Performance Optimization**:
   - **What was wrong before**: The entire application was housed in a single monolithic `src/App.tsx` file spanning over 7,100 lines. The giant file combined static data dictionaries, domain calculations, weather fetchers, 13 complex UI sub-views, and MapLibre canvas lifecycle handlers into one file, leading to high HMR latency and developer cognitive overhead.

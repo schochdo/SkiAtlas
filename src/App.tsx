@@ -101,12 +101,16 @@ export {
    ========================================================================= */
 
 export default function App() {
-  const [resorts, setResorts] = useState<SkiResort[]>(() =>
-    GLOBAL_SKI_ATLAS.map((r) => ({
+  const [resorts, setResorts] = useState<SkiResort[]>(() => [
+    ...GLOBAL_SKI_ATLAS.map((r) => ({
       ...r,
       weather: getNeutralWeather(r),
-    }))
-  );
+    })),
+    ...HELI_CAT_OPERATIONS.map((r) => ({
+      ...r,
+      weather: getNeutralWeather(r),
+    })),
+  ]);
 
   const [selectedResortId, setSelectedResortId] = useState<string | null>(null);
   const [panelView, setPanelView] = useState<'directory' | 'profile'>('directory');

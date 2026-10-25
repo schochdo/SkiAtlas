@@ -179,7 +179,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
           'esri-canvas-base': {
             type: 'raster',
             tiles: [
-              'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{x}/{y}',
+              'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
             ],
             tileSize: 256,
             attribution: '© Esri, HERE, Garmin',
@@ -187,7 +187,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
           'esri-canvas-ref': {
             type: 'raster',
             tiles: [
-              'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{x}/{y}',
+              'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
             ],
             tileSize: 256,
             attribution: '© Esri',
@@ -273,6 +273,19 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       });
 
       locatorMapRef.current = lmap;
+      // Immediately set center and zoom upon load completion
+      const targetCenter: [number, number] = selectedResort
+        ? [selectedResort.lng, selectedResort.lat]
+        : mapCenter;
+      const targetZoom = selectedResort
+        ? (locatorZoomPreset === 'regional' ? 5.2 : locatorZoomPreset === 'continental' ? 3.2 : 1.8)
+        : (locatorZoomPreset === 'regional'
+            ? Math.max(1.8, Math.min(5.8, mapZoom - 6.5))
+            : locatorZoomPreset === 'continental'
+            ? 3.2
+            : 1.8);
+      lmap.jumpTo({ center: targetCenter, zoom: targetZoom });
+
       setTimeout(() => {
         lmap.resize();
       }, 50);
@@ -333,8 +346,12 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   const handleSetLocatorPreset = (preset: 'regional' | 'continental' | 'global') => {
     setLocatorZoomPreset(preset);
     if (!locatorMapRef.current) return;
+    const targetCenter: [number, number] = selectedResort
+      ? [selectedResort.lng, selectedResort.lat]
+      : mapCenter;
     const targetZoom = preset === 'regional' ? 5.2 : preset === 'continental' ? 3.2 : 1.8;
     locatorMapRef.current.easeTo({
+      center: targetCenter,
       zoom: targetZoom,
       duration: 350,
     });
