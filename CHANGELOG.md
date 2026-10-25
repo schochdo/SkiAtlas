@@ -6,6 +6,28 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `fix: smooth camera elevation damping to eliminate terrain bump bobbing`
+- **What was wrong**:
+  - In commit `25089a4`, continuous ground clamping (`setCenterClampedToGround(true)`) was kept active during 60 FPS keyboard traversal to eliminate an altitude snap on key release.
+  - However, because natural mountain DEM rasters have continuous micro-ridges, gullies, peaks, and bowls, instantaneous ground clamping on every single 16ms frame caused the camera's center elevation to jump up and down with every bump.
+  - When tilted at steep 3D camera pitches (46°–60°), crossing a ridge into a valley behind it caused the crosshair to fall off the crest, instantly plunging the camera hundreds or thousands of meters down, only to catapult back up on the next slope. This resulted in a dizzying, roller-coaster bobbing motion across mountain ranges.
+- **Damped Low-Pass Elevation Tracking**:
+  - Replaced instantaneous ground clamping during flight with an exponential low-pass filter:
+    `smoothedElevation += diff * (1 - Math.exp(-dt * dampingLambda))`.
+  - **Asymmetric Damping**:
+    - Uphill climb (`diff > 0`): `dampingLambda = 3.2` allows responsive, confident ascent up mountain faces without lagging into terrain.
+    - Downhill / over ridge crests (`diff < 0`): `dampingLambda = 1.8` provides a gentle, stabilized glide over valleys and canyons, preventing abrupt camera drops.
+  - **Vertical Velocity Limiting**:
+    - Capped maximum vertical speed (`maxVerticalSpeed = Math.max(300, speedMps * 0.75)` m/s) to prevent sharp spikes across jagged DEM tile boundaries.
+  - **Critically Damped Settle Phase on Key Release**:
+    - When arrow keys or WASD inputs are released, instead of abruptly snapping native ground clamping back on, the engine enters a brief settle phase:
+    - Horizontal movement stops immediately for crisp handling, while remaining vertical elevation gently glides the final sub-half-meter to the exact ground contour over ~200–300ms (`6.0 s^-1`).
+    - Once settled within 0.4m, native `setCenterClampedToGround(true)` is restored seamlessly with zero visual jump or snap.
+- **Verification**:
+  - Automated CDP elevation sampling verified across Jackson Hole alpine terrain: elevation changes remain silky smooth and continuous through 180m+ terrain jumps, settling cleanly to exact ground height on key release.
+
+---
+
 ### `feat: unified Mountain Guide panel with mobile bottom sheet and full-bleed 3D map`
 - **Eliminated Dual-Sidebar Map Crushing**:
   - **What was wrong**: The previous UI architecture used two competing sidebars: a 384px sliding Directory on the left and a 384px Dossier on the right. When both were open, they consumed 768px of screen width, leaving only a tiny sliver for the 3D map on smaller laptops and completely obliterating mobile viewports (where a 390px iPhone had 676px of hardcoded sidebar padding, pushing floating controls and map features entirely offscreen).

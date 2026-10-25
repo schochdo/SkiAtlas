@@ -2998,6 +2998,7 @@ export default function App() {
     map.setPadding({ left: initialLeftPad, right: initialRightPad, top: 52, bottom: initialIsMobile ? 80 : 0 });
 
     mapRef.current = map;
+    (window as any).__skiAtlasMap = map;
 
     // Enable native linear drag-to-rotate around center with ground-clamped terrain elevation
     try {
@@ -4110,6 +4111,9 @@ export default function App() {
     const activeKeys = new Set<string>();
     let animationFrameId: number | null = null;
     let lastTimestamp: number | null = null;
+    let smoothedElevation: number | null = null;
+    let isSettling = false;
+    let settleStartTime = 0;
 
     const NAVIGATION_KEYS = new Set([
       'KeyW',
@@ -4136,15 +4140,68 @@ export default function App() {
     };
 
     const flightStep = (timestamp: number) => {
-      if (!mapRef.current || activeKeys.size === 0) {
+      if (!mapRef.current) {
+        animationFrameId = null;
+        lastTimestamp = null;
+        smoothedElevation = null;
+        isSettling = false;
+        return;
+      }
+
+      if (isProgrammaticFlightActive) {
+        try { (mapRef.current as any).setCenterClampedToGround?.(true); } catch (_) {}
+        smoothedElevation = null;
+        isSettling = false;
+        animationFrameId = null;
+        lastTimestamp = null;
+        activeKeys.clear();
+        return;
+      }
+
+      const map = mapRef.current;
+
+      if (lastTimestamp === null) lastTimestamp = timestamp;
+      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.08);
+      lastTimestamp = timestamp;
+
+      // Settle Phase: Active keys released, gently ease remaining elevation delta to terrain
+      if (activeKeys.size === 0) {
+        if (isSettling && smoothedElevation !== null) {
+          const curCenter = map.getCenter();
+          const ground = map.queryTerrainElevation(curCenter);
+          const targetElev = (ground !== null && ground !== undefined && isFinite(ground)) ? ground : smoothedElevation;
+          const settleDiff = targetElev - smoothedElevation;
+          const elapsed = timestamp - settleStartTime;
+
+          if (Math.abs(settleDiff) > 0.4 && elapsed < 400) {
+            smoothedElevation += settleDiff * (1 - Math.exp(-dt * 6.0));
+            map.jumpTo({ elevation: smoothedElevation });
+            animationFrameId = requestAnimationFrame(flightStep);
+            return;
+          }
+
+          // Settle complete: snap the last sub-half-meter and restore native ground clamping
+          map.jumpTo({ elevation: targetElev });
+          try { (map as any).setCenterClampedToGround?.(true); } catch (_) {}
+        }
+        smoothedElevation = null;
+        isSettling = false;
         animationFrameId = null;
         lastTimestamp = null;
         return;
       }
 
-      if (lastTimestamp === null) lastTimestamp = timestamp;
-      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.08);
-      lastTimestamp = timestamp;
+      // Active Flight Phase
+      isSettling = false;
+
+      // Initialize smoothedElevation and disable instantaneous ground clamping
+      if (smoothedElevation === null) {
+        try { (map as any).setCenterClampedToGround?.(false); } catch (_) {}
+        const curCenter = map.getCenter();
+        const ground = map.queryTerrainElevation(curCenter);
+        const curElev = map.getCenterElevation();
+        smoothedElevation = (ground !== null && ground !== undefined && isFinite(ground)) ? ground : (curElev || 0);
+      }
 
       const isShift = activeKeys.has('ShiftLeft') || activeKeys.has('ShiftRight');
 
@@ -4197,7 +4254,7 @@ export default function App() {
         map.setZoom(nextZoom);
       }
 
-      // Smooth terrain-ground-clamped panning with zero height jumps on key release
+      // Smooth damped terrain panning: filters out micro-ridges and terrain bumps while contouring macro slopes
       if (moveForward !== 0 || moveStrafe !== 0) {
         const len = Math.hypot(moveForward, moveStrafe);
         moveForward /= len;
@@ -4226,9 +4283,35 @@ export default function App() {
         const nextLat = Math.max(-85, Math.min(85, curCenter.lat + deltaLat));
         const nextLng = curCenter.lng + deltaLng;
 
+        // Damped elevation tracking: sample ground terrain, apply low-pass filtering and vertical speed limits
+        const rawGround = map.queryTerrainElevation([nextLng, nextLat]);
+        const targetGroundElev = (rawGround !== null && rawGround !== undefined && isFinite(rawGround)) ? rawGround : smoothedElevation;
+        const diff = targetGroundElev - smoothedElevation;
+
+        // Asymmetric damping: responsive climb uphill (3.2), gentle glide downhill/over ridges (1.8)
+        const dampingLambda = diff > 0 ? 3.2 : 1.8;
+        const maxVerticalSpeed = Math.max(300, speedMps * 0.75); // m/s
+        const maxDeltaPerFrame = maxVerticalSpeed * dt;
+        const unclampedDelta = diff * (1 - Math.exp(-dt * dampingLambda));
+        const deltaElevation = Math.max(-maxDeltaPerFrame, Math.min(maxDeltaPerFrame, unclampedDelta));
+
+        smoothedElevation += deltaElevation;
+
         map.jumpTo({
           center: [nextLng, nextLat],
+          elevation: smoothedElevation,
         });
+      } else if (smoothedElevation !== null) {
+        // Not panning horizontally, but if smoothedElevation has minor offset from ground, ease gently
+        const curCenter = map.getCenter();
+        const rawGround = map.queryTerrainElevation(curCenter);
+        if (rawGround !== null && rawGround !== undefined && isFinite(rawGround)) {
+          const diff = rawGround - smoothedElevation;
+          if (Math.abs(diff) > 0.5) {
+            smoothedElevation += diff * (1 - Math.exp(-dt * 3.5));
+            map.jumpTo({ elevation: smoothedElevation });
+          }
+        }
       }
 
       animationFrameId = requestAnimationFrame(flightStep);
@@ -4242,6 +4325,7 @@ export default function App() {
         if (NAVIGATION_KEYS.has(e.code)) e.preventDefault();
         activeKeys.add(e.code);
         isProgrammaticFlightActive = false;
+        isSettling = false;
 
         if (animationFrameId === null) {
           lastTimestamp = performance.now();
@@ -4253,9 +4337,9 @@ export default function App() {
     const handleKeyUp = (e: KeyboardEvent) => {
       activeKeys.delete(e.code);
       if (activeKeys.size === 0 && animationFrameId !== null) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-        lastTimestamp = null;
+        // Begin smooth settle phase instead of abruptly snapping
+        isSettling = true;
+        settleStartTime = performance.now();
       }
     };
 
@@ -4266,6 +4350,7 @@ export default function App() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
+      try { (mapRef.current as any)?.setCenterClampedToGround?.(true); } catch (_) {}
     };
   }, [mapLoaded]);
 
