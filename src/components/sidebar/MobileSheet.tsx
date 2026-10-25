@@ -52,15 +52,15 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
         >
           {selectedResort ? (
             <div className="min-w-0 flex-1 pr-3">
-              <div className="flex items-center gap-1.5 truncate">
-                <span className="font-bold text-sm text-[#1C1B18] truncate">
+              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 leading-snug">
+                <span className="font-bold text-sm text-[#1C1B18] break-words">
                   {selectedResort.name}
                 </span>
-                <span className="text-[11px] font-semibold text-[#5C5852] truncate">
+                <span className="text-[11px] font-semibold text-[#5C5852] shrink-0">
                   · {selectedResort.country}
                 </span>
               </div>
-              <div className="text-xs text-[#5C5852] font-medium truncate mt-0.5">
+              <div className="text-xs text-[#5C5852] font-medium break-words leading-tight mt-0.5">
                 {selectedResort.vertical_drop_ft && selectedResort.vertical_drop_ft > 0
                   ? `${formatVert(selectedResort.vertical_drop_ft, unitsMetric)} vert · `
                   : ''}

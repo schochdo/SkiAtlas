@@ -539,7 +539,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
                   </>
                 )}
               </div>
-              <div className="font-bold text-xs text-[#1C1B18] truncate mt-0.5">
+              <div className="font-bold text-xs text-[#1C1B18] break-words leading-tight mt-0.5">
                 {selectedResort
                   ? selectedResort.name
                   : activeRegionContext.region && activeRegionContext.country && mapZoom >= 4
@@ -561,7 +561,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
                 </div>
               ) : mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country) ? (
                 <div>
-                  <span className="text-[10px] font-bold text-[#1C1B18] block truncate max-w-[130px]">
+                  <span className="text-[10px] font-bold text-[#1C1B18] block break-words leading-tight max-w-[130px]">
                     {activeRegionContext.name || activeRegionContext.country}
                   </span>
                   <span className="font-mono text-[9px] text-[#8A847C] block mt-0.5">

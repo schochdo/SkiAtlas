@@ -42,13 +42,13 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
       {/* Mountain Profile Header */}
       <div className="p-3.5 border-b border-[#D6D0C2] bg-[#FAF8F3] shrink-0">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-xs text-[#5C5852] font-medium">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 text-xs text-[#5C5852] font-medium leading-tight">
               <span>{resort.region ? `${resort.region}, ` : ''}{resort.country}</span>
               <span className="text-[#A8A299]">·</span>
               <span className="text-[#8A847C] uppercase tracking-wider font-semibold text-[10px]">Mountain Profile</span>
             </div>
-            <h2 className="text-lg font-bold text-[#1C1B18] tracking-tight mt-0.5 truncate">
+            <h2 className="text-lg font-bold text-[#1C1B18] tracking-tight mt-0.5 break-words leading-snug">
               {resort.name}
             </h2>
           </div>

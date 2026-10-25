@@ -45,13 +45,11 @@ export const ResortCard: React.FC<ResortCardProps> = ({
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <h3 className="font-bold text-sm text-[#1C1B18] tracking-tight truncate">
-              {r.name}
-            </h3>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-sm text-[#1C1B18] tracking-tight break-words leading-snug">
+            {r.name}
             <span
-              className={`text-xs px-1.5 py-0.5 rounded-md border ${badge.bg} ${badge.border} shrink-0`}
+              className={`inline-flex items-center text-xs px-1.5 py-0.2 rounded-md border ${badge.bg} ${badge.border} align-middle ml-1.5 shrink-0`}
               title={badge.label}
               aria-label={badge.label}
             >
@@ -59,7 +57,7 @@ export const ResortCard: React.FC<ResortCardProps> = ({
             </span>
             {r.pass_networks && r.pass_networks.length > 0 && r.pass_networks[0] !== 'Independent' && (
               <span
-                className="text-[9.5px] font-bold px-1.5 py-0.5 rounded border shrink-0 text-white shadow-2xs"
+                className="inline-flex items-center text-[9.5px] font-bold px-1.5 py-0.2 rounded border text-white shadow-2xs align-middle ml-1 shrink-0"
                 style={{
                   backgroundColor: PASS_COLORS[r.pass_networks[0]] || '#8A847C',
                   borderColor: PASS_COLORS[r.pass_networks[0]] || '#8A847C',
@@ -70,10 +68,10 @@ export const ResortCard: React.FC<ResortCardProps> = ({
                 {PASS_SHORT_LABELS[r.pass_networks[0]] || r.pass_networks[0]}
               </span>
             )}
-          </div>
+          </h3>
 
           {/* Line 2: Location (Region, Country) */}
-          <div className="text-xs text-[#5C5852] font-medium mt-1 truncate">
+          <div className="text-xs text-[#5C5852] font-medium mt-1 break-words leading-tight">
             {r.region ? `${r.region}, ` : ''}{r.country}
           </div>
 
@@ -103,7 +101,7 @@ export const ResortCard: React.FC<ResortCardProps> = ({
             }
             if (stats.length === 0) return null;
             return (
-              <div className="text-xs text-[#5C5852] font-medium mt-0.5 truncate">
+              <div className="text-xs text-[#5C5852] font-medium mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                 {stats.join(' · ')}
               </div>
             );

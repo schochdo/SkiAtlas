@@ -6,6 +6,30 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: eliminate text clipping and truncation on resort cards and profile headers`
+- **User Intent & Problem Context**:
+  - On resort cards in the directory list (e.g. `黒伏高原スノーパーク　ジャングル・ジャングル, Kurobushi Kogen Snow Park Jangle Jungle`), long titles and locations were clipped with ellipses (`Ku...` and `Yamagata Prefecture...`) due to `truncate` forcing single-line overflow.
+  - In addition, the ski category badge (`⛷️`) wrapped onto its own line below the clipped name.
+- **Natural Wrapping & Inline Badge Layout**:
+  - **`ResortCard.tsx` ([`src/components/sidebar/ResortCard.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/ResortCard.tsx))**:
+    - Replaced `truncate` on `h3` with `break-words leading-snug`, allowing multi-line bilingual and descriptive resort names to wrap naturally without running out of frame or clipping with ellipses.
+    - Moved the category badge (`⛷️`) and pass network pills (`Ikon`, etc.) inline inside the `h3` using `inline-flex align-middle ml-1.5`, so they sit neatly at the end of the title text instead of being orphaned on an extra row.
+    - Replaced `truncate` on the location line (`Yamagata Prefecture, Japan`) with `break-words leading-tight`.
+    - Allowed mountain stats to flex-wrap cleanly (`flex flex-wrap items-center gap-x-1.5 gap-y-0.5`).
+  - **`MountainProfile.tsx` ([`src/components/profile/MountainProfile.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/profile/MountainProfile.tsx))**:
+    - Removed `truncate` from the profile header `h2`, enabling `break-words leading-snug`.
+  - **`RegionalLocator.tsx` ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx))**:
+    - Removed `truncate` from the pinned resort banner title and region/country metadata, allowing clean multi-line display.
+  - **`MobileSheet.tsx` ([`src/components/sidebar/MobileSheet.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/MobileSheet.tsx))**:
+    - Replaced `truncate` on mobile header with `break-words leading-snug`.
+- **Verification via Headless Chrome CDP ([`scripts/capture_card_clip.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/capture_card_clip.cjs))**:
+  - Verified that `黒伏高原スノーパーク　ジャングル・ジャングル, Kurobushi Kogen Snow Park Jangle Jungle` displays in full across two lines with the `⛷️` badge tucked at the end, and `Yamagata Prefecture, Japan` displays in full with zero truncation.
+  - Production build clean (`npm run build` passed in 329ms).
+
+---
+
+## 2026-10-25
+
 ### `feat: top-align regional locator inset map to cover button with smooth pop-out expansion`
 - **User Intent & Problem Context**:
   - Previously, clicking the top-left regional locator button (`[ 🧭 Yamagata Prefecture ]`) opened the inset map popup at `top-10`, leaving the trigger button floating above the window.
