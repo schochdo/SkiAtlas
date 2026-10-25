@@ -4,6 +4,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-24
+
+### `fix: eliminate camera jump at end of arrow key panning by keeping continuous ground-clamping`
+- **Root Cause of Post-Pan Camera Jump**:
+  - In the 60 FPS flight engine, pressing a pan key previously captured a fixed altitude (`lockedElevation = map.getCenterElevation()`) and called `map.setCenterClampedToGround(false)`.
+  - While panning across 3D mountainous terrain, the camera center was translated horizontally at that locked starting elevation. When moving towards higher ridges or across valleys, the difference between the locked elevation and the actual ground elevation grew to hundreds or thousands of meters.
+  - The instant the user released the arrow key (`handleKeyUp`), `map.setCenterClampedToGround(true)` was invoked, violently snapping the camera center from the locked elevation to the ground elevation at the new coordinate. Because of camera tilt (38°–46° pitch), this sudden elevation jump produced a massive vertical snap/jump on screen.
+- **Continuous Ground-Clamped Traversal**:
+  - Removed `lockedElevation`, `setCenterClampedToGround(false)` on keydown, and `setCenterClampedToGround(true)` on keyup.
+  - The map's ground clamping remains active continuously during keyboard panning via `map.jumpTo({ center: [nextLng, nextLat] })`. The camera center naturally tracks the 3D terrain surface on every frame at 60 FPS.
+  - When the user releases the arrow keys, the camera is already sitting on the ground elevation at that coordinate, completely eliminating the jarring jump at the end of the pan.
+
+---
+
 ## 2026-10-23
 
 ### `feat: separate metric and imperial filter scale bars with rounded intervals`

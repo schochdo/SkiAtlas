@@ -4094,7 +4094,6 @@ export default function App() {
     const activeKeys = new Set<string>();
     let animationFrameId: number | null = null;
     let lastTimestamp: number | null = null;
-    let lockedElevation: number | null = null;
 
     const NAVIGATION_KEYS = new Set([
       'KeyW',
@@ -4176,15 +4175,13 @@ export default function App() {
       }
 
       if (zoomDelta !== 0) {
-        lockedElevation = null;
         const curZoom = map.getZoom();
         const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.5;
         const nextZoom = Math.max(1.0, Math.min(19.0, curZoom + zoomDelta * zoomSpeed * dt));
         map.setZoom(nextZoom);
       }
 
-      // Terrain panning with fixed altitude lock (applied from WASD + Arrow inputs)
-
+      // Smooth terrain-ground-clamped panning with zero height jumps on key release
       if (moveForward !== 0 || moveStrafe !== 0) {
         const len = Math.hypot(moveForward, moveStrafe);
         moveForward /= len;
@@ -4213,18 +4210,8 @@ export default function App() {
         const nextLat = Math.max(-85, Math.min(85, curCenter.lat + deltaLat));
         const nextLng = curCenter.lng + deltaLng;
 
-        if (lockedElevation === null) {
-          try {
-            map.setCenterClampedToGround(false);
-            lockedElevation = map.getCenterElevation();
-          } catch (_) {
-            lockedElevation = 0;
-          }
-        }
-
         map.jumpTo({
           center: [nextLng, nextLat],
-          elevation: lockedElevation,
         });
       }
 
@@ -4241,12 +4228,6 @@ export default function App() {
         isProgrammaticFlightActive = false;
 
         if (animationFrameId === null) {
-          try {
-            map.setCenterClampedToGround(false);
-            lockedElevation = map.getCenterElevation();
-          } catch (_) {
-            lockedElevation = 0;
-          }
           lastTimestamp = performance.now();
           animationFrameId = requestAnimationFrame(flightStep);
         }
@@ -4259,10 +4240,6 @@ export default function App() {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
         lastTimestamp = null;
-        lockedElevation = null;
-        try {
-          map.setCenterClampedToGround(true);
-        } catch (_) {}
       }
     };
 
