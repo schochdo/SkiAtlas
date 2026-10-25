@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `fix: purge contradictory "Unaffiliated" pass tags on European partners & clean card metrics layout`
+- **Fixed Contradictory "Epic" and "Unaffiliated" Dual Tagging**:
+  - **What was wrong**: European partner destinations (Verbier, Courchevel, Val Thorens, Val d'Isère, Sölden) were erroneously defined with both a major pass network and `Independent` (`['Epic', 'Independent']` or `['Independent', 'Ikon']`). This caused the mountain profile detail view to render both `[ Epic ]` and `[ Unaffiliated ]` side by side.
+  - **The fix**: Removed the contradictory `'Independent'` entry from all 5 European partner flagships in `GLOBAL_SKI_ATLAS` (`src/App.tsx`). Added a defensive normalization filter ensuring any ski area with an affiliated multi-pass network (`Epic`, `Ikon`, `Indy`, `Mountain Collective`) automatically purges `'Independent'`.
+- **Card Sub-Item Layout & Metric Formatting**:
+  - Restructured the resort card secondary lines to strictly match the requested hierarchy:
+    - **Line 2**: Geographic location (`Region, Country`) in its own truncated block.
+    - **Line 3**: Mountain specifications (`Vertical · Acres · Snow/yr` or `Km · Trails · Vert`) assembled as a clean array joined by middle dots.
+  - Eliminated the leading dot before the vertical drop metric that previously appeared when lines wrapped.
+
+---
+
 ### `feat: shorten pass badges to "Epic", "Ikon", "Indy" to prevent card header wrapping`
 - **Shortened Multi-Pass Badges on Resort Cards**:
   - **What changed**: Updated multi-pass badges from `"Epic Pass"`, `"Ikon Pass"`, `"Indy Pass"`, and `"Mountain Collective"` to clean, concise labels: `"Epic"`, `"Ikon"`, `"Indy"`, and `"Mtn Collective"`.

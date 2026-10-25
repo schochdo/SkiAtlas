@@ -855,7 +855,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 11353,
     vertical_drop_ft: 5268,
     skiable_acres: 10000,
-    pass_networks: ['Epic','Independent'],
+    pass_networks: ['Epic'],
     infrastructure: 'Funicular, Cable Cars, Grande Motte Glacier',
     archetype: 'Flagship Mega-Resort',
     summary: 'The legendary Espace Killy spanning 300 km of high-altitude runs, two glaciated massifs, Olympic downhill speed runs, and some of the world\'s finest off-piste descents.',
@@ -876,7 +876,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 8970,
     vertical_drop_ft: 4705,
     skiable_acres: 15000,
-    pass_networks: ['Epic','Independent'],
+    pass_networks: ['Epic'],
     infrastructure: '600 km linked piste network in Les Trois Vallées',
     archetype: 'Flagship Mega-Resort',
     summary: 'The glamorous crown of the world\'s largest linked ski domain (Les 3 Vallées); perfectly groomed boulevards, steep couloirs on the Saulire, and Michelin-starred alpine luxury.',
@@ -897,7 +897,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 10597,
     vertical_drop_ft: 4691,
     skiable_acres: 15000,
-    pass_networks: ['Epic','Independent'],
+    pass_networks: ['Epic'],
     infrastructure: 'Cime Caron Cable Car, Funitel Thorens',
     archetype: 'Glaciated High-Altitude Citadel',
     summary: 'The highest ski resort village in Europe at 2,300 meters, perched at the pinnacle of Les Trois Vallées. Offers vast glacier-fed powder bowls below Cime Caron (3,200m) and 100% snow certainty from November to May.',
@@ -960,7 +960,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 10925,
     vertical_drop_ft: 6005,
     skiable_acres: 9500,
-    pass_networks: ['Epic','Independent'],
+    pass_networks: ['Epic'],
     infrastructure: 'Mont-Fort Cable Car, 410 km in 4 Vallées',
     archetype: 'Steep Alpine',
     summary: 'Switzerland\'s premier freeride capital; steep glaciated descents off the 3,330m Mont-Fort summit, world-class itinerary trails, and pulsating alpine nightlife.',
@@ -1107,7 +1107,7 @@ export const GLOBAL_SKI_ATLAS: SkiResort[] = [
     summit_elev_ft: 10958,
     vertical_drop_ft: 6529,
     skiable_acres: 4700,
-    pass_networks: ['Independent','Ikon'],
+    pass_networks: ['Ikon'],
     infrastructure: 'Giggijochbahn, Golden Gate Glacier Connection',
     archetype: 'Glaciated World Cup Massif',
     summary: 'Ötztal Valley powerhouse boasting two vast interconnected glaciers (Rettenbach and Tiefenbach) and three 3,000-meter peaks linked by the Golden Gate lift network, hosting the annual FIS Alpine World Cup opener.',
@@ -4519,7 +4519,10 @@ export default function App() {
           if (classified.category === 'downhill') dhTotal++;
           else if (classified.category === 'nordic') nordTotal++;
 
-          const passNets = (p.pass_networks && p.pass_networks.length > 0 ? p.pass_networks : ['Independent']) as PassNetwork[];
+          const rawPassNets = (p.pass_networks && p.pass_networks.length > 0 ? p.pass_networks : ['Independent']) as PassNetwork[];
+          const passNets = rawPassNets.length > 1 && rawPassNets.includes('Independent')
+            ? rawPassNets.filter((net) => net !== 'Independent')
+            : rawPassNets;
           const primaryPass = passNets[0] || 'Independent';
           const passColor = PASS_COLORS[primaryPass] || '#8A847C';
 
@@ -5562,19 +5565,42 @@ export default function App() {
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-[#5C5852] font-medium mt-1 flex items-center flex-wrap gap-x-1.5">
-                        <span>{r.region ? `${r.region}, ` : ''}{r.country}</span>
-                        {r.category !== 'nordic' && r.vertical_drop_ft && r.vertical_drop_ft > 0 && ` · ${formatVert(r.vertical_drop_ft)}`}
-                        {r.category !== 'nordic' && r.skiable_acres > 0 && ` · ${formatAcres(r.skiable_acres)}`}
-                        {r.avg_snowfall_in && r.avg_snowfall_in > 0 && ` · ${formatSnow(r.avg_snowfall_in)}/yr`}
-                        {r.category === 'nordic' && (
-                          <>
-                            {r.trail_km && r.trail_km > 0 ? ` · ${formatDistance(r.trail_km)}` : ''}
-                            {r.run_count && r.run_count > 0 ? ` (${r.run_count} trails)` : ''}
-                            {r.vertical_drop_ft && r.vertical_drop_ft > 0 ? ` · ${formatVert(r.vertical_drop_ft)} vert` : ''}
-                          </>
-                        )}
+                      {/* Line 2: Location (Region, Country) */}
+                      <div className="text-xs text-[#5C5852] font-medium mt-1 truncate">
+                        {r.region ? `${r.region}, ` : ''}{r.country}
                       </div>
+
+                      {/* Line 3: Mountain specs without leading dot */}
+                      {(() => {
+                        const stats: string[] = [];
+                        if (r.category !== 'nordic') {
+                          if (r.vertical_drop_ft && r.vertical_drop_ft > 0) {
+                            stats.push(formatVert(r.vertical_drop_ft));
+                          }
+                          if (r.skiable_acres > 0) {
+                            stats.push(formatAcres(r.skiable_acres));
+                          }
+                          if (r.avg_snowfall_in && r.avg_snowfall_in > 0) {
+                            stats.push(`${formatSnow(r.avg_snowfall_in)}/yr`);
+                          }
+                        } else {
+                          if (r.trail_km && r.trail_km > 0) {
+                            stats.push(formatDistance(r.trail_km));
+                          }
+                          if (r.run_count && r.run_count > 0) {
+                            stats.push(`${r.run_count} trails`);
+                          }
+                          if (r.vertical_drop_ft && r.vertical_drop_ft > 0) {
+                            stats.push(`${formatVert(r.vertical_drop_ft)} vert`);
+                          }
+                        }
+                        if (stats.length === 0) return null;
+                        return (
+                          <div className="text-xs text-[#5C5852] font-medium mt-0.5 truncate">
+                            {stats.join(' · ')}
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     {/* Live Upcoming Snowfall Forecast Chip */}
