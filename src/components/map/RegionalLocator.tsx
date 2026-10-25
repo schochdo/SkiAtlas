@@ -33,7 +33,6 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   const locatorMenuRef = useRef<HTMLDivElement | null>(null);
   const locatorContainerRef = useRef<HTMLDivElement | null>(null);
   const locatorMapRef = useRef<maplibregl.Map | null>(null);
-  const locatorMarkerRef = useRef<maplibregl.Marker | null>(null);
 
   // Automatically switch zoom preset based on whether a resort is selected or map zoom level
   useEffect(() => {
@@ -374,10 +373,6 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     });
 
     return () => {
-      if (locatorMarkerRef.current) {
-        locatorMarkerRef.current.remove();
-        locatorMarkerRef.current = null;
-      }
       if (locatorMapRef.current) {
         locatorMapRef.current.remove();
         locatorMapRef.current = null;
@@ -400,54 +395,6 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       rSource.setData(getResortPinGeoJson());
     }
   }, [viewportBounds, selectedResort, mapCenter, locatorOpen, getViewportGeoJson, getResortPinGeoJson]);
-
-  // Sync DOM Pin Marker on locator map
-  useEffect(() => {
-    const lmap = locatorMapRef.current;
-    if (!lmap || !locatorOpen) return;
-
-    const hasPin = Boolean(selectedResort || (mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country)));
-
-    if (!hasPin) {
-      if (locatorMarkerRef.current) {
-        locatorMarkerRef.current.remove();
-        locatorMarkerRef.current = null;
-      }
-      return;
-    }
-
-    const coords: [number, number] = selectedResort
-      ? [selectedResort.lng, selectedResort.lat]
-      : [mapCenter[0], mapCenter[1]];
-    const pinLabel = selectedResort
-      ? selectedResort.name
-      : activeRegionContext.region || activeRegionContext.country || 'Current Area';
-
-    if (!locatorMarkerRef.current) {
-      const el = document.createElement('div');
-      el.className = 'relative flex items-center justify-center pointer-events-auto cursor-pointer';
-      el.innerHTML = `
-        <div class="relative flex items-center justify-center">
-          <span class="absolute w-6 h-6 rounded-full bg-[#B84A39]/30 animate-ping pointer-events-none"></span>
-          <span class="absolute w-5 h-5 rounded-full bg-[#B84A39]/20 pointer-events-none"></span>
-          <span class="relative w-3.5 h-3.5 rounded-full bg-[#B84A39] border-2 border-[#FAF8F3] shadow-md ring-1 ring-[#1C1B18]/30"></span>
-          <div class="locator-pin-badge absolute left-4.5 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-[#FAF8F3]/95 backdrop-blur-xs border border-[#1C1B18]/40 rounded shadow-md flex items-center gap-1.5 whitespace-nowrap pointer-events-none z-10 transition-all">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#B84A39] shrink-0"></span>
-            <span class="locator-pin-text text-[10px] font-bold text-[#1C1B18] tracking-tight leading-tight max-w-[140px] truncate">
-              ${pinLabel}
-            </span>
-          </div>
-        </div>
-      `;
-      locatorMarkerRef.current = new maplibregl.Marker({ element: el })
-        .setLngLat(coords)
-        .addTo(lmap);
-    } else {
-      locatorMarkerRef.current.setLngLat(coords);
-      const textEl = locatorMarkerRef.current.getElement().querySelector('.locator-pin-text');
-      if (textEl) textEl.textContent = pinLabel;
-    }
-  }, [locatorOpen, selectedResort, mapCenter, mapZoom, activeRegionContext]);
 
   // Sync center and zoom in locator map
   useEffect(() => {

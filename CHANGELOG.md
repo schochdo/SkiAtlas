@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `refactor: drop redundant text pill from overview pin dot to eliminate cartographic clutter`
+- Removed the floating label badge pill (`.locator-pin-badge`) from the pinned location dot on the Regional Overview inset map in [`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx).
+- Preserved the clean, high-contrast 4-tier GPU bullseye target pin (concentric vermilion wash, cream contrast ring, solid vermilion center, and white micro-pip), ensuring surrounding map labels, valleys, and regional boundaries remain completely unobstructed.
+- Resort and region names remain prominently and cleanly communicated in the dedicated header banner above the map canvas.
+
+---
+
 ### `docs: add Open-Meteo attribution badge link for open data licensing compliance`
 - Added Open-Meteo link and attribution to `AttributionBadge.tsx` alongside OpenStreetMap (ODbL), OpenSkiData (ODbL / CC-BY-SA), Esri, and Mapterhorn, fulfilling CC-BY 4.0 meteorology attribution compliance for open-source distribution.
 
