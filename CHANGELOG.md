@@ -6,6 +6,26 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: eliminate map panning freeze and mini back-and-forth movement caused by missing mouseupWindow and flight loop conflict`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: Occasionally, trying to pan the map with a left-click drag would get stuck, doing a mini movement back and forth while refusing to pan across the screen. Refreshing the page fixed the issue.
+  - **Root Cause #1 (Missing `mouseupWindow` in MapLibre GL JS `mouse.ts`)**: MapLibre's `HandlerManager` binds window-level `mousemove` and `mouseup` to `document` and dispatches `'mouseupWindow'`. However, `assignEvents` in `mouse.ts` only assigned `handler.mouseup = handler.dragEnd`, omitting `handler.mouseupWindow`. When the user released the mouse over an overlay (the header, LeftDock drawer, basemap popover, zoom buttons) or outside the canvas, `dragEnd` was never called. `_lastPoint` remained orphaned on `mousePan`, causing all subsequent `dragStart` attempts to immediately return (`if (this._lastPoint) return`). During dragging, `point.sub(lastPoint)` then computed deltas against an old, stale coordinate.
+  - **Root Cause #2 (Flight Engine Keydown Shift Leak & Infinite `jumpTo` Conflict)**: In `src/App.tsx`, `handleKeyDown` checked `NAVIGATION_KEYS.has(e.code) || e.code === 'ShiftLeft' || e.code === 'ShiftRight'`. Pressing Shift (e.g. for Shift-scroll 3D camera pitch or keyboard acceleration) added `ShiftLeft` to `activeKeys`. If `keyup` was suppressed (such as by macOS Command shortcuts, window switching, or clicking buttons), `activeKeys` never emptied, and `flightStep` ran indefinitely at 60 FPS in a `requestAnimationFrame` loop. On every frame, `map.jumpTo({ elevation })` was called, invoking `this.stop()` on the camera and canceling mouse drag movements as fast as the user tried to move, creating the "mini movement back and forth" effect.
+  - **Root Cause #3 (Overly Aggressive Capture Watchdog Resetting Active Drags)**: Previous watchdog code intercepted `pointerdown` and `mousedown` with `ensureDragPanReady()`, disabling and re-enabling `dragPan` whenever `map.dragPan.isActive()` was true (such as during smooth inertia glides or between pointerdown and mousedown), aborting legitimate new drags.
+- **Architectural Fixes ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Bound `mouseupWindow = handler.dragEnd`**: Assigned `mouseupWindow = handler.dragEnd` directly onto `map.dragPan._mousePan`, `map.dragRotate._mouseRotate`, and `map.dragRotate._mousePitch`. Mouse releases over UI drawers, headers, or outside the canvas now cleanly fire `dragEnd` through MapLibre's native handler pipeline.
+  - **Targeted Orphaned Handler Reset**: Replaced `ensureDragPanReady` (which called `disable()`/`enable()`) with `resetOrphanedDragHandlers()` calling `handler.reset()`. It only clears state when `(e.buttons & 1) === 0` (no mouse button pressed) and `_lastPoint` was left behind, completely protecting smooth inertia glides and active drags.
+  - **Decoupled Modifier Keys from Flight Loop**: Removed `ShiftLeft` / `ShiftRight` from `handleKeyDown`'s trigger condition so pressing Shift alone never starts `flightStep`.
+  - **Immediate Mouse Interaction Yielding (`stopFlight`)**: When the user presses, drags, or scrolls on the map canvas (`mousedown`, `pointerdown`, `wheel`), `stopFlight()` immediately clears active keys, cancels any `animationFrameId`, and restores `setCenterClampedToGround(true)`.
+  - **Window Lifecycle Hardening**: Added `blur`, `focus`, and `visibilitychange` listeners to `stopFlight`, ensuring backgrounded tabs or windows never leak running flight animation frames.
+- **Verification**:
+  - Replicated and verified in headless Chrome CDP across multiple torture tests:
+    1. 5 consecutive drag pans across Vail (`[-106.37, 39.63]`, zoom 13.5, pitch 45) moved smoothly without sticking.
+    2. Dragging into and releasing over the `LeftDock` drawer (x: 100) and window edge cleanly cleared `_lastPoint` (`false`).
+    3. Pressing Shift + window blur followed by left-click drag moved smoothly without any freeze or back-and-forth jitter.
+
+---
+
 ### `feat: reinstate Peakfinder mode for prominent mountain summits on 3D alpine horizon`
 - **User Intent & Problem Context**:
   - **What was wrong before**: When viewing resorts in 3D terrain perspective—particularly with the Satellite basemap (e.g. looking south/southwest across the horizon from Vail)—distant peaks and mountain ranges (such as Mount of the Holy Cross, Notch Mountain, Mount Jackson, Sawatch Range, Gore Range) appeared completely unlabeled. In Alpine Topo, spot elevations are rasterized into 2D tiles, but Satellite basemaps contain pure photography with zero baked-in summit labels, and there was no vector summit layer.
