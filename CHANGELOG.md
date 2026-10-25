@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: snap Hinterer Seelenkogel to surveyed Austria-Italy border summit benchmark`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: At the Ötztal Alps border between Austria (Tyrol) and Italy (South Tyrol), `Hinterer Seelenkogel` ($11,385'$) was displaced $\approx 450\text{ meters}$ to the southeast down an alpine bowl (`[11.05, 46.8]`), visibly detached from the official OpenStreetMap/OpenTopoMap summit marker on the international ridge line (`[11.044444, 46.801389]`).
+  - **The Truncation Pattern**: `11.05` ($11^\circ 03'$) and `46.8` ($46^\circ 48'$) were rounded to whole arcminutes without arcseconds during the original Wikipedia scrape.
+- **Cartographic Precision Correction ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson))**:
+  - Coordinates updated from `[11.05, 46.8]` to official surveyed border summit node: **`[11.044444, 46.801389]`** ($3,470\text{ m}$ / $11,385\text{ ft}$).
+  - The vermilion peak pin now aligns directly with OpenTopoMap's surveyed peak triangle on the Tirol/Südtirol border ridge.
+
+---
+
+## 2026-10-25
+
 ### `fix: purge fictional Mount Madoriama and corrupt sub-1,000ft entries from peaks index`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: The user identified "Mount Madoriama · 2,999'" appearing on a mountain ridge in Japan displaced down on the slope.
