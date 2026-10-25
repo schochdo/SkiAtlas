@@ -6,6 +6,40 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `feat: add client-side dynamic slope angle and aspect terrain analysis overlays`
+- **Real-Time Client-Side DEM Convolution Engine**:
+  - Implemented `src/utils/terrainAnalysis.ts` registering custom MapLibre tile protocols (`slope://` and `aspect://`).
+  - Fetches cached Mapterhorn Terrarium DEM WebP tiles and executes a 3x3 Sobel/Horn elevation gradient filter on an `OffscreenCanvas`.
+  - Calculates real-world ground resolution ($\Delta x, \Delta y$) using the Mercator scale at tile latitude.
+  - Generates seamless, hardware-accelerated raster tiles that drape directly over 3D terrain beneath pistes and lifts without server dependencies.
+- **Slope Angle Overlay (CalTopo Avalanche Grade $0^\circ - 90^\circ$)**:
+  - Color-codes terrain steepness according to universal avalanche safety standards:
+    - $< 22^\circ$: Completely transparent (flat valleys and gentle cruising).
+    - $22^\circ - 27^\circ$: Light green-gold.
+    - $27^\circ - 30^\circ$: Yellow (caution / transition into avalanche angle).
+    - $30^\circ - 35^\circ$: Orange (prime avalanche release zone).
+    - $35^\circ - 40^\circ$: Crimson red (peak avalanche release frequency).
+    - $40^\circ - 45^\circ$: Deep magenta (extreme steep alpine bowls).
+    - $45^\circ - 60^\circ$: Dark violet (couloirs and cliff bands).
+    - $\ge 60^\circ$: Charcoal black (vertical rock faces).
+- **Aspect Compass Solar Exposure Overlay (Compass Fall-Line $0^\circ - 360^\circ$)**:
+  - Computes downhill azimuth $\alpha = \text{atan2}(-dz/dx, dz/dy)$ and color-codes the 8 compass bearings:
+    - North ($337.5^\circ - 22.5^\circ$): Cool Blue (cold, shaded winter powder, persistent weak layer preservation).
+    - Northeast ($22.5^\circ - 67.5^\circ$): Teal.
+    - East ($67.5^\circ - 112.5^\circ$): Emerald Green (morning sun).
+    - Southeast ($112.5^\circ - 157.5^\circ$): Yellow-Green.
+    - South ($157.5^\circ - 202.5^\circ$): Solar Amber / Gold (intense midday warming, corn snow / wet slides).
+    - Southwest ($202.5^\circ - 247.5^\circ$): Warm Orange.
+    - West ($247.5^\circ - 292.5^\circ$): Coral / Red (afternoon sun, wind crusts).
+    - Northwest ($292.5^\circ - 337.5^\circ$): Violet / Indigo.
+    - Flat terrain ($< 4^\circ$): Transparent.
+- **Cartographic Controls Integration**:
+  - Organized directly under `Cartographic Base` in `BasemapMenu.tsx` with segmented buttons: `[ None ]`, `[ Slope Angle ]`, `[ Aspect ]`.
+  - Includes a real-time `Overlay Opacity` slider ($10\% - 100\%$, default $65\%$) that immediately updates MapLibre `raster-opacity` paint properties with zero latency.
+  - Includes dedicated editorial cartographic micro-legends with color chips and angle/bearing labels for instant domain interpretation.
+
+---
+
 ### `fix: correct Esri tile URL coordinate transposition in Regional Overview locator map`
 - **Root Cause & Fix for Inset Map Centering on Greenland**:
   - **What was wrong before**: When selecting Steamboat Powdercats (or viewing resorts in North America), the Regional Overview locator map displayed Arctic / Greenland tiles and text reading `GREENLAND` with a pin placed near the Greenland coast instead of northern Colorado.

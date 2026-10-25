@@ -39,7 +39,8 @@ SkiAtlas/
 │   │   ├── camera.ts              ← safeFlyTo, safeEaseTo, programmatic flight coordination
 │   │   ├── geometry.ts            ← extractPointCoordinates, haversineDistanceKm
 │   │   ├── classification.ts      ← PASS_COLORS, PASS_DISPLAY_NAMES, getResortStats, getCategoryBadge
-│   │   └── mapStyles.ts           ← MapLibre style JSON factory (satellite, osm, topo, Mapterhorn DEM)
+│   │   ├── mapStyles.ts           ← MapLibre style JSON factory (satellite, osm, topo, Mapterhorn DEM, slope, aspect)
+│   │   └── terrainAnalysis.ts     ← Client-side 3x3 Sobel/Horn DEM convolution protocols (slope://, aspect://)
 │   ├── data/
 │   │   ├── resorts.ts             ← Curated flagship ski atlas (GLOBAL_SKI_ATLAS)
 │   │   ├── heliCat.ts             ← Curated heli/cat operators (HELI_CAT_OPERATIONS)
@@ -159,9 +160,10 @@ GLOBAL_SKI_ATLAS (static)
 1. Terrain (DEM source)
 2. Hillshade
 3. Basemap raster tiles
-4. Resort clusters (GeoJSON source: `resorts-source`)
-5. Piste/lift lines (GeoJSON source: `trails-source`) — loaded per resort on click
-6. Labels (hidden until zoom ≥ 10)
+4. Terrain Analysis Overlays (`overlay-slope`, `overlay-aspect`) — client-side DEM-derived raster tiles
+5. Resort clusters (GeoJSON source: `resorts-source`)
+6. Piste/lift lines (GeoJSON source: `trails-source`) — streamed per resort on zoom/click
+7. Labels (hidden until zoom ≥ 10)
 
 **Globe startup behavior:**
 - Initial padding applied **synchronously** before map construction to prevent globe drift

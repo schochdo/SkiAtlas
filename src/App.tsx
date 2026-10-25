@@ -25,11 +25,13 @@ import { CartographicLegend } from './components/map/CartographicLegend';
 import { CompassGimbal } from './components/map/CompassGimbal';
 import { AttributionBadge } from './components/map/AttributionBadge';
 import { createMapStyle } from './utils/mapStyles';
+import { registerTerrainAnalysisProtocols } from './utils/terrainAnalysis';
 import type {
   PassNetwork,
   SkiActivityCategory,
   EarthProjectionMode,
   BasemapMode,
+  TerrainOverlayMode,
   SortBy,
   SortOrder,
   DirectoryScope,
@@ -133,6 +135,8 @@ export default function App() {
 
   const [earthProjection, setEarthProjection] = useState<EarthProjectionMode>('mercator');
   const [basemapMode, setBasemapMode] = useState<BasemapMode>('osm');
+  const [terrainOverlay, setTerrainOverlay] = useState<TerrainOverlayMode>('none');
+  const [terrainOverlayOpacity, setTerrainOverlayOpacity] = useState<number>(0.65);
   const [unitsMetric, setUnitsMetric] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -506,11 +510,13 @@ export default function App() {
     const initialLeftPad = initialIsMobile ? 0 : (leftDockOpen ? 404 : 20);
     const initialRightPad = 0;
 
+    registerTerrainAnalysisProtocols();
+
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       attributionControl: false,
       renderWorldCopies: false,
-      style: createMapStyle(earthProjection, basemapMode),
+      style: createMapStyle(earthProjection, basemapMode, terrainOverlay, terrainOverlayOpacity),
       center: [12, 28], // Global scope flat map (Mercator)
       zoom: 1.8,
       minZoom: 1.2,
@@ -1665,6 +1671,26 @@ export default function App() {
   }, [basemapMode, showHillshade, mapLoaded]);
 
   /* =========================================================================
+     TERRAIN ANALYSIS OVERLAYS (DYNAMIC SLOPE ANGLE & ASPECT LAYERS)
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+
+    // Slope Angle (CalTopo avalanche gradient 0° - 90°)
+    if (map.getLayer('overlay-slope')) {
+      map.setLayoutProperty('overlay-slope', 'visibility', terrainOverlay === 'slope' ? 'visible' : 'none');
+      map.setPaintProperty('overlay-slope', 'raster-opacity', terrainOverlayOpacity);
+    }
+    // Compass Aspect (Solar radiation / fall-line)
+    if (map.getLayer('overlay-aspect')) {
+      map.setLayoutProperty('overlay-aspect', 'visibility', terrainOverlay === 'aspect' ? 'visible' : 'none');
+      map.setPaintProperty('overlay-aspect', 'raster-opacity', terrainOverlayOpacity);
+    }
+  }, [terrainOverlay, terrainOverlayOpacity, mapLoaded]);
+
+  /* =========================================================================
      60 FPS KEYBOARD CAMERA FLIGHT ENGINE (WASD + QE + ARROW KEYS)
      ========================================================================= */
 
@@ -2804,6 +2830,10 @@ export default function App() {
         onSelectBasemap={setBasemapMode}
         terrainExaggeration={terrainExaggeration}
         onChangeTerrainExaggeration={handleTerrainExaggerationChange}
+        terrainOverlay={terrainOverlay}
+        onSelectTerrainOverlay={setTerrainOverlay}
+        terrainOverlayOpacity={terrainOverlayOpacity}
+        onChangeTerrainOverlayOpacity={setTerrainOverlayOpacity}
       />
 
       {/* CARTOGRAPHIC MAP FURNITURE: ALTERNATING BAR SCALE & LEGEND */}

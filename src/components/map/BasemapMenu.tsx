@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Layers, X } from 'lucide-react';
-import type { BasemapMode } from '../../types';
+import type { BasemapMode, TerrainOverlayMode } from '../../types';
 
 interface BasemapMenuProps {
   mapMenuOpen: boolean;
@@ -10,6 +10,10 @@ interface BasemapMenuProps {
   onSelectBasemap: (mode: BasemapMode) => void;
   terrainExaggeration: number;
   onChangeTerrainExaggeration: (val: number) => void;
+  terrainOverlay: TerrainOverlayMode;
+  onSelectTerrainOverlay: (mode: TerrainOverlayMode) => void;
+  terrainOverlayOpacity: number;
+  onChangeTerrainOverlayOpacity: (val: number) => void;
 }
 
 export const BasemapMenu: React.FC<BasemapMenuProps> = ({
@@ -20,6 +24,10 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
   onSelectBasemap,
   terrainExaggeration,
   onChangeTerrainExaggeration,
+  terrainOverlay,
+  onSelectTerrainOverlay,
+  terrainOverlayOpacity,
+  onChangeTerrainOverlayOpacity,
 }) => {
   const basemapMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -107,6 +115,134 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                   );
                 })}
               </div>
+            </div>
+
+            {/* TERRAIN ANALYSIS OVERLAYS (SLOPE & ASPECT) */}
+            <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
+                  Terrain Overlays
+                </span>
+                {terrainOverlay !== 'none' && (
+                  <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299]">
+                    {terrainOverlay === 'slope' ? 'Slope Active' : 'Aspect Active'}
+                  </span>
+                )}
+              </div>
+
+              {/* Segmented Toggles: None / Slope / Aspect */}
+              <div className="grid grid-cols-3 gap-1 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md p-0.5">
+                <button
+                  type="button"
+                  onClick={() => onSelectTerrainOverlay('none')}
+                  className={`py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer text-center ${
+                    terrainOverlay === 'none'
+                      ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                      : 'text-[#736E67] hover:text-[#1C1B18]'
+                  }`}
+                >
+                  None
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTerrainOverlay('slope')}
+                  className={`py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer text-center ${
+                    terrainOverlay === 'slope'
+                      ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                      : 'text-[#736E67] hover:text-[#1C1B18]'
+                  }`}
+                  title="CalTopo / Avalanche Grade Slope Incline (0° - 90°)"
+                >
+                  Slope Angle
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTerrainOverlay('aspect')}
+                  className={`py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer text-center ${
+                    terrainOverlay === 'aspect'
+                      ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                      : 'text-[#736E67] hover:text-[#1C1B18]'
+                  }`}
+                  title="Compass Fall Line & Solar Exposure (N, E, S, W)"
+                >
+                  Aspect
+                </button>
+              </div>
+
+              {/* Opacity Slider & Micro-Legend (when overlay is active) */}
+              {terrainOverlay !== 'none' && (
+                <div className="space-y-2 pt-1 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
+                      Overlay Opacity
+                    </span>
+                    <span className="text-xs font-bold text-[#1C1B18] tabular-nums">
+                      {Math.round(terrainOverlayOpacity * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.10"
+                    max="1.0"
+                    step="0.05"
+                    value={terrainOverlayOpacity}
+                    onChange={(e) => onChangeTerrainOverlayOpacity(parseFloat(e.target.value))}
+                    className="w-full tufte-slider cursor-pointer"
+                    aria-label="Terrain overlay opacity"
+                  />
+
+                  {/* Micro-Legend */}
+                  {terrainOverlay === 'slope' && (
+                    <div className="pt-1.5 border-t border-[#E8E4DA] space-y-1">
+                      <div className="flex items-center justify-between text-[10px] text-[#5C5852] font-semibold">
+                        <span>Slope Incline Key</span>
+                        <span className="text-[9px] text-[#8A847C]">Avalanche Grade</span>
+                      </div>
+                      <div className="h-2 rounded-xs overflow-hidden flex shadow-2xs border border-[#D6D0C2]">
+                        <div className="h-full bg-[#A0C850] flex-1" title="<27° Low / Mild" />
+                        <div className="h-full bg-[#F5D13B] flex-1" title="27-30° Caution" />
+                        <div className="h-full bg-[#E87722] flex-1" title="30-35° Prime Avalanche Release" />
+                        <div className="h-full bg-[#D2232D] flex-1" title="35-40° Steep Release Zone" />
+                        <div className="h-full bg-[#91143C] flex-1" title="40-45° Extreme Steep" />
+                        <div className="h-full bg-[#4A154B] flex-1" title="45-60° Couloir / Cliff" />
+                      </div>
+                      <div className="flex justify-between text-[8.5px] text-[#736E67] font-medium px-0.5">
+                        <span>&lt;27°</span>
+                        <span>30°</span>
+                        <span className="text-[#C82333] font-bold">35°</span>
+                        <span>40°</span>
+                        <span>45°+</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {terrainOverlay === 'aspect' && (
+                    <div className="pt-1.5 border-t border-[#E8E4DA] space-y-1">
+                      <div className="flex items-center justify-between text-[10px] text-[#5C5852] font-semibold">
+                        <span>Compass Exposure Key</span>
+                        <span className="text-[9px] text-[#8A847C]">Solar / Wind</span>
+                      </div>
+                      <div className="h-2 rounded-xs overflow-hidden flex shadow-2xs border border-[#D6D0C2]">
+                        <div className="h-full bg-[#1E5FAF] flex-1" title="North (Cold / Shaded Powder)" />
+                        <div className="h-full bg-[#00A896] flex-1" title="Northeast" />
+                        <div className="h-full bg-[#41AA8C] flex-1" title="East (Morning Sun)" />
+                        <div className="h-full bg-[#91BE6E] flex-1" title="Southeast" />
+                        <div className="h-full bg-[#F5C84B] flex-1" title="South (Solar Warmth / Corn)" />
+                        <div className="h-full bg-[#F5911E] flex-1" title="Southwest" />
+                        <div className="h-full bg-[#EB5032] flex-1" title="West (Afternoon Sun)" />
+                        <div className="h-full bg-[#6455A0] flex-1" title="Northwest" />
+                      </div>
+                      <div className="flex justify-between text-[8.5px] text-[#736E67] font-medium px-0.5">
+                        <span className="text-[#1E5FAF] font-bold">N</span>
+                        <span>E</span>
+                        <span className="text-[#E87722] font-bold">S</span>
+                        <span>W</span>
+                        <span className="text-[#1E5FAF] font-bold">N</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* 3D TERRAIN RELIEF (DEM EXAGGERATION MULTIPLIER) */}

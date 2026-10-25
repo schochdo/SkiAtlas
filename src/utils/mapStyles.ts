@@ -1,9 +1,11 @@
 import type { StyleSpecification } from 'maplibre-gl';
-import type { EarthProjectionMode, BasemapMode } from '../types';
+import type { EarthProjectionMode, BasemapMode, TerrainOverlayMode } from '../types';
 
 export const createMapStyle = (
   earthProjection: EarthProjectionMode,
-  basemapMode: BasemapMode
+  basemapMode: BasemapMode,
+  terrainOverlay: TerrainOverlayMode = 'none',
+  terrainOverlayOpacity: number = 0.65
 ): StyleSpecification => ({
   version: 8,
   projection: { type: earthProjection },
@@ -61,6 +63,22 @@ export const createMapStyle = (
       encoding: 'terrarium',
       tileSize: 512,
       maxzoom: 15,
+    },
+    // 7. Dynamic Client-Side Slope Angle Overlay (CalTopo Avalanche Grade 0° - 90°)
+    'slope-tiles': {
+      type: 'raster',
+      tiles: ['slope://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
+      tileSize: 512,
+      maxzoom: 15,
+      attribution: '© SkiAtlas Terrain Analysis',
+    },
+    // 8. Dynamic Client-Side Aspect Compass Solar Exposure Overlay (N, E, S, W)
+    'aspect-tiles': {
+      type: 'raster',
+      tiles: ['aspect://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
+      tileSize: 512,
+      maxzoom: 15,
+      attribution: '© SkiAtlas Terrain Analysis',
     },
   },
   layers: [
@@ -132,6 +150,28 @@ export const createMapStyle = (
         'hillshade-shadow-color': 'rgba(51, 65, 85, 0.40)',
         'hillshade-highlight-color': 'rgba(255, 255, 255, 0.90)',
         'hillshade-accent-color': 'rgba(148, 163, 184, 0.30)',
+      },
+    },
+    // Overlay 1: Dynamic Slope Angle Layer
+    {
+      id: 'overlay-slope',
+      type: 'raster',
+      source: 'slope-tiles',
+      layout: { visibility: terrainOverlay === 'slope' ? 'visible' : 'none' },
+      paint: {
+        'raster-opacity': terrainOverlayOpacity,
+        'raster-fade-duration': 150,
+      },
+    },
+    // Overlay 2: Dynamic Aspect Compass Exposure Layer
+    {
+      id: 'overlay-aspect',
+      type: 'raster',
+      source: 'aspect-tiles',
+      layout: { visibility: terrainOverlay === 'aspect' ? 'visible' : 'none' },
+      paint: {
+        'raster-opacity': terrainOverlayOpacity,
+        'raster-fade-duration': 150,
       },
     },
   ],

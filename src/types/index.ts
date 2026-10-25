@@ -11,6 +11,8 @@ export type EarthProjectionMode = 'globe' | 'mercator';
 
 export type BasemapMode = 'satellite' | 'osm' | 'topo';
 
+export type TerrainOverlayMode = 'none' | 'slope' | 'aspect';
+
 export type SortBy = 'snow' | 'vert' | 'acres' | 'name';
 
 export type SortOrder = 'asc' | 'desc';
