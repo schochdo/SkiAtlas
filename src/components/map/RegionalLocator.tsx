@@ -168,36 +168,28 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       : mapCenter;
 
     const initialZoom = selectedResort
-      ? 5.2
-      : Math.max(1.8, Math.min(5.8, mapZoom - 6.5));
+      ? 5.8
+      : Math.max(1.8, Math.min(6.2, mapZoom - 6.0));
 
     const lmap = new maplibregl.Map({
       container: locatorContainerRef.current,
       style: {
         version: 8,
         sources: {
-          'esri-canvas-base': {
+          'esri-topo-base': {
             type: 'raster',
             tiles: [
-              'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+              'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
             ],
             tileSize: 256,
-            attribution: '© Esri, HERE, Garmin',
-          },
-          'esri-canvas-ref': {
-            type: 'raster',
-            tiles: [
-              'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-            ],
-            tileSize: 256,
-            attribution: '© Esri',
+            attribution: '© Esri Topo',
           },
         },
         layers: [
           {
             id: 'esri-base-layer',
             type: 'raster',
-            source: 'esri-canvas-base',
+            source: 'esri-topo-base',
             minzoom: 0,
             maxzoom: 20,
           },
@@ -263,26 +255,17 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         },
       });
 
-      // Reference labels and state/national borders rendered over viewport
-      lmap.addLayer({
-        id: 'esri-ref-layer',
-        type: 'raster',
-        source: 'esri-canvas-ref',
-        minzoom: 0,
-        maxzoom: 20,
-      });
-
       locatorMapRef.current = lmap;
       // Immediately set center and zoom upon load completion
       const targetCenter: [number, number] = selectedResort
         ? [selectedResort.lng, selectedResort.lat]
         : mapCenter;
       const targetZoom = selectedResort
-        ? (locatorZoomPreset === 'regional' ? 5.2 : locatorZoomPreset === 'continental' ? 3.2 : 1.8)
+        ? (locatorZoomPreset === 'regional' ? 5.8 : locatorZoomPreset === 'continental' ? 3.4 : 1.8)
         : (locatorZoomPreset === 'regional'
-            ? Math.max(1.8, Math.min(5.8, mapZoom - 6.5))
+            ? Math.max(1.8, Math.min(6.2, mapZoom - 6.0))
             : locatorZoomPreset === 'continental'
-            ? 3.2
+            ? 3.4
             : 1.8);
       lmap.jumpTo({ center: targetCenter, zoom: targetZoom });
 
@@ -329,11 +312,11 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       : mapCenter;
 
     const targetZoom = selectedResort
-      ? (locatorZoomPreset === 'regional' ? 5.2 : locatorZoomPreset === 'continental' ? 3.2 : 1.8)
+      ? (locatorZoomPreset === 'regional' ? 5.8 : locatorZoomPreset === 'continental' ? 3.4 : 1.8)
       : (locatorZoomPreset === 'regional'
-          ? Math.max(1.8, Math.min(5.8, mapZoom - 6.5))
+          ? Math.max(1.8, Math.min(6.2, mapZoom - 6.0))
           : locatorZoomPreset === 'continental'
-          ? 3.2
+          ? 3.4
           : 1.8);
 
     lmap.easeTo({
@@ -349,7 +332,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     const targetCenter: [number, number] = selectedResort
       ? [selectedResort.lng, selectedResort.lat]
       : mapCenter;
-    const targetZoom = preset === 'regional' ? 5.2 : preset === 'continental' ? 3.2 : 1.8;
+    const targetZoom = preset === 'regional' ? 5.8 : preset === 'continental' ? 3.4 : 1.8;
     locatorMapRef.current.easeTo({
       center: targetCenter,
       zoom: targetZoom,

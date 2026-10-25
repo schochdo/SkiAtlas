@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `feat: upgrade Regional Overview inset to rich topographical basemap with mountain ranges, parks, and regional cities`
+- **Replaced Minimalist Gray Canvas with High-Detail Topographical Basemap**:
+  - **What was wrong before**: The locator inset previously used Esri's `World_Light_Gray_Base` + `World_Light_Gray_Reference`. In mountainous states like Colorado, this rendered an empty gray rectangle with only the single label "Denver", leaving out all mountain ranges, national forests, rivers, and regional cities.
+  - **Upgraded to Esri World Topo Map (`World_Topo_Map`)**: Switched the 2D overview map to Esri World Topo Map, providing crisp shaded mountain relief, clean typography, state boundaries, and rich regional landmarks.
+  - **Expanded Regional Geographic Context**:
+    - **Mountain Ranges**: Front Range, Park Range, Sawatch Range, San Juan Mountains, Continental Divide.
+    - **National Forests & Parks**: Routt, White River, Grand Mesa, Gunnison, San Isabel, Arapaho, Roosevelt, Rocky Mountain National Park.
+    - **Regional Cities**: Grand Junction, Boulder, Fort Collins, Greeley, Longmont, Colorado Springs, Pueblo, Cheyenne, Denver.
+    - **Waterways**: Colorado River, North Platte River, Arkansas River, South Platte River.
+  - **Calibrated Zoom Presets**:
+    - Adjusted `[ State / Country ]` preset from $z=5.2$ to $z=5.8$, perfectly framing the state/canton with surrounding borders.
+    - Adjusted `[ Continent ]` preset from $z=3.2$ to $z=3.4$.
+  - **Eliminated Duplicate Label Overlap**: Removed the secondary `World_Light_Gray_Reference` overlay layer since `World_Topo_Map` already incorporates single-pass, legible cartographic labels.
+
+---
+
 ### `feat: add client-side dynamic slope angle and aspect terrain analysis overlays`
 - **Real-Time Client-Side DEM Convolution Engine**:
   - Implemented `src/utils/terrainAnalysis.ts` registering custom MapLibre tile protocols (`slope://` and `aspect://`).
