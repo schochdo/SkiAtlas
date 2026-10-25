@@ -4832,11 +4832,6 @@ export default function App() {
         setLocatorOpen(true);
       }
     }
-    try {
-      window.history.replaceState({}, '', `?resort=${encodeURIComponent(id)}`);
-    } catch {
-      // ignore
-    }
     const resort = displayedResorts.find((r) => r.id === id) || resorts.find((r) => r.id === id);
     if (!resort || !mapRef.current) return;
 
@@ -4973,6 +4968,32 @@ export default function App() {
     }
   };
 
+  const handleResetToGlobalExtent = useCallback(() => {
+    setSelectedResortId(null);
+    setPanelView('directory');
+    setSearchQuery('');
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setMobileSheetState('peek');
+    }
+    try {
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    } catch (_) {}
+    if (mapRef.current) {
+      safeFlyTo(mapRef.current, {
+        center: [12, 28],
+        zoom: 1.8,
+        pitch: 0,
+        bearing: 0,
+        duration: 1400,
+        essential: true,
+      });
+      setMapPitch(0);
+      setMapBearing(0);
+    }
+  }, []);
+
   const handleDeselectResort = () => {
     setSelectedResortId(null);
     setPanelView('directory');
@@ -5005,22 +5026,15 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedResortId]);
 
+  // On page load/refresh, ensure all existing selections are cleared and URL is clean
   useEffect(() => {
-    if (typeof window === 'undefined' || !mapLoaded) return;
-    const params = new URLSearchParams(window.location.search);
-    const resortParam = params.get('resort');
-    const sheetParam = params.get('sheet') as 'peek' | 'half' | 'full' | null;
-    if (sheetParam && ['peek', 'half', 'full'].includes(sheetParam)) {
-      setMobileSheetState(sheetParam);
-    }
-    if (resortParam) {
-      const match = displayedResorts.find((r) => r.id.toLowerCase() === resortParam.toLowerCase()) ||
-                    resorts.find((r) => r.id.toLowerCase() === resortParam.toLowerCase() || r.name.toLowerCase() === resortParam.toLowerCase());
-      if (match) {
-        handleSelectResort(match.id);
+    if (typeof window === 'undefined') return;
+    try {
+      if (window.location.search) {
+        window.history.replaceState({}, '', window.location.pathname);
       }
-    }
-  }, [mapLoaded]);
+    } catch (_) {}
+  }, []);
 
   const handleSortClick = (type: 'vert' | 'acres' | 'name' | 'snow') => {
     if (sortBy === type) {
@@ -5063,16 +5077,7 @@ export default function App() {
 
   const handleResetToGlobal = (e: React.MouseEvent) => {
     e.stopPropagation();
-    safeFlyTo(mapRef.current, {
-      center: [12, 28],
-      zoom: 1.8,
-      pitch: 0,
-      bearing: 0,
-      duration: 1400,
-      essential: true,
-    });
-    setMapPitch(0);
-    setMapBearing(0);
+    handleResetToGlobalExtent();
   };
 
   const handleLocatorMapClick = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -5627,14 +5632,19 @@ export default function App() {
       <header className="absolute top-0 inset-x-0 z-40 h-11 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
         <div className="flex items-center min-w-0">
           {/* Tracked Mountain Editorial Wordmark with Alpine Snow Globe Crest in the center */}
-          <div className="flex items-center select-none shrink-0">
-            <span className="font-bold tracking-[0.16em] text-[17px] uppercase text-[#1C1B18] leading-none">
+          <button
+            onClick={handleResetToGlobalExtent}
+            className="flex items-center select-none shrink-0 cursor-pointer group text-left p-0 bg-transparent border-0 focus:outline-hidden"
+            title="Reset to Global Extent"
+            aria-label="Snow Globe: Reset to Global Extent"
+          >
+            <span className="font-bold tracking-[0.16em] text-[17px] uppercase text-[#1C1B18] group-hover:text-[#B84A39] transition-colors leading-none">
               SNOW
             </span>
 
             {/* Alpine Snow Globe Crest in between SNOW and GLOBE */}
             <svg
-              className="w-6.5 h-6.5 mx-2.5 shrink-0 -mt-0.5"
+              className="w-6.5 h-6.5 mx-2.5 shrink-0 -mt-0.5 group-hover:scale-105 transition-transform"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -5655,10 +5665,10 @@ export default function App() {
               <circle cx="7.5" cy="9.5" r="0.5" fill="#8A847C" />
             </svg>
 
-            <span className="font-bold tracking-[0.16em] text-[17px] uppercase text-[#1C1B18] leading-none">
+            <span className="font-bold tracking-[0.16em] text-[17px] uppercase text-[#1C1B18] group-hover:text-[#B84A39] transition-colors leading-none">
               GLOBE
             </span>
-          </div>
+          </button>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-medium">

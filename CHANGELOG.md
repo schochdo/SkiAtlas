@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: clear selections on page refresh to load global extent & enable navbar title click reset`
+- **Clear Existing Selections on Page Refresh**:
+  - Removed persistent `?resort=` URL parameter writing during resort selection and stripped any query parameters on mount (`window.history.replaceState({}, '', window.location.pathname)`).
+  - Ensured initial mount unconditionally loads at the global flat map extent (`[12, 28]` z=1.8, 2D North-up) with no cards selected and full directory scope active.
+- **Interactive Navbar Title Reset**:
+  - Transformed the editorial wordmark and alpine crest ("SNOW GLOBE") in the top navigation bar into an accessible button trigger.
+  - Clicking anywhere in the SNOW GLOBE area triggers `handleResetToGlobalExtent`: deselects any active resort, returns the sidebar to the directory view, clears search input, resets camera pitch and bearing to 0, and flies smoothly back to the global overview (`[12, 28]` z=1.8).
+
+---
+
 ### `feat: add collapsible cartographic world locator inset map`
 - **Added Collapsible Cartographic World Locator Inset Map**:
   - **Problem Addressed**: Clicking a resort card triggered rapid camera flights across oceans and continents, leaving users disoriented as to where in the world the camera had landed.
