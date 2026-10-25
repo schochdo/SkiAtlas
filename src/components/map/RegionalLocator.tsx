@@ -29,10 +29,22 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   onFlyTo,
   onResetToGlobal,
 }) => {
-  const [locatorZoomPreset, setLocatorZoomPreset] = useState<'regional' | 'continental' | 'global'>('regional');
+  const [locatorZoomPreset, setLocatorZoomPreset] = useState<'regional' | 'continental' | 'global'>(() => selectedResort ? 'regional' : 'continental');
   const locatorMenuRef = useRef<HTMLDivElement | null>(null);
   const locatorContainerRef = useRef<HTMLDivElement | null>(null);
   const locatorMapRef = useRef<maplibregl.Map | null>(null);
+  const locatorMarkerRef = useRef<maplibregl.Marker | null>(null);
+
+  // Automatically switch zoom preset based on whether a resort is selected or map zoom level
+  useEffect(() => {
+    if (selectedResort) {
+      setLocatorZoomPreset('regional');
+    } else if (mapZoom < 4) {
+      setLocatorZoomPreset('global');
+    } else {
+      setLocatorZoomPreset(prev => prev === 'global' ? 'continental' : prev);
+    }
+  }, [selectedResort, mapZoom < 4]);
 
   // Geographic context for Regional Locator
   const activeRegionContext = useMemo(() => {
@@ -79,14 +91,27 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     if (selectedResort) {
       return selectedResort.region || selectedResort.country;
     }
-    if (activeRegionContext.region) {
+    if (mapZoom >= 4 && activeRegionContext.region) {
       return activeRegionContext.region;
     }
-    if (activeRegionContext.country) {
+    if (mapZoom >= 4 && activeRegionContext.country) {
       return activeRegionContext.country;
     }
-    return 'Locator';
-  }, [selectedResort, activeRegionContext]);
+    return 'Overview';
+  }, [selectedResort, activeRegionContext, mapZoom]);
+
+  const regionButtonLabel = useMemo(() => {
+    if (selectedResort) {
+      return selectedResort.region || selectedResort.country || 'Region';
+    }
+    if (mapZoom >= 4 && activeRegionContext.region) {
+      return activeRegionContext.region;
+    }
+    if (mapZoom >= 4 && activeRegionContext.country) {
+      return activeRegionContext.country;
+    }
+    return null;
+  }, [selectedResort, mapZoom, activeRegionContext]);
 
   const getViewportGeoJson = useCallback((): any => {
     if (!viewportBounds) return { type: 'FeatureCollection', features: [] };
@@ -120,21 +145,38 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   }, [viewportBounds]);
 
   const getResortPinGeoJson = useCallback((): any => {
-    if (!selectedResort) return { type: 'FeatureCollection', features: [] };
-    return {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [selectedResort.lng, selectedResort.lat],
+    if (selectedResort) {
+      return {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [selectedResort.lng, selectedResort.lat],
+            },
+            properties: { name: selectedResort.name, isSelected: true },
           },
-          properties: { name: selectedResort.name },
-        },
-      ],
-    };
-  }, [selectedResort]);
+        ],
+      };
+    }
+    if (mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country)) {
+      return {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [mapCenter[0], mapCenter[1]],
+            },
+            properties: { name: activeRegionContext.region || 'Current Area', isSelected: false },
+          },
+        ],
+      };
+    }
+    return { type: 'FeatureCollection', features: [] };
+  }, [selectedResort, mapZoom, activeRegionContext, mapCenter]);
 
   // Handle outside click to close locator menu
   useEffect(() => {
@@ -151,6 +193,54 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     };
   }, [locatorOpen, onCloseLocator]);
 
+  // Helper to determine optimal overview map center
+  const getOverviewTargetCenter = useCallback((
+    resort: SkiResort | null,
+    center: [number, number],
+    preset: 'regional' | 'continental' | 'global'
+  ): [number, number] => {
+    const targetLng = resort ? resort.lng : center[0];
+    const targetLat = resort ? resort.lat : center[1];
+
+    if (preset === 'regional') {
+      return [targetLng, targetLat];
+    }
+
+    if (preset === 'continental') {
+      if (resort || mapZoom >= 4) {
+        const balancedLat = Math.max(-45, Math.min(55, targetLat));
+        return [targetLng, balancedLat];
+      }
+      // When at global scope with nothing selected, continental preset targets primary ski continents
+      const [lng] = center;
+      if (lng >= -170 && lng <= -50) return [-98, 40]; // North America
+      if (lng >= 120 && lng <= 150) return [138, 38]; // Japan
+      return [12, 48]; // Europe
+    }
+
+    // World / global view:
+    // If a resort is selected or user is in a region (mapZoom >= 4), center horizontally on targetLng,
+    // and keep latitude balanced so user's active region is dead center and neither pole is clipped.
+    if (resort || mapZoom >= 4) {
+      const balancedLat = Math.max(-25, Math.min(48, targetLat));
+      return [targetLng, balancedLat];
+    }
+
+    // Otherwise at global scope with nothing selected, center on global map center
+    return [12, 28];
+  }, [mapZoom]);
+
+  // Helper to determine optimal overview map zoom
+  const getOverviewTargetZoom = useCallback((
+    resort: SkiResort | null,
+    preset: 'regional' | 'continental' | 'global'
+  ): number => {
+    if (resort) {
+      return preset === 'regional' ? 5.8 : preset === 'continental' ? 3.2 : 1.1;
+    }
+    return preset === 'regional' ? 5.2 : preset === 'continental' ? 3.0 : 1.1;
+  }, []);
+
   // Initialize and manage secondary 2D MapLibre instance for Regional Locator
   useEffect(() => {
     if (!locatorOpen) {
@@ -163,13 +253,8 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
 
     if (!locatorContainerRef.current) return;
 
-    const initialCenter: [number, number] = selectedResort
-      ? [selectedResort.lng, selectedResort.lat]
-      : mapCenter;
-
-    const initialZoom = selectedResort
-      ? 5.8
-      : Math.max(1.8, Math.min(6.2, mapZoom - 6.0));
+    const initialCenter = getOverviewTargetCenter(selectedResort, mapCenter, locatorZoomPreset);
+    const initialZoom = getOverviewTargetZoom(selectedResort, locatorZoomPreset);
 
     const lmap = new maplibregl.Map({
       container: locatorContainerRef.current,
@@ -238,9 +323,20 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         type: 'circle',
         source: 'locator-resort',
         paint: {
-          'circle-radius': 9,
+          'circle-radius': 14,
           'circle-color': '#B84A39',
-          'circle-opacity': 0.3,
+          'circle-opacity': 0.25,
+        },
+      });
+      lmap.addLayer({
+        id: 'locator-resort-middle',
+        type: 'circle',
+        source: 'locator-resort',
+        paint: {
+          'circle-radius': 8,
+          'circle-color': '#FAF8F3',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#1C1B18',
         },
       });
       lmap.addLayer({
@@ -248,25 +344,24 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         type: 'circle',
         source: 'locator-resort',
         paint: {
-          'circle-radius': 4.5,
+          'circle-radius': 5.5,
           'circle-color': '#B84A39',
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+      lmap.addLayer({
+        id: 'locator-resort-pip',
+        type: 'circle',
+        source: 'locator-resort',
+        paint: {
+          'circle-radius': 1.8,
+          'circle-color': '#FAF8F3',
         },
       });
 
       locatorMapRef.current = lmap;
       // Immediately set center and zoom upon load completion
-      const targetCenter: [number, number] = selectedResort
-        ? [selectedResort.lng, selectedResort.lat]
-        : mapCenter;
-      const targetZoom = selectedResort
-        ? (locatorZoomPreset === 'regional' ? 5.8 : locatorZoomPreset === 'continental' ? 3.4 : 1.8)
-        : (locatorZoomPreset === 'regional'
-            ? Math.max(1.8, Math.min(6.2, mapZoom - 6.0))
-            : locatorZoomPreset === 'continental'
-            ? 3.4
-            : 1.8);
+      const targetCenter = getOverviewTargetCenter(selectedResort, mapCenter, locatorZoomPreset);
+      const targetZoom = getOverviewTargetZoom(selectedResort, locatorZoomPreset);
       lmap.jumpTo({ center: targetCenter, zoom: targetZoom });
 
       setTimeout(() => {
@@ -279,6 +374,10 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     });
 
     return () => {
+      if (locatorMarkerRef.current) {
+        locatorMarkerRef.current.remove();
+        locatorMarkerRef.current = null;
+      }
       if (locatorMapRef.current) {
         locatorMapRef.current.remove();
         locatorMapRef.current = null;
@@ -300,39 +399,76 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     if (rSource) {
       rSource.setData(getResortPinGeoJson());
     }
-  }, [viewportBounds, selectedResort, locatorOpen, getViewportGeoJson, getResortPinGeoJson]);
+  }, [viewportBounds, selectedResort, mapCenter, locatorOpen, getViewportGeoJson, getResortPinGeoJson]);
+
+  // Sync DOM Pin Marker on locator map
+  useEffect(() => {
+    const lmap = locatorMapRef.current;
+    if (!lmap || !locatorOpen) return;
+
+    const hasPin = Boolean(selectedResort || (mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country)));
+
+    if (!hasPin) {
+      if (locatorMarkerRef.current) {
+        locatorMarkerRef.current.remove();
+        locatorMarkerRef.current = null;
+      }
+      return;
+    }
+
+    const coords: [number, number] = selectedResort
+      ? [selectedResort.lng, selectedResort.lat]
+      : [mapCenter[0], mapCenter[1]];
+    const pinLabel = selectedResort
+      ? selectedResort.name
+      : activeRegionContext.region || activeRegionContext.country || 'Current Area';
+
+    if (!locatorMarkerRef.current) {
+      const el = document.createElement('div');
+      el.className = 'relative flex items-center justify-center pointer-events-auto cursor-pointer';
+      el.innerHTML = `
+        <div class="relative flex items-center justify-center">
+          <span class="absolute w-6 h-6 rounded-full bg-[#B84A39]/30 animate-ping pointer-events-none"></span>
+          <span class="absolute w-5 h-5 rounded-full bg-[#B84A39]/20 pointer-events-none"></span>
+          <span class="relative w-3.5 h-3.5 rounded-full bg-[#B84A39] border-2 border-[#FAF8F3] shadow-md ring-1 ring-[#1C1B18]/30"></span>
+          <div class="locator-pin-badge absolute left-4.5 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-[#FAF8F3]/95 backdrop-blur-xs border border-[#1C1B18]/40 rounded shadow-md flex items-center gap-1.5 whitespace-nowrap pointer-events-none z-10 transition-all">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#B84A39] shrink-0"></span>
+            <span class="locator-pin-text text-[10px] font-bold text-[#1C1B18] tracking-tight leading-tight max-w-[140px] truncate">
+              ${pinLabel}
+            </span>
+          </div>
+        </div>
+      `;
+      locatorMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat(coords)
+        .addTo(lmap);
+    } else {
+      locatorMarkerRef.current.setLngLat(coords);
+      const textEl = locatorMarkerRef.current.getElement().querySelector('.locator-pin-text');
+      if (textEl) textEl.textContent = pinLabel;
+    }
+  }, [locatorOpen, selectedResort, mapCenter, mapZoom, activeRegionContext]);
 
   // Sync center and zoom in locator map
   useEffect(() => {
     const lmap = locatorMapRef.current;
     if (!lmap || !locatorOpen) return;
 
-    const targetCenter: [number, number] = selectedResort
-      ? [selectedResort.lng, selectedResort.lat]
-      : mapCenter;
-
-    const targetZoom = selectedResort
-      ? (locatorZoomPreset === 'regional' ? 5.8 : locatorZoomPreset === 'continental' ? 3.4 : 1.8)
-      : (locatorZoomPreset === 'regional'
-          ? Math.max(1.8, Math.min(6.2, mapZoom - 6.0))
-          : locatorZoomPreset === 'continental'
-          ? 3.4
-          : 1.8);
+    const targetCenter = getOverviewTargetCenter(selectedResort, mapCenter, locatorZoomPreset);
+    const targetZoom = getOverviewTargetZoom(selectedResort, locatorZoomPreset);
 
     lmap.easeTo({
       center: targetCenter,
       zoom: targetZoom,
       duration: 350,
     });
-  }, [selectedResort, mapCenter, mapZoom, locatorZoomPreset, locatorOpen]);
+  }, [selectedResort, mapCenter, mapZoom, locatorZoomPreset, locatorOpen, getOverviewTargetCenter, getOverviewTargetZoom]);
 
   const handleSetLocatorPreset = (preset: 'regional' | 'continental' | 'global') => {
     setLocatorZoomPreset(preset);
     if (!locatorMapRef.current) return;
-    const targetCenter: [number, number] = selectedResort
-      ? [selectedResort.lng, selectedResort.lat]
-      : mapCenter;
-    const targetZoom = preset === 'regional' ? 5.8 : preset === 'continental' ? 3.4 : 1.8;
+    const targetCenter = getOverviewTargetCenter(selectedResort, mapCenter, preset);
+    const targetZoom = getOverviewTargetZoom(selectedResort, preset);
     locatorMapRef.current.easeTo({
       center: targetCenter,
       zoom: targetZoom,
@@ -381,17 +517,19 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
             </div>
             {/* Quick Zoom Presets */}
             <div className="flex items-center gap-1 shrink-0">
-              <button
-                onClick={() => handleSetLocatorPreset('regional')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
-                  locatorZoomPreset === 'regional'
-                    ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
-                    : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
-                }`}
-                title="Zoom to State / Country Level"
-              >
-                State / Country
-              </button>
+              {regionButtonLabel && (
+                <button
+                  onClick={() => handleSetLocatorPreset('regional')}
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                    locatorZoomPreset === 'regional'
+                      ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
+                      : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
+                  }`}
+                  title="Zoom to Regional / State Level"
+                >
+                  {regionButtonLabel}
+                </button>
+              )}
               <button
                 onClick={() => handleSetLocatorPreset('continental')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
@@ -404,6 +542,17 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
                 Continent
               </button>
               <button
+                onClick={() => handleSetLocatorPreset('global')}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                  locatorZoomPreset === 'global'
+                    ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
+                    : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
+                }`}
+                title="Zoom to Global Level"
+              >
+                World
+              </button>
+              <button
                 onClick={onCloseLocator}
                 className="p-1 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer ml-1"
                 title="Close"
@@ -413,26 +562,59 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
             </div>
           </div>
 
-          {/* Location Context Banner: What Country or State are we in? */}
+          {/* Location Context Banner: What Country, State, or Resort is pinned? */}
           <div className="px-3 py-2 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between">
             <div className="min-w-0 pr-2">
-              <div className="text-[10px] uppercase font-bold text-[#736E67] tracking-wider leading-none">
-                Current Location
+              <div className="text-[10px] uppercase font-bold text-[#736E67] tracking-wider leading-none flex items-center gap-1.5">
+                {selectedResort ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-[#B84A39] shrink-0" />
+                    <span>Pinned Resort</span>
+                  </>
+                ) : mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country) ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-[#B84A39] shrink-0" />
+                    <span>Pinned Region</span>
+                  </>
+                ) : (
+                  <>
+                    <Compass className="w-3 h-3 text-[#736E67] shrink-0" />
+                    <span>Overview Context</span>
+                  </>
+                )}
               </div>
               <div className="font-bold text-xs text-[#1C1B18] truncate mt-0.5">
-                {activeRegionContext.region && activeRegionContext.country
+                {selectedResort
+                  ? selectedResort.name
+                  : activeRegionContext.region && activeRegionContext.country && mapZoom >= 4
                   ? `${activeRegionContext.region}, ${activeRegionContext.country}`
-                  : activeRegionContext.country || activeRegionContext.region || 'Global Overview'}
+                  : activeRegionContext.country && mapZoom >= 4
+                  ? activeRegionContext.country
+                  : 'World Overview'}
               </div>
             </div>
             <div className="text-right shrink-0">
-              {activeRegionContext.name ? (
-                <span className="text-[10px] font-medium text-[#736E67] truncate block max-w-[120px]">
-                  {activeRegionContext.name}
-                </span>
+              {selectedResort ? (
+                <div>
+                  <span className="text-[10px] font-bold text-[#1C1B18] block">
+                    {selectedResort.region ? `${selectedResort.region}, ` : ''}{selectedResort.country}
+                  </span>
+                  <span className="font-mono text-[9px] text-[#8A847C] block mt-0.5">
+                    {formatCoords(selectedResort.lat, selectedResort.lng)}
+                  </span>
+                </div>
+              ) : mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country) ? (
+                <div>
+                  <span className="text-[10px] font-bold text-[#1C1B18] block truncate max-w-[130px]">
+                    {activeRegionContext.name || activeRegionContext.country}
+                  </span>
+                  <span className="font-mono text-[9px] text-[#8A847C] block mt-0.5">
+                    {formatCoords(mapCenter[1], mapCenter[0])}
+                  </span>
+                </div>
               ) : (
-                <span className="font-mono text-[9px] text-[#8A847C]">
-                  {formatCoords(mapCenter[1], mapCenter[0])}
+                <span className="text-[10px] font-medium text-[#8A847C]">
+                  All Regions
                 </span>
               )}
             </div>
@@ -466,7 +648,10 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
               Click map to center main view
             </span>
             <button
-              onClick={onResetToGlobal}
+              onClick={(e) => {
+                setLocatorZoomPreset('global');
+                onResetToGlobal(e);
+              }}
               className="flex items-center gap-1 font-semibold text-[#5C5852] hover:text-[#1C1B18] cursor-pointer"
               title="Reset main map to global extent"
             >

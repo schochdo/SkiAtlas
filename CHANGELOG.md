@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: center overview world map on active region and pin current area on overview inset`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: When viewing Tyrol, Austria (or other regions without a selected resort card), clicking "World" on the Regional Overview inset map centered at `[0, 25]` (in the Sahara Desert, Algeria), shoving Tyrol and the Alps off the upper border of the inset map. Additionally, when unselected at regional zoom, there was no pin dot on the overview map to identify where the user was looking.
+  - **Root Cause in `RegionalLocator.tsx`**: `getOverviewTargetCenter` had a hardcoded shortcut `if (preset === 'global') return [0, 25];` which completely ignored `mapCenter` and defaulted to latitude 25°N, longitude 0° in southern Algeria whenever `selectedResort` was null.
+  - **Missing Regional Preset for Browsing**: Quick zoom presets only displayed `[ State / Country ]` if `selectedResort` was non-null, hiding regional zoom when users were exploring regions like Tyrol without an active card selection.
+- **Adaptive Region-Centered Overview ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx))**:
+  - **True Centering on Active Location**: Both World and Continental overview presets now center directly on the active location (`selectedResort ? [selectedResort.lng, selectedResort.lat] : mapCenter`), with latitude balance (`Math.max(-25, Math.min(48, targetLat))`) to ensure Tyrol, Austria (or Colorado, Hokkaido, Andes, New Zealand) is dead center horizontally and vertically in the world map without polar clipping.
+  - **Pinned Area Marker**: In addition to selected resorts, when browsing any alpine region at `mapZoom >= 4`, the overview map renders a prominent vermilion pin dot, concentric contrast rings, and attached label pill (`● Tyrol`, `● Colorado`, etc.) along with the main camera viewport bounding box.
+  - **Contextual Presets**: Available presets dynamically adapt to `[ Region Name ]` (e.g. `[ Tyrol ]`), `[ Continent ]`, and `[ World ]`, allowing one-click zooming between regional, continental, and global scales.
+  - **True Global Reset**: When zoomed out to global overview (`mapZoom < 4`) or clicking "Reset Global", the overview preset automatically defaults to `'global'`, clearing pins and desert coordinates while framing the entire planet cleanly.
+- **Verification**:
+  - Replicated and verified in headless Chrome CDP: viewing Tyrol, Austria and switching between `[ Tyrol ]`, `[ Continent ]`, and `[ World ]` places Tyrol and the Alps directly in the center with a prominent pinned dot `● Tyrol`, correct coordinates (`47.4°N, 11.7°E`), and accurate location banner.
+  - Verified that resetting to global scope smoothly frames the whole planet with no fake pins or desert coordinates.
+
+---
+
 ### `fix: purge roads, municipal bike paths, and non-ski activities from downhill ski trail layer`
 - **Root Cause Diagnosis for Roads and Non-Ski Paths Rendering as Intermediate Ski Trails**:
   - **What was wrong**: At Crested Butte (and other ski towns), public vehicular roads (`Gothic Road` / CR 317, `Mountain View Drive`, `Schofield Pass Road`, `Snodgrass Road`), municipal bike/rec paths (`Mt. Crested Butte Rec Path`, `North Village Trails`), and non-downhill features were rendered as solid blue intermediate downhill ski trails right alongside actual mountain pistes.
