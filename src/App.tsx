@@ -2995,7 +2995,7 @@ export default function App() {
     });
 
     // Apply viewport padding synchronously before first render so globe never slides on start
-    map.setPadding({ left: initialLeftPad, right: initialRightPad, top: 52, bottom: initialIsMobile ? 80 : 0 });
+    map.setPadding({ left: initialLeftPad, right: initialRightPad, top: 44, bottom: initialIsMobile ? 80 : 0 });
 
     mapRef.current = map;
     (window as any).__skiAtlasMap = map;
@@ -3651,7 +3651,7 @@ export default function App() {
     const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
     const rightPad = 0;
     const bottomPad = isMob ? (mobileSheetState === 'half' ? 220 : (mobileSheetState === 'peek' ? 80 : 0)) : 0;
-    const topPad = 52;
+    const topPad = 44;
 
     try {
       const curPad = mapRef.current.getPadding();
@@ -4935,7 +4935,7 @@ export default function App() {
       const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
       const bottomPad = isMob ? 80 : 0;
       mapRef.current.easeTo({
-        padding: { left: leftPad, right: 0, top: 52, bottom: bottomPad },
+        padding: { left: leftPad, right: 0, top: 44, bottom: bottomPad },
         duration: 300,
       });
     }
@@ -5777,32 +5777,38 @@ export default function App() {
       />
 
       {/* EDITORIAL TOP BAR (WARM COTTON RAG PAPER & SERIF TITLE - NO VANITY PADDING) */}
-      <header className="absolute top-0 inset-x-0 z-20 h-13 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
-        <div className="flex items-center gap-3 min-w-0">
-          {/* Alpine Snow Globe Crest */}
-          <svg className="w-6.5 h-6.5 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            {/* Glass Sphere Dome */}
-            <circle cx="12" cy="10.5" r="8" stroke="#1C1B18" strokeWidth="1.3" />
-            {/* Pedestal Base */}
-            <path d="M7 20H17" stroke="#1C1B18" strokeWidth="1.4" strokeLinecap="round" />
-            <path d="M8.5 18.5L7 20M15.5 18.5L17 20" stroke="#1C1B18" strokeWidth="1.2" strokeLinecap="round" />
-            {/* Alpine Mountain Silhouette inside Dome */}
-            <path d="M6 16L10.5 10L13.5 14L15 12L18 16" stroke="#5C5852" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            {/* Vermilion Summit Accent */}
-            <polygon points="10.5,10 12,12 9,12" fill="#B84A39" />
-            {/* Drifting Snow Crystals */}
-            <circle cx="10" cy="6" r="0.75" fill="#B84A39" />
-            <circle cx="14.5" cy="7.2" r="0.65" fill="#8A847C" />
-            <circle cx="7.5" cy="9.5" r="0.5" fill="#8A847C" />
-          </svg>
-
-          {/* Tracked Mountain Editorial Wordmark */}
+      <header className="absolute top-0 inset-x-0 z-20 h-11 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
+        <div className="flex items-center min-w-0">
+          {/* Tracked Mountain Editorial Wordmark with Alpine Snow Globe Crest in the center */}
           <div className="flex items-center select-none shrink-0">
-            <span className="font-bold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
+            <span className="font-bold tracking-[0.18em] text-[15px] uppercase text-[#1C1B18]">
               SNOW
             </span>
-            <span className="text-[#B84A39] mx-1.5 font-bold text-base select-none">·</span>
-            <span className="font-bold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
+
+            {/* Alpine Snow Globe Crest in between SNOW and GLOBE */}
+            <svg
+              className="w-5.5 h-5.5 mx-2 shrink-0 -mt-0.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              {/* Glass Sphere Dome */}
+              <circle cx="12" cy="10.5" r="8" stroke="#1C1B18" strokeWidth="1.3" />
+              {/* Pedestal Base */}
+              <path d="M7 20H17" stroke="#1C1B18" strokeWidth="1.4" strokeLinecap="round" />
+              <path d="M8.5 18.5L7 20M15.5 18.5L17 20" stroke="#1C1B18" strokeWidth="1.2" strokeLinecap="round" />
+              {/* Alpine Mountain Silhouette inside Dome */}
+              <path d="M6 16L10.5 10L13.5 14L15 12L18 16" stroke="#5C5852" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Vermilion Summit Accent */}
+              <polygon points="10.5,10 12,12 9,12" fill="#B84A39" />
+              {/* Drifting Snow Crystals */}
+              <circle cx="10" cy="6" r="0.75" fill="#B84A39" />
+              <circle cx="14.5" cy="7.2" r="0.65" fill="#8A847C" />
+              <circle cx="7.5" cy="9.5" r="0.5" fill="#8A847C" />
+            </svg>
+
+            <span className="font-bold tracking-[0.18em] text-[15px] uppercase text-[#1C1B18]">
               GLOBE
             </span>
           </div>
@@ -5856,7 +5862,7 @@ export default function App() {
 
       {/* DESKTOP UNIFIED MOUNTAIN GUIDE (LEFT DOCK) */}
       <div
-        className={`hidden md:flex absolute top-13 bottom-0 left-0 z-30 flex-col transition-transform duration-300 ease-in-out pointer-events-none ${
+        className={`hidden md:flex absolute top-11 bottom-0 left-0 z-30 flex-col transition-transform duration-300 ease-in-out pointer-events-none ${
           leftDockOpen ? 'w-80 md:w-96 translate-x-0' : 'w-80 md:w-96 -translate-x-full'
         }`}
       >
@@ -6015,7 +6021,7 @@ export default function App() {
 
       {/* FLOATING TOP-LEFT MAP VIEWPORT CONTROLS: NORTH ARROW & ZOOM */}
       <div
-        className={`absolute top-16 left-3 md:left-8 ${
+        className={`absolute top-14 left-3 md:left-8 ${
           leftDockOpen ? 'md:left-[420px]' : 'md:left-8'
         } z-20 flex flex-col bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-sm divide-y divide-[#D6D0C2] overflow-hidden transition-all duration-300 ease-in-out`}
         role="group"
@@ -6080,7 +6086,7 @@ export default function App() {
       {/* FLOATING TOP-RIGHT CARTO CONTROLS: BASEMAP POPOVER */}
       <div
         ref={basemapMenuRef}
-        className="absolute top-16 right-3 md:right-4 z-20 flex items-center gap-2 transition-all duration-300"
+        className="absolute top-14 right-3 md:right-4 z-20 flex items-center gap-2 transition-all duration-300"
       >
         {/* Basemap Styles & Earth Projection Dropdown Anchor */}
         <div className="relative">

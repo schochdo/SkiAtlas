@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `style: compact navigation bar height and embed snow globe crest between SNOW and GLOBE`
+- **Embedded Alpine Crest Wordmark (`SNOW [Icon] GLOBE`)**:
+  - Moved the custom SVG snow globe icon from the left of the title into the optical center between `SNOW` and `GLOBE`, replacing the middle dot separator.
+  - Sized the crest sphere to `w-5.5 h-5.5` with `mx-2` breathing room, optically centered at cap-height with the bold editorial uppercase typography.
+- **Sleeker Navigation Bar Height (`h-11` / 44px)**:
+  - Reduced top header bar height from `h-13` (52px) to `h-11` (44px) for a sleeker, more refined editorial proportions.
+  - Aligned desktop left Mountain Guide dock to `top-11`.
+  - Positioned floating map controls (zoom stack, outlined North arrow, and basemap popover button) at `top-14` (56px) maintaining a clean 12px margin below the header.
+  - Synchronized map viewport top padding across initial mount, projection switches, and directory expansion to `top: 44`.
+- **Verification**:
+  - Verified with `npm run build` (passed in 327ms).
+  - Captured and verified desktop and true mobile emulation screenshots (`navbar_desktop.png`, `navbar_real_mobile.png`).
+
+---
+
 ### `fix: smooth camera elevation damping to eliminate terrain bump bobbing`
 - **What was wrong**:
   - In commit `25089a4`, continuous ground clamping (`setCenterClampedToGround(true)`) was kept active during 60 FPS keyboard traversal to eliminate an altitude snap on key release.
