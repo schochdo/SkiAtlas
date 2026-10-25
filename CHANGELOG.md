@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `style: render North arrow as solid muted grayish arrowhead without mini N`
+- **What was wrong**:
+  - The previous attempt to lighten the North arrow used an outlined polygon with a tiny "N" glyph inside. At 14px rendered size, the interior letter rotated awkwardly and became a cramped, pixelated squiggly artifact.
+- **Solid Grayish Arrowhead**:
+  - Replaced the outlined chevron and interior text with a clean, solid cartographic arrowhead (`polygon points="12,2.5 19,20.5 12,16.5 5,20.5"`).
+  - Switched the fill to the warm stone grayish tone (`#5C5852`), matching the optical weight of the neighboring `+` and `-` buttons without harsh solid-black ink pooling.
+  - Removed the mini "N" entirely for a razor-sharp, distraction-free compass needle that rotates smoothly around its geometric center.
+
+---
+
 ### `style: compact navigation bar height and embed snow globe crest between SNOW and GLOBE`
 - **Embedded Alpine Crest Wordmark (`SNOW [Icon] GLOBE`)**:
   - Moved the custom SVG snow globe icon from the left of the title into the optical center between `SNOW` and `GLOBE`, replacing the middle dot separator.

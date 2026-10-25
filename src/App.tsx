@@ -6047,38 +6047,21 @@ export default function App() {
           <Minus className="w-3.5 h-3.5" strokeWidth={2.2} />
         </button>
 
-        {/* Reorient North Button (Standardized Clean Cartographic Stroke matching +/-) */}
+        {/* Reorient North Button (Solid Cartographic Arrow in Muted Grayish Stone, No Mini N) */}
         <button
           onClick={handleResetNorth}
-          className="w-8 h-8 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer group"
+          className="w-8 h-8 flex items-center justify-center text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer group"
           title="Reorient to True North (0°)"
           aria-label="Reorient to True North"
         >
           <svg
             className="w-3.5 h-3.5 pointer-events-none transition-transform duration-150 ease-out"
             viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ transform: `rotate(${-mapBearing}deg)` }}
+            fill="currentColor"
+            style={{ transform: `rotate(${-mapBearing}deg)`, transformOrigin: 'center' }}
           >
-            {/* Outlined Cartographic North Arrow matching Plus & Minus stroke weight */}
-            <polygon points="12 2 19 21 12 17 5 21 12 2" />
-            <text
-              x="12"
-              y="11.2"
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize="6"
-              fontWeight="700"
-              fontFamily="system-ui, -apple-system, sans-serif"
-              fill="currentColor"
-              stroke="none"
-            >
-              N
-            </text>
+            {/* Solid Cartographic North Arrow in muted grayish stone */}
+            <polygon points="12,2.5 19,20.5 12,16.5 5,20.5" />
           </svg>
         </button>
       </div>
