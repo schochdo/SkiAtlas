@@ -72,7 +72,7 @@ import {
   getResortWebsite,
   getCategoryBadge,
 } from './utils/classification';
-import { getNeutralWeather, fetchLiveWeather } from './services/weather';
+import { getNeutralWeather, getInitialWeather, fetchLiveWeather } from './services/weather';
 import { GLOBAL_SKI_ATLAS } from './data/resorts';
 import { HELI_CAT_OPERATIONS } from './data/heliCat';
 
@@ -106,11 +106,11 @@ export default function App() {
   const [resorts, setResorts] = useState<SkiResort[]>(() => [
     ...GLOBAL_SKI_ATLAS.map((r) => ({
       ...r,
-      weather: getNeutralWeather(r),
+      weather: getInitialWeather(r),
     })),
     ...HELI_CAT_OPERATIONS.map((r) => ({
       ...r,
-      weather: getNeutralWeather(r),
+      weather: getInitialWeather(r),
     })),
   ]);
 
@@ -2514,11 +2514,27 @@ export default function App() {
           };
         });
 
-        setResorts([
-          ...GLOBAL_SKI_ATLAS.map((r) => ({ ...r, weather: getNeutralWeather(r) })),
-          ...HELI_CAT_OPERATIONS.map((r) => ({ ...r, weather: getNeutralWeather(r) })),
-          ...globalResortItems,
-        ]);
+        setResorts((prev) => {
+          const weatherMap = new Map<string, ResortWeatherData>();
+          prev.forEach((r) => {
+            if (r.weather) weatherMap.set(r.id, r.weather);
+          });
+
+          return [
+            ...GLOBAL_SKI_ATLAS.map((r) => ({
+              ...r,
+              weather: weatherMap.get(r.id) || getInitialWeather(r),
+            })),
+            ...HELI_CAT_OPERATIONS.map((r) => ({
+              ...r,
+              weather: weatherMap.get(r.id) || getInitialWeather(r),
+            })),
+            ...globalResortItems.map((r) => ({
+              ...r,
+              weather: weatherMap.get(r.id) || getNeutralWeather(r),
+            })),
+          ];
+        });
 
         // Update GeoJSON source on map
         if (mapRef.current) {
@@ -2534,56 +2550,6 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  /* =========================================================================
-     BATCH WEATHER INITIALIZATION ON STARTUP
-     (Pre-populates live snow data for curated resorts immediately without clicking!)
-     ========================================================================= */
-
-  useEffect(() => {
-    const batchFetchWeather = async () => {
-      try {
-        // Batch query top 20 curated resorts in a single Open-Meteo call!
-        const targets = resorts.slice(0, 20);
-        const lats = targets.map((r) => r.lat.toFixed(4)).join(',');
-        const lngs = targets.map((r) => r.lng.toFixed(4)).join(',');
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&daily=snowfall_sum,temperature_2m_max&hourly=temperature_2m&timezone=auto`;
-
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const data = await res.json();
-        const dataList = Array.isArray(data) ? data : [data];
-
-        setResorts((prev) =>
-          prev.map((r, idx) => {
-            const item = dataList[idx];
-            if (!item || !item.daily) return r;
-
-            const dailySnow: number[] = item.daily.snowfall_sum || [];
-            const snow72cm = (dailySnow[0] || 0) + (dailySnow[1] || 0) + (dailySnow[2] || 0);
-            const snow72in = Math.round((snow72cm / 2.54) * 10) / 10;
-            const curTempC = Math.round(item.hourly?.temperature_2m?.[0] ?? -3);
-            const curTempF = Math.round((curTempC * 9) / 5 + 32);
-
-            return {
-              ...r,
-              weather: {
-                ...getNeutralWeather(r),
-                snowfall_72h_in: snow72in,
-                snowfall_72h_cm: Math.round(snow72cm * 10) / 10,
-                current_temp_f: curTempF,
-                current_temp_c: curTempC,
-                is_live: true,
-                last_updated: 'Just now',
-              },
-            };
-          })
-        );
-      } catch (_) {}
-    };
-
-    batchFetchWeather();
   }, []);
 
   /* =========================================================================
