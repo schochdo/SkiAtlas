@@ -1886,9 +1886,6 @@ export default function App() {
       map.setLayoutProperty('hillshade-relief', 'visibility', basemapMode === 'osm' && showHillshade ? 'visible' : 'none');
     }
     // Alpine Topo
-    if (map.getLayer('basemap-physical')) {
-      map.setLayoutProperty('basemap-physical', 'visibility', basemapMode === 'topo' ? 'visible' : 'none');
-    }
     if (map.getLayer('basemap-topo')) {
       map.setLayoutProperty('basemap-topo', 'visibility', basemapMode === 'topo' ? 'visible' : 'none');
     }

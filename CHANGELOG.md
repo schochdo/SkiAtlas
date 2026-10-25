@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: eliminate blurry/fuzzy shaded relief in Alpine Topo basemap at intermediate zooms`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: When viewing the map with the "Alpine Topo" basemap at zoom levels 8.0–9.5 (such as around Aosta and 4 Vallées), the shaded relief and baked-in geographic text ("Aosta", "4280m", "A5") became extremely blurry, fuzzy, and pixelated. This did not occur on Satellite or OpenStreetMap basemaps.
+  - **Root Cause in `src/utils/mapStyles.ts`**: The Topo basemap was configured as an artificial cross-fade between `World_Physical_Map` (`maxzoom: 8`) and `World_Topo_Map`. Because Esri's `World_Physical_Map` service provides no native tiles above zoom 8, MapLibre was forced to overscale zoom 8 tiles up to 2.83x between zoom 8.0 and 9.5 while `World_Topo_Map` was only semi-transparent. This created a muddy, blown-up blur with overlapping duplicate labels and conflicting relief shading.
+- **Clean Continuous Topography ([`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts), [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - Removed the low-resolution `World_Physical_Map` source and layer.
+  - Set `World_Topo_Map` (`basemap-topo`) to full opacity (`raster-opacity: 1.0`) across all zoom levels (0 to 19). Esri World Topo natively provides continuous, crisp vector-rendered contours, relief, and spot elevations at every zoom without blurry upscaling or cross-fade lag.
+  - Kept the hardware-accelerated Mapterhorn DEM hillshade (`alpine-painted-hillshade`) atop the crisp topo base for enhanced alpine ridge definition.
+- **Verification**:
+  - Replicated and verified in headless Chrome CDP at Aosta Valley (`[7.32, 45.74]`) across zoom levels 8.0, 8.5, 9.0, 9.5, and 10.0: all terrain ridges, roads, and summit elevations are now razor-sharp with zero blur or overscaled artifacts.
+
+---
+
 ### `refactor: drop redundant text pill from overview pin dot to eliminate cartographic clutter`
 - Removed the floating label badge pill (`.locator-pin-badge`) from the pinned location dot on the Regional Overview inset map in [`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx).
 - Preserved the clean, high-contrast 4-tier GPU bullseye target pin (concentric vermilion wash, cream contrast ring, solid vermilion center, and white micro-pip), ensuring surrounding map labels, valleys, and regional boundaries remain completely unobstructed.

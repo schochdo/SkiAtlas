@@ -31,15 +31,7 @@ export const createMapStyle = (
       maxzoom: 19,
       attribution: 'OpenStreetMap',
     },
-    // 3. Esri World Physical Map (Painted relief up to zoom 8)
-    'physical-tiles': {
-      type: 'raster',
-      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}'],
-      tileSize: 256,
-      maxzoom: 8,
-      attribution: 'Esri Physical',
-    },
-    // 4. Esri World Topo Map (Clean contours, summits, elevations & passes)
+    // 3. Esri World Topo Map (Clean contours, summits, elevations & passes from z=0 to z=19)
     'topo-tiles': {
       type: 'raster',
       tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'],
@@ -47,7 +39,7 @@ export const createMapStyle = (
       maxzoom: 19,
       attribution: 'Esri Topo',
     },
-    // 5. Mapterhorn Global DEM (Copernicus GLO-30 + JAXA void-free 3D elevation mesh)
+    // 4. Mapterhorn Global DEM (Copernicus GLO-30 + JAXA void-free 3D elevation mesh)
     'terrain-dem': {
       type: 'raster-dem',
       tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
@@ -98,20 +90,7 @@ export const createMapStyle = (
       layout: { visibility: basemapMode === 'osm' ? 'visible' : 'none' },
       paint: { 'raster-contrast': 0.06, 'raster-saturation': 0.05, 'raster-brightness-min': 0.02 },
     },
-    // Base 3A: Alpine Physical Landcover (Visible at globe & regional zooms)
-    {
-      id: 'basemap-physical',
-      type: 'raster',
-      source: 'physical-tiles',
-      layout: { visibility: basemapMode === 'topo' ? 'visible' : 'none' },
-      paint: {
-        'raster-contrast': 0.08,
-        'raster-saturation': -0.15,
-        'raster-brightness-min': 0.08,
-        'raster-opacity': ['interpolate', ['linear'], ['zoom'], 6, 1.0, 8, 1.0, 9.5, 0.0] as any,
-      },
-    },
-    // Base 3B: Topo Map Contours (Cross-fades in as you zoom in)
+    // Base 3: Alpine Topo Map (Clean contours, summits, elevations & passes from z=0 to z=19)
     {
       id: 'basemap-topo',
       type: 'raster',
@@ -121,7 +100,7 @@ export const createMapStyle = (
         'raster-contrast': 0.1,
         'raster-saturation': 0.12,
         'raster-brightness-min': 0.05,
-        'raster-opacity': ['interpolate', ['linear'], ['zoom'], 6.5, 0.0, 8, 0.5, 9.5, 1.0] as any,
+        'raster-opacity': 1.0,
       },
     },
     // Alpine Multi-Color Painted Hillshade
