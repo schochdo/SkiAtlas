@@ -2607,10 +2607,12 @@ export default function App() {
   // Viewport bounds for In Viewport listing
   const [viewportBounds, setViewportBounds] = useState<[number, number, number, number] | null>(null);
 
-  // Collapsible Cartographic World Locator Inset Map
-  const [locatorOpen, setLocatorOpen] = useState<boolean>(() => {
-    return typeof window !== 'undefined' ? window.innerWidth >= 768 : true;
-  });
+  // Collapsible Cartographic Regional Locator Inset Map (starts collapsed by default)
+  const [locatorOpen, setLocatorOpen] = useState<boolean>(false);
+  const [locatorZoomPreset, setLocatorZoomPreset] = useState<'regional' | 'continental' | 'global'>('regional');
+  const locatorMenuRef = useRef<HTMLDivElement | null>(null);
+  const locatorContainerRef = useRef<HTMLDivElement | null>(null);
+  const locatorMapRef = useRef<maplibregl.Map | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([12, 28]);
   const [mapZoom, setMapZoom] = useState<number>(1.8);
 
@@ -5102,77 +5104,328 @@ export default function App() {
     handleResetToGlobalExtent();
   };
 
-  const handleLocatorMapClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-    const normX = (clickX / rect.width) * 360;
-    const normY = (clickY / rect.height) * 180;
-    const [lng, lat] = unprojectEquirect(normX, normY);
-    safeFlyTo(mapRef.current, {
-      center: [lng, lat],
-      zoom: 4.5,
-      pitch: 0,
-      bearing: 0,
-      duration: 1800,
-      essential: true,
-    });
-    setMapPitch(0);
-    setMapBearing(0);
-  };
+  // Geographic context for Regional Locator
+  const activeRegionContext = useMemo(() => {
+    if (selectedResort) {
+      return {
+        region: selectedResort.region || '',
+        country: selectedResort.country || '',
+        name: selectedResort.name,
+      };
+    }
+    // Find closest resort within 600km of mapCenter
+    if (resorts && resorts.length > 0) {
+      const [lng, lat] = mapCenter;
+      let closest: Resort | null = null;
+      let minDist = Infinity;
+      for (const r of resorts) {
+        const dLat = ((lat - r.lat) * Math.PI) / 180;
+        const dLon = ((lng - r.lng) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((lat * Math.PI) / 180) * Math.cos((r.lat * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const distKm = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        if (distKm < minDist) {
+          minDist = distKm;
+          closest = r;
+        }
+      }
+      if (closest && minDist < 600) {
+        return {
+          region: closest.region || '',
+          country: closest.country || '',
+          name: `Near ${closest.name}`,
+        };
+      }
+    }
+    return {
+      region: '',
+      country: '',
+      name: '',
+    };
+  }, [selectedResort, mapCenter, resorts]);
 
-  const selectedResortSvgPos = useMemo(() => {
-    if (!selectedResort) return null;
-    return projectEquirect(selectedResort.lng, selectedResort.lat);
+  const triggerLabel = useMemo(() => {
+    if (selectedResort) {
+      return selectedResort.region || selectedResort.country;
+    }
+    if (activeRegionContext.region) {
+      return activeRegionContext.region;
+    }
+    if (activeRegionContext.country) {
+      return activeRegionContext.country;
+    }
+    return 'Locator';
+  }, [selectedResort, activeRegionContext]);
+
+  const getViewportGeoJson = useCallback((): GeoJSON.FeatureCollection => {
+    if (!viewportBounds) return { type: 'FeatureCollection', features: [] };
+    const [w, s, e, n] = viewportBounds;
+    const south = Math.max(-85, Math.min(85, s));
+    const north = Math.max(-85, Math.min(85, n));
+    const west = Math.max(-180, Math.min(180, w));
+    const east = Math.max(-180, Math.min(180, e));
+
+    return {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [west, south],
+                [east, south],
+                [east, north],
+                [west, north],
+                [west, south],
+              ],
+            ],
+          },
+          properties: {},
+        },
+      ],
+    };
+  }, [viewportBounds]);
+
+  const getResortPinGeoJson = useCallback((): GeoJSON.FeatureCollection => {
+    if (!selectedResort) return { type: 'FeatureCollection', features: [] };
+    return {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [selectedResort.lng, selectedResort.lat],
+          },
+          properties: { name: selectedResort.name },
+        },
+      ],
+    };
   }, [selectedResort]);
 
-  const viewportSvgRects = useMemo(() => {
-    if (!viewportBounds) return [];
-    const [west, south, east, north] = viewportBounds;
+  // Handle outside click to close locator menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (locatorMenuRef.current && !locatorMenuRef.current.contains(event.target as Node)) {
+        setLocatorOpen(false);
+      }
+    };
+    if (locatorOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [locatorOpen]);
 
-    const spanLng = east >= west ? east - west : 360 - west + east;
-    const spanLat = Math.max(0, north - south);
-    const [cx, cy] = projectEquirect(mapCenter[0], mapCenter[1]);
+  // Initialize and manage secondary 2D MapLibre instance for Regional Locator
+  useEffect(() => {
+    if (!locatorOpen) {
+      if (locatorMapRef.current) {
+        locatorMapRef.current.remove();
+        locatorMapRef.current = null;
+      }
+      return;
+    }
 
-    if (mapZoom > 7 || spanLng < 10 || spanLat < 6) {
-      const w = 12;
-      const h = 8;
-      return [
-        {
-          type: 'reticle' as const,
-          cx,
-          cy,
-          x: cx - w / 2,
-          y: cy - h / 2,
-          w,
-          h,
+    if (!locatorContainerRef.current) return;
+
+    const initialCenter: [number, number] = selectedResort
+      ? [selectedResort.lng, selectedResort.lat]
+      : mapCenter;
+
+    const initialZoom = selectedResort
+      ? 5.2
+      : Math.max(1.8, Math.min(5.8, mapZoom - 6.5));
+
+    const lmap = new maplibregl.Map({
+      container: locatorContainerRef.current,
+      style: {
+        version: 8,
+        sources: {
+          'esri-canvas-base': {
+            type: 'raster',
+            tiles: [
+              'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+            ],
+            tileSize: 256,
+            attribution: '© Esri, HERE, Garmin',
+          },
+          'esri-canvas-ref': {
+            type: 'raster',
+            tiles: [
+              'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+            ],
+            tileSize: 256,
+            attribution: '© Esri',
+          },
         },
-      ];
+        layers: [
+          {
+            id: 'esri-base-layer',
+            type: 'raster',
+            source: 'esri-canvas-base',
+            minzoom: 0,
+            maxzoom: 20,
+          },
+        ],
+      },
+      center: initialCenter,
+      zoom: initialZoom,
+      attributionControl: false,
+      renderWorldCopies: true,
+      fadeDuration: 0,
+    });
+
+    lmap.on('load', () => {
+      // Add Viewport bounds layer
+      lmap.addSource('locator-viewport', {
+        type: 'geojson',
+        data: getViewportGeoJson(),
+      });
+      lmap.addLayer({
+        id: 'locator-viewport-fill',
+        type: 'fill',
+        source: 'locator-viewport',
+        paint: {
+          'fill-color': '#2C4C64',
+          'fill-opacity': 0.15,
+        },
+      });
+      lmap.addLayer({
+        id: 'locator-viewport-line',
+        type: 'line',
+        source: 'locator-viewport',
+        paint: {
+          'line-color': '#2C4C64',
+          'line-width': 1.5,
+          'line-dasharray': [2, 2],
+        },
+      });
+
+      // Add Selected Resort Pin layer
+      lmap.addSource('locator-resort', {
+        type: 'geojson',
+        data: getResortPinGeoJson(),
+      });
+      lmap.addLayer({
+        id: 'locator-resort-outer',
+        type: 'circle',
+        source: 'locator-resort',
+        paint: {
+          'circle-radius': 9,
+          'circle-color': '#B84A39',
+          'circle-opacity': 0.3,
+        },
+      });
+      lmap.addLayer({
+        id: 'locator-resort-inner',
+        type: 'circle',
+        source: 'locator-resort',
+        paint: {
+          'circle-radius': 4.5,
+          'circle-color': '#B84A39',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      // Reference labels and state/national borders rendered over viewport
+      lmap.addLayer({
+        id: 'esri-ref-layer',
+        type: 'raster',
+        source: 'esri-canvas-ref',
+        minzoom: 0,
+        maxzoom: 20,
+      });
+
+      locatorMapRef.current = lmap;
+      setTimeout(() => {
+        lmap.resize();
+      }, 50);
+    });
+
+    lmap.on('click', (e) => {
+      if (!mapRef.current) return;
+      safeFlyTo(mapRef.current, {
+        center: [e.lngLat.lng, e.lngLat.lat],
+        duration: 1200,
+        essential: true,
+      });
+    });
+
+    return () => {
+      if (locatorMapRef.current) {
+        locatorMapRef.current.remove();
+        locatorMapRef.current = null;
+      }
+    };
+  }, [locatorOpen]);
+
+  // Sync GeoJSON features in locator map
+  useEffect(() => {
+    const lmap = locatorMapRef.current;
+    if (!lmap || !locatorOpen || !lmap.isStyleLoaded()) return;
+
+    const vpSource = lmap.getSource('locator-viewport') as maplibregl.GeoJSONSource | undefined;
+    if (vpSource) {
+      vpSource.setData(getViewportGeoJson());
     }
 
-    const minLat = Math.max(-85, Math.min(85, south));
-    const maxLat = Math.max(-85, Math.min(85, north));
-    const y = 90 - maxLat;
-    const h = Math.max(4, maxLat - minLat);
-
-    if (east < west) {
-      // Crosses antimeridian: two boxes
-      const w1 = Math.max(2, 180 - west);
-      const x1 = west + 180;
-      const w2 = Math.max(2, east + 180);
-      const x2 = 0;
-      return [
-        { type: 'box' as const, cx, cy, x: x1, y, w: w1, h },
-        { type: 'box' as const, cx, cy, x: x2, y, w: w2, h },
-      ];
-    } else {
-      const minLng = Math.max(-180, Math.min(180, west));
-      const maxLng = Math.max(-180, Math.min(180, east));
-      const x = minLng + 180;
-      const w = Math.max(4, maxLng - minLng);
-      return [{ type: 'box' as const, cx, cy, x, y, w, h }];
+    const rSource = lmap.getSource('locator-resort') as maplibregl.GeoJSONSource | undefined;
+    if (rSource) {
+      rSource.setData(getResortPinGeoJson());
     }
-  }, [viewportBounds, mapCenter, mapZoom]);
+  }, [viewportBounds, selectedResort, locatorOpen, getViewportGeoJson, getResortPinGeoJson]);
+
+  // Sync center and zoom in locator map
+  useEffect(() => {
+    const lmap = locatorMapRef.current;
+    if (!lmap || !locatorOpen) return;
+
+    const targetCenter: [number, number] = selectedResort
+      ? [selectedResort.lng, selectedResort.lat]
+      : mapCenter;
+
+    const targetZoom = selectedResort
+      ? (locatorZoomPreset === 'regional' ? 5.2 : locatorZoomPreset === 'continental' ? 3.2 : 1.8)
+      : (locatorZoomPreset === 'regional'
+          ? Math.max(1.8, Math.min(5.8, mapZoom - 6.5))
+          : locatorZoomPreset === 'continental'
+          ? 3.2
+          : 1.8);
+
+    lmap.easeTo({
+      center: targetCenter,
+      zoom: targetZoom,
+      duration: 350,
+    });
+  }, [selectedResort, mapCenter, mapZoom, locatorZoomPreset, locatorOpen]);
+
+  const handleSetLocatorPreset = (preset: 'regional' | 'continental' | 'global') => {
+    setLocatorZoomPreset(preset);
+    if (!locatorMapRef.current) return;
+    const targetZoom = preset === 'regional' ? 5.2 : preset === 'continental' ? 3.2 : 1.8;
+    locatorMapRef.current.easeTo({
+      zoom: targetZoom,
+      duration: 350,
+    });
+  };
+
+  const handleLocatorZoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!locatorMapRef.current) return;
+    locatorMapRef.current.zoomIn({ duration: 200 });
+  };
+
+  const handleLocatorZoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!locatorMapRef.current) return;
+    locatorMapRef.current.zoomOut({ duration: 200 });
+  };
 
   const handleSetUnitsMetric = (toMetric: boolean) => {
     if (toMetric === unitsMetric) return;
@@ -6337,63 +6590,193 @@ export default function App() {
         )}
       </div>
 
-      {/* FLOATING TOP-LEFT MAP VIEWPORT CONTROLS: NORTH ARROW & ZOOM */}
+      {/* FLOATING TOP-LEFT MAP VIEWPORT CONTROLS: ZOOM, NORTH ARROW & REGIONAL LOCATOR */}
       <div
         className={`absolute top-14 left-3 md:left-8 ${
           leftDockOpen ? 'md:left-[420px]' : 'md:left-8'
-        } z-20 flex flex-col bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-sm divide-y divide-[#D6D0C2] overflow-hidden transition-all duration-300 ease-in-out`}
-        role="group"
-        aria-label="Map navigation controls"
+        } z-20 flex items-center gap-2 transition-all duration-300 ease-in-out select-none`}
       >
-        {/* Zoom In Button */}
-        <button
-          onClick={handleZoomIn}
-          className="w-8 h-8 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
-          title="Zoom In"
-          aria-label="Zoom In"
+        {/* Map Viewport Navigation Controls: Zoom In, Zoom Out, True North Snap */}
+        <div
+          className="flex items-center bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-xs divide-x divide-[#D6D0C2] overflow-hidden"
+          role="group"
+          aria-label="Map navigation controls"
         >
-          <Plus className="w-3.5 h-3.5" strokeWidth={2.2} />
-        </button>
-
-        {/* Zoom Out Button */}
-        <button
-          onClick={handleZoomOut}
-          className="w-8 h-8 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
-          title="Zoom Out"
-          aria-label="Zoom Out"
-        >
-          <Minus className="w-3.5 h-3.5" strokeWidth={2.2} />
-        </button>
-
-        {/* Reorient North Button (Solid Cartographic Arrow in Muted Grayish Stone, No Mini N) */}
-        <button
-          onClick={handleResetNorth}
-          className="w-8 h-8 flex items-center justify-center text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer group"
-          title="Reorient to True North (0°)"
-          aria-label="Reorient to True North"
-        >
-          <svg
-            className="w-3.5 h-3.5 pointer-events-none transition-transform duration-150 ease-out"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            style={{ transform: `rotate(${-mapBearing}deg)`, transformOrigin: 'center' }}
+          <button
+            onClick={handleZoomIn}
+            className="w-8 h-8 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
+            title="Zoom In"
+            aria-label="Zoom In"
           >
-            {/* Solid Cartographic North Arrow in muted grayish stone */}
-            <polygon points="12,2.5 19,20.5 12,16.5 5,20.5" />
-          </svg>
-        </button>
+            <Plus className="w-3.5 h-3.5" strokeWidth={2.2} />
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="w-8 h-8 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer"
+            title="Zoom Out"
+            aria-label="Zoom Out"
+          >
+            <Minus className="w-3.5 h-3.5" strokeWidth={2.2} />
+          </button>
+          <button
+            onClick={handleResetNorth}
+            className="w-8 h-8 flex items-center justify-center text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer group"
+            title="Reorient to True North (0°)"
+            aria-label="Reorient to True North"
+          >
+            <svg
+              className="w-3.5 h-3.5 pointer-events-none transition-transform duration-150 ease-out"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              style={{ transform: `rotate(${-mapBearing}deg)`, transformOrigin: 'center' }}
+            >
+              <polygon points="12,2.5 19,20.5 12,16.5 5,20.5" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Regional Locator Dropdown / Overview Popover Anchor */}
+        <div className="relative" ref={locatorMenuRef}>
+          <button
+            onClick={() => {
+              setLocatorOpen(!locatorOpen);
+              if (!locatorOpen) setMapMenuOpen(false);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 h-8 rounded-md border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
+              locatorOpen
+                ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-semibold'
+                : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
+            }`}
+            title="Regional Overview & State/Country Context"
+          >
+            <Compass className="w-3.5 h-3.5 text-[#5C5852]" />
+            <span className="text-xs font-semibold max-w-[140px] truncate">
+              {triggerLabel}
+            </span>
+          </button>
+
+          {locatorOpen && (
+            <div className="absolute left-0 top-10 w-80 sm:w-88 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-xl overflow-hidden z-30 animate-in fade-in duration-150">
+              {/* Header */}
+              <div className="px-3 py-2 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Compass className="w-3.5 h-3.5 text-[#5C5852] shrink-0" />
+                  <span className="text-xs font-bold text-[#1C1B18] tracking-tight truncate">
+                    Regional Overview
+                  </span>
+                </div>
+                {/* Quick Zoom Presets */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => handleSetLocatorPreset('regional')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                      locatorZoomPreset === 'regional'
+                        ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
+                        : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
+                    }`}
+                    title="Zoom to State / Country Level"
+                  >
+                    State / Country
+                  </button>
+                  <button
+                    onClick={() => handleSetLocatorPreset('continental')}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                      locatorZoomPreset === 'continental'
+                        ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
+                        : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
+                    }`}
+                    title="Zoom to Continental Level"
+                  >
+                    Continent
+                  </button>
+                  <button
+                    onClick={() => setLocatorOpen(false)}
+                    className="p-1 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer ml-1"
+                    title="Close"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Location Context Banner: What Country or State are we in? */}
+              <div className="px-3 py-2 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between">
+                <div className="min-w-0 pr-2">
+                  <div className="text-[10px] uppercase font-bold text-[#736E67] tracking-wider leading-none">
+                    Current Location
+                  </div>
+                  <div className="font-bold text-xs text-[#1C1B18] truncate mt-0.5">
+                    {activeRegionContext.region && activeRegionContext.country
+                      ? `${activeRegionContext.region}, ${activeRegionContext.country}`
+                      : activeRegionContext.country || activeRegionContext.region || 'Global Overview'}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  {activeRegionContext.name ? (
+                    <span className="text-[10px] font-medium text-[#736E67] truncate block max-w-[120px]">
+                      {activeRegionContext.name}
+                    </span>
+                  ) : (
+                    <span className="font-mono text-[9px] text-[#8A847C]">
+                      {formatCoords(mapCenter[1], mapCenter[0])}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* MapLibre 2D Simple Basemap Canvas */}
+              <div className="relative w-full h-48 bg-[#FAF8F3] overflow-hidden">
+                <div ref={locatorContainerRef} className="w-full h-full" />
+                {/* Micro Zoom Buttons on map */}
+                <div className="absolute bottom-2 right-2 flex flex-col bg-[#FAF8F3] border border-[#D6D0C2] rounded shadow-xs divide-y divide-[#D6D0C2] overflow-hidden z-10">
+                  <button
+                    onClick={handleLocatorZoomIn}
+                    className="w-6 h-6 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] text-xs font-bold cursor-pointer"
+                    title="Zoom In"
+                  >
+                    +
+                  </button>
+                  <button
+                    onClick={handleLocatorZoomOut}
+                    className="w-6 h-6 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] text-xs font-bold cursor-pointer"
+                    title="Zoom Out"
+                  >
+                    −
+                  </button>
+                </div>
+              </div>
+
+              {/* Footnote / Reset */}
+              <div className="px-3 py-1.5 bg-[#FAF8F3] border-t border-[#D6D0C2] flex items-center justify-between text-[10px]">
+                <span className="text-[#8A847C] truncate">
+                  Click map to center main view
+                </span>
+                <button
+                  onClick={handleResetToGlobal}
+                  className="flex items-center gap-1 font-semibold text-[#5C5852] hover:text-[#1C1B18] cursor-pointer"
+                  title="Reset main map to global extent"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  <span>Reset Global</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* FLOATING TOP-RIGHT CARTO CONTROLS: BASEMAP POPOVER */}
       <div
         ref={basemapMenuRef}
-        className="absolute top-14 right-3 md:right-4 z-20 flex items-center gap-2 transition-all duration-300"
+        className="absolute top-14 right-3 md:right-4 z-20 flex items-center gap-2 transition-all duration-300 select-none"
       >
-        {/* Basemap Styles & Earth Projection Dropdown Anchor */}
         <div className="relative">
           <button
-            onClick={() => setMapMenuOpen(!mapMenuOpen)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
+            onClick={() => {
+              setMapMenuOpen(!mapMenuOpen);
+              if (!mapMenuOpen) setLocatorOpen(false);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 h-8 rounded-md border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
               mapMenuOpen
                 ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-semibold'
                 : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
@@ -6577,167 +6960,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* =====================================================================
-          CARTOGRAPHIC WORLD LOCATOR INSET MAP
-          Collapsible global context overview with real-time camera tracking,
-          selected resort beacon, and click-to-fly continent navigation.
-          ===================================================================== */}
-      <div
-        className="hidden sm:block absolute bottom-28 right-6 z-20 select-none transition-all duration-200"
-      >
-        {!locatorOpen ? (
-          <button
-            onClick={() => setLocatorOpen(true)}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#FAF8F3] hover:bg-[#F2EFE8] border border-[#D6D0C2] hover:border-[#1C1B18] shadow-md text-xs font-semibold text-[#1C1B18] transition-all cursor-pointer group"
-            title="Expand World Locator Map"
-          >
-            <Globe className="w-3.5 h-3.5 text-[#5C5852] group-hover:text-[#1C1B18] transition-colors" />
-            <span className="text-[11px] font-bold tracking-tight">World Locator</span>
-            {selectedResort && (
-              <span className="text-[10px] font-medium text-[#5C5852] max-w-[110px] truncate border-l border-[#D6D0C2] pl-1.5">
-                {selectedResort.name}
-              </span>
-            )}
-            <Plus className="w-3 h-3 text-[#8A847C] group-hover:text-[#1C1B18] ml-0.5" />
-          </button>
-        ) : (
-          <div className="w-60 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-lg overflow-hidden animate-in fade-in duration-150">
-            {/* Header */}
-            <div className="px-2.5 py-1.5 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-[#5C5852]" />
-                <span className="text-[10px] font-bold tracking-wider text-[#1C1B18] uppercase">
-                  World Locator
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={handleResetToGlobal}
-                  className="px-1.5 py-0.5 rounded text-[10px] font-semibold text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EFECE6] transition-colors flex items-center gap-1 cursor-pointer"
-                  title="Reset to Global Overview"
-                >
-                  <RotateCcw className="w-2.5 h-2.5" />
-                  <span>Global</span>
-                </button>
-                <button
-                  onClick={() => setLocatorOpen(false)}
-                  className="p-0.5 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE6] transition-colors cursor-pointer"
-                  title="Collapse World Locator"
-                >
-                  <Minus className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
 
-            {/* SVG Inset Canvas */}
-            <div className="relative w-60 h-[120px] bg-[#FAF8F3] overflow-hidden">
-              <svg
-                viewBox="0 0 360 180"
-                className="w-full h-full cursor-crosshair block"
-                onClick={handleLocatorMapClick}
-                title="Click any continent to fly there"
-              >
-                {/* Cartographic Graticules */}
-                <line x1="0" y1="90" x2="360" y2="90" stroke="#E5E0D5" strokeWidth="0.6" strokeDasharray="2,2" />
-                <line x1="180" y1="0" x2="180" y2="180" stroke="#E5E0D5" strokeWidth="0.6" strokeDasharray="2,2" />
-                <line x1="0" y1="66.5" x2="360" y2="66.5" stroke="#EDE8DE" strokeWidth="0.4" strokeDasharray="1,3" />
-                <line x1="0" y1="113.5" x2="360" y2="113.5" stroke="#EDE8DE" strokeWidth="0.4" strokeDasharray="1,3" />
-
-                {/* Natural Earth Land Vector */}
-                <path d={WORLD_LAND_PATH} fill="#E2DDD2" stroke="#C4BEB1" strokeWidth="0.5" />
-
-                {/* Camera Viewport Indicator */}
-                {viewportSvgRects.map((r, i) =>
-                  r.type === 'reticle' ? (
-                    <g key={i} className="pointer-events-none">
-                      <rect
-                        x={r.x}
-                        y={r.y}
-                        width={r.w}
-                        height={r.h}
-                        fill="#2C4C64"
-                        fillOpacity="0.22"
-                        stroke="#2C4C64"
-                        strokeWidth="0.9"
-                        rx="1"
-                      />
-                      <line x1={r.cx - 2.5} y1={r.cy} x2={r.cx + 2.5} y2={r.cy} stroke="#2C4C64" strokeWidth="0.75" />
-                      <line x1={r.cx} y1={r.cy - 2} x2={r.cx} y2={r.cy + 2} stroke="#2C4C64" strokeWidth="0.75" />
-                    </g>
-                  ) : (
-                    <g key={i} className="pointer-events-none">
-                      <rect
-                        x={r.x}
-                        y={r.y}
-                        width={r.w}
-                        height={r.h}
-                        fill="#2C4C64"
-                        fillOpacity="0.12"
-                        stroke="#2C4C64"
-                        strokeWidth="0.8"
-                        strokeDasharray="2,1"
-                        rx="1"
-                      />
-                      <circle cx={r.cx} cy={r.cy} r="1" fill="#2C4C64" />
-                    </g>
-                  )
-                )}
-
-                {/* Selected Resort Locator Beacon */}
-                {selectedResortSvgPos && (
-                  <g className="pointer-events-none">
-                    <circle
-                      cx={selectedResortSvgPos[0]}
-                      cy={selectedResortSvgPos[1]}
-                      r="7.5"
-                      fill="#B84A39"
-                      fillOpacity="0.25"
-                    />
-                    <circle
-                      cx={selectedResortSvgPos[0]}
-                      cy={selectedResortSvgPos[1]}
-                      r="4.2"
-                      fill="none"
-                      stroke="#B84A39"
-                      strokeWidth="0.8"
-                    />
-                    <circle
-                      cx={selectedResortSvgPos[0]}
-                      cy={selectedResortSvgPos[1]}
-                      r="2"
-                      fill="#B84A39"
-                      stroke="#FAF8F3"
-                      strokeWidth="0.6"
-                    />
-                  </g>
-                )}
-              </svg>
-            </div>
-
-            {/* Footer / Geographic Context Caption */}
-            <div className="px-2.5 py-1.5 bg-[#FAF8F3] border-t border-[#D6D0C2] flex items-center justify-between text-[10px]">
-              {selectedResort ? (
-                <div className="min-w-0 flex-1 pr-1">
-                  <div className="font-bold text-[#1C1B18] truncate leading-tight">
-                    {selectedResort.name}
-                  </div>
-                  <div className="text-[#5C5852] truncate text-[9px] font-medium leading-tight">
-                    {[selectedResort.region, selectedResort.country].filter(Boolean).join(', ')}
-                    {' · '}
-                    <span className="font-mono text-[#8A847C]">
-                      {formatCoords(selectedResort.lat, selectedResort.lng)}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-[#8A847C] text-[9.5px] truncate">
-                  Click globe to jump · <span className="font-mono">{formatCoords(mapCenter[1], mapCenter[0])}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* =====================================================================
           UNIFIED CARTOGRAPHIC NAVIGATION GIMBAL & COMPASS INSTRUMENT

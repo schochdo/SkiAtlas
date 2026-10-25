@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: add top-left collapsible regional locator with simple basemap for state and country context`
+- **Top-Left Placement Alongside Navigation Controls**:
+  - Positioned the collapsible regional locator trigger and overview popover in the top-left map toolbar directly next to the `+/-` zoom controls and true north snap button (`top-14 left-3 md:left-8`, shifting smoothly to `md:left-[420px]` when the left sidebar tray is open).
+  - Starts collapsed by default (`locatorOpen: false`), keeping the map viewport completely uncluttered until requested.
+- **Dedicated Regional Zoom for State and Country Context**:
+  - **What was wrong before**: The static SVG whole-world inset map displayed the entire globe at once (zoom ~1), making states and individual countries microscopic dots where surrounding state or country borders could not be discerned.
+  - **Interactive 2D Reference Map**: Integrated a secondary 2D MapLibre overview map using Esri's neutral Light Gray Canvas (`World_Light_Gray_Base` + `World_Light_Gray_Reference`).
+  - **State and Country Scale**: Centers automatically at regional zoom (z=5.2) when viewing or selecting a resort, revealing full state outlines (e.g. Colorado, Utah, Wyoming, British Columbia), country borders (Switzerland, France, Austria), and key regional cities without satellite or terrain distortion.
+  - **Location Context Header**: Editorial banner prominently communicates the active geographic jurisdiction (e.g. `Colorado, USA`, `Valais, Switzerland`, `British Columbia, Canada`), while the collapsed trigger pill dynamically reflects the active state/country name.
+  - **Ergonomic Controls**: Added `[ State / Country ]` (z=5.2) and `[ Continent ]` (z=3.2) zoom presets, manual `+`/`−` micro-zoom buttons on the inset map, camera reticle tracking, and click-to-fly navigation.
+  - Removed the old floating SVG widget from the bottom-right above the rotary gimbal.
+
+---
+
 ### `feat: add sticky selection banner, card toggle, and map click deselection`
 - **Instant & Prominent Deselection Controls**:
   - **What was wrong**: Deselecting a ski area was unintuitive. Users had to toggle scope to "IN FRAME", find the single active card, and attempt to click it (which previously opened the mountain profile view instead of deselecting).
