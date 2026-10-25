@@ -1434,16 +1434,37 @@ export default function App() {
     const allowedConditions: any[] = [];
 
     if (showDownhill) {
-      allowedConditions.push(['!=', ['get', 'piste:type'], 'nordic']);
+      // Strictly match downhill alpine pistes and connector trails; exclude nordic and municipal paths
+      allowedConditions.push([
+        'any',
+        ['==', ['get', 'piste:type'], 'downhill'],
+        ['==', ['get', 'piste:type'], 'connection'],
+        ['all', ['!', ['has', 'piste:type']], ['!=', ['get', 'piste:type'], 'nordic']],
+      ]);
     }
 
     if (showNordic) {
+      // Match dedicated cross-country nordic trails
       allowedConditions.push(['==', ['get', 'piste:type'], 'nordic']);
     }
 
     if (showHeliCat && !showDownhill) {
-      allowedConditions.push(['!=', ['get', 'piste:type'], 'nordic']);
+      allowedConditions.push([
+        'any',
+        ['==', ['get', 'piste:type'], 'downhill'],
+        ['==', ['get', 'piste:type'], 'connection'],
+      ]);
     }
+
+    // Explicitly exclude non-ski municipal features (roads, rec paths, walking loops, playgrounds, sledding)
+    const nonSkiExclusion = [
+      '!',
+      [
+        'in',
+        ['coalesce', ['get', 'piste:type'], ''],
+        ['literal', ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other']],
+      ],
+    ];
 
     // Separate line vectors from freeride polygon area vectors
     const isLineGeom = ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']];
@@ -1452,23 +1473,19 @@ export default function App() {
     let pisteFilter: any;
     if (allowedConditions.length === 0) {
       pisteFilter = ['==', '1', '0']; // match nothing
-    } else if (allowedConditions.length === 3) {
-      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom]; // all line pistes
     } else if (allowedConditions.length === 1) {
-      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom, allowedConditions[0]];
+      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom, nonSkiExclusion, allowedConditions[0]];
     } else {
-      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom, ['any', ...allowedConditions]];
+      pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom, nonSkiExclusion, ['any', ...allowedConditions]];
     }
 
     let polyPisteFilter: any;
     if (allowedConditions.length === 0) {
       polyPisteFilter = ['==', '1', '0']; // match nothing
-    } else if (allowedConditions.length === 3) {
-      polyPisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isPolyGeom]; // all polygon pistes
     } else if (allowedConditions.length === 1) {
-      polyPisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isPolyGeom, allowedConditions[0]];
+      polyPisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isPolyGeom, nonSkiExclusion, allowedConditions[0]];
     } else {
-      polyPisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isPolyGeom, ['any', ...allowedConditions]];
+      polyPisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isPolyGeom, nonSkiExclusion, ['any', ...allowedConditions]];
     }
 
     // Suppress text labels for Unnamed, Unknown, or empty trail names while keeping lines visible

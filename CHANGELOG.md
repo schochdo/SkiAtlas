@@ -6,6 +6,30 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: purge roads, municipal bike paths, and non-ski activities from downhill ski trail layer`
+- **Root Cause Diagnosis for Roads and Non-Ski Paths Rendering as Intermediate Ski Trails**:
+  - **What was wrong**: At Crested Butte (and other ski towns), public vehicular roads (`Gothic Road` / CR 317, `Mountain View Drive`, `Schofield Pass Road`, `Snodgrass Road`), municipal bike/rec paths (`Mt. Crested Butte Rec Path`, `North Village Trails`), and non-downhill features were rendered as solid blue intermediate downhill ski trails right alongside actual mountain pistes.
+  - **Root Cause #1 (Coarse Binary Logic in `build_trails_db.cjs`)**: When parsing OpenSkiMap's `runs.geojson`, the pipeline previously executed `'piste:type': props.uses?.includes('nordic') ? 'nordic' : 'downhill'`. Any OpenStreetMap way tagged with winter fatbiking, snowshoeing, or town walking (`uses: ['fatbike']`, `['hike']`, `['sled']`, `['ice_skate']`, `['playground']`) that did not contain the string `'nordic'` was classified as `'downhill'`.
+  - **Root Cause #2 (Aggressive Fallback Difficulty Assignment)**: Unrated features (`props.difficulty: null`) were defaulted to `'intermediate'`, forcing every paved municipal road, asphalt loop, and dirt rec path to receive cobalt blue `#1565C0` downhill trail styling.
+  - **Root Cause #3 (Permissive Client Filters in `src/App.tsx`)**: In `App.tsx`, downhill mode allowed any feature satisfying `['!=', ['get', 'piste:type'], 'nordic']`. As a result, non-nordic municipal paths were never filtered out on the client.
+- **Authoritative Ski Classification Pipeline ([`data_pipeline/build_trails_db.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/data_pipeline/build_trails_db.cjs))**:
+  - Implemented multi-use inspection: classifies `pisteType` into `'downhill'`, `'connection'`, `'nordic'`, `'skitour'`, `'fatbike'`, `'hike'`, `'sled'`, `'sleigh'`, `'ice_skate'`, or `'playground'`.
+  - Strictly skips non-ski municipal features (public vehicular roads, residential streets, concrete/gravel town rec paths, playgrounds, ice rinks, and sledding hills) that have no downhill, nordic, or ski touring use and no ski difficulty rating (skipped 9,969 non-ski features worldwide; indexed 220,510 pure ski runs in 9.9s).
+  - Preserves legitimate summit bootpack hikes and hike-to freeride bowls (such as `Peak Hike Access` with `props.difficulty: 'expert'`) as downhill freeride terrain.
+  - Preserved authentic difficulty: unrated features remain `difficulty: null`, rendering with neutral styling rather than being forced into blue intermediate lines.
+- **Server-Side Hot-Reload & Defense-in-Depth ([`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts))**:
+  - Added timestamp-based hot-reloading (`mtimeMs` check on SQLite database handle) to prevent stale database connection caching across data rebuilds.
+  - Added strict server filter excluding any piste with `piste:type` in `['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other']`.
+- **MapLibre GPU Layer Filtering Rigor ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx#L1435-L1480))**:
+  - Updated `showDownhill` filter to explicitly require `['any', ['==', ['get', 'piste:type'], 'downhill'], ['==', ['get', 'piste:type'], 'connection'], ['all', ['!', ['has', 'piste:type']], ['!=', ['get', 'piste:type'], 'nordic']]]`.
+  - Dedicated `showNordic` condition requiring `['==', ['get', 'piste:type'], 'nordic']`, cleanly isolating cross-country trails to when Nordic mode is activated in filters.
+  - Explicit global GPU exclusion for municipal and non-ski features (`fatbike`, `hike`, `sled`, `sleigh`, `ice_skate`, `playground`).
+- **Verification**:
+  - Verified via headless Chrome CDP inspection and high-resolution screenshot comparison at Mountain View Drive and Gothic Road that all public roads, residential streets, rec paths, and North Village trails have been completely purged from the downhill ski layer.
+  - Verified that all genuine Crested Butte downhill ski runs, lifts, and extreme freeride bowls (`The Peak`, `Headwall`, `Banana`, `Rambo`, `Spellbound Bowl`, etc.) continue to render with 100% fidelity.
+
+---
+
 ### `refactor: remove redundant Selected Area banner above active resort card`
 - **Eliminated Duplicate Header in Left Sidebar Directory**:
   - **What was wrong before**: When a resort was selected, the directory list displayed a sticky banner `● SELECTED AREA / [Resort Name] [✕ Deselect]` directly above the selected resort card, which already contained the identical resort title, pass chips, geographic location, stats, and its own `[✕ Deselect]` and `[Mountain Profile >]` buttons. This created visual noise, redundant layout chrome, and duplicate action targets.

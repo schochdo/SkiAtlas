@@ -141,6 +141,7 @@ async function processRuns() {
   const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
 
   let count = 0;
+  let skipped = 0;
   db.exec('BEGIN TRANSACTION;');
 
   for await (const line of rl) {
@@ -149,9 +150,50 @@ async function processRuns() {
     try {
       const feat = JSON.parse(trimmed);
       const props = feat.properties || {};
+      const uses = Array.isArray(props.uses) ? props.uses : [];
+
+      // Determine piste type based on authoritative uses
+      let pisteType = 'other';
+      if (uses.includes('downhill') || uses.includes('snow_park')) {
+        pisteType = 'downhill';
+      } else if (uses.includes('connection')) {
+        pisteType = 'connection';
+      } else if (uses.includes('nordic')) {
+        pisteType = 'nordic';
+      } else if (uses.includes('skitour')) {
+        pisteType = 'skitour';
+      } else if (uses.includes('fatbike')) {
+        pisteType = 'fatbike';
+      } else if (uses.includes('hike')) {
+        pisteType = 'hike';
+      } else if (uses.includes('sled')) {
+        pisteType = 'sled';
+      } else if (uses.includes('sleigh')) {
+        pisteType = 'sleigh';
+      } else if (uses.includes('ice_skate')) {
+        pisteType = 'ice_skate';
+      } else if (uses.includes('playground')) {
+        pisteType = 'playground';
+      }
+
+      // Check if feature has an explicit ski difficulty rating
+      const hasSkiDifficulty = typeof props.difficulty === 'string' && props.difficulty.trim().length > 0;
+
+      // Strictly skip non-ski municipal features (public vehicular roads, town bike paths, playgrounds, ice rinks, sled hills)
+      // that have no downhill, nordic, or ski touring use and no ski difficulty rating
+      if (['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(pisteType) && !hasSkiDifficulty) {
+        skipped++;
+        continue;
+      }
+
+      // If a hiking trail has a ski difficulty rating (e.g. Peak Hike Access), it represents a summit bootpack / hike-to freeride terrain
+      if (pisteType === 'hike' && hasSkiDifficulty) {
+        pisteType = 'downhill';
+      }
+
       const id = String(props.id || Math.random());
       const name = props.name || props.ref || 'Unnamed Trail';
-      const diff = props.difficulty || 'intermediate';
+      const diff = props.difficulty || null;
       const [minLng, minLat, maxLng, maxLat] = getBbox(feat.geometry?.coordinates || []);
 
       // Standardize properties for MapLibre client
@@ -164,8 +206,9 @@ async function processRuns() {
           kind: 'piste',
           name,
           difficulty: diff,
-          'piste:type': props.uses?.includes('nordic') ? 'nordic' : 'downhill',
+          'piste:type': pisteType,
           'piste:difficulty': diff,
+          uses: uses,
           grooming: props.grooming,
           gladed: props.gladed
         }
@@ -197,12 +240,12 @@ async function processRuns() {
       if (count % 10000 === 0) {
         db.exec('COMMIT;');
         db.exec('BEGIN TRANSACTION;');
-        console.log(`Indexed ${count} runs...`);
+        console.log(`Indexed ${count} ski runs (skipped ${skipped} non-ski roads/paths)...`);
       }
     } catch (e) {}
   }
   db.exec('COMMIT;');
-  console.log(`Finished indexing ${count} runs.`);
+  console.log(`Finished indexing ${count} ski runs (skipped ${skipped} non-ski roads/paths).`);
 }
 
 async function main() {

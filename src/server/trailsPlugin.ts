@@ -5,14 +5,22 @@ import { DatabaseSync } from 'node:sqlite';
 
 export function localTrailsPlugin(): Plugin {
   let db: DatabaseSync | null = null;
+  let dbMtime = 0;
   const dbPath = path.resolve(process.cwd(), 'data_pipeline/trails.db');
   let areaCoordsMap: Map<string, [number, number]> | null = null;
 
   function getDb() {
-    if (!db && fs.existsSync(dbPath)) {
+    if (fs.existsSync(dbPath)) {
       try {
-        db = new DatabaseSync(dbPath, { readOnly: true });
-        db.exec('PRAGMA cache_size = 20000;');
+        const stat = fs.statSync(dbPath);
+        if (!db || stat.mtimeMs !== dbMtime) {
+          if (db) {
+            try { db.close(); } catch (_) {}
+          }
+          db = new DatabaseSync(dbPath, { readOnly: true });
+          db.exec('PRAGMA cache_size = 20000;');
+          dbMtime = stat.mtimeMs;
+        }
       } catch (err) {
         console.warn('[LocalTrailsPlugin] Failed to open trails.db:', err);
       }
@@ -129,7 +137,7 @@ export function localTrailsPlugin(): Plugin {
             }
           }
 
-          // Strictly filter out non-operating (proposed, planned, abandoned, disused) lifts
+          // Strictly filter out non-operating lifts and non-ski municipal features
           features = features.filter((f) => {
             const p = f.properties;
             if (!p) return true;
@@ -143,6 +151,12 @@ export function localTrailsPlugin(): Plugin {
                 nameLower.includes('(disused)') ||
                 nameLower.includes('(in project)')
               ) {
+                return false;
+              }
+            } else if (p.kind === 'piste') {
+              const ptype = p['piste:type'];
+              // Reject non-ski features (fatbike municipal roads/paths, town walking loops, sled hills, playgrounds)
+              if (ptype && ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) {
                 return false;
               }
             }
