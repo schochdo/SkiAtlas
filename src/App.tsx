@@ -6594,11 +6594,11 @@ export default function App() {
       <div
         className={`absolute top-14 left-3 md:left-8 ${
           leftDockOpen ? 'md:left-[420px]' : 'md:left-8'
-        } z-20 flex items-center gap-2 transition-all duration-300 ease-in-out select-none`}
+        } z-20 flex items-start gap-2 transition-all duration-300 ease-in-out select-none`}
       >
-        {/* Map Viewport Navigation Controls: Zoom In, Zoom Out, True North Snap */}
+        {/* Map Viewport Navigation Controls: Zoom In, Zoom Out, True North Snap (Vertical Column) */}
         <div
-          className="flex items-center bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-xs divide-x divide-[#D6D0C2] overflow-hidden"
+          className="flex flex-col bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-sm divide-y divide-[#D6D0C2] overflow-hidden"
           role="group"
           aria-label="Map navigation controls"
         >

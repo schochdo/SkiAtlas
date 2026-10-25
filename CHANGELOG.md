@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `refactor: restore vertical orientation for top-left zoom controls with adjacent locator`
+- **Vertical Navigation Column**:
+  - Restored the classic vertical column stack (`flex flex-col divide-y`) for `[ + ]`, `[ − ]`, and true north snap in the top-left map controls cluster.
+  - Aligned the collapsible Regional Locator trigger button directly adjacent to the vertical navigation pillar (`items-start gap-2`), preserving familiar cartographic ergonomics and clean visual balance.
+
+---
+
 ### `feat: add top-left collapsible regional locator with simple basemap for state and country context`
 - **Top-Left Placement Alongside Navigation Controls**:
   - Positioned the collapsible regional locator trigger and overview popover in the top-left map toolbar directly next to the `+/-` zoom controls and true north snap button (`top-14 left-3 md:left-8`, shifting smoothly to `md:left-[420px]` when the left sidebar tray is open).
