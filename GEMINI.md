@@ -36,7 +36,7 @@ This is the primary mechanism for preserving context across sessions and model s
 - **No vanity UI** — no version badges, status pills, pulsing dots, or SaaS chrome
 - **Editorial cartographic layout** — not a dashboard grid
 - **Unit hygiene** — always use `formatSnow()`, `formatVert()`, `formatAcres()` helpers; never raw numbers
-- **No temperature on resort cards** — snow quantity only; temperature belongs in the detail dossier
+- **No temperature on resort cards** — snow quantity only; temperature belongs in the detail mountain profile
 - **Monolithic `src/App.tsx`** — do not split into components without explicit instruction
 - **No backend** — client-side only; no server dependencies
 - **Always use `safeFlyTo()`** — never call `map.flyTo()` directly

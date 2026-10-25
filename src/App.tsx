@@ -2466,10 +2466,11 @@ export default function App() {
   );
 
   const [selectedResortId, setSelectedResortId] = useState<string | null>(null);
-  const [panelView, setPanelView] = useState<'directory' | 'dossier'>('directory');
+  const [panelView, setPanelView] = useState<'directory' | 'profile'>('directory');
   const [mobileSheetState, setMobileSheetState] = useState<'peek' | 'half' | 'full'>('peek');
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersMenuOpen, setFiltersMenuOpen] = useState(false);
+  const filtersMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -3958,8 +3959,28 @@ export default function App() {
   }, [mapPitch, earthProjection, mapLoaded]);
 
   /* =========================================================================
-     OUTSIDE-CLICK DISMISSAL FOR BASEMAP & MAP KEY FLOATING PANELS
+     OUTSIDE-CLICK DISMISSAL FOR BASEMAP, MAP KEY & DISPLAY/FILTERS PANELS
      ========================================================================= */
+
+  useEffect(() => {
+    if (!filtersMenuOpen) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (filtersMenuRef.current && !filtersMenuRef.current.contains(e.target as Node)) {
+        setFiltersMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setFiltersMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handleOutsideClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [filtersMenuOpen]);
 
   useEffect(() => {
     if (!mapMenuOpen) return;
@@ -4773,7 +4794,6 @@ export default function App() {
 
   const handleSelectResort = async (id: string) => {
     setSelectedResortId(id);
-    setPanelView('dossier');
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setMobileSheetState('half');
     }
@@ -4854,7 +4874,7 @@ export default function App() {
       );
     }
 
-    // Fetch deep weather for dossier
+    // Fetch deep weather for profile
     const live = await fetchLiveWeather(resort);
     if (live) {
       setResorts((prev) => prev.map((r) => (r.id === id ? { ...r, weather: live } : r)));
@@ -4864,7 +4884,6 @@ export default function App() {
   const handleSelectGlobalResort = async (p: any, coords: [number, number]) => {
     const id = p.id || `global-${Math.round(coords[0] * 1000)}-${Math.round(coords[1] * 1000)}`;
     setSelectedResortId(id);
-    setPanelView('dossier');
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setMobileSheetState('half');
     }
@@ -5024,7 +5043,7 @@ export default function App() {
     }
   };
 
-  const renderDossierContent = (resort: SkiResort) => {
+  const renderProfileContent = (resort: SkiResort) => {
     const stats = getResortStats(resort);
     const url = getResortWebsite(resort);
     const snow72 = resort.weather?.snowfall_72h_in ?? 0;
@@ -5039,7 +5058,7 @@ export default function App() {
 
     return (
       <div className="flex flex-col h-full min-h-0 bg-[#F7F4ED] overflow-hidden">
-        {/* Dossier Header */}
+        {/* Mountain Profile Header */}
         <div className="p-3.5 border-b border-[#D6D0C2] bg-[#FAF8F3] shrink-0">
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <button
@@ -5081,7 +5100,7 @@ export default function App() {
               <button
                 onClick={handleDeselectResort}
                 className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-md transition-colors cursor-pointer shrink-0"
-                title="Close dossier"
+                title="Close profile"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -5089,8 +5108,10 @@ export default function App() {
           </div>
 
           <div className="min-w-0">
-            <div className="text-xs text-[#5C5852] font-medium">
-              {resort.region ? `${resort.region}, ` : ''}{resort.country}
+            <div className="flex items-center gap-1.5 text-xs text-[#5C5852] font-medium">
+              <span>{resort.region ? `${resort.region}, ` : ''}{resort.country}</span>
+              <span className="text-[#A8A299]">·</span>
+              <span className="text-[#8A847C] uppercase tracking-wider font-semibold text-[10px]">Mountain Profile</span>
             </div>
             <h2 className="text-lg font-bold text-[#1C1B18] tracking-tight mt-0.5 truncate">
               {resort.name}
@@ -5133,7 +5154,7 @@ export default function App() {
           )}
         </div>
 
-        {/* Dossier Scrollable Body */}
+        {/* Mountain Profile Scrollable Body */}
         <div className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3.5 bg-[#F7F4ED]">
           {/* Metric Tables */}
           <div className="bg-[#FAF8F3] border border-[#D6D0C2] rounded-md overflow-hidden text-center shadow-2xs">
@@ -5264,17 +5285,17 @@ export default function App() {
               <span className="font-bold truncate">{selectedResort.name}</span>
             </div>
             <button
-              onClick={() => setPanelView('dossier')}
+              onClick={() => setPanelView('profile')}
               className="shrink-0 flex items-center gap-1 text-[#2E5A44] hover:underline font-bold cursor-pointer"
             >
-              <span>Dossier</span>
+              <span>Mountain Profile</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
 
-        {/* Search & Filters Card */}
-        <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-3 shrink-0 overflow-y-auto max-h-[50vh] md:max-h-none">
+        {/* Search & Directory Controls */}
+        <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-2.5 shrink-0">
           {/* Search Input */}
           <div className="relative flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-[#8A847C] pointer-events-none" />
@@ -5295,310 +5316,41 @@ export default function App() {
             )}
           </div>
 
-          {/* Framed Filter Box */}
-          <div className="border border-[#D6D0C2] rounded-md bg-[#F7F4ED] p-3 space-y-3">
-            <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[11px]">
-                  Pass & Terrain Filters
+          {/* Quick Filter Status Bar & Trigger */}
+          <div className="flex items-center justify-between text-xs px-0.5">
+            <div className="flex items-center gap-1.5 text-[#5C5852]">
+              <span className="font-bold text-[#1C1B18] tabular-nums">
+                {filteredResorts.length.toLocaleString()}
+              </span>
+              <span className="text-[#736E67]">ski areas</span>
+              {activeFiltersCount > 0 && (
+                <span className="bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] text-[10px] px-1.5 py-0.2 rounded-full font-bold tabular-nums">
+                  {activeFiltersCount} active
                 </span>
-                {activeFiltersCount > 0 && (
-                  <span className="bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums shadow-2xs">
-                    {activeFiltersCount} active
-                  </span>
-                )}
-                <span className="text-xs text-[#736E67] font-semibold tabular-nums">
-                  ({filteredResorts.length.toLocaleString()})
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {activeFiltersCount > 0 && (
-                  <button
-                    onClick={handleResetFilters}
-                    className="text-[#B84A39] hover:underline cursor-pointer text-xs font-bold"
-                  >
-                    Reset
-                  </button>
-                )}
-                <button
-                  onClick={() => setFiltersExpanded(!filtersExpanded)}
-                  className="md:hidden p-1 text-[#5C5852] hover:text-[#1C1B18] rounded cursor-pointer"
-                  title={filtersExpanded ? "Collapse filters" : "Expand filters"}
-                >
-                  {filtersExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-              </div>
+              )}
             </div>
-
-            <div className={`space-y-3 ${filtersExpanded ? 'block' : 'hidden md:block'}`}>
-              {/* Categories (Downhill default ON, Nordic/Cat-Heli default OFF) */}
-              <div className="grid grid-cols-3 gap-1.5">
+            <div className="flex items-center gap-1.5">
+              {activeFiltersCount > 0 && (
                 <button
-                  onClick={() => setShowDownhill(!showDownhill)}
-                  className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                    showDownhill
-                      ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] shadow-2xs'
-                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
-                  }`}
-                  title={`Toggle Downhill Ski Areas, Trails & Lifts (${categoryFilterCounts.downhill.toLocaleString()})`}
+                  onClick={handleResetFilters}
+                  className="text-xs font-bold text-[#B84A39] hover:underline cursor-pointer mr-1"
                 >
-                  <span className="truncate">⛷️ Downhill</span>
+                  Reset
                 </button>
-                <button
-                  onClick={() => setShowNordic(!showNordic)}
-                  className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                    showNordic
-                      ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] shadow-2xs'
-                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
-                  }`}
-                  title={`Toggle Nordic Centers & XC Trails (${categoryFilterCounts.nordic.toLocaleString()})`}
-                >
-                  <span className="truncate">🎿 Nordic</span>
-                </button>
-                <button
-                  onClick={() => setShowHeliCat(!showHeliCat)}
-                  className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                    showHeliCat
-                      ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] shadow-2xs'
-                      : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
-                  }`}
-                  title={`Toggle Guided Heli/Cat Operations & Backcountry Routes (${categoryFilterCounts.heli_cat.toLocaleString()})`}
-                >
-                  <span className="truncate">🚁 Heli/Cat</span>
-                </button>
-              </div>
-
-              {/* Pass Networks Filter */}
-              <div className="space-y-1.5 pt-1 border-t border-[#D6D0C2]">
-                <div className="flex items-center justify-between">
-                  <span className="text-[12.5px] text-[#4A463F] font-semibold">Pass Networks</span>
-                  <div className="flex items-center gap-2 text-[10px]">
-                    <button
-                      onClick={() => setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'])}
-                      className="text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer font-medium"
-                    >
-                      All
-                    </button>
-                    <span className="text-[#D6D0C2]">·</span>
-                    <button
-                      onClick={() => setSelectedPasses([])}
-                      className="text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer font-medium"
-                    >
-                      None
-                    </button>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'] as PassNetwork[]).map((pass) => {
-                    const active = selectedPasses.includes(pass);
-                    const color = PASS_COLORS[pass];
-                    const label = PASS_SHORT_LABELS[pass] || pass;
-                    return (
-                      <button
-                        key={pass}
-                        onClick={() => {
-                          setSelectedPasses((prev) => {
-                            if (prev.length === 5) {
-                              return [pass];
-                            }
-                            if (prev.length === 1 && prev.includes(pass)) {
-                              return ['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'];
-                            }
-                            return prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass];
-                          });
-                        }}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
-                          active
-                            ? 'bg-[#FAF8F3] border-[#1C1B18] text-[#1C1B18] shadow-2xs'
-                            : 'bg-[#F2EFE8] border-[#D6D0C2] text-[#8A847C] opacity-60 hover:opacity-100'
-                        }`}
-                        title={PASS_DISPLAY_NAMES[pass] || `Filter by ${label}`}
-                      >
-                        <span
-                          className="w-2 h-2 rounded-full shrink-0"
-                          style={{ backgroundColor: color }}
-                        />
-                        <span>{label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Downhill Alpine Sliders */}
-              {showDownhill && (
-                <>
-                  {/* Min Vertical Drop Slider */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-[12.5px] text-[#4A463F] font-semibold">Min Vertical Drop</span>
-                      <span className="text-[13.5px] text-[#1C1B18] font-bold tabular-nums">
-                        {unitsMetric
-                          ? (minVerticalM > 0 ? `${minVerticalM.toLocaleString()} m` : 'Any')
-                          : (minVerticalFt > 0 ? `${minVerticalFt.toLocaleString()}'` : 'Any')}
-                      </span>
-                    </div>
-                    {unitsMetric ? (
-                      <div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1500"
-                          step="50"
-                          value={minVerticalM}
-                          onChange={(e) => setMinVerticalM(Number(e.target.value))}
-                          className="w-full tufte-slider cursor-pointer"
-                          aria-label="Minimum vertical drop filter in meters"
-                        />
-                        <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
-                          <span>Any</span>
-                          <span>300m</span>
-                          <span>600m</span>
-                          <span>1,000m</span>
-                          <span>1,500m</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="4000"
-                          step="100"
-                          value={minVerticalFt}
-                          onChange={(e) => setMinVerticalFt(Number(e.target.value))}
-                          className="w-full tufte-slider cursor-pointer"
-                          aria-label="Minimum vertical drop filter in feet"
-                        />
-                        <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
-                          <span>Any</span>
-                          <span>1,000'</span>
-                          <span>2,000'</span>
-                          <span>3,000'</span>
-                          <span>4,000'</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Min Skiable Area / Acreage Slider */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-[12.5px] text-[#4A463F] font-semibold">
-                        {unitsMetric ? 'Min Skiable Area' : 'Min Skiable Acres'}
-                      </span>
-                      <span className="text-[13.5px] text-[#1C1B18] font-bold tabular-nums">
-                        {unitsMetric
-                          ? (minAreaHa > 0 ? `${minAreaHa.toLocaleString()} ha` : 'Any')
-                          : (minAreaAcres > 0 ? `${minAreaAcres.toLocaleString()} ac` : 'Any')}
-                      </span>
-                    </div>
-                    {unitsMetric ? (
-                      <div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1200"
-                          step="25"
-                          value={minAreaHa}
-                          onChange={(e) => setMinAreaHa(Number(e.target.value))}
-                          className="w-full tufte-slider cursor-pointer"
-                          aria-label="Minimum skiable area filter in hectares"
-                        />
-                        <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
-                          <span>Any</span>
-                          <span>200 ha</span>
-                          <span>500 ha</span>
-                          <span>800 ha</span>
-                          <span>1,200 ha</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="3000"
-                          step="100"
-                          value={minAreaAcres}
-                          onChange={(e) => setMinAreaAcres(Number(e.target.value))}
-                          className="w-full tufte-slider cursor-pointer"
-                          aria-label="Minimum skiable acreage filter in acres"
-                        />
-                        <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
-                          <span>Any</span>
-                          <span>500 ac</span>
-                          <span>1,000 ac</span>
-                          <span>2,000 ac</span>
-                          <span>3,000 ac</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </>
               )}
-
-              {/* Nordic Cross-Country Trail Network Slider */}
-              {showNordic && (
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-[12.5px] text-[#4A463F] font-semibold">
-                      {showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}
-                    </span>
-                    <span className="text-[13.5px] text-[#1C1B18] font-bold tabular-nums">
-                      {unitsMetric
-                        ? (minNordicKm > 0 ? `${minNordicKm} km` : 'Any')
-                        : (minNordicMi > 0 ? `${minNordicMi} mi` : 'Any')}
-                    </span>
-                  </div>
-                  {unitsMetric ? (
-                    <div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="5"
-                        value={minNordicKm}
-                        onChange={(e) => setMinNordicKm(Number(e.target.value))}
-                        className="w-full tufte-slider cursor-pointer"
-                        aria-label="Minimum nordic trail network filter in kilometers"
-                      />
-                      <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
-                        <span>Any</span>
-                        <span>25 km</span>
-                        <span>50 km</span>
-                        <span>75 km</span>
-                        <span>100 km</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="60"
-                        step="5"
-                        value={minNordicMi}
-                        onChange={(e) => setMinNordicMi(Number(e.target.value))}
-                        className="w-full tufte-slider cursor-pointer"
-                        aria-label="Minimum nordic trail network filter in miles"
-                      />
-                      <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
-                        <span>Any</span>
-                        <span>15 mi</span>
-                        <span>30 mi</span>
-                        <span>45 mi</span>
-                        <span>60 mi</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+              <button
+                onClick={() => setFiltersMenuOpen(true)}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer"
+                title="Open Display Settings & Resort Filters"
+              >
+                <Sliders className="w-3 h-3 text-[#5C5852]" />
+                <span>Filters</span>
+              </button>
             </div>
           </div>
 
           {/* Sort Controls Row */}
-          <div className="flex items-center justify-between gap-2 pt-1">
+          <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#D6D0C2]">
             <span className="text-[#736E67] uppercase tracking-wider font-bold text-[11px] shrink-0">
               Sort:
             </span>
@@ -5755,6 +5507,22 @@ export default function App() {
                       </div>
                     )}
                   </div>
+
+                  {isSelected && (
+                    <div className="mt-2.5 pt-2 border-t border-[#D6D0C2] flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-[#5C5852]">Selected on map</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPanelView('profile');
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#1C1B18] hover:bg-[#33312B] text-[#FAF8F3] text-xs font-bold rounded transition-colors cursor-pointer shadow-2xs"
+                      >
+                        <span>Mountain Profile</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })
@@ -5777,7 +5545,7 @@ export default function App() {
       />
 
       {/* EDITORIAL TOP BAR (WARM COTTON RAG PAPER & SERIF TITLE - NO VANITY PADDING) */}
-      <header className="absolute top-0 inset-x-0 z-20 h-11 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
+      <header className="absolute top-0 inset-x-0 z-40 h-11 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
         <div className="flex items-center min-w-0">
           {/* Tracked Mountain Editorial Wordmark with Alpine Snow Globe Crest in the center */}
           <div className="flex items-center select-none shrink-0">
@@ -5815,72 +5583,410 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-medium">
-          {/* Segmented Projection Switcher: 3D Globe / Flat Map (Icons Only) */}
-          <div
-            className="flex items-center bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-0.5"
-            role="group"
-            aria-label="Earth projection"
-          >
+          {/* Display & Filters Popover Trigger & Floating Panel */}
+          <div className="relative" ref={filtersMenuRef}>
             <button
-              onClick={() => {
-                setEarthProjection('globe');
-                if (mapRef.current && mapRef.current.getZoom() < 5) {
-                  safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
-                  setMapPitch(0);
-                }
-              }}
-              className={`p-1.5 rounded-[4px] transition-colors cursor-pointer flex items-center justify-center ${
-                earthProjection === 'globe'
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                  : 'text-[#8A847C] hover:text-[#1C1B18]'
+              onClick={() => setFiltersMenuOpen((prev) => !prev)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
+                filtersMenuOpen || activeFiltersCount > 0
+                  ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
+                  : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
               }`}
-              title="3D Globe Projection"
-              aria-label="3D Globe Projection"
+              title="Display Settings & Resort Filters"
+              aria-label="Display Settings & Resort Filters"
+              aria-expanded={filtersMenuOpen}
             >
-              <Globe className="w-3.5 h-3.5" />
+              <Sliders className="w-3.5 h-3.5 text-[#5C5852]" />
+              <span className="hidden sm:inline">Display & Filters</span>
+              <span className="sm:hidden">Filters</span>
+              {activeFiltersCount > 0 && (
+                <span className="bg-[#1C1B18] text-[#FAF8F3] text-[9.5px] px-1.5 py-0.2 rounded-full font-bold tabular-nums">
+                  {activeFiltersCount}
+                </span>
+              )}
             </button>
-            <button
-              onClick={() => setEarthProjection('mercator')}
-              className={`p-1.5 rounded-[4px] transition-colors cursor-pointer flex items-center justify-center ${
-                earthProjection === 'mercator'
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                  : 'text-[#8A847C] hover:text-[#1C1B18]'
-              }`}
-              title="Flat Map Projection"
-              aria-label="Flat Map Projection"
-            >
-              <Layers className="w-3.5 h-3.5" />
-            </button>
-          </div>
 
-          {/* Segmented Unit Switcher: ft / m */}
-          <div
-            className="flex items-center bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-0.5"
-            role="group"
-            aria-label="Unit system"
-          >
-            <button
-              onClick={() => handleSetUnitsMetric(false)}
-              className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-colors cursor-pointer ${
-                !unitsMetric
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                  : 'text-[#8A847C] hover:text-[#1C1B18]'
-              }`}
-              title="Imperial Units (ft, °F)"
-            >
-              ft
-            </button>
-            <button
-              onClick={() => handleSetUnitsMetric(true)}
-              className={`px-2.5 py-1 rounded-[4px] text-xs font-bold transition-colors cursor-pointer ${
-                unitsMetric
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                  : 'text-[#8A847C] hover:text-[#1C1B18]'
-              }`}
-              title="Metric Units (m, °C)"
-            >
-              m
-            </button>
+            {/* Popover Panel */}
+            {filtersMenuOpen && (
+              <div className="fixed inset-x-3 top-13 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:mt-2 sm:w-92 max-h-[calc(100vh-70px)] sm:max-h-[calc(100vh-64px)] overflow-y-auto bg-[#FAF8F3] border border-[#D6D0C2] rounded-lg shadow-xl p-3.5 z-50 text-[#1C1B18] space-y-4">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-2.5 border-b border-[#D6D0C2]">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-[#5C5852]" />
+                    <span className="font-bold text-sm text-[#1C1B18] tracking-tight">Display & Filters</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {activeFiltersCount > 0 && (
+                      <button
+                        onClick={handleResetFilters}
+                        className="text-[#B84A39] hover:underline cursor-pointer text-xs font-bold"
+                      >
+                        Reset
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setFiltersMenuOpen(false)}
+                      className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-md transition-colors cursor-pointer"
+                      title="Close panel"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Display Settings Section */}
+                <div className="space-y-2.5">
+                  <div className="text-[11px] font-bold text-[#5C5852] uppercase tracking-wider">
+                    Display
+                  </div>
+
+                  {/* Projection Segmented */}
+                  <div className="space-y-1">
+                    <div className="text-xs text-[#5C5852] font-medium">Earth Projection</div>
+                    <div className="grid grid-cols-2 gap-1 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md p-0.5">
+                      <button
+                        onClick={() => {
+                          setEarthProjection('globe');
+                          if (mapRef.current && mapRef.current.getZoom() < 5) {
+                            safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
+                            setMapPitch(0);
+                          }
+                        }}
+                        className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
+                          earthProjection === 'globe'
+                            ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                            : 'text-[#736E67] hover:text-[#1C1B18]'
+                        }`}
+                        title="3D Globe Projection"
+                      >
+                        <Globe className="w-3.5 h-3.5" />
+                        <span>3D Globe</span>
+                      </button>
+                      <button
+                        onClick={() => setEarthProjection('mercator')}
+                        className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
+                          earthProjection === 'mercator'
+                            ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                            : 'text-[#736E67] hover:text-[#1C1B18]'
+                        }`}
+                        title="Flat Map Projection"
+                      >
+                        <Layers className="w-3.5 h-3.5" />
+                        <span>Flat Map</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Unit System Segmented */}
+                  <div className="space-y-1">
+                    <div className="text-xs text-[#5C5852] font-medium">Units of Measure</div>
+                    <div className="grid grid-cols-2 gap-1 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md p-0.5">
+                      <button
+                        onClick={() => handleSetUnitsMetric(false)}
+                        className={`py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer text-center ${
+                          !unitsMetric
+                            ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                            : 'text-[#736E67] hover:text-[#1C1B18]'
+                        }`}
+                        title="Imperial Units (ft, in, °F)"
+                      >
+                        Imperial (ft, in, °F)
+                      </button>
+                      <button
+                        onClick={() => handleSetUnitsMetric(true)}
+                        className={`py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer text-center ${
+                          unitsMetric
+                            ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                            : 'text-[#736E67] hover:text-[#1C1B18]'
+                        }`}
+                        title="Metric Units (m, cm, °C)"
+                      >
+                        Metric (m, cm, °C)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-[#D6D0C2]" />
+
+                {/* Resort Filters Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-[#5C5852] uppercase tracking-wider">
+                      Resort Filters
+                    </span>
+                    <span className="text-xs text-[#736E67] font-semibold tabular-nums">
+                      {filteredResorts.length.toLocaleString()} matching
+                    </span>
+                  </div>
+
+                  {/* Categories */}
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      onClick={() => setShowDownhill(!showDownhill)}
+                      className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                        showDownhill
+                          ? 'bg-[#3B627E]/10 border-[#3B627E] text-[#3B627E] shadow-2xs'
+                          : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
+                      }`}
+                      title={`Toggle Downhill Ski Areas (${categoryFilterCounts.downhill.toLocaleString()})`}
+                    >
+                      <span className="truncate">⛷️ Downhill</span>
+                    </button>
+                    <button
+                      onClick={() => setShowNordic(!showNordic)}
+                      className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                        showNordic
+                          ? 'bg-[#2E5A44]/10 border-[#2E5A44] text-[#2E5A44] shadow-2xs'
+                          : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
+                      }`}
+                      title={`Toggle Nordic Centers (${categoryFilterCounts.nordic.toLocaleString()})`}
+                    >
+                      <span className="truncate">🎿 Nordic</span>
+                    </button>
+                    <button
+                      onClick={() => setShowHeliCat(!showHeliCat)}
+                      className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                        showHeliCat
+                          ? 'bg-[#B84A39]/10 border-[#B84A39] text-[#B84A39] shadow-2xs'
+                          : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] opacity-75 hover:opacity-100'
+                      }`}
+                      title={`Toggle Guided Heli/Cat Operations (${categoryFilterCounts.heli_cat.toLocaleString()})`}
+                    >
+                      <span className="truncate">🚁 Heli/Cat</span>
+                    </button>
+                  </div>
+
+                  {/* Pass Networks */}
+                  <div className="space-y-1.5 pt-1 border-t border-[#D6D0C2]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12.5px] text-[#4A463F] font-semibold">Pass Networks</span>
+                      <div className="flex items-center gap-2 text-[10px]">
+                        <button
+                          onClick={() => setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'])}
+                          className="text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer font-medium"
+                        >
+                          All
+                        </button>
+                        <span className="text-[#D6D0C2]">·</span>
+                        <button
+                          onClick={() => setSelectedPasses([])}
+                          className="text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer font-medium"
+                        >
+                          None
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'] as PassNetwork[]).map((pass) => {
+                        const active = selectedPasses.includes(pass);
+                        const color = PASS_COLORS[pass];
+                        const label = PASS_SHORT_LABELS[pass] || pass;
+                        return (
+                          <button
+                            key={pass}
+                            onClick={() => {
+                              setSelectedPasses((prev) => {
+                                if (prev.length === 5) {
+                                  return [pass];
+                                }
+                                if (prev.length === 1 && prev.includes(pass)) {
+                                  return ['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'];
+                                }
+                                return prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass];
+                              });
+                            }}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
+                              active
+                                ? 'bg-[#FAF8F3] border-[#1C1B18] text-[#1C1B18] shadow-2xs'
+                                : 'bg-[#F2EFE8] border-[#D6D0C2] text-[#8A847C] opacity-60 hover:opacity-100'
+                            }`}
+                            title={PASS_DISPLAY_NAMES[pass] || `Filter by ${label}`}
+                          >
+                            <span
+                              className="w-2 h-2 rounded-full shrink-0"
+                              style={{ backgroundColor: color }}
+                            />
+                            <span>{label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Downhill Sliders */}
+                  {showDownhill && (
+                    <>
+                      {/* Min Vertical Drop Slider */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[12.5px] text-[#4A463F] font-semibold">Min Vertical Drop</span>
+                          <span className="text-[13.5px] text-[#1C1B18] font-bold tabular-nums">
+                            {unitsMetric
+                              ? (minVerticalM > 0 ? `${minVerticalM.toLocaleString()} m` : 'Any')
+                              : (minVerticalFt > 0 ? `${minVerticalFt.toLocaleString()}'` : 'Any')}
+                          </span>
+                        </div>
+                        {unitsMetric ? (
+                          <div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="1500"
+                              step="50"
+                              value={minVerticalM}
+                              onChange={(e) => setMinVerticalM(Number(e.target.value))}
+                              className="w-full tufte-slider cursor-pointer"
+                              aria-label="Minimum vertical drop filter in meters"
+                            />
+                            <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                              <span>Any</span>
+                              <span>300m</span>
+                              <span>600m</span>
+                              <span>1,000m</span>
+                              <span>1,500m</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="4000"
+                              step="100"
+                              value={minVerticalFt}
+                              onChange={(e) => setMinVerticalFt(Number(e.target.value))}
+                              className="w-full tufte-slider cursor-pointer"
+                              aria-label="Minimum vertical drop filter in feet"
+                            />
+                            <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                              <span>Any</span>
+                              <span>1,000'</span>
+                              <span>2,000'</span>
+                              <span>3,000'</span>
+                              <span>4,000'</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Min Skiable Area Slider */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[12.5px] text-[#4A463F] font-semibold">
+                            {unitsMetric ? 'Min Skiable Area' : 'Min Skiable Acres'}
+                          </span>
+                          <span className="text-[13.5px] text-[#1C1B18] font-bold tabular-nums">
+                            {unitsMetric
+                              ? (minAreaHa > 0 ? `${minAreaHa.toLocaleString()} ha` : 'Any')
+                              : (minAreaAcres > 0 ? `${minAreaAcres.toLocaleString()} ac` : 'Any')}
+                          </span>
+                        </div>
+                        {unitsMetric ? (
+                          <div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="1200"
+                              step="25"
+                              value={minAreaHa}
+                              onChange={(e) => setMinAreaHa(Number(e.target.value))}
+                              className="w-full tufte-slider cursor-pointer"
+                              aria-label="Minimum skiable area filter in hectares"
+                            />
+                            <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                              <span>Any</span>
+                              <span>200 ha</span>
+                              <span>500 ha</span>
+                              <span>800 ha</span>
+                              <span>1,200 ha</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="3000"
+                              step="100"
+                              value={minAreaAcres}
+                              onChange={(e) => setMinAreaAcres(Number(e.target.value))}
+                              className="w-full tufte-slider cursor-pointer"
+                              aria-label="Minimum skiable acreage filter in acres"
+                            />
+                            <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                              <span>Any</span>
+                              <span>500 ac</span>
+                              <span>1,000 ac</span>
+                              <span>2,000 ac</span>
+                              <span>3,000 ac</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {/* Nordic Network Slider */}
+                  {showNordic && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-[12.5px] text-[#4A463F] font-semibold">
+                          {showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}
+                        </span>
+                        <span className="text-[13.5px] text-[#1C1B18] font-bold tabular-nums">
+                          {unitsMetric
+                            ? (minNordicKm > 0 ? `${minNordicKm} km` : 'Any')
+                            : (minNordicMi > 0 ? `${minNordicMi} mi` : 'Any')}
+                        </span>
+                      </div>
+                      {unitsMetric ? (
+                        <div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="5"
+                            value={minNordicKm}
+                            onChange={(e) => setMinNordicKm(Number(e.target.value))}
+                            className="w-full tufte-slider cursor-pointer"
+                            aria-label="Minimum nordic trail network filter in kilometers"
+                          />
+                          <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                            <span>Any</span>
+                            <span>25 km</span>
+                            <span>50 km</span>
+                            <span>75 km</span>
+                            <span>100 km</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="60"
+                            step="5"
+                            value={minNordicMi}
+                            onChange={(e) => setMinNordicMi(Number(e.target.value))}
+                            className="w-full tufte-slider cursor-pointer"
+                            aria-label="Minimum nordic trail network filter in miles"
+                          />
+                          <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
+                            <span>Any</span>
+                            <span>15 mi</span>
+                            <span>30 mi</span>
+                            <span>45 mi</span>
+                            <span>60 mi</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <button
@@ -5905,8 +6011,8 @@ export default function App() {
         }`}
       >
         <div className="relative flex flex-col h-full bg-[#F7F4ED] border-r border-[#D6D0C2] shadow-2xl overflow-hidden pointer-events-auto">
-          {panelView === 'dossier' && selectedResort
-            ? renderDossierContent(selectedResort)
+          {panelView === 'profile' && selectedResort
+            ? renderProfileContent(selectedResort)
             : renderDirectoryContent()}
         </div>
 
@@ -5979,7 +6085,7 @@ export default function App() {
                     : ''}
                   {selectedResort.weather?.snowfall_7d_in
                     ? `${formatSnow(selectedResort.weather.snowfall_7d_in)} 7d snow`
-                    : 'Tap to view dossier'}
+                    : 'Tap for Mountain Profile'}
                 </div>
               </div>
             ) : (
@@ -6011,7 +6117,7 @@ export default function App() {
         ) : (
           /* Mobile Half or Full Sheet */
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            {/* Sheet Control Strip (Shown in Directory view; Dossier view integrates controls in its header) */}
+            {/* Sheet Control Strip (Shown in Directory view; Profile view integrates controls in its header) */}
             {panelView === 'directory' && (
               <div className="px-3.5 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center justify-between shrink-0 select-none">
                 <span className="text-xs font-bold text-[#1C1B18] uppercase tracking-wider truncate">
@@ -6049,8 +6155,8 @@ export default function App() {
 
             {/* Scrollable Content inside sheet */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              {panelView === 'dossier' && selectedResort
-                ? renderDossierContent(selectedResort)
+              {panelView === 'profile' && selectedResort
+                ? renderProfileContent(selectedResort)
                 : renderDirectoryContent()}
             </div>
           </div>

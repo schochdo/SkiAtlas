@@ -17,9 +17,9 @@
 These are permanent constraints. Do not violate them.
 
 1. **No vanity UI** — no version badges, no pulsing status dots, no "System Optimal" indicators, no SaaS chrome.
-2. **Editorial cartographic aesthetic** — layout follows the domain (full-bleed map, left dock directory, right dossier panel). Not a dashboard grid.
+2. **Editorial cartographic aesthetic** — layout follows the domain (full-bleed map, left dock directory, mountain profile view). Not a dashboard grid.
 3. **Strict unit hygiene** — snowfall is always in `in` (imperial) or `cm` (metric). Vertical is `ft` or `m`. Acreage is `ac` or `ha`. Never mix or display without units.
-4. **No temperature on resort cards** — snow quantity only on the list. Temperature belongs in the detail dossier only.
+4. **No temperature on resort cards** — snow quantity only on the list. Temperature belongs in the detail mountain profile only.
 5. **Metric/imperial toggle** — global `unitsMetric: boolean` state. Always use `formatSnow()`, `formatVert()`, `formatAcres()` helpers — never raw numbers.
 
 ---
@@ -69,7 +69,7 @@ SkiAtlas/
 | ↳ `handleSelectResort` | ~3520 | Click handler: flies to resort, fetches fresh weather, loads trails |
 | ↳ `displayedResorts` memo | ~1905 | Combines `filteredResorts` (sorted) with `directoryScope` (in_frame vs all) |
 | ↳ Render: Left dock | ~3620 | Directory tray with resort cards |
-| ↳ Render: Right panel | ~4100 | Resort dossier with weather, trails table, forecast bars |
+| ↳ Render: Unified dock | ~4100 | Directory list or Mountain Profile with weather, stats table, forecast bars |
 | ↳ Render: Map controls | ~3960 | North arrow, zoom +/-, basemap picker, compass gyro |
 
 ---

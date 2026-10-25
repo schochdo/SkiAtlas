@@ -6,6 +6,30 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: consolidate display and filters popover panel and decouple mountain profile auto-open`
+- **Consolidated "Display & Filters" Floating Panel in Top Navigation Bar**:
+  - Combined `Earth Projection` (3D Globe vs Flat Map), `Units of Measure` (Imperial ft/°F vs Metric m/°C), and the full suite of `Resort Filters` (Categories, Pass Networks, Min Vertical Drop, Min Skiable Area/Acres, and Min Nordic Network) into a single unified popover panel in the top-right header bar.
+  - Sized and styled with editorial warmth: `bg-[#FAF8F3] border border-[#D6D0C2] rounded-lg shadow-xl`, with smooth outside-click dismissal (`pointerdown` and `Escape`), active filter badge counter, clear `Reset` button, and `✕` close button.
+  - On mobile screens, anchored as `fixed inset-x-3 top-13` providing symmetrical 12px margins and full responsiveness.
+  - Cleared the top header to just two clean elements on the right: `[ ⚙ Display & Filters ]` and `[ ⛶ Fullscreen ]`.
+- **Streamlined Mountain Directory Tray**:
+  - Removed the bulky inline filter card from the left directory tray.
+  - Replaced with a compact, 1-line status readout (`1,654 ski areas · Filters`) with direct click trigger to the consolidated panel and quick reset when filters are active.
+  - Resort cards now begin immediately near the top of the tray, maximizing visible screen real estate and browsing speed.
+- **Decoupled Selection from View Flipping**:
+  - Selecting a resort (by clicking a marker on the 3D map, search result, or directory card) now sets `selectedResortId` and smoothly flies the camera to the mountain, while preserving the user's directory browse context.
+  - Removed the automatic flip to detail view on click.
+  - Added an **Active Viewing Banner** at the top of the directory (`Viewing: [Name] · Mountain Profile →`) and a clear **Mountain Profile →** action button on the selected card, allowing users to enter detail view on demand.
+- **Renamed "Dossier" to "Mountain Profile"**:
+  - Replaced all user-facing instances and code references of "Dossier" with **"Mountain Profile"** across panel view states (`panelView === 'profile'`), headers, peek bars, and documentation.
+  - Updated back button to `← Directory` to return from Mountain Profile without deselecting the active mountain.
+- **Verification**:
+  - Verified with `npm run build` (passed in 312ms).
+  - Captured visual verification screenshots across desktop and mobile viewports (`screen1_desktop_default.png`, `screen2_popover_open.png`, `screen3_resort_selected_no_auto_open.png`, `screen4_mountain_profile_open.png`, `screen8_mobile_popover_fixed_zindex.png`).
+  - Tested dynamic metric conversion, projection switching, pass network filtering, and active filter badge counting via CDP automation.
+
+---
+
 ### `feat: move 3D globe and flat map toggles to top nav bar next to ft/m as icon-only switcher`
 - **Icon-Only Projection Switcher in Top Navigation Bar**:
   - Added a segmented pill switcher (`[ 🌐 | 🥞 ]`) directly to the top-right navigation bar alongside `[ ft | m ]` and the fullscreen button.
