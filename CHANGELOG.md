@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `refactor: clean up directory visual hierarchy and eliminate redundant profile navigation chrome`
+- **Dropped Redundant "Viewing: Mountain Profile" Banner**:
+  - Removed the persistent banner strip (`Viewing: [Name] · Mountain Profile →`) from the top of the Mountain Directory tray. The tray now begins cleanly and directly with the Search bar, restoring balanced editorial hierarchy.
+- **Removed "Selected on map" Fluff from Resort Card**:
+  - Dropped the redundant `Selected on map` status text from the bottom of selected cards. The card now features solely a crisp, right-aligned `Mountain Profile →` action button.
+- **Removed Redundant "Directory" Back Button on Profile Page**:
+  - Removed the `← Directory` button from the top of the Mountain Profile header, which duplicated the `✕` close action.
+  - Aligned the resort title and location subtitle directly at the top with the `✕` close button (and mobile sheet controls) positioned neatly in the upper-right corner.
+
+---
+
 ### `fix: restore expert & freeride downhill terrain to Downhill category toggle`
 - **Decoupled Downhill Expert Terrain from Heli/Cat Toggle**:
   - **What was wrong**: At downhill resorts like Taos Ski Valley and Jackson Hole, world-famous double-black chutes, bowls, and ridge runs (e.g. *Corbet's Couloir*, *S&S Couloir*, *Rendezvous Bowl*, *West Basin Ridge*, *Highline Ridge*, *Wild West Glade*) were disappearing when Heli/Cat was off, and only appeared when the user toggled "Heli / Cat". This occurred because the trail layer visibility filter in `src/App.tsx` incorrectly excluded `grooming === 'backcountry'` and `difficulty === 'freeride'` from `showDownhill`, and delegated them to `showHeliCat`. In OpenStreetMap, un-groomed hike-to bowls, glades, and steep chutes at downhill ski areas are routinely tagged as `piste:grooming=backcountry` or `piste:difficulty=freeride`.

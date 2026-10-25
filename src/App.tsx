@@ -5049,16 +5049,18 @@ export default function App() {
       <div className="flex flex-col h-full min-h-0 bg-[#F7F4ED] overflow-hidden">
         {/* Mountain Profile Header */}
         <div className="p-3.5 border-b border-[#D6D0C2] bg-[#FAF8F3] shrink-0">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <button
-              onClick={() => setPanelView('directory')}
-              className="inline-flex items-center gap-1 px-2 py-1 -ml-1 text-xs font-bold text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
-              title="Back to Directory"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Directory</span>
-            </button>
-            <div className="flex items-center gap-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 text-xs text-[#5C5852] font-medium">
+                <span>{resort.region ? `${resort.region}, ` : ''}{resort.country}</span>
+                <span className="text-[#A8A299]">·</span>
+                <span className="text-[#8A847C] uppercase tracking-wider font-semibold text-[10px]">Mountain Profile</span>
+              </div>
+              <h2 className="text-lg font-bold text-[#1C1B18] tracking-tight mt-0.5 truncate">
+                {resort.name}
+              </h2>
+            </div>
+            <div className="flex items-center gap-1 shrink-0 -mr-1 -mt-0.5">
               {/* On mobile, show sheet resize buttons */}
               <div className="md:hidden flex items-center gap-1 mr-1 pr-1 border-r border-[#D6D0C2]">
                 {mobileSheetState === 'half' ? (
@@ -5088,23 +5090,12 @@ export default function App() {
               </div>
               <button
                 onClick={handleDeselectResort}
-                className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-md transition-colors cursor-pointer shrink-0"
+                className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-md transition-colors cursor-pointer"
                 title="Close profile"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-          </div>
-
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-xs text-[#5C5852] font-medium">
-              <span>{resort.region ? `${resort.region}, ` : ''}{resort.country}</span>
-              <span className="text-[#A8A299]">·</span>
-              <span className="text-[#8A847C] uppercase tracking-wider font-semibold text-[10px]">Mountain Profile</span>
-            </div>
-            <h2 className="text-lg font-bold text-[#1C1B18] tracking-tight mt-0.5 truncate">
-              {resort.name}
-            </h2>
           </div>
 
           {/* Official Website Link */}
@@ -5266,23 +5257,6 @@ export default function App() {
   const renderDirectoryContent = () => {
     return (
       <div className="flex flex-col h-full min-h-0 bg-[#F7F4ED] overflow-hidden">
-        {/* Active Viewing Banner if a resort is currently selected on the map */}
-        {selectedResort && (
-          <div className="flex items-center justify-between px-3.5 py-2 bg-[#EAE5D9] border-b border-[#D6D0C2] text-xs font-semibold text-[#1C1B18] shrink-0">
-            <div className="flex items-center gap-1.5 min-w-0 pr-2">
-              <span className="text-[#736E67] font-medium shrink-0">Viewing:</span>
-              <span className="font-bold truncate">{selectedResort.name}</span>
-            </div>
-            <button
-              onClick={() => setPanelView('profile')}
-              className="shrink-0 flex items-center gap-1 text-[#2E5A44] hover:underline font-bold cursor-pointer"
-            >
-              <span>Mountain Profile</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
         {/* Search & Directory Controls */}
         <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-2.5 shrink-0">
           {/* Search Input */}
@@ -5465,8 +5439,7 @@ export default function App() {
                   </div>
 
                   {isSelected && (
-                    <div className="mt-2.5 pt-2 border-t border-[#D6D0C2] flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-[#5C5852]">Selected on map</span>
+                    <div className="mt-2 pt-2 border-t border-[#D6D0C2] flex justify-end">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
