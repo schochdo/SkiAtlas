@@ -2080,6 +2080,9 @@ export default function App() {
       }
       lastTimestamp = null;
       flightElevation = null;
+      try {
+        (mapRef.current as any)?.setCenterClampedToGround?.(true);
+      } catch (_) {}
     };
 
     const flightStep = (timestamp: number) => {
@@ -2293,6 +2296,10 @@ export default function App() {
     const onCanvasMouseInteraction = () => {
       if (animationFrameId !== null || activeKeys.size > 0) {
         stopFlight();
+      } else {
+        try {
+          (mapRef.current as any)?.setCenterClampedToGround?.(true);
+        } catch (_) {}
       }
     };
     canvasContainer.addEventListener('mousedown', onCanvasMouseInteraction, { capture: true });

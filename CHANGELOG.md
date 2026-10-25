@@ -6,6 +6,32 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: restore ground clamping on flight end to lock mouse pivot to terrain`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: When zoomed in close to mountain terrain (e.g. z=14–16), right-click drag (pitch/bearing rotation), panning, and scroll-zooming felt "way too loose and disconnected". Reloading the page restored tight, anchored navigation.
+  - **The Flight Decoupling Mechanism**:
+    - During keyboard flight, `map.setCenterClampedToGround(false)` was invoked to prevent MapLibre from continuously snapping the camera center to ground topography on every frame (which previously caused altitude bouncing over ridges and valleys).
+    - However, `stopFlight()` did not re-enable `setCenterClampedToGround(true)`. Consequently, `centerClampedToGround(false)` remained permanently active after the first keypress.
+    - When `centerClampedToGround` is `false`, MapLibre GL JS decouples the camera transform's pivot point from the physical DEM terrain mesh, leaving the center point floating in the sky at `flightElevation`.
+    - At close zoom (z=15), the camera is only a few hundred meters from the mountain face. Having an orbit pivot floating high above the ground creates a long tangential lever arm: dragging the mouse rotates the camera around empty air, causing the mountain below to sweep wildly across the screen with extreme parallax error.
+    - Furthermore, un-clamped raycasting ignores the vertical exaggeration scaling factor (0.70x), exaggerating the disconnect between mouse input and ground motion.
+    - On full page reload, MapLibre initializes with native ground clamping enabled (`_centerClampedToGround = true`), which immediately re-anchors the pivot directly onto the mountain surface—matching the user's observation that page reload fixed the feel.
+- **Implementation Fix ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Immediate Clamping Restoration in `stopFlight()`**:
+    - Re-enabled `(mapRef.current as any)?.setCenterClampedToGround?.(true)` the moment keyboard flight ceases (key release, blur, or programmatic interrupt).
+  - **Guaranteed Clamping on Mouse & Pointer Events (`onCanvasMouseInteraction`)**:
+    - Added explicit defensive call to `(mapRef.current as any)?.setCenterClampedToGround?.(true)` inside `onCanvasMouseInteraction` for all `mousedown`, `pointerdown`, and `wheel` events on the canvas container, ensuring ground clamping is active before MapLibre's `HandlerManager` starts `dragRotate`, `dragPan`, or `scrollZoom`.
+- **Verification via Headless Chrome CDP ([`scripts/test_mouse_clamp_tightness.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/test_mouse_clamp_tightness.cjs))**:
+  - Validated camera state before, during, and after flight at Vail Mountain (`z=15.5`, `pitch=65°`):
+    1. Pre-flight right-click drag: `clamped: true`, `centerElev: 1897m`, `terrain: 1897m` (tight pivot).
+    2. During flight: un-clamped cruise holding altitude smoothly.
+    3. Post-flight release: `clamped: true`, `centerElev: 1945m`, `terrain: 1940m`.
+    4. Post-flight right-click drag: `clamped: true`, `centerElev: 1942m`, `terrain: 1942m`, `diff: 0m`. Pivot is 100% locked to the terrain mesh with zero float or disconnect.
+
+---
+
+## 2026-10-25
+
 ### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: In Colorado's Flat Tops Wilderness, `Derby Peak` ($12,185'$) had coordinates of `[-107.117, 39.9667]`. The vermilion summit dot was displaced by $1.05\text{ km}$ to the southeast, dropping off the 1,500-foot vertical basalt cliff escarpment and landing down in the spruce/fir forest floor at the base of the mountain rather than on the summit crest.
