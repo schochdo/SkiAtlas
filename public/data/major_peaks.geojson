@@ -38682,8 +38682,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -115.65,
-          50.8667
+          -115.651347,
+          50.870019
         ]
       },
       "properties": {
@@ -46407,22 +46407,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -111.683,
-          35.3333
+          -111.677963,
+          35.346381
         ]
       },
       "properties": {
         "id": "peak-1856",
-        "name": "Humphreys Peak ",
-        "elevation_ft": 12635,
-        "elevation_m": 3851,
-        "elevation_formatted_ft": "12,635'",
-        "elevation_formatted_m": "3,851 m",
-        "label_ft": "▲ Humphreys Peak  · 12,635'",
-        "label_m": "▲ Humphreys Peak  · 3,851 m",
-        "label_stacked_ft": "▲ Humphreys Peak \n12,635'",
-        "label_stacked_m": "▲ Humphreys Peak \n3,851 m",
-        "sort_key": 27365,
+        "name": "Humphreys Peak",
+        "elevation_ft": 12637,
+        "elevation_m": 3852,
+        "elevation_formatted_ft": "12,637'",
+        "elevation_formatted_m": "3,852 m",
+        "label_ft": "▲ Humphreys Peak · 12,637'",
+        "label_m": "▲ Humphreys Peak · 3,852 m",
+        "label_stacked_ft": "▲ Humphreys Peak\n12,637'",
+        "label_stacked_m": "▲ Humphreys Peak\n3,852 m",
+        "sort_key": 27363,
         "continent": "North America"
       }
     },
@@ -46707,22 +46707,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.143,
-          39.6167
+          -106.142512,
+          39.620264
         ]
       },
       "properties": {
         "id": "peak-1868",
         "name": "Buffalo Mountain",
-        "elevation_ft": 12776,
+        "elevation_ft": 12777,
         "elevation_m": 3894,
-        "elevation_formatted_ft": "12,776'",
+        "elevation_formatted_ft": "12,777'",
         "elevation_formatted_m": "3,894 m",
-        "label_ft": "▲ Buffalo Mountain · 12,776'",
+        "label_ft": "▲ Buffalo Mountain · 12,777'",
         "label_m": "▲ Buffalo Mountain · 3,894 m",
-        "label_stacked_ft": "▲ Buffalo Mountain\n12,776'",
+        "label_stacked_ft": "▲ Buffalo Mountain\n12,777'",
         "label_stacked_m": "▲ Buffalo Mountain\n3,894 m",
-        "sort_key": 27224,
+        "sort_key": 27223,
         "continent": "North America"
       }
     },
@@ -49682,8 +49682,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -104.9,
-          38.9667
+          -104.918037,
+          38.966934
         ]
       },
       "properties": {
@@ -49707,22 +49707,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.5,
-          37.6167
+          -105.498623,
+          37.614171
         ]
       },
       "properties": {
         "id": "peak-1988",
         "name": "California Peak",
-        "elevation_ft": 13848,
+        "elevation_ft": 13849,
         "elevation_m": 4221,
-        "elevation_formatted_ft": "13,848'",
+        "elevation_formatted_ft": "13,849'",
         "elevation_formatted_m": "4,221 m",
-        "label_ft": "▲ California Peak · 13,848'",
+        "label_ft": "▲ California Peak · 13,849'",
         "label_m": "▲ California Peak · 4,221 m",
-        "label_stacked_ft": "▲ California Peak\n13,848'",
+        "label_stacked_ft": "▲ California Peak\n13,849'",
         "label_stacked_m": "▲ California Peak\n4,221 m",
-        "sort_key": 26152,
+        "sort_key": 26151,
         "continent": "North America"
       }
     },
@@ -49807,22 +49807,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.85,
-          39.0333
+          -106.858929,
+          39.034435
         ]
       },
       "properties": {
         "id": "peak-1992",
         "name": "Cathedral Peak",
-        "elevation_ft": 13944,
+        "elevation_ft": 13943,
         "elevation_m": 4250,
-        "elevation_formatted_ft": "13,944'",
+        "elevation_formatted_ft": "13,943'",
         "elevation_formatted_m": "4,250 m",
-        "label_ft": "▲ Cathedral Peak · 13,944'",
+        "label_ft": "▲ Cathedral Peak · 13,943'",
         "label_m": "▲ Cathedral Peak · 4,250 m",
-        "label_stacked_ft": "▲ Cathedral Peak\n13,944'",
+        "label_stacked_ft": "▲ Cathedral Peak\n13,943'",
         "label_stacked_m": "▲ Cathedral Peak\n4,250 m",
-        "sort_key": 26056,
+        "sort_key": 26057,
         "continent": "North America"
       }
     },
@@ -50057,8 +50057,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.117,
-          39.9667
+          -107.125329,
+          39.973596
         ]
       },
       "properties": {
@@ -50282,22 +50282,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.85,
-          39.05
+          -106.851985,
+          39.059434
         ]
       },
       "properties": {
         "id": "peak-2011",
         "name": "Hayden Peak",
-        "elevation_ft": 13560,
+        "elevation_ft": 13561,
         "elevation_m": 4133,
-        "elevation_formatted_ft": "13,560'",
+        "elevation_formatted_ft": "13,561'",
         "elevation_formatted_m": "4,133 m",
-        "label_ft": "▲ Hayden Peak · 13,560'",
+        "label_ft": "▲ Hayden Peak · 13,561'",
         "label_m": "▲ Hayden Peak · 4,133 m",
-        "label_stacked_ft": "▲ Hayden Peak\n13,560'",
+        "label_stacked_ft": "▲ Hayden Peak\n13,561'",
         "label_stacked_m": "▲ Hayden Peak\n4,133 m",
-        "sort_key": 26440,
+        "sort_key": 26439,
         "continent": "North America"
       }
     },
@@ -50982,22 +50982,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.067,
-          39.1667
+          -107.068658,
+          39.172209
         ]
       },
       "properties": {
         "id": "peak-2039",
         "name": "Mount Daly",
-        "elevation_ft": 13304,
+        "elevation_ft": 13305,
         "elevation_m": 4055,
-        "elevation_formatted_ft": "13,304'",
+        "elevation_formatted_ft": "13,305'",
         "elevation_formatted_m": "4,055 m",
-        "label_ft": "▲ Mount Daly · 13,304'",
+        "label_ft": "▲ Mount Daly · 13,305'",
         "label_m": "▲ Mount Daly · 4,055 m",
-        "label_stacked_ft": "▲ Mount Daly\n13,304'",
+        "label_stacked_ft": "▲ Mount Daly\n13,305'",
         "label_stacked_m": "▲ Mount Daly\n4,055 m",
-        "sort_key": 26696,
+        "sort_key": 26695,
         "continent": "North America"
       }
     },
@@ -51707,8 +51707,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.633,
-          40.0883
+          -105.633614,
+          40.088319
         ]
       },
       "properties": {
@@ -51907,8 +51907,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -104.933,
-          38.95
+          -104.943037,
+          38.955823
         ]
       },
       "properties": {
@@ -52082,22 +52082,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.95,
-          39.0714
+          -106.950112,
+          39.071657
         ]
       },
       "properties": {
         "id": "peak-2083",
         "name": "Pyramid Peak",
-        "elevation_ft": 14019,
+        "elevation_ft": 14018,
         "elevation_m": 4273,
-        "elevation_formatted_ft": "14,019'",
+        "elevation_formatted_ft": "14,018'",
         "elevation_formatted_m": "4,273 m",
-        "label_ft": "▲ Pyramid Peak · 14,019'",
+        "label_ft": "▲ Pyramid Peak · 14,018'",
         "label_m": "▲ Pyramid Peak · 4,273 m",
-        "label_stacked_ft": "▲ Pyramid Peak\n14,019'",
+        "label_stacked_ft": "▲ Pyramid Peak\n14,018'",
         "label_stacked_m": "▲ Pyramid Peak\n4,273 m",
-        "sort_key": 25981,
+        "sort_key": 25982,
         "continent": "North America"
       }
     },
@@ -52482,22 +52482,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.516667,
-          40.283333
+          -105.518332,
+          40.288873
         ]
       },
       "properties": {
         "id": "peak-2099",
-        "name": "Twin Sisters",
-        "elevation_ft": 11427,
+        "name": "Twin Sisters Peaks",
+        "elevation_ft": 11428,
         "elevation_m": 3483,
-        "elevation_formatted_ft": "11,427'",
+        "elevation_formatted_ft": "11,428'",
         "elevation_formatted_m": "3,483 m",
-        "label_ft": "▲ Twin Sisters · 11,427'",
-        "label_m": "▲ Twin Sisters · 3,483 m",
-        "label_stacked_ft": "▲ Twin Sisters\n11,427'",
-        "label_stacked_m": "▲ Twin Sisters\n3,483 m",
-        "sort_key": 28573,
+        "label_ft": "▲ Twin Sisters Peaks · 11,428'",
+        "label_m": "▲ Twin Sisters Peaks · 3,483 m",
+        "label_stacked_ft": "▲ Twin Sisters Peaks\n11,428'",
+        "label_stacked_m": "▲ Twin Sisters Peaks\n3,483 m",
+        "sort_key": 28572,
         "continent": "North America"
       }
     },

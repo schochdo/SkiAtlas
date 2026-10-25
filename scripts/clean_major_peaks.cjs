@@ -444,6 +444,97 @@ const summitOverrides = {
     elevation_m: 4221,
     elevation_ft: 13848
   },
+  // Derby Peak (Colorado - Flat Tops Wilderness: fix 1.05km displacement below basalt cliff rim)
+  "peak-2002": {
+    name: "Derby Peak",
+    coords: [-107.125329, 39.973596],
+    elevation_m: 3714,
+    elevation_ft: 12185
+  },
+  // Buffalo Mountain (Colorado - Gore Range)
+  "peak-1868": {
+    name: "Buffalo Mountain",
+    coords: [-106.142512, 39.620264],
+    elevation_m: 3894,
+    elevation_ft: 12777
+  },
+  // Blodgett Peak (Colorado - Front Range)
+  "peak-1987": {
+    name: "Blodgett Peak",
+    coords: [-104.918037, 38.966934],
+    elevation_m: 2872,
+    elevation_ft: 9423
+  },
+  // California Peak (Colorado - Sangre de Cristo)
+  "peak-1988": {
+    name: "California Peak",
+    coords: [-105.498623, 37.614171],
+    elevation_m: 4221,
+    elevation_ft: 13849
+  },
+  // Cathedral Peak (Colorado - Elk Mountains)
+  "peak-1992": {
+    name: "Cathedral Peak",
+    coords: [-106.858929, 39.034435],
+    elevation_m: 4250,
+    elevation_ft: 13943
+  },
+  // Hayden Peak (Colorado - Elk Mountains)
+  "peak-2011": {
+    name: "Hayden Peak",
+    coords: [-106.851985, 39.059434],
+    elevation_m: 4133,
+    elevation_ft: 13561
+  },
+  // Mount Daly (Colorado - Elk Mountains)
+  "peak-2039": {
+    name: "Mount Daly",
+    coords: [-107.068658, 39.172209],
+    elevation_m: 4055,
+    elevation_ft: 13305
+  },
+  // Mount Toll (Colorado - Indian Peaks)
+  "peak-2068": {
+    name: "Mount Toll",
+    coords: [-105.633614, 40.088319],
+    elevation_m: 3956,
+    elevation_ft: 12979
+  },
+  // Ormes Peak (Colorado - Front Range)
+  "peak-2076": {
+    name: "Ormes Peak",
+    coords: [-104.943037, 38.955823],
+    elevation_m: 2965,
+    elevation_ft: 9728
+  },
+  // Pyramid Peak (Colorado - Elk Mountains)
+  "peak-2083": {
+    name: "Pyramid Peak",
+    coords: [-106.950112, 39.071657],
+    elevation_m: 4273,
+    elevation_ft: 14018
+  },
+  // Twin Sisters Peaks (Colorado - Front Range)
+  "peak-2099": {
+    name: "Twin Sisters Peaks",
+    coords: [-105.518332, 40.288873],
+    elevation_m: 3483,
+    elevation_ft: 11428
+  },
+  // Mount Assiniboine (Canadian Rockies)
+  "peak-1547": {
+    name: "Mount Assiniboine",
+    coords: [-115.651347, 50.870019],
+    elevation_m: 3618,
+    elevation_ft: 11870
+  },
+  // Humphreys Peak (San Francisco Peaks / Arizona)
+  "peak-1856": {
+    name: "Humphreys Peak",
+    coords: [-111.677963, 35.346381],
+    elevation_m: 3852,
+    elevation_ft: 12637
+  },
   // US and other prominent mountains with known official imperial heights
   "peak-1809": { name: "Mount McGinnis", elevation_ft: 11400, elevation_m: 3475 },
   "peak-1819": { name: "Mt. Palmer", elevation_ft: 6970, elevation_m: 2124 },

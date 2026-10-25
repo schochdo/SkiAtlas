@@ -6,6 +6,38 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In Colorado's Flat Tops Wilderness, `Derby Peak` ($12,185'$) had coordinates of `[-107.117, 39.9667]`. The vermilion summit dot was displaced by $1.05\text{ km}$ to the southeast, dropping off the 1,500-foot vertical basalt cliff escarpment and landing down in the spruce/fir forest floor at the base of the mountain rather than on the summit crest.
+  - **The Scraper Mechanism**: The coordinate `39.9667, -107.117` corresponds exactly to $39^\circ 58' \text{N}, 107^\circ 07' \text{W}$ (whole arcminutes without seconds). At $40^\circ\text{N}$, $1'$ of latitude is $\approx 1.85\text{ km}$ and $1'$ of longitude is $\approx 1.42\text{ km}$. Rounding to whole arcminutes shifted Derby Peak 767 meters south and 710 meters east directly off the plateau rim.
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Derby Peak Corrected**:
+    - Coordinates updated to official USGS GNIS geodetic surveyed summit benchmark: **`[-107.125329, 39.973596]`**.
+    - The vermilion summit marker now clamps cleanly onto the physical summit crest of Derby Peak above the amphitheater and snow patch at the top of the Flat Tops plateau.
+  - **Batch Audit Across Colorado and Western North America Peaks**:
+    - Sourced high-precision USGS GNIS and Natural Resources Canada surveyed summit nodes for other arcminute-truncated peaks:
+      - `Buffalo Mountain` (Colorado Gore Range): `[-106.142512, 39.620264]`, 12,777 ft.
+      - `Pyramid Peak` (Colorado Elk Mountains 14er): `[-106.950112, 39.071657]`, 14,018 ft.
+      - `Cathedral Peak` (Colorado Elk Mountains): `[-106.858929, 39.034435]`, 13,943 ft.
+      - `Hayden Peak` (Colorado Elk Mountains): `[-106.851985, 39.059434]`, 13,561 ft.
+      - `Mount Daly` (Colorado Elk Mountains): `[-107.068658, 39.172209]`, 13,305 ft.
+      - `Mount Toll` (Colorado Indian Peaks): `[-105.633614, 40.088319]`, 12,979 ft.
+      - `California Peak` (Colorado Sangre de Cristo): `[-105.498623, 37.614171]`, 13,849 ft.
+      - `Twin Sisters Peaks` (Colorado Front Range): `[-105.518332, 40.288873]`, 11,428 ft.
+      - `Blodgett Peak` (Colorado Front Range): `[-104.918037, 38.966934]`, 9,423 ft.
+      - `Ormes Peak` (Colorado Front Range): `[-104.943037, 38.955823]`, 9,728 ft.
+      - `Mount Assiniboine` (Canadian Rockies): `[-115.651347, 50.870019]`, 11,870 ft.
+      - `Humphreys Peak` (Arizona high point): `[-111.677963, 35.346381]`, 12,637 ft.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking north-northwest across the Flat Tops plateau:
+    1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
+    2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
+  - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: correct Blüemlisalphorn and Alpine peak summit coordinates from surveyed nodes`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: In the Bernese Alps, `Blüemlisalphorn` was misspelled as `Blemlisalphorn` with an elevation of $12,008'$ and coordinates of `[7.76667, 46.5]`. The vermilion summit dot was placed directly onto the crevassed icefield of the Blüemlisalpgletscher glacier, approximately $1.31\text{ km}$ north-northwest of its true summit ridge.
@@ -48,6 +80,38 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     2. Label renders cleanly as `▲ Blüemlisalphorn · 12,011'`.
     3. Metric toggle renders cleanly as `▲ Blüemlisalphorn · 3,661 m`.
   - Zero build errors with `npm run build` (573ms).
+
+---
+
+## 2026-10-25
+
+### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In Colorado's Flat Tops Wilderness, `Derby Peak` ($12,185'$) had coordinates of `[-107.117, 39.9667]`. The vermilion summit dot was displaced by $1.05\text{ km}$ to the southeast, dropping off the 1,500-foot vertical basalt cliff escarpment and landing down in the spruce/fir forest floor at the base of the mountain rather than on the summit crest.
+  - **The Scraper Mechanism**: The coordinate `39.9667, -107.117` corresponds exactly to $39^\circ 58' \text{N}, 107^\circ 07' \text{W}$ (whole arcminutes without seconds). At $40^\circ\text{N}$, $1'$ of latitude is $\approx 1.85\text{ km}$ and $1'$ of longitude is $\approx 1.42\text{ km}$. Rounding to whole arcminutes shifted Derby Peak 767 meters south and 710 meters east directly off the plateau rim.
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Derby Peak Corrected**:
+    - Coordinates updated to official USGS GNIS geodetic surveyed summit benchmark: **`[-107.125329, 39.973596]`**.
+    - The vermilion summit marker now clamps cleanly onto the physical summit crest of Derby Peak above the amphitheater and snow patch at the top of the Flat Tops plateau.
+  - **Batch Audit Across Colorado and Western North America Peaks**:
+    - Sourced high-precision USGS GNIS and Natural Resources Canada surveyed summit nodes for other arcminute-truncated peaks:
+      - `Buffalo Mountain` (Colorado Gore Range): `[-106.142512, 39.620264]`, 12,777 ft.
+      - `Pyramid Peak` (Colorado Elk Mountains 14er): `[-106.950112, 39.071657]`, 14,018 ft.
+      - `Cathedral Peak` (Colorado Elk Mountains): `[-106.858929, 39.034435]`, 13,943 ft.
+      - `Hayden Peak` (Colorado Elk Mountains): `[-106.851985, 39.059434]`, 13,561 ft.
+      - `Mount Daly` (Colorado Elk Mountains): `[-107.068658, 39.172209]`, 13,305 ft.
+      - `Mount Toll` (Colorado Indian Peaks): `[-105.633614, 40.088319]`, 12,979 ft.
+      - `California Peak` (Colorado Sangre de Cristo): `[-105.498623, 37.614171]`, 13,849 ft.
+      - `Twin Sisters Peaks` (Colorado Front Range): `[-105.518332, 40.288873]`, 11,428 ft.
+      - `Blodgett Peak` (Colorado Front Range): `[-104.918037, 38.966934]`, 9,423 ft.
+      - `Ormes Peak` (Colorado Front Range): `[-104.943037, 38.955823]`, 9,728 ft.
+      - `Mount Assiniboine` (Canadian Rockies): `[-115.651347, 50.870019]`, 11,870 ft.
+      - `Humphreys Peak` (Arizona high point): `[-111.677963, 35.346381]`, 12,637 ft.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking north-northwest across the Flat Tops plateau:
+    1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
+    2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
+  - Zero build errors with `npm run build` (344ms).
 
 ---
 
@@ -77,6 +141,38 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In Colorado's Flat Tops Wilderness, `Derby Peak` ($12,185'$) had coordinates of `[-107.117, 39.9667]`. The vermilion summit dot was displaced by $1.05\text{ km}$ to the southeast, dropping off the 1,500-foot vertical basalt cliff escarpment and landing down in the spruce/fir forest floor at the base of the mountain rather than on the summit crest.
+  - **The Scraper Mechanism**: The coordinate `39.9667, -107.117` corresponds exactly to $39^\circ 58' \text{N}, 107^\circ 07' \text{W}$ (whole arcminutes without seconds). At $40^\circ\text{N}$, $1'$ of latitude is $\approx 1.85\text{ km}$ and $1'$ of longitude is $\approx 1.42\text{ km}$. Rounding to whole arcminutes shifted Derby Peak 767 meters south and 710 meters east directly off the plateau rim.
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Derby Peak Corrected**:
+    - Coordinates updated to official USGS GNIS geodetic surveyed summit benchmark: **`[-107.125329, 39.973596]`**.
+    - The vermilion summit marker now clamps cleanly onto the physical summit crest of Derby Peak above the amphitheater and snow patch at the top of the Flat Tops plateau.
+  - **Batch Audit Across Colorado and Western North America Peaks**:
+    - Sourced high-precision USGS GNIS and Natural Resources Canada surveyed summit nodes for other arcminute-truncated peaks:
+      - `Buffalo Mountain` (Colorado Gore Range): `[-106.142512, 39.620264]`, 12,777 ft.
+      - `Pyramid Peak` (Colorado Elk Mountains 14er): `[-106.950112, 39.071657]`, 14,018 ft.
+      - `Cathedral Peak` (Colorado Elk Mountains): `[-106.858929, 39.034435]`, 13,943 ft.
+      - `Hayden Peak` (Colorado Elk Mountains): `[-106.851985, 39.059434]`, 13,561 ft.
+      - `Mount Daly` (Colorado Elk Mountains): `[-107.068658, 39.172209]`, 13,305 ft.
+      - `Mount Toll` (Colorado Indian Peaks): `[-105.633614, 40.088319]`, 12,979 ft.
+      - `California Peak` (Colorado Sangre de Cristo): `[-105.498623, 37.614171]`, 13,849 ft.
+      - `Twin Sisters Peaks` (Colorado Front Range): `[-105.518332, 40.288873]`, 11,428 ft.
+      - `Blodgett Peak` (Colorado Front Range): `[-104.918037, 38.966934]`, 9,423 ft.
+      - `Ormes Peak` (Colorado Front Range): `[-104.943037, 38.955823]`, 9,728 ft.
+      - `Mount Assiniboine` (Canadian Rockies): `[-115.651347, 50.870019]`, 11,870 ft.
+      - `Humphreys Peak` (Arizona high point): `[-111.677963, 35.346381]`, 12,637 ft.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking north-northwest across the Flat Tops plateau:
+    1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
+    2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
+  - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: correct Blüemlisalphorn and Alpine peak summit coordinates from surveyed nodes`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: In the Bernese Alps, `Blüemlisalphorn` was misspelled as `Blemlisalphorn` with an elevation of $12,008'$ and coordinates of `[7.76667, 46.5]`. The vermilion summit dot was placed directly onto the crevassed icefield of the Blüemlisalpgletscher glacier, approximately $1.31\text{ km}$ north-northwest of its true summit ridge.
@@ -119,6 +215,38 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     2. Label renders cleanly as `▲ Blüemlisalphorn · 12,011'`.
     3. Metric toggle renders cleanly as `▲ Blüemlisalphorn · 3,661 m`.
   - Zero build errors with `npm run build` (573ms).
+
+---
+
+## 2026-10-25
+
+### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In Colorado's Flat Tops Wilderness, `Derby Peak` ($12,185'$) had coordinates of `[-107.117, 39.9667]`. The vermilion summit dot was displaced by $1.05\text{ km}$ to the southeast, dropping off the 1,500-foot vertical basalt cliff escarpment and landing down in the spruce/fir forest floor at the base of the mountain rather than on the summit crest.
+  - **The Scraper Mechanism**: The coordinate `39.9667, -107.117` corresponds exactly to $39^\circ 58' \text{N}, 107^\circ 07' \text{W}$ (whole arcminutes without seconds). At $40^\circ\text{N}$, $1'$ of latitude is $\approx 1.85\text{ km}$ and $1'$ of longitude is $\approx 1.42\text{ km}$. Rounding to whole arcminutes shifted Derby Peak 767 meters south and 710 meters east directly off the plateau rim.
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Derby Peak Corrected**:
+    - Coordinates updated to official USGS GNIS geodetic surveyed summit benchmark: **`[-107.125329, 39.973596]`**.
+    - The vermilion summit marker now clamps cleanly onto the physical summit crest of Derby Peak above the amphitheater and snow patch at the top of the Flat Tops plateau.
+  - **Batch Audit Across Colorado and Western North America Peaks**:
+    - Sourced high-precision USGS GNIS and Natural Resources Canada surveyed summit nodes for other arcminute-truncated peaks:
+      - `Buffalo Mountain` (Colorado Gore Range): `[-106.142512, 39.620264]`, 12,777 ft.
+      - `Pyramid Peak` (Colorado Elk Mountains 14er): `[-106.950112, 39.071657]`, 14,018 ft.
+      - `Cathedral Peak` (Colorado Elk Mountains): `[-106.858929, 39.034435]`, 13,943 ft.
+      - `Hayden Peak` (Colorado Elk Mountains): `[-106.851985, 39.059434]`, 13,561 ft.
+      - `Mount Daly` (Colorado Elk Mountains): `[-107.068658, 39.172209]`, 13,305 ft.
+      - `Mount Toll` (Colorado Indian Peaks): `[-105.633614, 40.088319]`, 12,979 ft.
+      - `California Peak` (Colorado Sangre de Cristo): `[-105.498623, 37.614171]`, 13,849 ft.
+      - `Twin Sisters Peaks` (Colorado Front Range): `[-105.518332, 40.288873]`, 11,428 ft.
+      - `Blodgett Peak` (Colorado Front Range): `[-104.918037, 38.966934]`, 9,423 ft.
+      - `Ormes Peak` (Colorado Front Range): `[-104.943037, 38.955823]`, 9,728 ft.
+      - `Mount Assiniboine` (Canadian Rockies): `[-115.651347, 50.870019]`, 11,870 ft.
+      - `Humphreys Peak` (Arizona high point): `[-111.677963, 35.346381]`, 12,637 ft.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking north-northwest across the Flat Tops plateau:
+    1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
+    2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
+  - Zero build errors with `npm run build` (344ms).
 
 ---
 
@@ -176,6 +304,38 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In Colorado's Flat Tops Wilderness, `Derby Peak` ($12,185'$) had coordinates of `[-107.117, 39.9667]`. The vermilion summit dot was displaced by $1.05\text{ km}$ to the southeast, dropping off the 1,500-foot vertical basalt cliff escarpment and landing down in the spruce/fir forest floor at the base of the mountain rather than on the summit crest.
+  - **The Scraper Mechanism**: The coordinate `39.9667, -107.117` corresponds exactly to $39^\circ 58' \text{N}, 107^\circ 07' \text{W}$ (whole arcminutes without seconds). At $40^\circ\text{N}$, $1'$ of latitude is $\approx 1.85\text{ km}$ and $1'$ of longitude is $\approx 1.42\text{ km}$. Rounding to whole arcminutes shifted Derby Peak 767 meters south and 710 meters east directly off the plateau rim.
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Derby Peak Corrected**:
+    - Coordinates updated to official USGS GNIS geodetic surveyed summit benchmark: **`[-107.125329, 39.973596]`**.
+    - The vermilion summit marker now clamps cleanly onto the physical summit crest of Derby Peak above the amphitheater and snow patch at the top of the Flat Tops plateau.
+  - **Batch Audit Across Colorado and Western North America Peaks**:
+    - Sourced high-precision USGS GNIS and Natural Resources Canada surveyed summit nodes for other arcminute-truncated peaks:
+      - `Buffalo Mountain` (Colorado Gore Range): `[-106.142512, 39.620264]`, 12,777 ft.
+      - `Pyramid Peak` (Colorado Elk Mountains 14er): `[-106.950112, 39.071657]`, 14,018 ft.
+      - `Cathedral Peak` (Colorado Elk Mountains): `[-106.858929, 39.034435]`, 13,943 ft.
+      - `Hayden Peak` (Colorado Elk Mountains): `[-106.851985, 39.059434]`, 13,561 ft.
+      - `Mount Daly` (Colorado Elk Mountains): `[-107.068658, 39.172209]`, 13,305 ft.
+      - `Mount Toll` (Colorado Indian Peaks): `[-105.633614, 40.088319]`, 12,979 ft.
+      - `California Peak` (Colorado Sangre de Cristo): `[-105.498623, 37.614171]`, 13,849 ft.
+      - `Twin Sisters Peaks` (Colorado Front Range): `[-105.518332, 40.288873]`, 11,428 ft.
+      - `Blodgett Peak` (Colorado Front Range): `[-104.918037, 38.966934]`, 9,423 ft.
+      - `Ormes Peak` (Colorado Front Range): `[-104.943037, 38.955823]`, 9,728 ft.
+      - `Mount Assiniboine` (Canadian Rockies): `[-115.651347, 50.870019]`, 11,870 ft.
+      - `Humphreys Peak` (Arizona high point): `[-111.677963, 35.346381]`, 12,637 ft.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking north-northwest across the Flat Tops plateau:
+    1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
+    2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
+  - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: correct Blüemlisalphorn and Alpine peak summit coordinates from surveyed nodes`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: In the Bernese Alps, `Blüemlisalphorn` was misspelled as `Blemlisalphorn` with an elevation of $12,008'$ and coordinates of `[7.76667, 46.5]`. The vermilion summit dot was placed directly onto the crevassed icefield of the Blüemlisalpgletscher glacier, approximately $1.31\text{ km}$ north-northwest of its true summit ridge.
@@ -218,6 +378,38 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     2. Label renders cleanly as `▲ Blüemlisalphorn · 12,011'`.
     3. Metric toggle renders cleanly as `▲ Blüemlisalphorn · 3,661 m`.
   - Zero build errors with `npm run build` (573ms).
+
+---
+
+## 2026-10-25
+
+### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In Colorado's Flat Tops Wilderness, `Derby Peak` ($12,185'$) had coordinates of `[-107.117, 39.9667]`. The vermilion summit dot was displaced by $1.05\text{ km}$ to the southeast, dropping off the 1,500-foot vertical basalt cliff escarpment and landing down in the spruce/fir forest floor at the base of the mountain rather than on the summit crest.
+  - **The Scraper Mechanism**: The coordinate `39.9667, -107.117` corresponds exactly to $39^\circ 58' \text{N}, 107^\circ 07' \text{W}$ (whole arcminutes without seconds). At $40^\circ\text{N}$, $1'$ of latitude is $\approx 1.85\text{ km}$ and $1'$ of longitude is $\approx 1.42\text{ km}$. Rounding to whole arcminutes shifted Derby Peak 767 meters south and 710 meters east directly off the plateau rim.
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Derby Peak Corrected**:
+    - Coordinates updated to official USGS GNIS geodetic surveyed summit benchmark: **`[-107.125329, 39.973596]`**.
+    - The vermilion summit marker now clamps cleanly onto the physical summit crest of Derby Peak above the amphitheater and snow patch at the top of the Flat Tops plateau.
+  - **Batch Audit Across Colorado and Western North America Peaks**:
+    - Sourced high-precision USGS GNIS and Natural Resources Canada surveyed summit nodes for other arcminute-truncated peaks:
+      - `Buffalo Mountain` (Colorado Gore Range): `[-106.142512, 39.620264]`, 12,777 ft.
+      - `Pyramid Peak` (Colorado Elk Mountains 14er): `[-106.950112, 39.071657]`, 14,018 ft.
+      - `Cathedral Peak` (Colorado Elk Mountains): `[-106.858929, 39.034435]`, 13,943 ft.
+      - `Hayden Peak` (Colorado Elk Mountains): `[-106.851985, 39.059434]`, 13,561 ft.
+      - `Mount Daly` (Colorado Elk Mountains): `[-107.068658, 39.172209]`, 13,305 ft.
+      - `Mount Toll` (Colorado Indian Peaks): `[-105.633614, 40.088319]`, 12,979 ft.
+      - `California Peak` (Colorado Sangre de Cristo): `[-105.498623, 37.614171]`, 13,849 ft.
+      - `Twin Sisters Peaks` (Colorado Front Range): `[-105.518332, 40.288873]`, 11,428 ft.
+      - `Blodgett Peak` (Colorado Front Range): `[-104.918037, 38.966934]`, 9,423 ft.
+      - `Ormes Peak` (Colorado Front Range): `[-104.943037, 38.955823]`, 9,728 ft.
+      - `Mount Assiniboine` (Canadian Rockies): `[-115.651347, 50.870019]`, 11,870 ft.
+      - `Humphreys Peak` (Arizona high point): `[-111.677963, 35.346381]`, 12,637 ft.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking north-northwest across the Flat Tops plateau:
+    1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
+    2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
+  - Zero build errors with `npm run build` (344ms).
 
 ---
 
@@ -247,6 +439,38 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In Colorado's Flat Tops Wilderness, `Derby Peak` ($12,185'$) had coordinates of `[-107.117, 39.9667]`. The vermilion summit dot was displaced by $1.05\text{ km}$ to the southeast, dropping off the 1,500-foot vertical basalt cliff escarpment and landing down in the spruce/fir forest floor at the base of the mountain rather than on the summit crest.
+  - **The Scraper Mechanism**: The coordinate `39.9667, -107.117` corresponds exactly to $39^\circ 58' \text{N}, 107^\circ 07' \text{W}$ (whole arcminutes without seconds). At $40^\circ\text{N}$, $1'$ of latitude is $\approx 1.85\text{ km}$ and $1'$ of longitude is $\approx 1.42\text{ km}$. Rounding to whole arcminutes shifted Derby Peak 767 meters south and 710 meters east directly off the plateau rim.
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Derby Peak Corrected**:
+    - Coordinates updated to official USGS GNIS geodetic surveyed summit benchmark: **`[-107.125329, 39.973596]`**.
+    - The vermilion summit marker now clamps cleanly onto the physical summit crest of Derby Peak above the amphitheater and snow patch at the top of the Flat Tops plateau.
+  - **Batch Audit Across Colorado and Western North America Peaks**:
+    - Sourced high-precision USGS GNIS and Natural Resources Canada surveyed summit nodes for other arcminute-truncated peaks:
+      - `Buffalo Mountain` (Colorado Gore Range): `[-106.142512, 39.620264]`, 12,777 ft.
+      - `Pyramid Peak` (Colorado Elk Mountains 14er): `[-106.950112, 39.071657]`, 14,018 ft.
+      - `Cathedral Peak` (Colorado Elk Mountains): `[-106.858929, 39.034435]`, 13,943 ft.
+      - `Hayden Peak` (Colorado Elk Mountains): `[-106.851985, 39.059434]`, 13,561 ft.
+      - `Mount Daly` (Colorado Elk Mountains): `[-107.068658, 39.172209]`, 13,305 ft.
+      - `Mount Toll` (Colorado Indian Peaks): `[-105.633614, 40.088319]`, 12,979 ft.
+      - `California Peak` (Colorado Sangre de Cristo): `[-105.498623, 37.614171]`, 13,849 ft.
+      - `Twin Sisters Peaks` (Colorado Front Range): `[-105.518332, 40.288873]`, 11,428 ft.
+      - `Blodgett Peak` (Colorado Front Range): `[-104.918037, 38.966934]`, 9,423 ft.
+      - `Ormes Peak` (Colorado Front Range): `[-104.943037, 38.955823]`, 9,728 ft.
+      - `Mount Assiniboine` (Canadian Rockies): `[-115.651347, 50.870019]`, 11,870 ft.
+      - `Humphreys Peak` (Arizona high point): `[-111.677963, 35.346381]`, 12,637 ft.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking north-northwest across the Flat Tops plateau:
+    1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
+    2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
+  - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: correct Blüemlisalphorn and Alpine peak summit coordinates from surveyed nodes`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: In the Bernese Alps, `Blüemlisalphorn` was misspelled as `Blemlisalphorn` with an elevation of $12,008'$ and coordinates of `[7.76667, 46.5]`. The vermilion summit dot was placed directly onto the crevassed icefield of the Blüemlisalpgletscher glacier, approximately $1.31\text{ km}$ north-northwest of its true summit ridge.
@@ -289,6 +513,38 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     2. Label renders cleanly as `▲ Blüemlisalphorn · 12,011'`.
     3. Metric toggle renders cleanly as `▲ Blüemlisalphorn · 3,661 m`.
   - Zero build errors with `npm run build` (573ms).
+
+---
+
+## 2026-10-25
+
+### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: In Colorado's Flat Tops Wilderness, `Derby Peak` ($12,185'$) had coordinates of `[-107.117, 39.9667]`. The vermilion summit dot was displaced by $1.05\text{ km}$ to the southeast, dropping off the 1,500-foot vertical basalt cliff escarpment and landing down in the spruce/fir forest floor at the base of the mountain rather than on the summit crest.
+  - **The Scraper Mechanism**: The coordinate `39.9667, -107.117` corresponds exactly to $39^\circ 58' \text{N}, 107^\circ 07' \text{W}$ (whole arcminutes without seconds). At $40^\circ\text{N}$, $1'$ of latitude is $\approx 1.85\text{ km}$ and $1'$ of longitude is $\approx 1.42\text{ km}$. Rounding to whole arcminutes shifted Derby Peak 767 meters south and 710 meters east directly off the plateau rim.
+- **Cartographic Summit Precision Fixes ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/clean_major_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/clean_major_peaks.cjs))**:
+  - **Derby Peak Corrected**:
+    - Coordinates updated to official USGS GNIS geodetic surveyed summit benchmark: **`[-107.125329, 39.973596]`**.
+    - The vermilion summit marker now clamps cleanly onto the physical summit crest of Derby Peak above the amphitheater and snow patch at the top of the Flat Tops plateau.
+  - **Batch Audit Across Colorado and Western North America Peaks**:
+    - Sourced high-precision USGS GNIS and Natural Resources Canada surveyed summit nodes for other arcminute-truncated peaks:
+      - `Buffalo Mountain` (Colorado Gore Range): `[-106.142512, 39.620264]`, 12,777 ft.
+      - `Pyramid Peak` (Colorado Elk Mountains 14er): `[-106.950112, 39.071657]`, 14,018 ft.
+      - `Cathedral Peak` (Colorado Elk Mountains): `[-106.858929, 39.034435]`, 13,943 ft.
+      - `Hayden Peak` (Colorado Elk Mountains): `[-106.851985, 39.059434]`, 13,561 ft.
+      - `Mount Daly` (Colorado Elk Mountains): `[-107.068658, 39.172209]`, 13,305 ft.
+      - `Mount Toll` (Colorado Indian Peaks): `[-105.633614, 40.088319]`, 12,979 ft.
+      - `California Peak` (Colorado Sangre de Cristo): `[-105.498623, 37.614171]`, 13,849 ft.
+      - `Twin Sisters Peaks` (Colorado Front Range): `[-105.518332, 40.288873]`, 11,428 ft.
+      - `Blodgett Peak` (Colorado Front Range): `[-104.918037, 38.966934]`, 9,423 ft.
+      - `Ormes Peak` (Colorado Front Range): `[-104.943037, 38.955823]`, 9,728 ft.
+      - `Mount Assiniboine` (Canadian Rockies): `[-115.651347, 50.870019]`, 11,870 ft.
+      - `Humphreys Peak` (Arizona high point): `[-111.677963, 35.346381]`, 12,637 ft.
+- **Verification**:
+  - Replicated viewpoint in headless Chrome CDP looking north-northwest across the Flat Tops plateau:
+    1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
+    2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
+  - Zero build errors with `npm run build` (344ms).
 
 ---
 
