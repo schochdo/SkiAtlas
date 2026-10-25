@@ -6,6 +6,28 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: restore steep freeride runs, bowls, chutes, and glade piste polygons with difficulty styling and area labels`
+- **Root Cause Diagnosis for Missing Extreme Terrain at Crested Butte & Worldwide**:
+  - **What was wrong before**: At Crested Butte Mountain Resort (and other freeride destinations like Snowbird, Alta, Telluride), looking above The High Lift, The North Face, and around the peak showed an empty mountain surface missing all steep terrain, bowls, chutes, and glades (`Headwall`, `Spellbound Bowl`, `Phoenix Bowl`, `Rambo`, `Body Bag`, `The Peak`, `Banana`, `Peel`, etc.).
+  - **Root Cause #1 (Server SQLite Exclusion)**: In `src/server/trailsPlugin.ts`, the bounding box query `/api/trails?bbox=...` performed an inner `JOIN resort_trails rt ON t.id = rt.trail_id`. Because OSM freeride areas and bowls are often mapped without an explicit resort site relation tag, over 43,150 trails and glades in `trails.db` lacked a `resort_trails` row. In Crested Butte alone, this dropped 110 of 120 polygon pistes and 76 linestring runs (including `Rambo`, `Body Bag Glades`, and `Headwall`).
+  - **Root Cause #2 (Client Geometry Dropping & Layer Absence)**: In `src/App.tsx`, piste casing, lines, and labels were strictly filtered with `['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']]` to avoid 3-line parallel casing strokes, and there were zero MapLibre layers defined for polygon pistes. As a result, 100% of freeride bowls, chutes, and glades mapped as polygons were omitted from rendering.
+- **Server Bounding Box Query Fix (`src/server/trailsPlugin.ts`)**:
+  - Removed the strict `JOIN resort_trails` restriction from bounding box queries and spatial coordinate lookups. Since `trails.db` is strictly composed of ski pistes and operating aerialway lifts (no highways or hiking trails), querying the spatial bounding box returns all mountain terrain features seamlessly.
+- **Dedicated Polygon Piste Cartography (`src/App.tsx`)**:
+  - Added `live-pistes-polygons-fill`: Translucent difficulty-colored wash (`fill-opacity: 0.08 - 0.24` depending on zoom level) using official difficulty color matching (Double Black Vermilion `#B84A39` for expert/extreme/freeride, Black `#1C1B18`, Blue `#1565C0`, Green `#2E7D32`), allowing underlying 3D relief and satellite imagery to remain visible.
+  - Added `live-pistes-polygons-outline`: Dashed boundary casing (`line-dasharray: [2, 2]`, `line-width: 0.8 - 2.0`, `line-opacity: 0.75`) distinguishing open freeride terrain boundaries from groomed single-track trails.
+  - Added `live-pistes-polygons-labels`: Point symbol placement positioned at polygon centroids (`symbol-placement: 'point'`, `minzoom: 12.0`, `text-letter-spacing: 0.05`, halo-backed `#FAF8F3`) with automatic uppercase area styling.
+  - Placed polygon layers beneath groomed trail lines and lift cables so groomed runs and lifts render with crisp contrast directly over bowls and glades.
+  - Synchronized GPU layer visibility and filters inside `updatePisteFilters`.
+- **Legend & Key Enhancement (`src/components/map/CartographicLegend.tsx`)**:
+  - Added an editorial key entry for `Freeride Bowls, Chutes & Glades` displaying the dashed translucent vermilion chip.
+- **TypeScript Integrity**:
+  - Cleaned unused `ResponseCallback` import in `src/utils/terrainAnalysis.ts` and normalized FeatureCollection typing in `src/components/map/RegionalLocator.tsx`, ensuring zero compilation errors.
+- **Verification**:
+  - Verified via headless Chrome CDP inspection and screenshot capture at Crested Butte that The High Lift, Headwall, Spellbound Bowl, Phoenix Bowl, Rambo, Banana, Peel, and all extreme chutes now render accurately and beautifully across the mountain.
+
+---
+
 ### `feat: upgrade Regional Overview inset to rich topographical basemap with mountain ranges, parks, and regional cities`
 - **Replaced Minimalist Gray Canvas with High-Detail Topographical Basemap**:
   - **What was wrong before**: The locator inset previously used Esri's `World_Light_Gray_Base` + `World_Light_Gray_Reference`. In mountainous states like Colorado, this rendered an empty gray rectangle with only the single label "Denver", leaving out all mountain ranges, national forests, rivers, and regional cities.

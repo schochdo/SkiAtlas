@@ -760,6 +760,64 @@ export default function App() {
         data: { type: 'FeatureCollection', features: [] },
       });
 
+      // Translucent difficulty fill for freeride bowls, glades, and alpine areas
+      map.addLayer({
+        id: 'live-pistes-polygons-fill',
+        type: 'fill',
+        source: 'live-pistes-vector',
+        filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
+        layout: { visibility: 'none' },
+        paint: {
+          'fill-color': [
+            'match',
+            ['coalesce', ['get', 'difficulty'], ['get', 'piste:difficulty'], ''],
+            'novice', '#2E7D32',       // Alpine Green
+            'easy', '#2E7D32',         // Alpine Green
+            'intermediate', '#1565C0', // Cobalt Blue
+            'advanced', '#1C1B18',     // Black Diamond
+            'expert', '#B84A39',       // Double Black Vermilion
+            'extreme', '#B84A39',      // Double Black Vermilion
+            'freeride', '#B84A39',     // Double Black / Freeride Vermilion
+            '#8A847C',
+          ],
+          'fill-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            11, 0.08,
+            13, 0.14,
+            15, 0.20,
+            17, 0.24,
+          ],
+        },
+      });
+
+      // Subtle dashed boundary outline for glades, bowls, and freeride terrain
+      map.addLayer({
+        id: 'live-pistes-polygons-outline',
+        type: 'line',
+        source: 'live-pistes-vector',
+        filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
+        layout: { visibility: 'none' },
+        paint: {
+          'line-color': [
+            'match',
+            ['coalesce', ['get', 'difficulty'], ['get', 'piste:difficulty'], ''],
+            'novice', '#2E7D32',
+            'easy', '#2E7D32',
+            'intermediate', '#1565C0',
+            'advanced', '#1C1B18',
+            'expert', '#B84A39',
+            'extreme', '#B84A39',
+            'freeride', '#B84A39',
+            '#8A847C',
+          ],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.8, 14, 1.4, 17, 2.0],
+          'line-dasharray': [2, 2],
+          'line-opacity': 0.75,
+        },
+      });
+
       // Outer Casing line (Off by default for speed; toggled via showTrails)
       // Geometry strictly filtered to LineStrings to prevent duplicate strokes on area polygons
       map.addLayer({
@@ -786,7 +844,7 @@ export default function App() {
         paint: {
           'line-color': [
             'match',
-            ['get', 'difficulty'],
+            ['coalesce', ['get', 'difficulty'], ['get', 'piste:difficulty'], ''],
             'novice', '#2E7D32',       // Alpine Green
             'easy', '#2E7D32',         // Alpine Green
             'intermediate', '#1565C0', // Cobalt Blue
@@ -819,6 +877,43 @@ export default function App() {
           'line-color': '#B84A39',
           'line-width': 2.5,
           'line-dasharray': [3, 2],
+        },
+      });
+
+      // Centroid Labels for Glades, Bowls, and Freeride Areas
+      map.addLayer({
+        id: 'live-pistes-polygons-labels',
+        type: 'symbol',
+        source: 'live-pistes-vector',
+        minzoom: 12.0,
+        filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
+        layout: {
+          'visibility': 'none',
+          'symbol-placement': 'point',
+          'text-field': [
+            'case',
+            [
+              'any',
+              ['!', ['has', 'name']],
+              ['==', ['coalesce', ['get', 'name'], ''], ''],
+              ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]],
+              ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]],
+            ],
+            '',
+            ['get', 'name'],
+          ],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 12.0, 9.5, 14, 11, 16, 12.5],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-letter-spacing': 0.05,
+          'text-keep-upright': true,
+          'text-pitch-alignment': 'viewport',
+          'text-rotation-alignment': 'viewport',
+          'text-optional': true,
+        },
+        paint: {
+          'text-color': '#1C1B18',
+          'text-halo-color': '#FAF8F3',
+          'text-halo-width': 2.2,
         },
       });
 
@@ -1268,8 +1363,9 @@ export default function App() {
       allowedConditions.push(['!=', ['get', 'piste:type'], 'nordic']);
     }
 
-    // Restrict piste strokes to LineStrings to avoid stroking perimeter boundaries of clearing polygons
+    // Separate line vectors from freeride polygon area vectors
     const isLineGeom = ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']];
+    const isPolyGeom = ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']];
 
     let pisteFilter: any;
     if (allowedConditions.length === 0) {
@@ -1282,10 +1378,30 @@ export default function App() {
       pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom, ['any', ...allowedConditions]];
     }
 
+    let polyPisteFilter: any;
+    if (allowedConditions.length === 0) {
+      polyPisteFilter = ['==', '1', '0']; // match nothing
+    } else if (allowedConditions.length === 3) {
+      polyPisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isPolyGeom]; // all polygon pistes
+    } else if (allowedConditions.length === 1) {
+      polyPisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isPolyGeom, allowedConditions[0]];
+    } else {
+      polyPisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isPolyGeom, ['any', ...allowedConditions]];
+    }
+
     // Suppress text labels for Unnamed, Unknown, or empty trail names while keeping lines visible
     const labelFilter: any = [
       'all',
       pisteFilter,
+      ['has', 'name'],
+      ['!=', ['coalesce', ['get', 'name'], ''], ''],
+      ['!', ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+    ];
+
+    const polyLabelFilter: any = [
+      'all',
+      polyPisteFilter,
       ['has', 'name'],
       ['!=', ['coalesce', ['get', 'name'], ''], ''],
       ['!', ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
@@ -1299,9 +1415,21 @@ export default function App() {
       }
     });
 
+    ['live-pistes-polygons-fill', 'live-pistes-polygons-outline'].forEach((id) => {
+      if (map.getLayer(id)) {
+        map.setLayoutProperty(id, 'visibility', anyTrails ? 'visible' : 'none');
+        if (anyTrails) map.setFilter(id, polyPisteFilter);
+      }
+    });
+
     if (map.getLayer('live-pistes-labels')) {
       map.setLayoutProperty('live-pistes-labels', 'visibility', anyTrails ? 'visible' : 'none');
       if (anyTrails) map.setFilter('live-pistes-labels', labelFilter);
+    }
+
+    if (map.getLayer('live-pistes-polygons-labels')) {
+      map.setLayoutProperty('live-pistes-polygons-labels', 'visibility', anyTrails ? 'visible' : 'none');
+      if (anyTrails) map.setFilter('live-pistes-polygons-labels', polyLabelFilter);
     }
 
     // Aerialway Lifts & Cable-Aligned Labels are tied directly to Downhill ski infrastructure

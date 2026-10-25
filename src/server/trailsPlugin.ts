@@ -96,9 +96,8 @@ export function localTrailsPlugin(): Plugin {
                 const dDeg = 0.045; // ~4-5 km radius
                 const bboxStmt = database.prepare(`
                   SELECT DISTINCT t.geojson FROM trails t
-                  JOIN resort_trails rt ON t.id = rt.trail_id
                   WHERE t.min_lng <= ? AND t.max_lng >= ? AND t.min_lat <= ? AND t.max_lat >= ?
-                  LIMIT 600
+                  LIMIT 2500
                 `);
                 const bboxRows = bboxStmt.all(lng + dDeg, lng - dDeg, lat + dDeg, lat - dDeg) as { geojson: string }[];
                 features = bboxRows.map((r) => {
@@ -114,12 +113,11 @@ export function localTrailsPlugin(): Plugin {
               const [minLng, minLat, maxLng, maxLat] = parts;
               // Only query valid, tight bounding boxes (ignore massive state/continent queries)
               if (Math.abs(maxLng - minLng) <= 0.6 && Math.abs(maxLat - minLat) <= 0.5) {
-                // Strictly join resort_trails to filter out random backcountry / hiking trails
+                // Query all pistes and operating lifts in the bounding box directly from trails table
                 const stmt = database.prepare(`
                   SELECT DISTINCT t.geojson FROM trails t
-                  JOIN resort_trails rt ON t.id = rt.trail_id
                   WHERE t.min_lng <= ? AND t.max_lng >= ? AND t.min_lat <= ? AND t.max_lat >= ?
-                  LIMIT 3000
+                  LIMIT 5000
                 `);
                 const rows = stmt.all(maxLng, minLng, maxLat, minLat) as { geojson: string }[];
                 features = rows.map((r) => {

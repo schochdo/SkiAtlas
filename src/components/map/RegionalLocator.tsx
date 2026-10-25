@@ -88,7 +88,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     return 'Locator';
   }, [selectedResort, activeRegionContext]);
 
-  const getViewportGeoJson = useCallback((): GeoJSON.FeatureCollection => {
+  const getViewportGeoJson = useCallback((): any => {
     if (!viewportBounds) return { type: 'FeatureCollection', features: [] };
     const [w, s, e, n] = viewportBounds;
     const south = Math.max(-85, Math.min(85, s));
@@ -119,7 +119,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     };
   }, [viewportBounds]);
 
-  const getResortPinGeoJson = useCallback((): GeoJSON.FeatureCollection => {
+  const getResortPinGeoJson = useCallback((): any => {
     if (!selectedResort) return { type: 'FeatureCollection', features: [] };
     return {
       type: 'FeatureCollection',

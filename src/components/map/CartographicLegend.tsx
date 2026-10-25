@@ -63,7 +63,11 @@ export const CartographicLegend: React.FC<CartographicLegendProps> = ({
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-1.5 rounded-xs bg-[#B84A39]" />
-              <span>Expert / Freeride (Double Black)</span>
+              <span>Expert / Extreme (Double Black)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-2 rounded-[2px] bg-[#B84A39]/20 border border-dashed border-[#B84A39]" />
+              <span>Freeride Bowls, Chutes & Glades</span>
             </div>
             <div className="flex items-center gap-2 pt-1 border-t border-[#D6D0C2]">
               <span className="w-3 border-t-2 border-dashed border-[#B84A39]" />

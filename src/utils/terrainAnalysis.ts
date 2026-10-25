@@ -1,5 +1,5 @@
 import * as maplibregl from 'maplibre-gl';
-import type { RequestParameters, ResponseCallback } from 'maplibre-gl';
+import type { RequestParameters } from 'maplibre-gl';
 
 /* =========================================================================
    CLIENT-SIDE REAL-TIME SLOPE & ASPECT TERRAIN ANALYSIS PROTOCOLS
