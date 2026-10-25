@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: add sticky selection banner, card toggle, and map click deselection`
+- **Instant & Prominent Deselection Controls**:
+  - **What was wrong**: Deselecting a ski area was unintuitive. Users had to toggle scope to "IN FRAME", find the single active card, and attempt to click it (which previously opened the mountain profile view instead of deselecting).
+  - **Sticky Active Selection Banner**: Added a high-visibility, archival banner right beneath the scope tabs whenever a resort is selected (`● SELECTED AREA: <Resort Name>`) featuring an immediate, prominent `[ ✕ Deselect ]` button.
+  - **Card Click Toggle**: Clicking an already-selected card in the directory list now toggles it off (`handleDeselectResort()`), rather than navigating away to the mountain profile.
+  - **Card Deselect Action**: Added an explicit `[ ✕ Deselect ]` button inside the active card's bottom action bar next to `[ Mountain Profile → ]`.
+  - **Empty Map Canvas Deselection**: Clicking on open map terrain outside interactive resort pins/clusters automatically clears the active selection, aligning with intuitive GIS and web map conventions.
+
+---
+
 ### `fix: purge contradictory "Unaffiliated" pass tags on European partners & clean card metrics layout`
 - **Fixed Contradictory "Epic" and "Unaffiliated" Dual Tagging**:
   - **What was wrong**: European partner destinations (Verbier, Courchevel, Val Thorens, Val d'Isère, Sölden) were erroneously defined with both a major pass network and `Independent` (`['Epic', 'Independent']` or `['Independent', 'Ikon']`). This caused the mountain profile detail view to render both `[ Epic ]` and `[ Unaffiliated ]` side by side.

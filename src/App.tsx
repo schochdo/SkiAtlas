@@ -2624,6 +2624,7 @@ export default function App() {
   const liveFeaturesMapRef = useRef<Map<string, any>>(new Map());
   const activeOverpassAbortRef = useRef<AbortController | null>(null);
   const lastFetchedBboxKeyRef = useRef<string>('');
+  const handleDeselectResortRef = useRef<() => void>(() => {});
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -3647,6 +3648,23 @@ export default function App() {
               duration: 600,
             });
           });
+        }
+      });
+
+      // Click on empty map canvas deselects active resort
+      map.on('click', (e) => {
+        const interactiveLayers = [
+          'resorts-outer-ring',
+          'resorts-inner-dot',
+          'resorts-labels',
+          'global-unclustered-outer-ring',
+          'global-unclustered-point',
+          'global-unclustered-label',
+          'global-clusters',
+        ].filter((id) => map.getLayer(id));
+        const feats = map.queryRenderedFeatures(e.point, { layers: interactiveLayers });
+        if (!feats || feats.length === 0) {
+          handleDeselectResortRef.current();
         }
       });
 
@@ -5018,6 +5036,7 @@ export default function App() {
       });
     }
   };
+  handleDeselectResortRef.current = handleDeselectResort;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -5499,6 +5518,31 @@ export default function App() {
           </button>
         </div>
 
+        {/* Sticky Active Selection Banner when a ski area is selected */}
+        {selectedResort && (
+          <div className="px-3 py-2 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between gap-2 shrink-0 animate-in fade-in duration-150">
+            <div className="min-w-0 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#B84A39] shrink-0" />
+              <div className="min-w-0">
+                <div className="text-[10px] uppercase font-bold text-[#736E67] tracking-wider leading-none">
+                  Selected Area
+                </div>
+                <div className="font-bold text-xs text-[#1C1B18] truncate mt-0.5">
+                  {selectedResort.name}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleDeselectResort}
+              className="flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F3] hover:bg-[#EAE5D9] border border-[#D6D0C2] hover:border-[#1C1B18] text-[#1C1B18] text-xs font-bold rounded transition-colors cursor-pointer shadow-2xs shrink-0"
+              title="Deselect this ski area"
+            >
+              <X className="w-3.5 h-3.5 text-[#5C5852]" />
+              <span>Deselect</span>
+            </button>
+          </div>
+        )}
+
         {/* Directory Cards List */}
         <div className="flex-1 min-h-0 overflow-y-auto bg-[#F7F4ED] p-2.5 space-y-2">
           {displayedResorts.length === 0 ? (
@@ -5527,7 +5571,7 @@ export default function App() {
                   key={r.id}
                   onClick={() => {
                     if (isSelected) {
-                      setPanelView('profile');
+                      handleDeselectResort();
                     } else {
                       handleSelectResort(r.id);
                     }
@@ -5622,13 +5666,26 @@ export default function App() {
                   </div>
 
                   {isSelected && (
-                    <div className="mt-2 pt-2 border-t border-[#D6D0C2] flex justify-end">
+                    <div className="mt-2 pt-2 border-t border-[#D6D0C2] flex items-center justify-between">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeselectResort();
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F3] hover:bg-[#EAE5D9] border border-[#D6D0C2] hover:border-[#1C1B18] text-[#5C5852] hover:text-[#1C1B18] text-xs font-bold rounded transition-colors cursor-pointer"
+                        title="Deselect this ski area"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Deselect</span>
+                      </button>
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setPanelView('profile');
                         }}
                         className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#1C1B18] hover:bg-[#33312B] text-[#FAF8F3] text-xs font-bold rounded transition-colors cursor-pointer shadow-2xs"
+                        title="View detailed mountain profile and weather"
                       >
                         <span>Mountain Profile</span>
                         <ChevronRight className="w-3.5 h-3.5" />
