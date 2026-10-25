@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `style: standardize visual weight and darkness across North arrow, badges, and typography`
+- **Replaced Heavy Solid North Arrow with Outlined Cartographic Chevron**:
+  - **What was wrong**: While `+` and `-` buttons in the map navigation stack were thin open strokes (`strokeWidth={2.2}` with ~450 dark pixels), the North arrow was rendered as a solid filled black polygon (`points="12,2 4.5,20 12,15.5 19.5,20" fill="currentColor"` with 2,161 dark pixels). This made the North arrow appear ~4.5x darker and heavier than the `+` and `-` buttons above it.
+  - **Standardized Stroke Weight**: Converted the North arrow to an outlined cartographic chevron with matching `strokeWidth={2.2}`, `fill="none"`, `stroke="currentColor"`, and a crisp, centered `N` (`fontSize="6" fontWeight="700"`). The visual darkness, line weight, and background transparency across `+`, `-`, and North arrow now match with mathematical precision.
+- **Eliminated Pitch-Black Badges & Heavy Fills**:
+  - Replaced solid pitch-black badge fills (`bg-[#1C1B18] text-[#FAF8F3]`) on active filter counters and active basemap style pills with refined warm stone badges (`bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299]`).
+  - Replaced the solid black polygon on the tray pull-tab with an open, stroked chevron (`strokeWidth="1.8" strokeLinecap="round"`).
+- **Toned Down Chunky `font-extrabold` Typography**:
+  - Standardized `font-extrabold` down to `font-bold` / `font-semibold` across the top wordmark, filter section headers, numeric slider readouts, popover relief multipliers, and dossier metric cards, eliminating harsh ink pooling while preserving crisp typographic hierarchy.
+
+---
+
 ### `fix: eliminate camera jump at end of arrow key panning by keeping continuous ground-clamping`
 - **Root Cause of Post-Pan Camera Jump**:
   - In the 60 FPS flight engine, pressing a pan key previously captured a fixed altitude (`lockedElevation = map.getCenterElevation()`) and called `map.setCenterClampedToGround(false)`.

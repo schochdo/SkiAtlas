@@ -4900,11 +4900,11 @@ export default function App() {
 
           {/* Tracked Mountain Editorial Wordmark */}
           <div className="flex items-center select-none shrink-0">
-            <span className="font-extrabold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
+            <span className="font-bold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
               SNOW
             </span>
             <span className="text-[#B84A39] mx-1.5 font-bold text-base select-none">·</span>
-            <span className="font-extrabold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
+            <span className="font-bold tracking-[0.18em] text-[15.5px] uppercase text-[#1C1B18]">
               GLOBE
             </span>
           </div>
@@ -4990,11 +4990,11 @@ export default function App() {
             <div className="border border-[#D6D0C2] rounded-md bg-[#F7F4ED] p-3 space-y-3">
               <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-[#1C1B18] uppercase tracking-wider text-[11px]">
+                  <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[11px]">
                     Pass & Terrain Filters
                   </span>
                   {activeFiltersCount > 0 && (
-                    <span className="bg-[#1C1B18] text-[#FAF8F3] text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums">
+                    <span className="bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums shadow-2xs">
                       {activeFiltersCount} active
                     </span>
                   )}
@@ -5116,7 +5116,7 @@ export default function App() {
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-baseline">
                       <span className="text-[12.5px] text-[#4A463F] font-semibold">Min Vertical Drop</span>
-                      <span className="text-[13.5px] text-[#1C1B18] font-extrabold tabular-nums">
+                      <span className="text-[13.5px] text-[#1C1B18] font-bold tabular-nums">
                         {unitsMetric
                           ? (minVerticalM > 0 ? `${minVerticalM.toLocaleString()} m` : 'Any')
                           : (minVerticalFt > 0 ? `${minVerticalFt.toLocaleString()}'` : 'Any')}
@@ -5171,7 +5171,7 @@ export default function App() {
                       <span className="text-[12.5px] text-[#4A463F] font-semibold">
                         {unitsMetric ? 'Min Skiable Area' : 'Min Skiable Acres'}
                       </span>
-                      <span className="text-[13.5px] text-[#1C1B18] font-extrabold tabular-nums">
+                      <span className="text-[13.5px] text-[#1C1B18] font-bold tabular-nums">
                         {unitsMetric
                           ? (minAreaHa > 0 ? `${minAreaHa.toLocaleString()} ha` : 'Any')
                           : (minAreaAcres > 0 ? `${minAreaAcres.toLocaleString()} ac` : 'Any')}
@@ -5229,7 +5229,7 @@ export default function App() {
                     <span className="text-[12.5px] text-[#4A463F] font-semibold">
                       {showDownhill ? 'Min Nordic Network' : 'Min Trail Network'}
                     </span>
-                    <span className="text-[13.5px] text-[#1C1B18] font-extrabold tabular-nums">
+                    <span className="text-[13.5px] text-[#1C1B18] font-bold tabular-nums">
                       {unitsMetric
                         ? (minNordicKm > 0 ? `${minNordicKm} km` : 'Any')
                         : (minNordicMi > 0 ? `${minNordicMi} mi` : 'Any')}
@@ -5282,7 +5282,7 @@ export default function App() {
 
             {/* Sort Controls Row */}
             <div className="flex items-center justify-between gap-2 pt-1">
-              <span className="text-[#736E67] uppercase tracking-wider font-extrabold text-[11px] shrink-0">
+              <span className="text-[#736E67] uppercase tracking-wider font-bold text-[11px] shrink-0">
                 Sort:
               </span>
               <div className="flex items-center gap-1 bg-[#FAF8F3] p-0.5 rounded-md border border-[#D6D0C2]">
@@ -5457,12 +5457,16 @@ export default function App() {
             <svg
               className="w-2.5 h-3 text-[#5A554E] group-hover:text-[#1C1B18] transition-colors"
               viewBox="0 0 8 10"
-              fill="currentColor"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
               {leftDockOpen ? (
-                <polygon points="7,1 1,5 7,9" />
+                <polyline points="5.5 1.5 2 5 5.5 8.5" />
               ) : (
-                <polygon points="1,1 7,5 1,9" />
+                <polyline points="2.5 1.5 6 5 2.5 8.5" />
               )}
             </svg>
           </div>
@@ -5497,7 +5501,7 @@ export default function App() {
           <Minus className="w-3.5 h-3.5" strokeWidth={2.2} />
         </button>
 
-        {/* Reorient North Button (Clean Minimal Cartographic Style, Below +/-) */}
+        {/* Reorient North Button (Standardized Clean Cartographic Stroke matching +/-) */}
         <button
           onClick={handleResetNorth}
           className="w-8 h-8 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] active:bg-[#E5E0D5] transition-colors cursor-pointer group"
@@ -5505,24 +5509,27 @@ export default function App() {
           aria-label="Reorient to True North"
         >
           <svg
-            className="w-4 h-4 pointer-events-none transition-transform duration-150 ease-out"
+            className="w-3.5 h-3.5 pointer-events-none transition-transform duration-150 ease-out"
             viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             style={{ transform: `rotate(${-mapBearing}deg)` }}
           >
-            {/* True Cartographic North Arrow in exact same #1C1B18 gray as + and - */}
-            <polygon
-              points="12,2 4.5,20 12,15.5 19.5,20"
-              fill="currentColor"
-            />
+            {/* Outlined Cartographic North Arrow matching Plus & Minus stroke weight */}
+            <polygon points="12 2 19 21 12 17 5 21 12 2" />
             <text
               x="12"
-              y="10.5"
+              y="11.2"
               textAnchor="middle"
               dominantBaseline="central"
               fontSize="6"
-              fontWeight="900"
+              fontWeight="700"
               fontFamily="system-ui, -apple-system, sans-serif"
-              fill="#FAF8F3"
+              fill="currentColor"
+              stroke="none"
             >
               N
             </text>
@@ -5632,7 +5639,7 @@ export default function App() {
                       >
                         <span>{item.label}</span>
                         {isSelected && (
-                          <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#1C1B18] text-[#FAF8F3]">
+                          <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299]">
                             Active
                           </span>
                         )}
@@ -5648,7 +5655,7 @@ export default function App() {
                   <span className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
                     Terrain Relief Multiplier
                   </span>
-                  <span className="text-xs font-extrabold text-[#1C1B18] tabular-nums">
+                  <span className="text-xs font-bold text-[#1C1B18] tabular-nums">
                     {terrainExaggeration.toFixed(2)}×
                   </span>
                 </div>
@@ -5681,7 +5688,7 @@ export default function App() {
                           onClick={() => handleTerrainExaggerationChange(preset.val)}
                           className={`py-1 px-1 text-center rounded-[4px] border text-[10px] transition-all cursor-pointer ${
                             isActive
-                              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-extrabold'
+                              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
                               : 'bg-[#F7F4ED] text-[#5C5852] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
                           }`}
                         >
@@ -5732,9 +5739,9 @@ export default function App() {
             </div>
             {/* Navigation & Gesture Guide */}
             <div className="pt-2 border-t border-[#D6D0C2] text-xs text-[#5C5852] space-y-1">
-              <div><strong className="text-[#1C1B18]">Trackpad:</strong> Pinch zoom · ⌥+scroll or right-drag rotate · Shift+scroll tilt</div>
-              <div><strong className="text-[#1C1B18]">Tablet:</strong> 2-finger pinch & rotate · 2-finger drag tilt</div>
-              <div><strong className="text-[#1C1B18]">Keyboard:</strong> W/S tilt · A/D rotate · Arrows pan</div>
+              <div><strong className="font-semibold text-[#1C1B18]">Trackpad:</strong> Pinch zoom · ⌥+scroll or right-drag rotate · Shift+scroll tilt</div>
+              <div><strong className="font-semibold text-[#1C1B18]">Tablet:</strong> 2-finger pinch & rotate · 2-finger drag tilt</div>
+              <div><strong className="font-semibold text-[#1C1B18]">Keyboard:</strong> W/S tilt · A/D rotate · Arrows pan</div>
             </div>
           </div>
         )}
@@ -6049,13 +6056,13 @@ export default function App() {
               <div className="grid grid-cols-3 gap-2 text-xs text-center">
                 <div className="bg-[#F7F4ED] p-2.5 border border-[#D6D0C2] rounded-md">
                   <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider truncate">72h Snow</div>
-                  <div className="text-base font-extrabold text-[#3B627E] mt-0.5">
+                  <div className="text-base font-bold text-[#3B627E] mt-0.5">
                     {formatSnow(selectedResort.weather?.snowfall_72h_in ?? 0)}
                   </div>
                 </div>
                 <div className="bg-[#F7F4ED] p-2.5 border border-[#D6D0C2] rounded-md">
                   <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider truncate">7-Day Snow</div>
-                  <div className="text-base font-extrabold text-[#3B627E] mt-0.5">
+                  <div className="text-base font-bold text-[#3B627E] mt-0.5">
                     {selectedResort.weather?.daily_forecast
                       ? formatSnow(
                           Math.round(
@@ -6070,7 +6077,7 @@ export default function App() {
                 </div>
                 <div className="bg-[#F7F4ED] p-2.5 border border-[#D6D0C2] rounded-md">
                   <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider truncate">Avg Annual</div>
-                  <div className="text-base font-extrabold text-[#1C1B18] mt-0.5">
+                  <div className="text-base font-bold text-[#1C1B18] mt-0.5">
                     {selectedResort.avg_snowfall_in ? formatSnow(selectedResort.avg_snowfall_in) : '—'}
                   </div>
                 </div>
