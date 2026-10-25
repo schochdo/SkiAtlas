@@ -91,7 +91,7 @@ export function localTrailsPlugin(): Plugin {
             const rows = stmt.all(resort) as { geojson: string }[];
             features = rows.map((r) => {
               const f = JSON.parse(r.geojson);
-              delete f.id;
+              if (!f.id && f.properties?.id) f.id = f.properties.id;
               return f;
             });
 
@@ -110,7 +110,7 @@ export function localTrailsPlugin(): Plugin {
                 const bboxRows = bboxStmt.all(lng + dDeg, lng - dDeg, lat + dDeg, lat - dDeg) as { geojson: string }[];
                 features = bboxRows.map((r) => {
                   const f = JSON.parse(r.geojson);
-                  delete f.id;
+                  if (!f.id && f.properties?.id) f.id = f.properties.id;
                   return f;
                 });
               }
@@ -130,7 +130,7 @@ export function localTrailsPlugin(): Plugin {
                 const rows = stmt.all(maxLng, minLng, maxLat, minLat) as { geojson: string }[];
                 features = rows.map((r) => {
                   const f = JSON.parse(r.geojson);
-                  delete f.id;
+                  if (!f.id && f.properties?.id) f.id = f.properties.id;
                   return f;
                 });
               }

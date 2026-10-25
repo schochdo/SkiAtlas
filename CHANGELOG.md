@@ -6,6 +6,25 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: tone down trail and lift label repeat frequency with promoteId tracking and increased symbol spacing`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: At Palisades Tahoe (and other resorts worldwide), chairlifts and ski trails displayed multiple duplicate labels within a few inches on screen. For example, "Shirley Lake Express" appeared 3 separate times along an 840m lift, while adjacent trails like "Shirley Bowl" and "Tomlinson's - 1st" displayed repeated duplicate labels back-to-back.
+  - **Root Cause #1 (`symbol-placement: 'line-center'` multi-segment tiling)**: Layers used `symbol-placement: 'line-center'`. MapLibre's internal symbol layout engine places a center label on *every* line segment in a feature's bucket without calling `anchorIsTooClose()`. When MapLibre slices GeoJSON geometries into vector tiles across tile borders at zoom 14–16, or when OpenStreetMap maps a trail as multiple connected segments/switchbacks, `line-center` placed a label at the center of each tile fragment or segment.
+  - **Root Cause #2 (`symbol-spacing` ignored in `line-center`)**: In the MapLibre GL style specification, `symbol-spacing` strictly requires `symbol-placement: 'line'`. In `line-center`, `symbol-spacing` is completely bypassed.
+  - **Root Cause #3 (Missing Feature IDs & `promoteId`)**: In `src/server/trailsPlugin.ts`, the SQLite pipeline previously ran `delete f.id;` on every feature. Because features lacked top-level IDs and `live-pistes-vector` had no `promoteId`, MapLibre's worker generated non-promoted symbol keys (`keyWithFeatureId`), preventing `CrossTileSymbolIndex` from matching segments across tile boundaries.
+  - **Root Cause #4 (Low `text-padding`)**: Default `text-padding: 2px` allowed adjacent trail and lift labels to crowd tightly against parallel lines.
+- **Cartographic Label Deduplication & Spacing ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), [`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts))**:
+  - **Promoted Feature Identity**: Preserved `f.id = f.properties.id` in `trailsPlugin.ts` and `src/App.tsx`, and configured `promoteId: 'id'` on `live-pistes-vector`. MapLibre now recognizes tile fragments of the same lift or run as a single unified feature across tile edges.
+  - **Adaptive Line Placement with Generous Spacing**:
+    - Changed `live-pistes-lifts-labels` to `'symbol-placement': 'line'`, `'symbol-spacing': 700`, and `'text-padding': 14`. MapLibre enforces `anchorIsTooClose` deduplication, ensuring chairlifts and gondolas display only a single clean label (or at most one well-separated label on exceptionally long cross-valley lifts).
+    - Changed `live-pistes-labels` to `'symbol-placement': 'line'`, `'symbol-spacing': 600`, `'text-padding': 12`, and `'text-max-angle': 38`.
+    - Added `'text-padding': 12` to `live-pistes-polygons-labels` to prevent glade and bowl area labels from crowding nearby piste line labels.
+    - Updated `live-pistes-labels` initial filter to explicitly require `['!=', ['get', 'kind'], 'lift']`, preventing lift names from ever overlapping in the trail label layer.
+- **Verification**:
+  - Verified via headless Chrome CDP at Palisades Tahoe / Shirley Lake Express (`[-120.2720, 39.1968]`, zoom 15.4, bearing 30, pitch 45) in both satellite and topo basemaps: "Shirley Lake Express" count reduced from 3 to exactly 1. Adjacent duplicate trail labels ("Shirley Bowl", "Tomlinson's - 1st", "Solitude", "Granite Chief", "Funnel") were cleanly deduplicated with zero overlapping clutter.
+
+---
+
 ### `fix: eliminate blurry/fuzzy shaded relief in Alpine Topo basemap at intermediate zooms`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: When viewing the map with the "Alpine Topo" basemap at zoom levels 8.0–9.5 (such as around Aosta and 4 Vallées), the shaded relief and baked-in geographic text ("Aosta", "4280m", "A5") became extremely blurry, fuzzy, and pixelated. This did not occur on Satellite or OpenStreetMap basemaps.

@@ -435,7 +435,10 @@ export default function App() {
             continue;
           }
         }
-        liveFeaturesMapRef.current.set(String(f.id || f.properties?.id), f);
+        if (!f.id && p?.id) {
+          f.id = p.id;
+        }
+        liveFeaturesMapRef.current.set(String(f.id || p?.id), f);
       }
 
       if (liveFeaturesMapRef.current.size > 4500) {
@@ -831,6 +834,7 @@ export default function App() {
       // 1. Localhost SQLite Real Vector Ski Trails Source & Layers
       map.addSource('live-pistes-vector', {
         type: 'geojson',
+        promoteId: 'id',
         data: { type: 'FeatureCollection', features: [] },
       });
 
@@ -964,6 +968,7 @@ export default function App() {
         layout: {
           'visibility': 'none',
           'symbol-placement': 'point',
+          'text-padding': 12,
           'text-field': [
             'case',
             [
@@ -997,10 +1002,16 @@ export default function App() {
         type: 'symbol',
         source: 'live-pistes-vector',
         minzoom: 12.5,
-        filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
+        filter: [
+          'all',
+          ['!=', ['get', 'kind'], 'lift'],
+          ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
+        ],
         layout: {
           'visibility': 'none',
-          'symbol-placement': 'line-center',
+          'symbol-placement': 'line',
+          'symbol-spacing': 600,
+          'text-padding': 12,
           'text-field': [
             'case',
             [
@@ -1018,6 +1029,7 @@ export default function App() {
           'text-keep-upright': true,
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'viewport',
+          'text-max-angle': 38,
         },
         paint: {
           'text-color': '#1C1B18',
@@ -1047,7 +1059,9 @@ export default function App() {
         ],
         layout: {
           'visibility': showDownhill ? 'visible' : 'none',
-          'symbol-placement': 'line-center',
+          'symbol-placement': 'line',
+          'symbol-spacing': 700,
+          'text-padding': 14,
           'text-field': ['get', 'name'],
           'text-size': [
             'interpolate',
