@@ -6,6 +6,27 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `feat: top-align regional locator inset map to cover button with smooth pop-out expansion`
+- **User Intent & Problem Context**:
+  - Previously, clicking the top-left regional locator button (`[ 🧭 Yamagata Prefecture ]`) opened the inset map popup at `top-10`, leaving the trigger button floating above the window.
+  - In addition, long region names (e.g. `Yamagata Prefecture`) rendered inside the preset buttons overflowed the header and truncated the title to `Reg...`.
+- **Top-Aligned Cartographic Pop-Out Window ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx))**:
+  - **Cover Button & Top-Align**: Changed popup positioning from `top-10` to `top-0 left-0`, aligning the top edge of the inset map window with `NavigationControls` (`+` button) and completely covering the button while open.
+  - **Placeholder Layout Stability**: While open, the underlying trigger button becomes `invisible pointer-events-none`, keeping its exact layout width in the flex header row so adjacent controls never shift.
+  - **Tactile Pop-Out Animation**: Added `origin-top-left transition-all duration-200 animate-in fade-in-0 zoom-in-95`, giving the window a tactile expanding pop-out effect directly from the button upon press.
+  - **Clean Header Hierarchy**: Swapped the redundant long region name out of the preset button to concise labels (`[Region] [Continent] [World]  ✕`), freeing 150px+ of header space so the regional title (`Yamagata Prefecture` / `Regional Overview`) renders cleanly without truncation.
+  - **Comprehensive Outside-Click & Escape Dismissal**:
+    - Listening to both `pointerdown` and `mousedown` outside the menu ref ensures clicking anywhere on the main map, zoom buttons, or sidebar immediately dismisses the popup window and smoothly reveals the compact button.
+    - Added `Escape` key listener to close the window instantly.
+- **Verification via Headless Chrome CDP ([`scripts/test_locator_top_aligned.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/test_locator_top_aligned.cjs), [`scripts/test_locator_escape.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/test_locator_escape.cjs))**:
+  - Verified that on open, the window top-aligns at `top-0 left-0` and covers the button with full header readability.
+  - Verified dismissal on `✕` click, outside canvas click, and `Escape` key press.
+  - Clean build verified with `npm run build` (324ms).
+
+---
+
+## 2026-10-25
+
 ### `feat: global mountain peaks overhaul with hybrid prominence filtering and authoritative geodetic survey benchmarks`
 - **Systematic Problem Diagnosis**:
   - The previous raw scrape from `open-peaks/data` contained over 410 peaks with coordinates truncated to whole arcminutes without seconds ($\pm 1.5\text{ km}$ displacement error worldwide), along with low-elevation noise (Hong Kong city hills, sea stacks, road culverts) and corrupted scraper values (e.g. latitude/longitude 0).

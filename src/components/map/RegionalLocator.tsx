@@ -177,18 +177,27 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     return { type: 'FeatureCollection', features: [] };
   }, [selectedResort, mapZoom, activeRegionContext, mapCenter]);
 
-  // Handle outside click to close locator menu
+  // Handle outside click and Escape key to close locator menu
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (locatorMenuRef.current && !locatorMenuRef.current.contains(event.target as Node)) {
         onCloseLocator();
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCloseLocator();
+      }
+    };
     if (locatorOpen) {
+      document.addEventListener('pointerdown', handleClickOutside);
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
+      document.removeEventListener('pointerdown', handleClickOutside);
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [locatorOpen, onCloseLocator]);
 
@@ -439,9 +448,10 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     <div className="relative" ref={locatorMenuRef}>
       <button
         onClick={onToggleLocator}
+        aria-expanded={locatorOpen}
         className={`flex items-center gap-1.5 px-3 py-1.5 h-8 rounded-md border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
           locatorOpen
-            ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-semibold'
+            ? 'invisible pointer-events-none'
             : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
         }`}
         title="Regional Overview & State/Country Context"
@@ -453,30 +463,28 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       </button>
 
       {locatorOpen && (
-        <div className="absolute left-0 top-10 w-80 sm:w-88 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-xl overflow-hidden z-30 animate-in fade-in duration-150">
+        <div className="absolute left-0 top-0 w-80 sm:w-88 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-xl overflow-hidden z-30 origin-top-left transition-all duration-200 animate-in fade-in-0 zoom-in-95">
           {/* Header */}
           <div className="px-3 py-2 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between">
-            <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0 pr-2">
               <Compass className="w-3.5 h-3.5 text-[#5C5852] shrink-0" />
               <span className="text-xs font-bold text-[#1C1B18] tracking-tight truncate">
-                Regional Overview
+                {triggerLabel || 'Regional Overview'}
               </span>
             </div>
             {/* Quick Zoom Presets */}
             <div className="flex items-center gap-1 shrink-0">
-              {regionButtonLabel && (
-                <button
-                  onClick={() => handleSetLocatorPreset('regional')}
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
-                    locatorZoomPreset === 'regional'
-                      ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
-                      : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
-                  }`}
-                  title="Zoom to Regional / State Level"
-                >
-                  {regionButtonLabel}
-                </button>
-              )}
+              <button
+                onClick={() => handleSetLocatorPreset('regional')}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                  locatorZoomPreset === 'regional'
+                    ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
+                    : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
+                }`}
+                title={`Zoom to Regional / State Level${regionButtonLabel ? ` (${regionButtonLabel})` : ''}`}
+              >
+                Region
+              </button>
               <button
                 onClick={() => handleSetLocatorPreset('continental')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
@@ -502,7 +510,8 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
               <button
                 onClick={onCloseLocator}
                 className="p-1 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer ml-1"
-                title="Close"
+                title="Close (Esc)"
+                aria-label="Close"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
