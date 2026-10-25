@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `feat: default to flat map at global scope with OSM basemap and full card box outline`
+- **Default Flat Map (Mercator) at Global Scope**:
+  - Initialized `earthProjection` to `'mercator'` and set map center to `[12, 28]` at zoom `1.8`, framing the global extent of alpine ski destinations worldwide on load.
+  - Set default `basemapMode` to `'osm'` (OpenStreetMap) with clean hillshade relief.
+  - Ensured no area is selected on start (`selectedResortId === null`).
+- **Default to "All Matching" Scope & Swapped Tab Order**:
+  - Initialized `directoryScope` to `'all'` so users start with the complete ledger of matching resorts.
+  - Swapped directory scope tab positions so `[ ALL MATCHING ]` is first on the left, followed by `[ IN FRAME ]` on the right.
+- **Prominent Whole-Box Card Outline on Selection**:
+  - Replaced the subtle `border-l-3` left strip with a bold, 4-sided outline on selected cards (`border-2 border-[#1C1B18] ring-1 ring-[#1C1B18] shadow-md rounded-lg`).
+  - Styled directory cards as distinct rounded ledger cards (`p-2.5 space-y-2`) rather than a flush `divide-y` list, ensuring the active card's full perimeter is immediately legible.
+  - Clicking an already-selected card opens its Mountain Profile directly.
+
+---
+
 ### `refactor: clean up directory visual hierarchy and eliminate redundant profile navigation chrome`
 - **Dropped Redundant "Viewing: Mountain Profile" Banner**:
   - Removed the persistent banner strip (`Viewing: [Name] · Mountain Profile →`) from the top of the Mountain Directory tray. The tray now begins cleanly and directly with the Search bar, restoring balanced editorial hierarchy.

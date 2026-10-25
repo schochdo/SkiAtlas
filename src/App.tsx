@@ -2484,8 +2484,8 @@ export default function App() {
   const mapRef = useRef<MapLibreMap | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const [earthProjection, setEarthProjection] = useState<EarthProjectionMode>('globe');
-  const [basemapMode, setBasemapMode] = useState<BasemapMode>('satellite');
+  const [earthProjection, setEarthProjection] = useState<EarthProjectionMode>('mercator');
+  const [basemapMode, setBasemapMode] = useState<BasemapMode>('osm');
   const [unitsMetric, setUnitsMetric] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -2583,7 +2583,7 @@ export default function App() {
   const [isTiltDragging, setIsTiltDragging] = useState(false);
 
   // Mountain Directory Scope & Sorting
-  const [directoryScope, setDirectoryScope] = useState<'in_frame' | 'all'>('in_frame');
+  const [directoryScope, setDirectoryScope] = useState<'in_frame' | 'all'>('all');
   const [sortBy, setSortBy] = useState<'vert' | 'acres' | 'name' | 'snow'>('snow');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -2985,8 +2985,8 @@ export default function App() {
           },
         ],
       },
-      center: [-98.5, 39.8], // Default to North America on globe
-      zoom: 3.1,
+      center: [12, 28], // Global scope flat map (Mercator)
+      zoom: 1.8,
       minZoom: 1.2,
       maxZoom: 16.5, // Prevent over-zooming past DEM resolution into the subterranean surface
       pitch: 0,
@@ -5325,20 +5325,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Directory Scope Category Tabs: In Frame vs All Matching Filters */}
+        {/* Directory Scope Category Tabs: All Matching vs In Frame */}
         <div className="px-3 py-2 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setDirectoryScope('in_frame')}
-            className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
-              directoryScope === 'in_frame'
-                ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
-                : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
-            }`}
-            title="Show only ski areas currently inside the map view frame"
-          >
-            <span className="tabular-nums">{inViewResorts.length.toLocaleString()}</span>
-            <span>IN FRAME</span>
-          </button>
           <button
             onClick={() => setDirectoryScope('all')}
             className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
@@ -5351,10 +5339,22 @@ export default function App() {
             <span className="tabular-nums">{filteredResorts.length.toLocaleString()}</span>
             <span>ALL MATCHING</span>
           </button>
+          <button
+            onClick={() => setDirectoryScope('in_frame')}
+            className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
+              directoryScope === 'in_frame'
+                ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
+                : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
+            }`}
+            title="Show only ski areas currently inside the map view frame"
+          >
+            <span className="tabular-nums">{inViewResorts.length.toLocaleString()}</span>
+            <span>IN FRAME</span>
+          </button>
         </div>
 
         {/* Directory Cards List */}
-        <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#D6D0C2] bg-[#F7F4ED]">
+        <div className="flex-1 min-h-0 overflow-y-auto bg-[#F7F4ED] p-2.5 space-y-2">
           {displayedResorts.length === 0 ? (
             <div className="p-4 text-center text-xs text-[#8A847C] space-y-2">
               <div>
@@ -5379,9 +5379,17 @@ export default function App() {
               return (
                 <div
                   key={r.id}
-                  onClick={() => handleSelectResort(r.id)}
-                  className={`p-3 transition-colors cursor-pointer group ${
-                    isSelected ? 'bg-[#FAF8F3] border-l-3 border-l-[#1C1B18]' : 'hover:bg-[#FAF8F3]'
+                  onClick={() => {
+                    if (isSelected) {
+                      setPanelView('profile');
+                    } else {
+                      handleSelectResort(r.id);
+                    }
+                  }}
+                  className={`p-3 rounded-lg transition-all cursor-pointer group ${
+                    isSelected
+                      ? 'bg-[#FAF8F3] border-2 border-[#1C1B18] ring-1 ring-[#1C1B18] shadow-md'
+                      : 'bg-[#FAF8F3] border border-[#D6D0C2] hover:border-[#A8A299] hover:shadow-2xs'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">

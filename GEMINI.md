@@ -47,5 +47,7 @@ This is the primary mechanism for preserving context across sessions and model s
 - **Terrain source is Mapterhorn DEM** — AWS Terrarium causes geometry spikes at certain zooms; do not switch back
 - **Globe initial padding must be set synchronously** before map construction — not in a useEffect
 - **Default sort is `'snow'` (7-day), not `'vert'`**
-- **Default projection is `'globe'`**, centered on North America `[-100, 47]` at zoom 3.2
+- **Default projection is `'mercator'` (flat map)** at global scope `[12, 28]` z=1.8, with OpenStreetMap (OSM) basemap by default
+- **Default directory scope is `'all'` (All Matching)**, with `[ ALL MATCHING ]` positioned before `[ IN FRAME ]`
+- **Selected resort card outline**: Whole box is outlined with a prominent 2px border and shadow
 - **Weather prefetch fires on mount** (batches of 5, 200ms apart) — do not remove this
