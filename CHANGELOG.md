@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-24
 
+### `style: increase scale of SNOW GLOBE typography and center crest icon`
+- **Larger Wordmark & Center Crest**:
+  - Increased font size of `SNOW` and `GLOBE` from `text-[15px]` to `text-[17px]` with `tracking-[0.16em]` and `leading-none`.
+  - Scaled the alpine snow globe crest SVG from `w-5.5 h-5.5` to `w-6.5 h-6.5` with `mx-2.5` spacing and `-mt-0.5` optical cap-height centering.
+  - Enhanced legibility of the ridgeline, vermilion summit accent, and snow crystals while maintaining balanced vertical padding within the 44px (`h-11`) header bar on both desktop and mobile viewports.
+
+---
+
 ### `style: render North arrow as solid muted grayish arrowhead without mini N`
 - **What was wrong**:
   - The previous attempt to lighten the North arrow used an outlined polygon with a tiny "N" glyph inside. At 14px rendered size, the interior letter rotated awkwardly and became a cramped, pixelated squiggly artifact.

@@ -5781,13 +5781,13 @@ export default function App() {
         <div className="flex items-center min-w-0">
           {/* Tracked Mountain Editorial Wordmark with Alpine Snow Globe Crest in the center */}
           <div className="flex items-center select-none shrink-0">
-            <span className="font-bold tracking-[0.18em] text-[15px] uppercase text-[#1C1B18]">
+            <span className="font-bold tracking-[0.16em] text-[17px] uppercase text-[#1C1B18] leading-none">
               SNOW
             </span>
 
             {/* Alpine Snow Globe Crest in between SNOW and GLOBE */}
             <svg
-              className="w-5.5 h-5.5 mx-2 shrink-0 -mt-0.5"
+              className="w-6.5 h-6.5 mx-2.5 shrink-0 -mt-0.5"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -5808,7 +5808,7 @@ export default function App() {
               <circle cx="7.5" cy="9.5" r="0.5" fill="#8A847C" />
             </svg>
 
-            <span className="font-bold tracking-[0.18em] text-[15px] uppercase text-[#1C1B18]">
+            <span className="font-bold tracking-[0.16em] text-[17px] uppercase text-[#1C1B18] leading-none">
               GLOBE
             </span>
           </div>
