@@ -6,6 +6,30 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: eliminate flight elevation bouncing with steady-altitude cruising and minimum-clearance ground protection`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: Flying across mountain terrain with the keyboard (arrow keys or WASD) caused the camera elevation to continuously bounce up and down like a rollercoaster.
+  - **Root Cause #1 (Continuously Chasing Underlying Ground Height)**: In `src/App.tsx`, the flight engine sampled `rawGround` under the moving center coordinate on every frame and computed `diff = targetGroundElev - smoothedElevation`. When flying over valleys, ravines, or bowls, `diff` was negative, forcing `smoothedElevation` to plunge down towards the valley floor; when reaching the opposite ridge, `diff` was positive, forcing `smoothedElevation` to climb back up. Even though low-pass exponential damping was applied, the target was still following the ground contour, causing constant vertical bouncing.
+  - **Root Cause #2 (Keyup Settle & Ground Snap)**: Releasing navigation keys initiated a 400ms settle phase that pulled the elevation down to `map.queryTerrainElevation(center)` and called `setCenterClampedToGround(true)`. This dropped the camera down to the dirt whenever the user paused flying, and subsequent flights immediately started on the ground again.
+  - **Root Cause #3 (Idle Elevation Pull)**: While adjusting pitch (W/S) or bearing (A/D) without horizontal motion, the flight loop continuously damped any difference between `smoothedElevation` and `rawGround`, pulling the camera down into the ground.
+- **Steady-Altitude Flight Architecture ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Steady Altitude Rule (Cruise when well above ground)**: When `flightElevation` is at or above the required ground clearance (`minAllowedElevation = rawGround + MIN_CLEARANCE`), the flight loop now **completely ignores the ground height** below. `deltaElevation` remains $0$, maintaining a perfectly level, steady flight trajectory across valleys, lakes, ravines, and descending bowls.
+  - **Minimum Height Rule (Terrain Clearance Protection)**: If approaching rising terrain, a mountain ridge, or a summit where `minAllowedElevation > flightElevation`, the flight loop smoothly lifts the altitude (`climbDelta = minAllowedElevation - flightElevation`) with an exponential response curve ($1 - e^{-6.0 \cdot dt}$) and an absolute floor to guarantee the camera never clips into or tunnels under the mountain.
+  - **Eliminated Ground Snapping & Settle Drop**: Removed the keyup settle phase and removed `setCenterClampedToGround(true)` from `stopFlight()`. Stopping flight now holds the exact coordinates and altitude where the user released the keys.
+  - **Manual Altitude Controls**: Added `KeyE` / `PageUp` (ascend altitude) and `KeyQ` / `PageDown` (descend altitude) for intentional 3D vertical flight adjustment while preserving the minimum height floor.
+- **Verification**:
+  - Replicated and tested in headless Chrome CDP across multiple torture tests at Vail and the Bernese Alps:
+    1. Flying forward across valleys maintained a constant altitude (e.g. steady $2,100\text{ m}$ across 15 consecutive samples) without a single millimeter of downward dipping or bouncing.
+    2. Approaching higher ridges climbed smoothly to clear the slope and maintained the new altitude on the other side.
+    3. Releasing keys held the camera altitude steady without post-release dipping.
+    4. Verified manual ascend (`KeyE`: $2,100\text{ m} \to 2,317\text{ m}$) and descend (`KeyQ`: $2,317\text{ m} \to 2,090\text{ m}$) stopping cleanly at the terrain clearance floor.
+    5. Verified subsequent mouse drag panning moved smoothly with zero stickiness.
+  - Clean production build with `npm run build` (355ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: correct peak summit coordinates, clean Wikipedia disambiguation artifacts, and enforce elevation hygiene`
 - **Root Cause Diagnosis**:
   - **What was wrong before**: In the Bernese Alps (Jungfrau region) and other mountain regions, summits exhibited geographic displacement and toponymic artifacts. Specifically:
@@ -53,6 +77,30 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     2. Silberhorn (`▲ Silberhorn · 12,123'`) displays without `(Alps)` disambiguation.
     3. Metric toggle dynamically displays `▲ Mönch · 4,107 m` and `▲ Silberhorn · 3,695 m` with zero formatting artifacts.
   - Zero build warnings or errors on `npm run build`.
+
+---
+
+## 2026-10-25
+
+### `fix: eliminate flight elevation bouncing with steady-altitude cruising and minimum-clearance ground protection`
+- **Root Cause Diagnosis**:
+  - **What was wrong before**: Flying across mountain terrain with the keyboard (arrow keys or WASD) caused the camera elevation to continuously bounce up and down like a rollercoaster.
+  - **Root Cause #1 (Continuously Chasing Underlying Ground Height)**: In `src/App.tsx`, the flight engine sampled `rawGround` under the moving center coordinate on every frame and computed `diff = targetGroundElev - smoothedElevation`. When flying over valleys, ravines, or bowls, `diff` was negative, forcing `smoothedElevation` to plunge down towards the valley floor; when reaching the opposite ridge, `diff` was positive, forcing `smoothedElevation` to climb back up. Even though low-pass exponential damping was applied, the target was still following the ground contour, causing constant vertical bouncing.
+  - **Root Cause #2 (Keyup Settle & Ground Snap)**: Releasing navigation keys initiated a 400ms settle phase that pulled the elevation down to `map.queryTerrainElevation(center)` and called `setCenterClampedToGround(true)`. This dropped the camera down to the dirt whenever the user paused flying, and subsequent flights immediately started on the ground again.
+  - **Root Cause #3 (Idle Elevation Pull)**: While adjusting pitch (W/S) or bearing (A/D) without horizontal motion, the flight loop continuously damped any difference between `smoothedElevation` and `rawGround`, pulling the camera down into the ground.
+- **Steady-Altitude Flight Architecture ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Steady Altitude Rule (Cruise when well above ground)**: When `flightElevation` is at or above the required ground clearance (`minAllowedElevation = rawGround + MIN_CLEARANCE`), the flight loop now **completely ignores the ground height** below. `deltaElevation` remains $0$, maintaining a perfectly level, steady flight trajectory across valleys, lakes, ravines, and descending bowls.
+  - **Minimum Height Rule (Terrain Clearance Protection)**: If approaching rising terrain, a mountain ridge, or a summit where `minAllowedElevation > flightElevation`, the flight loop smoothly lifts the altitude (`climbDelta = minAllowedElevation - flightElevation`) with an exponential response curve ($1 - e^{-6.0 \cdot dt}$) and an absolute floor to guarantee the camera never clips into or tunnels under the mountain.
+  - **Eliminated Ground Snapping & Settle Drop**: Removed the keyup settle phase and removed `setCenterClampedToGround(true)` from `stopFlight()`. Stopping flight now holds the exact coordinates and altitude where the user released the keys.
+  - **Manual Altitude Controls**: Added `KeyE` / `PageUp` (ascend altitude) and `KeyQ` / `PageDown` (descend altitude) for intentional 3D vertical flight adjustment while preserving the minimum height floor.
+- **Verification**:
+  - Replicated and tested in headless Chrome CDP across multiple torture tests at Vail and the Bernese Alps:
+    1. Flying forward across valleys maintained a constant altitude (e.g. steady $2,100\text{ m}$ across 15 consecutive samples) without a single millimeter of downward dipping or bouncing.
+    2. Approaching higher ridges climbed smoothly to clear the slope and maintained the new altitude on the other side.
+    3. Releasing keys held the camera altitude steady without post-release dipping.
+    4. Verified manual ascend (`KeyE`: $2,100\text{ m} \to 2,317\text{ m}$) and descend (`KeyQ`: $2,317\text{ m} \to 2,090\text{ m}$) stopping cleanly at the terrain clearance floor.
+    5. Verified subsequent mouse drag panning moved smoothly with zero stickiness.
+  - Clean production build with `npm run build` (355ms).
 
 ---
 

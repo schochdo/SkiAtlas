@@ -2047,6 +2047,10 @@ export default function App() {
       'KeyA',
       'KeyS',
       'KeyD',
+      'KeyQ',
+      'KeyE',
+      'PageUp',
+      'PageDown',
       'KeyZ',
       'KeyX',
       'Equal',
@@ -2066,6 +2070,8 @@ export default function App() {
       return tag === 'INPUT' || tag === 'TEXTAREA' || (el as HTMLElement).isContentEditable;
     };
 
+    let flightElevation: number | null = null;
+
     const stopFlight = () => {
       activeKeys.clear();
       if (animationFrameId !== null) {
@@ -2073,9 +2079,7 @@ export default function App() {
         animationFrameId = null;
       }
       lastTimestamp = null;
-      smoothedElevation = null;
-      isSettling = false;
-      try { (mapRef.current as any)?.setCenterClampedToGround?.(true); } catch (_) {}
+      flightElevation = null;
     };
 
     const flightStep = (timestamp: number) => {
@@ -2085,6 +2089,7 @@ export default function App() {
       }
 
       if (isProgrammaticFlightActive) {
+        flightElevation = null;
         stopFlight();
         return;
       }
@@ -2095,40 +2100,21 @@ export default function App() {
       const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.08);
       lastTimestamp = timestamp;
 
-      // Settle Phase: Active keys released, gently ease remaining elevation delta to terrain
       const hasNavKey = Array.from(activeKeys).some((k) => NAVIGATION_KEYS.has(k));
       if (!hasNavKey) {
-        if (isSettling && smoothedElevation !== null) {
-          const curCenter = map.getCenter();
-          const ground = map.queryTerrainElevation(curCenter);
-          const targetElev = (ground !== null && ground !== undefined && isFinite(ground)) ? ground : smoothedElevation;
-          const settleDiff = targetElev - smoothedElevation;
-          const elapsed = timestamp - settleStartTime;
-
-          if (Math.abs(settleDiff) > 0.4 && elapsed < 400) {
-            smoothedElevation += settleDiff * (1 - Math.exp(-dt * 6.0));
-            map.jumpTo({ elevation: smoothedElevation });
-            animationFrameId = requestAnimationFrame(flightStep);
-            return;
-          }
-
-          // Settle complete: snap the last sub-half-meter and restore native ground clamping
-          map.jumpTo({ elevation: targetElev });
-        }
         stopFlight();
         return;
       }
 
-      // Active Flight Phase
-      isSettling = false;
-
-      // Initialize smoothedElevation and disable instantaneous ground clamping
-      if (smoothedElevation === null) {
+      // Initialize flightElevation and ensure native ground clamping is disabled
+      if (flightElevation === null) {
         try { (map as any).setCenterClampedToGround?.(false); } catch (_) {}
         const curCenter = map.getCenter();
-        const ground = map.queryTerrainElevation(curCenter);
         const curElev = map.getCenterElevation();
-        smoothedElevation = (ground !== null && ground !== undefined && isFinite(ground)) ? ground : (curElev || 0);
+        const ground = map.queryTerrainElevation(curCenter);
+        flightElevation = (curElev !== null && curElev !== undefined && isFinite(curElev))
+          ? curElev
+          : ((ground !== null && ground !== undefined && isFinite(ground)) ? ground : 0);
       }
 
       const isShift = activeKeys.has('ShiftLeft') || activeKeys.has('ShiftRight');
@@ -2138,6 +2124,7 @@ export default function App() {
       let zoomDelta = 0;
       let moveForward = 0;
       let moveStrafe = 0;
+      let altitudeDelta = 0;
 
       // WASD: Direct Camera Orientation Controls (No Shift required!)
       // W/S: Tilt pitch (up towards 3D horizon / down towards 2D nadir)
@@ -2147,6 +2134,10 @@ export default function App() {
       // A/D: Rotate bearing (spin camera heading left / right)
       if (activeKeys.has('KeyA')) rotateBearing += 1;
       if (activeKeys.has('KeyD')) rotateBearing -= 1;
+
+      // Q/E or PageDown/PageUp: Manual Altitude Adjustment (Descend / Ascend)
+      if (activeKeys.has('KeyE') || activeKeys.has('PageUp')) altitudeDelta += 1;
+      if (activeKeys.has('KeyQ') || activeKeys.has('PageDown')) altitudeDelta -= 1;
 
       // Arrow Keys: Direct Ground Panning Controls (No Shift required!)
       if (activeKeys.has('ArrowUp')) moveForward += 1;
@@ -2182,18 +2173,24 @@ export default function App() {
         map.setZoom(nextZoom);
       }
 
-      // Smooth damped terrain panning: filters out micro-ridges and terrain bumps while contouring macro slopes
+      const curZoom = map.getZoom();
+      const speedMps = 720 * Math.pow(2, 14 - curZoom) * (isShift ? 2.5 : 1.0);
+
+      // Manual altitude control (Q/E or PageUp/PageDown)
+      if (altitudeDelta !== 0) {
+        const altSpeed = Math.max(250, speedMps * 0.75) * (isShift ? 2.0 : 1.0);
+        flightElevation += altitudeDelta * altSpeed * dt;
+      }
+
+      // Smooth horizontal flight with steady-altitude physics & minimum-clearance ground protection
       if (moveForward !== 0 || moveStrafe !== 0) {
         const len = Math.hypot(moveForward, moveStrafe);
         moveForward /= len;
         moveStrafe /= len;
 
-        const curZoom = map.getZoom();
         const curCenter = map.getCenter();
         const curBearing = map.getBearing();
         const bearingRad = (curBearing * Math.PI) / 180;
-
-        const speedMps = 720 * Math.pow(2, 14 - curZoom) * (isShift ? 2.5 : 1.0);
         const distMeters = speedMps * dt;
 
         const sinB = Math.sin(bearingRad);
@@ -2211,35 +2208,45 @@ export default function App() {
         const nextLat = Math.max(-85, Math.min(85, curCenter.lat + deltaLat));
         const nextLng = curCenter.lng + deltaLng;
 
-        // Damped elevation tracking: sample ground terrain, apply low-pass filtering and vertical speed limits
+        // Minimum height rule:
+        // Sample ground terrain under next flight coordinate.
+        // If terrain rises above current altitude, climb smoothly to stay above the mountain.
+        // If flight altitude is well above the ground, IGNORE ground height and keep elevation rock-steady!
         const rawGround = map.queryTerrainElevation([nextLng, nextLat]);
-        const targetGroundElev = (rawGround !== null && rawGround !== undefined && isFinite(rawGround)) ? rawGround : smoothedElevation;
-        const diff = targetGroundElev - smoothedElevation;
+        if (rawGround !== null && rawGround !== undefined && isFinite(rawGround)) {
+          const MIN_CLEARANCE = 5.0; // meters minimum ground clearance buffer
+          const minAllowedElevation = rawGround + MIN_CLEARANCE;
 
-        // Asymmetric damping: responsive climb uphill (3.2), gentle glide downhill/over ridges (1.8)
-        const dampingLambda = diff > 0 ? 3.2 : 1.8;
-        const maxVerticalSpeed = Math.max(300, speedMps * 0.75); // m/s
-        const maxDeltaPerFrame = maxVerticalSpeed * dt;
-        const unclampedDelta = diff * (1 - Math.exp(-dt * dampingLambda));
-        const deltaElevation = Math.max(-maxDeltaPerFrame, Math.min(maxDeltaPerFrame, unclampedDelta));
-
-        smoothedElevation += deltaElevation;
+          if (minAllowedElevation > flightElevation) {
+            // Mountain / ridge rising ahead: lift smoothly to clear the slope
+            const climbDiff = minAllowedElevation - flightElevation;
+            const climbFactor = 1 - Math.exp(-dt * 6.0);
+            const maxClimbSpeed = Math.max(speedMps * 1.5, 450); // m/s
+            const climbDelta = Math.min(climbDiff, Math.max(climbDiff * climbFactor, maxClimbSpeed * dt));
+            flightElevation += climbDelta;
+            if (flightElevation < minAllowedElevation) {
+              flightElevation = minAllowedElevation;
+            }
+          }
+          // When flightElevation >= minAllowedElevation:
+          // Keep elevation completely steady! Zero rollercoaster dipping into valleys or ravines.
+        }
 
         map.jumpTo({
           center: [nextLng, nextLat],
-          elevation: smoothedElevation,
+          elevation: flightElevation,
         });
-      } else if (smoothedElevation !== null) {
-        // Not panning horizontally, but if smoothedElevation has minor offset from ground, ease gently
+      } else if (altitudeDelta !== 0) {
+        // Enforce ground clearance when manually adjusting altitude in place
         const curCenter = map.getCenter();
         const rawGround = map.queryTerrainElevation(curCenter);
         if (rawGround !== null && rawGround !== undefined && isFinite(rawGround)) {
-          const diff = rawGround - smoothedElevation;
-          if (Math.abs(diff) > 0.5) {
-            smoothedElevation += diff * (1 - Math.exp(-dt * 3.5));
-            map.jumpTo({ elevation: smoothedElevation });
-          }
+          const minAllowed = rawGround + 5.0;
+          if (flightElevation < minAllowed) flightElevation = minAllowed;
         }
+        map.jumpTo({
+          elevation: flightElevation,
+        });
       }
 
       animationFrameId = requestAnimationFrame(flightStep);
@@ -2255,7 +2262,6 @@ export default function App() {
         activeKeys.add(e.code);
         if (e.shiftKey) activeKeys.add('ShiftLeft');
         setIsProgrammaticFlightActive(false);
-        isSettling = false;
 
         if (animationFrameId === null) {
           lastTimestamp = performance.now();
@@ -2272,9 +2278,7 @@ export default function App() {
       }
       const hasNavKey = Array.from(activeKeys).some((k) => NAVIGATION_KEYS.has(k));
       if (!hasNavKey && animationFrameId !== null) {
-        // Begin smooth settle phase instead of abruptly snapping
-        isSettling = true;
-        settleStartTime = performance.now();
+        stopFlight();
       }
     };
 
