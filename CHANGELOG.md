@@ -6,6 +6,44 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: elevate ski area label prominence, hide peaks at regional scale, exclude wild backcountry trails, and snap summits to geodetic benchmarks`
+- **User Intent & Problem Context**:
+  - The user raised three critical cartographic issues:
+    1. *"At this scale, the peaks should not be labeled, but the ski areas should be more prominently labeled."* (Uploaded image showing regional Colorado view at zoom 9.5 completely covered in dozens of red peak labels like Sopris, Maroon Bells, Elbert, drowning out ski resorts like Aspen and Crested Butte).
+    2. *"Here we go again. Peaks not in the right place."* (Uploaded images showing New York Peak dot ~900m off the ridge down in a valley basin, and Mount of the Holy Cross dot displaced 300m down a ridge face).
+    3. *"There is also a ski trail down holy cross peak. That is not a resort."* (Uploaded image showing a red downhill ski line running down the wilderness face of Mount of the Holy Cross).
+- **Cartographic Hierarchy & Regional Prominence ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Suppress Regional Peaks**: Raised `major-peaks-label` `minzoom` from 7.5 to `12.0` and `major-peaks-marker` from 7.5 to `11.5`. Peaks only render when zoomed in to explore local mountains and terrain, completely eliminating peak clutter at regional zoom levels (zoom 6–11.4).
+  - **Elevate Ski Area Labels**: Upgraded `resorts-labels` and `global-unclustered-label`:
+    - Font: Upgraded to `Open Sans Bold` / `Arial Unicode MS Bold`.
+    - Dynamic sizing: Interpolated smoothly across zoom (`6: 12px`, `9: 13.5px`, `12: 15px`, `15: 17px`).
+    - High-contrast halo: Increased `text-halo-width` to `2.8px` with `0.5px` blur in `#FAF8F3`.
+    - Priority rendering: Set `symbol-sort-key: 1` (curated) and `2` (global) with `symbol-sort-key: 10` for peaks, ensuring resort labels never yield or collide.
+- **Wild Backcountry Trail Elimination ([`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts), [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Excluded Wilderness Pistes**: SkiAtlas is an atlas of ski resorts. Excluded `skitour`, `backcountry`, `fatbike`, `hike`, `sled`, and `playground` pistes.
+  - **Isolated Resort Boundaries**: Wilderness routes tagged with `grooming=backcountry` or `piste:type=skitour` without any ski resort association (`resort_id IS NULL` and > 6km from any resort) are strictly filtered out in `trailsPlugin.ts`, in client ingest `fetchOverpassBbox`, and in MapLibre GPU `nonSkiExclusion`.
+  - In-bounds freeride terrain inside ski resorts (e.g. *Saudan Couloir* at Whistler Blackcomb or *East Face* at Snowbird) remains fully rendered.
+  - Mount of the Holy Cross now displays 0 ski trails.
+- **Geodetic Summit Benchmark Reconciliation ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson))**:
+  - Identified that 115 Colorado peaks in `major_peaks.geojson` had truncated arcminute coordinates ($1/60^\circ \approx 0.0167^\circ$), displacing them by 200m to 3.9km from true geography.
+  - Reconciled all 115 peaks against official USGS GNIS / OpenStreetMap surveyed geodetic benchmarks:
+    - **New York Peak**: Corrected from `[-106.683, 39.0833]` (displaced 1,063m into valley) $\rightarrow$ exact summit benchmark `[-106.693318, 39.085837]`.
+    - **Mount of the Holy Cross**: Corrected from `[-106.479, 39.4681]` (displaced 306m) $\rightarrow$ exact summit benchmark `[-106.481777, 39.466822]`.
+    - **Homestake Peak**: Corrected from `[-106.438, 39.336]` (displaced 3,914m) $\rightarrow$ exact summit benchmark `[-106.414750, 39.367488]`.
+    - **Mount Sopris**: Corrected from `[-107.171, 39.26]` (displaced 635m) $\rightarrow$ exact summit benchmark `[-107.164765, 39.261214]`.
+    - **Maroon Peak / Maroon Bells**: Corrected to `[-106.989035, 39.070818]`.
+    - **Crested Butte, Blodgett Peak, Mount Antero, West Spanish Peak, Red Peak, Buffalo Mountain**, and 100+ others snapped directly to surveyed peak nodes.
+- **Verification via Headless Chrome CDP**:
+  - `screen_co_regional_view.png`: Verified regional Colorado view at zoom 9.3 has 0 peak labels and 0 peak markers; ski areas (Aspen Snowmass, Sunlight, Crested Butte, Ski Cooper, Copper Mountain) are bold, high-contrast, and prominent.
+  - `screen_holy_cross_no_trails.png`: Verified Mount of the Holy Cross has 0 ski trails, with summit marker resting directly on the surveyed 14,012' peak benchmark.
+  - `screen_new_york_peak_aligned.png`: Verified New York Peak marker is centered on the ridge summit.
+  - `screen_vail_resort_trails.png`: Verified in-bounds resort trails and lifts continue to render properly.
+  - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-25
+
 ### `fix: isolate authentic Open-Meteo responses in 24h cache and eliminate synthetic fallback cache poisoning`
 - **User Intent & Problem Context**:
   - The user noticed that the numbers on SkiAtlas cards did not match Open-Meteo's website: *"Those openmeteo forecasts are not matching what I see on the site... I do want to make sure the data is accurate, though. How do I do that if it is not matching what openmeteo says?"*

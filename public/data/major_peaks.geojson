@@ -36682,22 +36682,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.142512,
-          39.620264
+          -106.14283,
+          39.616653
         ]
       },
       "properties": {
         "id": "peak-1868",
         "name": "Buffalo Mountain",
-        "elevation_ft": 12777,
-        "elevation_m": 3894,
-        "elevation_formatted_ft": "12,777'",
-        "elevation_formatted_m": "3,894 m",
-        "label_ft": "▲ Buffalo Mountain · 12,777'",
-        "label_m": "▲ Buffalo Mountain · 3,894 m",
-        "label_stacked_ft": "▲ Buffalo Mountain\n12,777'",
-        "label_stacked_m": "▲ Buffalo Mountain\n3,894 m",
-        "sort_key": 27223,
+        "elevation_ft": 12749,
+        "elevation_m": 3886,
+        "elevation_formatted_ft": "12,749'",
+        "elevation_formatted_m": "3,886 m",
+        "label_ft": "▲ Buffalo Mountain · 12,749'",
+        "label_m": "▲ Buffalo Mountain · 3,886 m",
+        "label_stacked_ft": "▲ Buffalo Mountain\n12,749'",
+        "label_stacked_m": "▲ Buffalo Mountain\n3,886 m",
+        "sort_key": 27251,
         "continent": "North America"
       }
     },
@@ -39432,22 +39432,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.759274,
-          37.930137
+          -107.755617,
+          37.928606
         ]
       },
       "properties": {
         "id": "peak-1982",
         "name": "Ajax Peak",
-        "elevation_ft": 12785,
-        "elevation_m": 3897,
-        "elevation_formatted_ft": "12,785'",
-        "elevation_formatted_m": "3,897 m",
-        "label_ft": "▲ Ajax Peak · 12,785'",
-        "label_m": "▲ Ajax Peak · 3,897 m",
-        "label_stacked_ft": "▲ Ajax Peak\n12,785'",
-        "label_stacked_m": "▲ Ajax Peak\n3,897 m",
-        "sort_key": 27215,
+        "elevation_ft": 12779,
+        "elevation_m": 3895,
+        "elevation_formatted_ft": "12,779'",
+        "elevation_formatted_m": "3,895 m",
+        "label_ft": "▲ Ajax Peak · 12,779'",
+        "label_m": "▲ Ajax Peak · 3,895 m",
+        "label_stacked_ft": "▲ Ajax Peak\n12,779'",
+        "label_stacked_m": "▲ Ajax Peak\n3,895 m",
+        "sort_key": 27221,
         "continent": "North America"
       }
     },
@@ -39482,22 +39482,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -104.993,
-          38.7914
+          -104.993864,
+          38.791376
         ]
       },
       "properties": {
         "id": "peak-1984",
         "name": "Almagre Mountain",
-        "elevation_ft": 12369,
-        "elevation_m": 3770,
-        "elevation_formatted_ft": "12,369'",
-        "elevation_formatted_m": "3,770 m",
-        "label_ft": "▲ Almagre Mountain · 12,369'",
-        "label_m": "▲ Almagre Mountain · 3,770 m",
-        "label_stacked_ft": "▲ Almagre Mountain\n12,369'",
-        "label_stacked_m": "▲ Almagre Mountain\n3,770 m",
-        "sort_key": 27631,
+        "elevation_ft": 12362,
+        "elevation_m": 3768,
+        "elevation_formatted_ft": "12,362'",
+        "elevation_formatted_m": "3,768 m",
+        "label_ft": "▲ Almagre Mountain · 12,362'",
+        "label_m": "▲ Almagre Mountain · 3,768 m",
+        "label_stacked_ft": "▲ Almagre Mountain\n12,362'",
+        "label_stacked_m": "▲ Almagre Mountain\n3,768 m",
+        "sort_key": 27638,
         "continent": "North America"
       }
     },
@@ -39507,22 +39507,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.846,
-          37.8964
+          -107.846731,
+          37.896383
         ]
       },
       "properties": {
         "id": "peak-1985",
         "name": "Bald Mountain",
-        "elevation_ft": 11880,
-        "elevation_m": 3621,
-        "elevation_formatted_ft": "11,880'",
-        "elevation_formatted_m": "3,621 m",
-        "label_ft": "▲ Bald Mountain · 11,880'",
-        "label_m": "▲ Bald Mountain · 3,621 m",
-        "label_stacked_ft": "▲ Bald Mountain\n11,880'",
-        "label_stacked_m": "▲ Bald Mountain\n3,621 m",
-        "sort_key": 28120,
+        "elevation_ft": 11850,
+        "elevation_m": 3612,
+        "elevation_formatted_ft": "11,850'",
+        "elevation_formatted_m": "3,612 m",
+        "label_ft": "▲ Bald Mountain · 11,850'",
+        "label_m": "▲ Bald Mountain · 3,612 m",
+        "label_stacked_ft": "▲ Bald Mountain\n11,850'",
+        "label_stacked_m": "▲ Bald Mountain\n3,612 m",
+        "sort_key": 28150,
         "continent": "North America"
       }
     },
@@ -39532,22 +39532,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.485,
-          37.5772
+          -105.485665,
+          37.577531
         ]
       },
       "properties": {
         "id": "peak-1986",
         "name": "Blanca Peak",
-        "elevation_ft": 14344,
-        "elevation_m": 4372,
-        "elevation_formatted_ft": "14,344'",
-        "elevation_formatted_m": "4,372 m",
-        "label_ft": "▲ Blanca Peak · 14,344'",
-        "label_m": "▲ Blanca Peak · 4,372 m",
-        "label_stacked_ft": "▲ Blanca Peak\n14,344'",
-        "label_stacked_m": "▲ Blanca Peak\n4,372 m",
-        "sort_key": 25656,
+        "elevation_ft": 14350,
+        "elevation_m": 4374,
+        "elevation_formatted_ft": "14,350'",
+        "elevation_formatted_m": "4,374 m",
+        "label_ft": "▲ Blanca Peak · 14,350'",
+        "label_m": "▲ Blanca Peak · 4,374 m",
+        "label_stacked_ft": "▲ Blanca Peak\n14,350'",
+        "label_stacked_m": "▲ Blanca Peak\n4,374 m",
+        "sort_key": 25650,
         "continent": "North America"
       }
     },
@@ -39557,22 +39557,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -104.918037,
-          38.966934
+          -104.907168,
+          38.958861
         ]
       },
       "properties": {
         "id": "peak-1987",
         "name": "Blodgett Peak",
-        "elevation_ft": 9423,
-        "elevation_m": 2872,
-        "elevation_formatted_ft": "9,423'",
-        "elevation_formatted_m": "2,872 m",
-        "label_ft": "▲ Blodgett Peak · 9,423'",
-        "label_m": "▲ Blodgett Peak · 2,872 m",
-        "label_stacked_ft": "▲ Blodgett Peak\n9,423'",
-        "label_stacked_m": "▲ Blodgett Peak\n2,872 m",
-        "sort_key": 30577,
+        "elevation_ft": 9426,
+        "elevation_m": 2873,
+        "elevation_formatted_ft": "9,426'",
+        "elevation_formatted_m": "2,873 m",
+        "label_ft": "▲ Blodgett Peak · 9,426'",
+        "label_m": "▲ Blodgett Peak · 2,873 m",
+        "label_stacked_ft": "▲ Blodgett Peak\n9,426'",
+        "label_stacked_m": "▲ Blodgett Peak\n2,873 m",
+        "sort_key": 30574,
         "continent": "North America"
       }
     },
@@ -39607,8 +39607,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -104.954,
-          38.8314
+          -104.95442,
+          38.831378
         ]
       },
       "properties": {
@@ -39632,22 +39632,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.082,
-          39.1503
+          -107.082727,
+          39.15021
         ]
       },
       "properties": {
         "id": "peak-1990",
         "name": "Capitol Peak",
-        "elevation_ft": 14131,
-        "elevation_m": 4307,
-        "elevation_formatted_ft": "14,131'",
-        "elevation_formatted_m": "4,307 m",
-        "label_ft": "▲ Capitol Peak · 14,131'",
-        "label_m": "▲ Capitol Peak · 4,307 m",
-        "label_stacked_ft": "▲ Capitol Peak\n14,131'",
-        "label_stacked_m": "▲ Capitol Peak\n4,307 m",
-        "sort_key": 25869,
+        "elevation_ft": 14137,
+        "elevation_m": 4309,
+        "elevation_formatted_ft": "14,137'",
+        "elevation_formatted_m": "4,309 m",
+        "label_ft": "▲ Capitol Peak · 14,137'",
+        "label_m": "▲ Capitol Peak · 4,309 m",
+        "label_stacked_ft": "▲ Capitol Peak\n14,137'",
+        "label_stacked_m": "▲ Capitol Peak\n4,309 m",
+        "sort_key": 25863,
         "continent": "North America"
       }
     },
@@ -39657,22 +39657,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.861,
-          39.0097
+          -106.861369,
+          39.009742
         ]
       },
       "properties": {
         "id": "peak-1991",
         "name": "Castle Peak",
-        "elevation_ft": 14265,
-        "elevation_m": 4348,
-        "elevation_formatted_ft": "14,265'",
-        "elevation_formatted_m": "4,348 m",
-        "label_ft": "▲ Castle Peak · 14,265'",
-        "label_m": "▲ Castle Peak · 4,348 m",
-        "label_stacked_ft": "▲ Castle Peak\n14,265'",
-        "label_stacked_m": "▲ Castle Peak\n4,348 m",
-        "sort_key": 25735,
+        "elevation_ft": 14278,
+        "elevation_m": 4352,
+        "elevation_formatted_ft": "14,278'",
+        "elevation_formatted_m": "4,352 m",
+        "label_ft": "▲ Castle Peak · 14,278'",
+        "label_m": "▲ Castle Peak · 4,352 m",
+        "label_stacked_ft": "▲ Castle Peak\n14,278'",
+        "label_stacked_m": "▲ Castle Peak\n4,352 m",
+        "sort_key": 25722,
         "continent": "North America"
       }
     },
@@ -39707,22 +39707,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.606,
-          37.9803
+          -105.606604,
+          37.980327
         ]
       },
       "properties": {
         "id": "peak-1993",
         "name": "Challenger Point",
-        "elevation_ft": 14081,
-        "elevation_m": 4292,
-        "elevation_formatted_ft": "14,081'",
-        "elevation_formatted_m": "4,292 m",
-        "label_ft": "▲ Challenger Point · 14,081'",
-        "label_m": "▲ Challenger Point · 4,292 m",
-        "label_stacked_ft": "▲ Challenger Point\n14,081'",
-        "label_stacked_m": "▲ Challenger Point\n4,292 m",
-        "sort_key": 25919,
+        "elevation_ft": 14088,
+        "elevation_m": 4294,
+        "elevation_formatted_ft": "14,088'",
+        "elevation_formatted_m": "4,294 m",
+        "label_ft": "▲ Challenger Point · 14,088'",
+        "label_m": "▲ Challenger Point · 4,294 m",
+        "label_stacked_ft": "▲ Challenger Point\n14,088'",
+        "label_stacked_m": "▲ Challenger Point\n4,294 m",
+        "sort_key": 25912,
         "continent": "North America"
       }
     },
@@ -39732,22 +39732,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.344,
-          38.6656
+          -106.344191,
+          38.665552
         ]
       },
       "properties": {
         "id": "peak-1994",
         "name": "Chrysolite",
-        "elevation_ft": 12822,
-        "elevation_m": 3908,
-        "elevation_formatted_ft": "12,822'",
-        "elevation_formatted_m": "3,908 m",
-        "label_ft": "▲ Chrysolite · 12,822'",
-        "label_m": "▲ Chrysolite · 3,908 m",
-        "label_stacked_ft": "▲ Chrysolite\n12,822'",
-        "label_stacked_m": "▲ Chrysolite\n3,908 m",
-        "sort_key": 27178,
+        "elevation_ft": 12608,
+        "elevation_m": 3843,
+        "elevation_formatted_ft": "12,608'",
+        "elevation_formatted_m": "3,843 m",
+        "label_ft": "▲ Chrysolite · 12,608'",
+        "label_m": "▲ Chrysolite · 3,843 m",
+        "label_stacked_ft": "▲ Chrysolite\n12,608'",
+        "label_stacked_m": "▲ Chrysolite\n3,843 m",
+        "sort_key": 27392,
         "continent": "North America"
       }
     },
@@ -39757,8 +39757,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.929489,
-          40.607176
+          -105.92998,
+          40.606841
         ]
       },
       "properties": {
@@ -39782,22 +39782,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.863799,
-          39.014266
+          -106.862782,
+          39.015747
         ]
       },
       "properties": {
         "id": "peak-1996",
         "name": "Conundrum Peak",
-        "elevation_ft": 14058,
-        "elevation_m": 4285,
-        "elevation_formatted_ft": "14,058'",
-        "elevation_formatted_m": "4,285 m",
-        "label_ft": "▲ Conundrum Peak · 14,058'",
-        "label_m": "▲ Conundrum Peak · 4,285 m",
-        "label_stacked_ft": "▲ Conundrum Peak\n14,058'",
-        "label_stacked_m": "▲ Conundrum Peak\n4,285 m",
-        "sort_key": 25942,
+        "elevation_ft": 14012,
+        "elevation_m": 4271,
+        "elevation_formatted_ft": "14,012'",
+        "elevation_formatted_m": "4,271 m",
+        "label_ft": "▲ Conundrum Peak · 14,012'",
+        "label_m": "▲ Conundrum Peak · 4,271 m",
+        "label_stacked_ft": "▲ Conundrum Peak\n14,012'",
+        "label_stacked_m": "▲ Conundrum Peak\n4,271 m",
+        "sort_key": 25988,
         "continent": "North America"
       }
     },
@@ -39807,22 +39807,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.943,
-          38.8833
+          -106.943655,
+          38.883325
         ]
       },
       "properties": {
         "id": "peak-1997",
         "name": "Crested Butte",
-        "elevation_ft": 12162,
-        "elevation_m": 3707,
-        "elevation_formatted_ft": "12,162'",
-        "elevation_formatted_m": "3,707 m",
-        "label_ft": "▲ Crested Butte · 12,162'",
-        "label_m": "▲ Crested Butte · 3,707 m",
-        "label_stacked_ft": "▲ Crested Butte\n12,162'",
-        "label_stacked_m": "▲ Crested Butte\n3,707 m",
-        "sort_key": 27838,
+        "elevation_ft": 12152,
+        "elevation_m": 3704,
+        "elevation_formatted_ft": "12,152'",
+        "elevation_formatted_m": "3,704 m",
+        "label_ft": "▲ Crested Butte · 12,152'",
+        "label_m": "▲ Crested Butte · 3,704 m",
+        "label_stacked_ft": "▲ Crested Butte\n12,152'",
+        "label_stacked_m": "▲ Crested Butte\n3,704 m",
+        "sort_key": 27848,
         "continent": "North America"
       }
     },
@@ -39832,22 +39832,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.576,
-          37.9647
+          -105.576675,
+          37.964722
         ]
       },
       "properties": {
         "id": "peak-1998",
         "name": "Crestone Needle",
-        "elevation_ft": 14196,
-        "elevation_m": 4327,
-        "elevation_formatted_ft": "14,196'",
-        "elevation_formatted_m": "4,327 m",
-        "label_ft": "▲ Crestone Needle · 14,196'",
-        "label_m": "▲ Crestone Needle · 4,327 m",
-        "label_stacked_ft": "▲ Crestone Needle\n14,196'",
-        "label_stacked_m": "▲ Crestone Needle\n4,327 m",
-        "sort_key": 25804,
+        "elevation_ft": 14203,
+        "elevation_m": 4329,
+        "elevation_formatted_ft": "14,203'",
+        "elevation_formatted_m": "4,329 m",
+        "label_ft": "▲ Crestone Needle · 14,203'",
+        "label_m": "▲ Crestone Needle · 4,329 m",
+        "label_stacked_ft": "▲ Crestone Needle\n14,203'",
+        "label_stacked_m": "▲ Crestone Needle\n4,329 m",
+        "sort_key": 25797,
         "continent": "North America"
       }
     },
@@ -39857,22 +39857,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.585,
-          37.9667
+          -105.585452,
+          37.966884
         ]
       },
       "properties": {
         "id": "peak-1999",
         "name": "Crestone Peak",
-        "elevation_ft": 14295,
-        "elevation_m": 4357,
-        "elevation_formatted_ft": "14,295'",
-        "elevation_formatted_m": "4,357 m",
-        "label_ft": "▲ Crestone Peak · 14,295'",
-        "label_m": "▲ Crestone Peak · 4,357 m",
-        "label_stacked_ft": "▲ Crestone Peak\n14,295'",
-        "label_stacked_m": "▲ Crestone Peak\n4,357 m",
-        "sort_key": 25705,
+        "elevation_ft": 14301,
+        "elevation_m": 4359,
+        "elevation_formatted_ft": "14,301'",
+        "elevation_formatted_m": "4,359 m",
+        "label_ft": "▲ Crestone Peak · 14,301'",
+        "label_m": "▲ Crestone Peak · 4,359 m",
+        "label_stacked_ft": "▲ Crestone Peak\n14,301'",
+        "label_stacked_m": "▲ Crestone Peak\n4,359 m",
+        "sort_key": 25699,
         "continent": "North America"
       }
     },
@@ -39882,22 +39882,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.185,
-          37.1222
+          -105.185801,
+          37.12234
         ]
       },
       "properties": {
         "id": "peak-2000",
         "name": "Culebra Peak",
-        "elevation_ft": 14049,
-        "elevation_m": 4282,
-        "elevation_formatted_ft": "14,049'",
-        "elevation_formatted_m": "4,282 m",
-        "label_ft": "▲ Culebra Peak · 14,049'",
-        "label_m": "▲ Culebra Peak · 4,282 m",
-        "label_stacked_ft": "▲ Culebra Peak\n14,049'",
-        "label_stacked_m": "▲ Culebra Peak\n4,282 m",
-        "sort_key": 25951,
+        "elevation_ft": 14052,
+        "elevation_m": 4283,
+        "elevation_formatted_ft": "14,052'",
+        "elevation_formatted_m": "4,283 m",
+        "label_ft": "▲ Culebra Peak · 14,052'",
+        "label_m": "▲ Culebra Peak · 4,283 m",
+        "label_stacked_ft": "▲ Culebra Peak\n14,052'",
+        "label_stacked_m": "▲ Culebra Peak\n4,283 m",
+        "sort_key": 25948,
         "continent": "North America"
       }
     },
@@ -39907,22 +39907,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.583,
-          40.3667
+          -105.58441,
+          40.37926
         ]
       },
       "properties": {
         "id": "peak-2001",
         "name": "Deer Mountain",
-        "elevation_ft": 10013,
-        "elevation_m": 3052,
-        "elevation_formatted_ft": "10,013'",
-        "elevation_formatted_m": "3,052 m",
-        "label_ft": "▲ Deer Mountain · 10,013'",
-        "label_m": "▲ Deer Mountain · 3,052 m",
-        "label_stacked_ft": "▲ Deer Mountain\n10,013'",
-        "label_stacked_m": "▲ Deer Mountain\n3,052 m",
-        "sort_key": 29987,
+        "elevation_ft": 10007,
+        "elevation_m": 3050,
+        "elevation_formatted_ft": "10,007'",
+        "elevation_formatted_m": "3,050 m",
+        "label_ft": "▲ Deer Mountain · 10,007'",
+        "label_m": "▲ Deer Mountain · 3,050 m",
+        "label_stacked_ft": "▲ Deer Mountain\n10,007'",
+        "label_stacked_m": "▲ Deer Mountain\n3,050 m",
+        "sort_key": 29993,
         "continent": "North America"
       }
     },
@@ -39957,22 +39957,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -108.005,
-          37.8394
+          -108.006007,
+          37.839423
         ]
       },
       "properties": {
         "id": "peak-2003",
         "name": "El Diente",
-        "elevation_ft": 14160,
-        "elevation_m": 4316,
-        "elevation_formatted_ft": "14,160'",
-        "elevation_formatted_m": "4,316 m",
-        "label_ft": "▲ El Diente · 14,160'",
-        "label_m": "▲ El Diente · 4,316 m",
-        "label_stacked_ft": "▲ El Diente\n14,160'",
-        "label_stacked_m": "▲ El Diente\n4,316 m",
-        "sort_key": 25840,
+        "elevation_ft": 14140,
+        "elevation_m": 4310,
+        "elevation_formatted_ft": "14,140'",
+        "elevation_formatted_m": "4,310 m",
+        "label_ft": "▲ El Diente · 14,140'",
+        "label_m": "▲ El Diente · 4,310 m",
+        "label_stacked_ft": "▲ El Diente\n14,140'",
+        "label_stacked_m": "▲ El Diente\n4,310 m",
+        "sort_key": 25860,
         "continent": "North America"
       }
     },
@@ -39982,22 +39982,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.492,
-          37.5825
+          -105.492546,
+          37.582588
         ]
       },
       "properties": {
         "id": "peak-2004",
         "name": "Ellingwood Point",
-        "elevation_ft": 14042,
-        "elevation_m": 4280,
-        "elevation_formatted_ft": "14,042'",
-        "elevation_formatted_m": "4,280 m",
-        "label_ft": "▲ Ellingwood Point · 14,042'",
-        "label_m": "▲ Ellingwood Point · 4,280 m",
-        "label_stacked_ft": "▲ Ellingwood Point\n14,042'",
-        "label_stacked_m": "▲ Ellingwood Point\n4,280 m",
-        "sort_key": 25958,
+        "elevation_ft": 14049,
+        "elevation_m": 4282,
+        "elevation_formatted_ft": "14,049'",
+        "elevation_formatted_m": "4,282 m",
+        "label_ft": "▲ Ellingwood Point · 14,049'",
+        "label_m": "▲ Ellingwood Point · 4,282 m",
+        "label_stacked_ft": "▲ Ellingwood Point\n14,049'",
+        "label_stacked_m": "▲ Ellingwood Point\n4,282 m",
+        "sort_key": 25951,
         "continent": "North America"
       }
     },
@@ -40007,22 +40007,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.128,
-          39.4033
+          -106.128923,
+          39.403142
         ]
       },
       "properties": {
         "id": "peak-2005",
         "name": "Fletcher Mountain",
-        "elevation_ft": 13950,
-        "elevation_m": 4252,
-        "elevation_formatted_ft": "13,950'",
-        "elevation_formatted_m": "4,252 m",
-        "label_ft": "▲ Fletcher Mountain · 13,950'",
-        "label_m": "▲ Fletcher Mountain · 4,252 m",
-        "label_stacked_ft": "▲ Fletcher Mountain\n13,950'",
-        "label_stacked_m": "▲ Fletcher Mountain\n4,252 m",
-        "sort_key": 26050,
+        "elevation_ft": 13907,
+        "elevation_m": 4239,
+        "elevation_formatted_ft": "13,907'",
+        "elevation_formatted_m": "4,239 m",
+        "label_ft": "▲ Fletcher Mountain · 13,907'",
+        "label_m": "▲ Fletcher Mountain · 4,239 m",
+        "label_stacked_ft": "▲ Fletcher Mountain\n13,907'",
+        "label_stacked_m": "▲ Fletcher Mountain\n4,239 m",
+        "sort_key": 26093,
         "continent": "North America"
       }
     },
@@ -40032,8 +40032,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.823,
-          37.8942
+          -107.823397,
+          37.894161
         ]
       },
       "properties": {
@@ -40057,22 +40057,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.66,
-          39.6172
+          -105.660837,
+          39.61721
         ]
       },
       "properties": {
         "id": "peak-2007",
         "name": "Gray Wolf Mountain",
-        "elevation_ft": 13602,
-        "elevation_m": 4146,
-        "elevation_formatted_ft": "13,602'",
-        "elevation_formatted_m": "4,146 m",
-        "label_ft": "▲ Gray Wolf Mountain · 13,602'",
-        "label_m": "▲ Gray Wolf Mountain · 4,146 m",
-        "label_stacked_ft": "▲ Gray Wolf Mountain\n13,602'",
-        "label_stacked_m": "▲ Gray Wolf Mountain\n4,146 m",
-        "sort_key": 26398,
+        "elevation_ft": 13609,
+        "elevation_m": 4148,
+        "elevation_formatted_ft": "13,609'",
+        "elevation_formatted_m": "4,148 m",
+        "label_ft": "▲ Gray Wolf Mountain · 13,609'",
+        "label_m": "▲ Gray Wolf Mountain · 4,148 m",
+        "label_stacked_ft": "▲ Gray Wolf Mountain\n13,609'",
+        "label_stacked_m": "▲ Gray Wolf Mountain\n4,148 m",
+        "sort_key": 26391,
         "continent": "North America"
       }
     },
@@ -40082,22 +40082,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.817,
-          39.6339
+          -105.817509,
+          39.633876
         ]
       },
       "properties": {
         "id": "peak-2008",
         "name": "Grays Peak",
-        "elevation_ft": 14272,
-        "elevation_m": 4350,
-        "elevation_formatted_ft": "14,272'",
-        "elevation_formatted_m": "4,350 m",
-        "label_ft": "▲ Grays Peak · 14,272'",
-        "label_m": "▲ Grays Peak · 4,350 m",
-        "label_stacked_ft": "▲ Grays Peak\n14,272'",
-        "label_stacked_m": "▲ Grays Peak\n4,350 m",
-        "sort_key": 25728,
+        "elevation_ft": 14278,
+        "elevation_m": 4352,
+        "elevation_formatted_ft": "14,278'",
+        "elevation_formatted_m": "4,352 m",
+        "label_ft": "▲ Grays Peak · 14,278'",
+        "label_m": "▲ Grays Peak · 4,352 m",
+        "label_stacked_ft": "▲ Grays Peak\n14,278'",
+        "label_stacked_m": "▲ Grays Peak\n4,352 m",
+        "sort_key": 25722,
         "continent": "North America"
       }
     },
@@ -40107,22 +40107,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.597,
-          39.0425
+          -106.597531,
+          39.042491
         ]
       },
       "properties": {
         "id": "peak-2009",
         "name": "Grizzly Peak",
-        "elevation_ft": 13990,
-        "elevation_m": 4264,
-        "elevation_formatted_ft": "13,990'",
-        "elevation_formatted_m": "4,264 m",
-        "label_ft": "▲ Grizzly Peak · 13,990'",
-        "label_m": "▲ Grizzly Peak · 4,264 m",
-        "label_stacked_ft": "▲ Grizzly Peak\n13,990'",
-        "label_stacked_m": "▲ Grizzly Peak\n4,264 m",
-        "sort_key": 26010,
+        "elevation_ft": 13970,
+        "elevation_m": 4258,
+        "elevation_formatted_ft": "13,970'",
+        "elevation_formatted_m": "4,258 m",
+        "label_ft": "▲ Grizzly Peak · 13,970'",
+        "label_m": "▲ Grizzly Peak · 4,258 m",
+        "label_stacked_ft": "▲ Grizzly Peak\n13,970'",
+        "label_stacked_m": "▲ Grizzly Peak\n4,258 m",
+        "sort_key": 26030,
         "continent": "North America"
       }
     },
@@ -40132,22 +40132,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.504,
-          37.9131
+          -107.504452,
+          37.912988
         ]
       },
       "properties": {
         "id": "peak-2010",
         "name": "Handies Peak",
-        "elevation_ft": 14049,
-        "elevation_m": 4282,
-        "elevation_formatted_ft": "14,049'",
-        "elevation_formatted_m": "4,282 m",
-        "label_ft": "▲ Handies Peak · 14,049'",
-        "label_m": "▲ Handies Peak · 4,282 m",
-        "label_stacked_ft": "▲ Handies Peak\n14,049'",
-        "label_stacked_m": "▲ Handies Peak\n4,282 m",
-        "sort_key": 25951,
+        "elevation_ft": 14058,
+        "elevation_m": 4285,
+        "elevation_formatted_ft": "14,058'",
+        "elevation_formatted_m": "4,285 m",
+        "label_ft": "▲ Handies Peak · 14,058'",
+        "label_m": "▲ Handies Peak · 4,285 m",
+        "label_stacked_ft": "▲ Handies Peak\n14,058'",
+        "label_stacked_m": "▲ Handies Peak\n4,285 m",
+        "sort_key": 25942,
         "continent": "North America"
       }
     },
@@ -40182,22 +40182,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.617,
-          38.6833
+          -106.621143,
+          38.685549
         ]
       },
       "properties": {
         "id": "peak-2012",
         "name": "Henry Mountain",
-        "elevation_ft": 13255,
-        "elevation_m": 4040,
-        "elevation_formatted_ft": "13,255'",
-        "elevation_formatted_m": "4,040 m",
-        "label_ft": "▲ Henry Mountain · 13,255'",
-        "label_m": "▲ Henry Mountain · 4,040 m",
-        "label_stacked_ft": "▲ Henry Mountain\n13,255'",
-        "label_stacked_m": "▲ Henry Mountain\n4,040 m",
-        "sort_key": 26745,
+        "elevation_ft": 13261,
+        "elevation_m": 4042,
+        "elevation_formatted_ft": "13,261'",
+        "elevation_formatted_m": "4,042 m",
+        "label_ft": "▲ Henry Mountain · 13,261'",
+        "label_m": "▲ Henry Mountain · 4,042 m",
+        "label_stacked_ft": "▲ Henry Mountain\n13,261'",
+        "label_stacked_m": "▲ Henry Mountain\n4,042 m",
+        "sort_key": 26739,
         "continent": "North America"
       }
     },
@@ -40207,22 +40207,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.185,
-          39.1858
+          -106.185299,
+          39.185824
         ]
       },
       "properties": {
         "id": "peak-2013",
         "name": "Horseshoe Mountain",
-        "elevation_ft": 13898,
-        "elevation_m": 4236,
-        "elevation_formatted_ft": "13,898'",
-        "elevation_formatted_m": "4,236 m",
-        "label_ft": "▲ Horseshoe Mountain · 13,898'",
-        "label_m": "▲ Horseshoe Mountain · 4,236 m",
-        "label_stacked_ft": "▲ Horseshoe Mountain\n13,898'",
-        "label_stacked_m": "▲ Horseshoe Mountain\n4,236 m",
-        "sort_key": 26102,
+        "elevation_ft": 13894,
+        "elevation_m": 4235,
+        "elevation_formatted_ft": "13,894'",
+        "elevation_formatted_m": "4,235 m",
+        "label_ft": "▲ Horseshoe Mountain · 13,894'",
+        "label_m": "▲ Horseshoe Mountain · 4,235 m",
+        "label_stacked_ft": "▲ Horseshoe Mountain\n13,894'",
+        "label_stacked_m": "▲ Horseshoe Mountain\n4,235 m",
+        "sort_key": 26106,
         "continent": "North America"
       }
     },
@@ -40232,22 +40232,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.555,
-          37.9761
+          -105.555294,
+          37.976147
         ]
       },
       "properties": {
         "id": "peak-2014",
         "name": "Humboldt Peak",
-        "elevation_ft": 14065,
-        "elevation_m": 4287,
-        "elevation_formatted_ft": "14,065'",
-        "elevation_formatted_m": "4,287 m",
-        "label_ft": "▲ Humboldt Peak · 14,065'",
-        "label_m": "▲ Humboldt Peak · 4,287 m",
-        "label_stacked_ft": "▲ Humboldt Peak\n14,065'",
-        "label_stacked_m": "▲ Humboldt Peak\n4,287 m",
-        "sort_key": 25935,
+        "elevation_ft": 14072,
+        "elevation_m": 4289,
+        "elevation_formatted_ft": "14,072'",
+        "elevation_formatted_m": "4,289 m",
+        "label_ft": "▲ Humboldt Peak · 14,072'",
+        "label_m": "▲ Humboldt Peak · 4,289 m",
+        "label_stacked_ft": "▲ Humboldt Peak\n14,072'",
+        "label_stacked_m": "▲ Humboldt Peak\n4,289 m",
+        "sort_key": 25928,
         "continent": "North America"
       }
     },
@@ -40257,22 +40257,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.904,
-          39.053
+          -106.904209,
+          39.053046
         ]
       },
       "properties": {
         "id": "peak-2015",
         "name": "Hunter Peak",
-        "elevation_ft": 13497,
-        "elevation_m": 4114,
-        "elevation_formatted_ft": "13,497'",
-        "elevation_formatted_m": "4,114 m",
-        "label_ft": "▲ Hunter Peak · 13,497'",
-        "label_m": "▲ Hunter Peak · 4,114 m",
-        "label_stacked_ft": "▲ Hunter Peak\n13,497'",
-        "label_stacked_m": "▲ Hunter Peak\n4,114 m",
-        "sort_key": 26503,
+        "elevation_ft": 13389,
+        "elevation_m": 4081,
+        "elevation_formatted_ft": "13,389'",
+        "elevation_formatted_m": "4,081 m",
+        "label_ft": "▲ Hunter Peak · 13,389'",
+        "label_m": "▲ Hunter Peak · 4,081 m",
+        "label_stacked_ft": "▲ Hunter Peak\n13,389'",
+        "label_stacked_m": "▲ Hunter Peak\n4,081 m",
+        "sort_key": 26611,
         "continent": "North America"
       }
     },
@@ -40282,22 +40282,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.438,
-          38.9453
+          -106.437998,
+          38.945459
         ]
       },
       "properties": {
         "id": "peak-2016",
         "name": "Huron Peak",
-        "elevation_ft": 14003,
-        "elevation_m": 4268,
-        "elevation_formatted_ft": "14,003'",
-        "elevation_formatted_m": "4,268 m",
-        "label_ft": "▲ Huron Peak · 14,003'",
-        "label_m": "▲ Huron Peak · 4,268 m",
-        "label_stacked_ft": "▲ Huron Peak\n14,003'",
-        "label_stacked_m": "▲ Huron Peak\n4,268 m",
-        "sort_key": 25997,
+        "elevation_ft": 14009,
+        "elevation_m": 4270,
+        "elevation_formatted_ft": "14,009'",
+        "elevation_formatted_m": "4,270 m",
+        "label_ft": "▲ Huron Peak · 14,009'",
+        "label_m": "▲ Huron Peak · 4,270 m",
+        "label_stacked_ft": "▲ Huron Peak\n14,009'",
+        "label_stacked_m": "▲ Huron Peak\n4,270 m",
+        "sort_key": 25991,
         "continent": "North America"
       }
     },
@@ -40307,22 +40307,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.437,
-          38.9149
+          -106.437249,
+          38.914438
         ]
       },
       "properties": {
         "id": "peak-2017",
         "name": "Ice Mountain",
-        "elevation_ft": 13951,
-        "elevation_m": 4252,
-        "elevation_formatted_ft": "13,951'",
-        "elevation_formatted_m": "4,252 m",
-        "label_ft": "▲ Ice Mountain · 13,951'",
-        "label_m": "▲ Ice Mountain · 4,252 m",
-        "label_stacked_ft": "▲ Ice Mountain\n13,951'",
-        "label_stacked_m": "▲ Ice Mountain\n4,252 m",
-        "sort_key": 26049,
+        "elevation_ft": 13845,
+        "elevation_m": 4220,
+        "elevation_formatted_ft": "13,845'",
+        "elevation_formatted_m": "4,220 m",
+        "label_ft": "▲ Ice Mountain · 13,845'",
+        "label_m": "▲ Ice Mountain · 4,220 m",
+        "label_stacked_ft": "▲ Ice Mountain\n13,845'",
+        "label_stacked_m": "▲ Ice Mountain\n4,220 m",
+        "sort_key": 26155,
         "continent": "North America"
       }
     },
@@ -40357,22 +40357,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.904,
-          39.0325
+          -106.904764,
+          39.03249
         ]
       },
       "properties": {
         "id": "peak-2019",
         "name": "Keefe Peak",
-        "elevation_ft": 13517,
-        "elevation_m": 4120,
-        "elevation_formatted_ft": "13,517'",
-        "elevation_formatted_m": "4,120 m",
-        "label_ft": "▲ Keefe Peak · 13,517'",
-        "label_m": "▲ Keefe Peak · 4,120 m",
-        "label_stacked_ft": "▲ Keefe Peak\n13,517'",
-        "label_stacked_m": "▲ Keefe Peak\n4,120 m",
-        "sort_key": 26483,
+        "elevation_ft": 13392,
+        "elevation_m": 4082,
+        "elevation_formatted_ft": "13,392'",
+        "elevation_formatted_m": "4,082 m",
+        "label_ft": "▲ Keefe Peak · 13,392'",
+        "label_m": "▲ Keefe Peak · 4,082 m",
+        "label_stacked_ft": "▲ Keefe Peak\n13,392'",
+        "label_stacked_m": "▲ Keefe Peak\n4,082 m",
+        "sort_key": 26608,
         "continent": "North America"
       }
     },
@@ -40382,22 +40382,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.593,
-          37.8078
+          -107.593949,
+          37.807775
         ]
       },
       "properties": {
         "id": "peak-2020",
         "name": "King Solomon Mtn",
-        "elevation_ft": 13222,
-        "elevation_m": 4030,
-        "elevation_formatted_ft": "13,222'",
-        "elevation_formatted_m": "4,030 m",
-        "label_ft": "▲ King Solomon Mtn · 13,222'",
-        "label_m": "▲ King Solomon Mtn · 4,030 m",
-        "label_stacked_ft": "▲ King Solomon Mtn\n13,222'",
-        "label_stacked_m": "▲ King Solomon Mtn\n4,030 m",
-        "sort_key": 26778,
+        "elevation_ft": 13169,
+        "elevation_m": 4014,
+        "elevation_formatted_ft": "13,169'",
+        "elevation_formatted_m": "4,014 m",
+        "label_ft": "▲ King Solomon Mtn · 13,169'",
+        "label_m": "▲ King Solomon Mtn · 4,014 m",
+        "label_stacked_ft": "▲ King Solomon Mtn\n13,169'",
+        "label_stacked_m": "▲ King Solomon Mtn\n4,014 m",
+        "sort_key": 26831,
         "continent": "North America"
       }
     },
@@ -40407,22 +40407,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.602,
-          37.9797
+          -105.602508,
+          37.979722
         ]
       },
       "properties": {
         "id": "peak-2021",
         "name": "Kit Carson Mountain",
-        "elevation_ft": 14167,
-        "elevation_m": 4318,
-        "elevation_formatted_ft": "14,167'",
-        "elevation_formatted_m": "4,318 m",
-        "label_ft": "▲ Kit Carson Mountain · 14,167'",
-        "label_m": "▲ Kit Carson Mountain · 4,318 m",
-        "label_stacked_ft": "▲ Kit Carson Mountain\n14,167'",
-        "label_stacked_m": "▲ Kit Carson Mountain\n4,318 m",
-        "sort_key": 25833,
+        "elevation_ft": 14170,
+        "elevation_m": 4319,
+        "elevation_formatted_ft": "14,170'",
+        "elevation_formatted_m": "4,319 m",
+        "label_ft": "▲ Kit Carson Mountain · 14,170'",
+        "label_m": "▲ Kit Carson Mountain · 4,319 m",
+        "label_stacked_ft": "▲ Kit Carson Mountain\n14,170'",
+        "label_stacked_m": "▲ Kit Carson Mountain\n4,319 m",
+        "sort_key": 25830,
         "continent": "North America"
       }
     },
@@ -40432,22 +40432,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.473,
-          39.0294
+          -106.472961,
+          39.029452
         ]
       },
       "properties": {
         "id": "peak-2022",
         "name": "La Plata Peak",
-        "elevation_ft": 14337,
-        "elevation_m": 4370,
-        "elevation_formatted_ft": "14,337'",
-        "elevation_formatted_m": "4,370 m",
-        "label_ft": "▲ La Plata Peak · 14,337'",
-        "label_m": "▲ La Plata Peak · 4,370 m",
-        "label_stacked_ft": "▲ La Plata Peak\n14,337'",
-        "label_stacked_m": "▲ La Plata Peak\n4,370 m",
-        "sort_key": 25663,
+        "elevation_ft": 14344,
+        "elevation_m": 4372,
+        "elevation_formatted_ft": "14,344'",
+        "elevation_formatted_m": "4,372 m",
+        "label_ft": "▲ La Plata Peak · 14,344'",
+        "label_m": "▲ La Plata Peak · 4,372 m",
+        "label_stacked_ft": "▲ La Plata Peak\n14,344'",
+        "label_stacked_m": "▲ La Plata Peak\n4,372 m",
+        "sort_key": 25656,
         "continent": "North America"
       }
     },
@@ -40457,22 +40457,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.497,
-          37.5667
+          -105.497341,
+          37.566774
         ]
       },
       "properties": {
         "id": "peak-2023",
         "name": "Little Bear Peak",
-        "elevation_ft": 14039,
-        "elevation_m": 4279,
-        "elevation_formatted_ft": "14,039'",
-        "elevation_formatted_m": "4,279 m",
-        "label_ft": "▲ Little Bear Peak · 14,039'",
-        "label_m": "▲ Little Bear Peak · 4,279 m",
-        "label_stacked_ft": "▲ Little Bear Peak\n14,039'",
-        "label_stacked_m": "▲ Little Bear Peak\n4,279 m",
-        "sort_key": 25961,
+        "elevation_ft": 14042,
+        "elevation_m": 4280,
+        "elevation_formatted_ft": "14,042'",
+        "elevation_formatted_m": "4,280 m",
+        "label_ft": "▲ Little Bear Peak · 14,042'",
+        "label_m": "▲ Little Bear Peak · 4,280 m",
+        "label_stacked_ft": "▲ Little Bear Peak\n14,042'",
+        "label_stacked_m": "▲ Little Bear Peak\n4,280 m",
+        "sort_key": 25958,
         "continent": "North America"
       }
     },
@@ -40482,22 +40482,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.598,
-          37.7964
+          -107.598949,
+          37.796386
         ]
       },
       "properties": {
         "id": "peak-2024",
         "name": "Little Giant Peak",
-        "elevation_ft": 13415,
-        "elevation_m": 4089,
-        "elevation_formatted_ft": "13,415'",
-        "elevation_formatted_m": "4,089 m",
-        "label_ft": "▲ Little Giant Peak · 13,415'",
-        "label_m": "▲ Little Giant Peak · 4,089 m",
-        "label_stacked_ft": "▲ Little Giant Peak\n13,415'",
-        "label_stacked_m": "▲ Little Giant Peak\n4,089 m",
-        "sort_key": 26585,
+        "elevation_ft": 13369,
+        "elevation_m": 4075,
+        "elevation_formatted_ft": "13,369'",
+        "elevation_formatted_m": "4,075 m",
+        "label_ft": "▲ Little Giant Peak · 13,369'",
+        "label_m": "▲ Little Giant Peak · 4,075 m",
+        "label_stacked_ft": "▲ Little Giant Peak\n13,369'",
+        "label_stacked_m": "▲ Little Giant Peak\n4,075 m",
+        "sort_key": 26631,
         "continent": "North America"
       }
     },
@@ -40507,22 +40507,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.66,
-          40.0714
+          -105.660636,
+          40.069398
         ]
       },
       "properties": {
         "id": "peak-2025",
         "name": "Lone Eagle Peak",
-        "elevation_ft": 11919,
-        "elevation_m": 3633,
-        "elevation_formatted_ft": "11,919'",
-        "elevation_formatted_m": "3,633 m",
-        "label_ft": "▲ Lone Eagle Peak · 11,919'",
-        "label_m": "▲ Lone Eagle Peak · 3,633 m",
-        "label_stacked_ft": "▲ Lone Eagle Peak\n11,919'",
-        "label_stacked_m": "▲ Lone Eagle Peak\n3,633 m",
-        "sort_key": 28081,
+        "elevation_ft": 12008,
+        "elevation_m": 3660,
+        "elevation_formatted_ft": "12,008'",
+        "elevation_formatted_m": "3,660 m",
+        "label_ft": "▲ Lone Eagle Peak · 12,008'",
+        "label_m": "▲ Lone Eagle Peak · 3,660 m",
+        "label_stacked_ft": "▲ Lone Eagle Peak\n12,008'",
+        "label_stacked_m": "▲ Lone Eagle Peak\n3,660 m",
+        "sort_key": 27992,
         "continent": "North America"
       }
     },
@@ -40532,8 +40532,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.615,
-          40.2547
+          -105.615235,
+          40.254891
         ]
       },
       "properties": {
@@ -40557,22 +40557,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.672,
-          40.6903
+          -106.672264,
+          40.690253
         ]
       },
       "properties": {
         "id": "peak-2027",
         "name": "Lost Ranger Peak",
-        "elevation_ft": 11932,
-        "elevation_m": 3637,
-        "elevation_formatted_ft": "11,932'",
-        "elevation_formatted_m": "3,637 m",
-        "label_ft": "▲ Lost Ranger Peak · 11,932'",
-        "label_m": "▲ Lost Ranger Peak · 3,637 m",
-        "label_stacked_ft": "▲ Lost Ranger Peak\n11,932'",
-        "label_stacked_m": "▲ Lost Ranger Peak\n3,637 m",
-        "sort_key": 28068,
+        "elevation_ft": 11946,
+        "elevation_m": 3641,
+        "elevation_formatted_ft": "11,946'",
+        "elevation_formatted_m": "3,641 m",
+        "label_ft": "▲ Lost Ranger Peak · 11,946'",
+        "label_m": "▲ Lost Ranger Peak · 3,641 m",
+        "label_stacked_ft": "▲ Lost Ranger Peak\n11,946'",
+        "label_stacked_m": "▲ Lost Ranger Peak\n3,641 m",
+        "sort_key": 28054,
         "continent": "North America"
       }
     },
@@ -40607,22 +40607,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.378,
-          38.9472
+          -106.378528,
+          38.947577
         ]
       },
       "properties": {
         "id": "peak-2029",
         "name": "Missouri Mountain",
-        "elevation_ft": 14068,
-        "elevation_m": 4288,
-        "elevation_formatted_ft": "14,068'",
-        "elevation_formatted_m": "4,288 m",
-        "label_ft": "▲ Missouri Mountain · 14,068'",
-        "label_m": "▲ Missouri Mountain · 4,288 m",
-        "label_stacked_ft": "▲ Missouri Mountain\n14,068'",
-        "label_stacked_m": "▲ Missouri Mountain\n4,288 m",
-        "sort_key": 25932,
+        "elevation_ft": 14075,
+        "elevation_m": 4290,
+        "elevation_formatted_ft": "14,075'",
+        "elevation_formatted_m": "4,290 m",
+        "label_ft": "▲ Missouri Mountain · 14,075'",
+        "label_m": "▲ Missouri Mountain · 4,290 m",
+        "label_stacked_ft": "▲ Missouri Mountain\n14,075'",
+        "label_stacked_m": "▲ Missouri Mountain\n4,290 m",
+        "sort_key": 25925,
         "continent": "North America"
       }
     },
@@ -40657,22 +40657,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.239,
-          38.656
+          -106.246239,
+          38.674159
         ]
       },
       "properties": {
         "id": "peak-2031",
         "name": "Mount Antero",
-        "elevation_ft": 14268,
-        "elevation_m": 4349,
-        "elevation_formatted_ft": "14,268'",
-        "elevation_formatted_m": "4,349 m",
-        "label_ft": "▲ Mount Antero · 14,268'",
-        "label_m": "▲ Mount Antero · 4,349 m",
-        "label_stacked_ft": "▲ Mount Antero\n14,268'",
-        "label_stacked_m": "▲ Mount Antero\n4,349 m",
-        "sort_key": 25732,
+        "elevation_ft": 14275,
+        "elevation_m": 4351,
+        "elevation_formatted_ft": "14,275'",
+        "elevation_formatted_m": "4,351 m",
+        "label_ft": "▲ Mount Antero · 14,275'",
+        "label_m": "▲ Mount Antero · 4,351 m",
+        "label_stacked_ft": "▲ Mount Antero\n14,275'",
+        "label_stacked_m": "▲ Mount Antero\n4,351 m",
+        "sort_key": 25725,
         "continent": "North America"
       }
     },
@@ -40682,22 +40682,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.616,
-          40.0989
+          -105.61626,
+          40.09923
         ]
       },
       "properties": {
         "id": "peak-2032",
         "name": "Mount Audubon",
-        "elevation_ft": 13566,
-        "elevation_m": 4135,
-        "elevation_formatted_ft": "13,566'",
-        "elevation_formatted_m": "4,135 m",
-        "label_ft": "▲ Mount Audubon · 13,566'",
-        "label_m": "▲ Mount Audubon · 4,135 m",
-        "label_stacked_ft": "▲ Mount Audubon\n13,566'",
-        "label_stacked_m": "▲ Mount Audubon\n4,135 m",
-        "sort_key": 26434,
+        "elevation_ft": 13209,
+        "elevation_m": 4026,
+        "elevation_formatted_ft": "13,209'",
+        "elevation_formatted_m": "4,026 m",
+        "label_ft": "▲ Mount Audubon · 13,209'",
+        "label_m": "▲ Mount Audubon · 4,026 m",
+        "label_stacked_ft": "▲ Mount Audubon\n13,209'",
+        "label_stacked_m": "▲ Mount Audubon\n4,026 m",
+        "sort_key": 26791,
         "continent": "North America"
       }
     },
@@ -40707,22 +40707,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.361,
-          38.9606
+          -106.360784,
+          38.960644
         ]
       },
       "properties": {
         "id": "peak-2033",
         "name": "Mount Belford",
-        "elevation_ft": 14196,
-        "elevation_m": 4327,
-        "elevation_formatted_ft": "14,196'",
-        "elevation_formatted_m": "4,327 m",
-        "label_ft": "▲ Mount Belford · 14,196'",
-        "label_m": "▲ Mount Belford · 4,327 m",
-        "label_stacked_ft": "▲ Mount Belford\n14,196'",
-        "label_stacked_m": "▲ Mount Belford\n4,327 m",
-        "sort_key": 25804,
+        "elevation_ft": 14203,
+        "elevation_m": 4329,
+        "elevation_formatted_ft": "14,203'",
+        "elevation_formatted_m": "4,329 m",
+        "label_ft": "▲ Mount Belford · 14,203'",
+        "label_m": "▲ Mount Belford · 4,329 m",
+        "label_stacked_ft": "▲ Mount Belford\n14,203'",
+        "label_stacked_m": "▲ Mount Belford\n4,329 m",
+        "sort_key": 25797,
         "continent": "North America"
       }
     },
@@ -40732,22 +40732,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.668,
-          39.5828
+          -105.668774,
+          39.582623
         ]
       },
       "properties": {
         "id": "peak-2034",
         "name": "Mount Bierstadt",
-        "elevation_ft": 14062,
-        "elevation_m": 4286,
-        "elevation_formatted_ft": "14,062'",
-        "elevation_formatted_m": "4,286 m",
-        "label_ft": "▲ Mount Bierstadt · 14,062'",
-        "label_m": "▲ Mount Bierstadt · 4,286 m",
-        "label_stacked_ft": "▲ Mount Bierstadt\n14,062'",
-        "label_stacked_m": "▲ Mount Bierstadt\n4,286 m",
-        "sort_key": 25938,
+        "elevation_ft": 14065,
+        "elevation_m": 4287,
+        "elevation_formatted_ft": "14,065'",
+        "elevation_formatted_m": "4,287 m",
+        "label_ft": "▲ Mount Bierstadt · 14,065'",
+        "label_m": "▲ Mount Bierstadt · 4,287 m",
+        "label_stacked_ft": "▲ Mount Bierstadt\n14,065'",
+        "label_stacked_m": "▲ Mount Bierstadt\n4,287 m",
+        "sort_key": 25935,
         "continent": "North America"
       }
     },
@@ -40757,22 +40757,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.107,
-          39.3353
+          -106.107619,
+          39.335395
         ]
       },
       "properties": {
         "id": "peak-2035",
         "name": "Mount Bross",
-        "elevation_ft": 14173,
-        "elevation_m": 4320,
-        "elevation_formatted_ft": "14,173'",
-        "elevation_formatted_m": "4,320 m",
-        "label_ft": "▲ Mount Bross · 14,173'",
-        "label_m": "▲ Mount Bross · 4,320 m",
-        "label_stacked_ft": "▲ Mount Bross\n14,173'",
-        "label_stacked_m": "▲ Mount Bross\n4,320 m",
-        "sort_key": 25827,
+        "elevation_ft": 14180,
+        "elevation_m": 4322,
+        "elevation_formatted_ft": "14,180'",
+        "elevation_formatted_m": "4,322 m",
+        "label_ft": "▲ Mount Bross · 14,180'",
+        "label_m": "▲ Mount Bross · 4,322 m",
+        "label_stacked_ft": "▲ Mount Bross\n14,180'",
+        "label_stacked_m": "▲ Mount Bross\n4,322 m",
+        "sort_key": 25820,
         "continent": "North America"
       }
     },
@@ -40782,22 +40782,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.118,
-          39.3469
+          -106.11872,
+          39.346395
         ]
       },
       "properties": {
         "id": "peak-2036",
         "name": "Mount Cameron",
-        "elevation_ft": 14239,
-        "elevation_m": 4340,
-        "elevation_formatted_ft": "14,239'",
-        "elevation_formatted_m": "4,340 m",
-        "label_ft": "▲ Mount Cameron · 14,239'",
-        "label_m": "▲ Mount Cameron · 4,340 m",
-        "label_stacked_ft": "▲ Mount Cameron\n14,239'",
-        "label_stacked_m": "▲ Mount Cameron\n4,340 m",
-        "sort_key": 25761,
+        "elevation_ft": 14222,
+        "elevation_m": 4335,
+        "elevation_formatted_ft": "14,222'",
+        "elevation_formatted_m": "4,335 m",
+        "label_ft": "▲ Mount Cameron · 14,222'",
+        "label_m": "▲ Mount Cameron · 4,335 m",
+        "label_stacked_ft": "▲ Mount Cameron\n14,222'",
+        "label_stacked_m": "▲ Mount Cameron\n4,335 m",
+        "sort_key": 25778,
         "continent": "North America"
       }
     },
@@ -40807,22 +40807,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.688,
-          40.4439
+          -105.688799,
+          40.443753
         ]
       },
       "properties": {
         "id": "peak-2037",
         "name": "Mount Chiquita",
-        "elevation_ft": 13068,
-        "elevation_m": 3983,
-        "elevation_formatted_ft": "13,068'",
-        "elevation_formatted_m": "3,983 m",
-        "label_ft": "▲ Mount Chiquita · 13,068'",
-        "label_m": "▲ Mount Chiquita · 3,983 m",
-        "label_stacked_ft": "▲ Mount Chiquita\n13,068'",
-        "label_stacked_m": "▲ Mount Chiquita\n3,983 m",
-        "sort_key": 26932,
+        "elevation_ft": 13051,
+        "elevation_m": 3978,
+        "elevation_formatted_ft": "13,051'",
+        "elevation_formatted_m": "3,978 m",
+        "label_ft": "▲ Mount Chiquita · 13,051'",
+        "label_m": "▲ Mount Chiquita · 3,978 m",
+        "label_stacked_ft": "▲ Mount Chiquita\n13,051'",
+        "label_stacked_m": "▲ Mount Chiquita\n3,978 m",
+        "sort_key": 26949,
         "continent": "North America"
       }
     },
@@ -40832,22 +40832,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.297,
-          38.9039
+          -106.297523,
+          38.903883
         ]
       },
       "properties": {
         "id": "peak-2038",
         "name": "Mount Columbia",
-        "elevation_ft": 14075,
-        "elevation_m": 4290,
-        "elevation_formatted_ft": "14,075'",
-        "elevation_formatted_m": "4,290 m",
-        "label_ft": "▲ Mount Columbia · 14,075'",
-        "label_m": "▲ Mount Columbia · 4,290 m",
-        "label_stacked_ft": "▲ Mount Columbia\n14,075'",
-        "label_stacked_m": "▲ Mount Columbia\n4,290 m",
-        "sort_key": 25925,
+        "elevation_ft": 14058,
+        "elevation_m": 4285,
+        "elevation_formatted_ft": "14,058'",
+        "elevation_formatted_m": "4,285 m",
+        "label_ft": "▲ Mount Columbia · 14,058'",
+        "label_m": "▲ Mount Columbia · 4,285 m",
+        "label_stacked_ft": "▲ Mount Columbia\n14,058'",
+        "label_stacked_m": "▲ Mount Columbia\n4,285 m",
+        "sort_key": 25942,
         "continent": "North America"
       }
     },
@@ -40882,22 +40882,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.139,
-          39.3397
+          -106.139952,
+          39.339588
         ]
       },
       "properties": {
         "id": "peak-2040",
         "name": "Mount Democrat",
-        "elevation_ft": 14147,
-        "elevation_m": 4312,
-        "elevation_formatted_ft": "14,147'",
-        "elevation_formatted_m": "4,312 m",
-        "label_ft": "▲ Mount Democrat · 14,147'",
-        "label_m": "▲ Mount Democrat · 4,312 m",
-        "label_stacked_ft": "▲ Mount Democrat\n14,147'",
-        "label_stacked_m": "▲ Mount Democrat\n4,312 m",
-        "sort_key": 25853,
+        "elevation_ft": 14157,
+        "elevation_m": 4315,
+        "elevation_formatted_ft": "14,157'",
+        "elevation_formatted_m": "4,315 m",
+        "label_ft": "▲ Mount Democrat · 14,157'",
+        "label_m": "▲ Mount Democrat · 4,315 m",
+        "label_stacked_ft": "▲ Mount Democrat\n14,157'",
+        "label_stacked_m": "▲ Mount Democrat\n4,315 m",
+        "sort_key": 25843,
         "continent": "North America"
       }
     },
@@ -40932,22 +40932,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.445,
-          39.1178
+          -106.445379,
+          39.117752
         ]
       },
       "properties": {
         "id": "peak-2042",
         "name": "Mount Elbert",
-        "elevation_ft": 14432,
-        "elevation_m": 4399,
-        "elevation_formatted_ft": "14,432'",
-        "elevation_formatted_m": "4,399 m",
-        "label_ft": "▲ Mount Elbert · 14,432'",
-        "label_m": "▲ Mount Elbert · 4,399 m",
-        "label_stacked_ft": "▲ Mount Elbert\n14,432'",
-        "label_stacked_m": "▲ Mount Elbert\n4,399 m",
-        "sort_key": 25568,
+        "elevation_ft": 14439,
+        "elevation_m": 4401,
+        "elevation_formatted_ft": "14,439'",
+        "elevation_formatted_m": "4,401 m",
+        "label_ft": "▲ Mount Elbert · 14,439'",
+        "label_m": "▲ Mount Elbert · 4,401 m",
+        "label_stacked_ft": "▲ Mount Elbert\n14,439'",
+        "label_stacked_m": "▲ Mount Elbert\n4,401 m",
+        "sort_key": 25561,
         "continent": "North America"
       }
     },
@@ -40957,22 +40957,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.621,
-          37.6228
+          -107.622655,
+          37.621784
         ]
       },
       "properties": {
         "id": "peak-2043",
         "name": "Mount Eolus",
-        "elevation_ft": 14085,
-        "elevation_m": 4293,
-        "elevation_formatted_ft": "14,085'",
-        "elevation_formatted_m": "4,293 m",
-        "label_ft": "▲ Mount Eolus · 14,085'",
-        "label_m": "▲ Mount Eolus · 4,293 m",
-        "label_stacked_ft": "▲ Mount Eolus\n14,085'",
-        "label_stacked_m": "▲ Mount Eolus\n4,293 m",
-        "sort_key": 25915,
+        "elevation_ft": 14091,
+        "elevation_m": 4295,
+        "elevation_formatted_ft": "14,091'",
+        "elevation_formatted_m": "4,295 m",
+        "label_ft": "▲ Mount Eolus · 14,091'",
+        "label_m": "▲ Mount Eolus · 4,295 m",
+        "label_stacked_ft": "▲ Mount Eolus\n14,091'",
+        "label_stacked_m": "▲ Mount Eolus\n4,295 m",
+        "sort_key": 25909,
         "continent": "North America"
       }
     },
@@ -41007,22 +41007,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.482,
-          39.1286
+          -106.482528,
+          39.128602
         ]
       },
       "properties": {
         "id": "peak-2045",
         "name": "Mount French",
-        "elevation_ft": 13940,
-        "elevation_m": 4249,
-        "elevation_formatted_ft": "13,940'",
-        "elevation_formatted_m": "4,249 m",
-        "label_ft": "▲ Mount French · 13,940'",
-        "label_m": "▲ Mount French · 4,249 m",
-        "label_stacked_ft": "▲ Mount French\n13,940'",
-        "label_stacked_m": "▲ Mount French\n4,249 m",
-        "sort_key": 26060,
+        "elevation_ft": 13891,
+        "elevation_m": 4234,
+        "elevation_formatted_ft": "13,891'",
+        "elevation_formatted_m": "4,234 m",
+        "label_ft": "▲ Mount French · 13,891'",
+        "label_m": "▲ Mount French · 4,234 m",
+        "label_stacked_ft": "▲ Mount French\n13,891'",
+        "label_stacked_m": "▲ Mount French\n4,234 m",
+        "sort_key": 26109,
         "continent": "North America"
       }
     },
@@ -41032,22 +41032,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.32,
-          38.9244
+          -106.320798,
+          38.924425
         ]
       },
       "properties": {
         "id": "peak-2046",
         "name": "Mount Harvard",
-        "elevation_ft": 14420,
-        "elevation_m": 4395,
-        "elevation_formatted_ft": "14,420'",
-        "elevation_formatted_m": "4,395 m",
-        "label_ft": "▲ Mount Harvard · 14,420'",
-        "label_m": "▲ Mount Harvard · 4,395 m",
-        "label_stacked_ft": "▲ Mount Harvard\n14,420'",
-        "label_stacked_m": "▲ Mount Harvard\n4,395 m",
-        "sort_key": 25580,
+        "elevation_ft": 14423,
+        "elevation_m": 4396,
+        "elevation_formatted_ft": "14,423'",
+        "elevation_formatted_m": "4,396 m",
+        "label_ft": "▲ Mount Harvard · 14,423'",
+        "label_m": "▲ Mount Harvard · 4,396 m",
+        "label_stacked_ft": "▲ Mount Harvard\n14,423'",
+        "label_stacked_m": "▲ Mount Harvard\n4,396 m",
+        "sort_key": 25577,
         "continent": "North America"
       }
     },
@@ -41057,22 +41057,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.4192,
-          39.0211
+          -106.419748,
+          39.021104
         ]
       },
       "properties": {
         "id": "peak-2047",
         "name": "Mount Hope",
-        "elevation_ft": 13934,
-        "elevation_m": 4247,
-        "elevation_formatted_ft": "13,934'",
-        "elevation_formatted_m": "4,247 m",
-        "label_ft": "▲ Mount Hope · 13,934'",
-        "label_m": "▲ Mount Hope · 4,247 m",
-        "label_stacked_ft": "▲ Mount Hope\n13,934'",
-        "label_stacked_m": "▲ Mount Hope\n4,247 m",
-        "sort_key": 26066,
+        "elevation_ft": 13940,
+        "elevation_m": 4249,
+        "elevation_formatted_ft": "13,940'",
+        "elevation_formatted_m": "4,249 m",
+        "label_ft": "▲ Mount Hope · 13,940'",
+        "label_m": "▲ Mount Hope · 4,249 m",
+        "label_stacked_ft": "▲ Mount Hope\n13,940'",
+        "label_stacked_m": "▲ Mount Hope\n4,249 m",
+        "sort_key": 26060,
         "continent": "North America"
       }
     },
@@ -41082,22 +41082,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.779,
-          40.3717
+          -105.778849,
+          40.372088
         ]
       },
       "properties": {
         "id": "peak-2048",
         "name": "Mount Ida",
-        "elevation_ft": 12890,
-        "elevation_m": 3929,
-        "elevation_formatted_ft": "12,890'",
-        "elevation_formatted_m": "3,929 m",
-        "label_ft": "▲ Mount Ida · 12,890'",
-        "label_m": "▲ Mount Ida · 3,929 m",
-        "label_stacked_ft": "▲ Mount Ida\n12,890'",
-        "label_stacked_m": "▲ Mount Ida\n3,929 m",
-        "sort_key": 27110,
+        "elevation_ft": 12881,
+        "elevation_m": 3926,
+        "elevation_formatted_ft": "12,881'",
+        "elevation_formatted_m": "3,926 m",
+        "label_ft": "▲ Mount Ida · 12,881'",
+        "label_m": "▲ Mount Ida · 3,926 m",
+        "label_stacked_ft": "▲ Mount Ida\n12,881'",
+        "label_stacked_m": "▲ Mount Ida\n3,926 m",
+        "sort_key": 27119,
         "continent": "North America"
       }
     },
@@ -41107,8 +41107,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.52283,
-          38.8028
+          -107.522834,
+          38.803045
         ]
       },
       "properties": {
@@ -41132,22 +41132,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.111,
-          39.3514
+          -106.111483,
+          39.351449
         ]
       },
       "properties": {
         "id": "peak-2050",
         "name": "Mount Lincoln",
-        "elevation_ft": 14285,
-        "elevation_m": 4354,
-        "elevation_formatted_ft": "14,285'",
-        "elevation_formatted_m": "4,354 m",
-        "label_ft": "▲ Mount Lincoln · 14,285'",
-        "label_m": "▲ Mount Lincoln · 4,354 m",
-        "label_stacked_ft": "▲ Mount Lincoln\n14,285'",
-        "label_stacked_m": "▲ Mount Lincoln\n4,354 m",
-        "sort_key": 25715,
+        "elevation_ft": 14295,
+        "elevation_m": 4357,
+        "elevation_formatted_ft": "14,295'",
+        "elevation_formatted_m": "4,357 m",
+        "label_ft": "▲ Mount Lincoln · 14,295'",
+        "label_m": "▲ Mount Lincoln · 4,357 m",
+        "label_stacked_ft": "▲ Mount Lincoln\n14,295'",
+        "label_stacked_m": "▲ Mount Lincoln\n4,357 m",
+        "sort_key": 25705,
         "continent": "North America"
       }
     },
@@ -41157,22 +41157,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.44,
-          37.5847
+          -105.444904,
+          37.583901
         ]
       },
       "properties": {
         "id": "peak-2051",
         "name": "Mount Lindsey",
-        "elevation_ft": 14042,
-        "elevation_m": 4280,
-        "elevation_formatted_ft": "14,042'",
-        "elevation_formatted_m": "4,280 m",
-        "label_ft": "▲ Mount Lindsey · 14,042'",
-        "label_m": "▲ Mount Lindsey · 4,280 m",
-        "label_stacked_ft": "▲ Mount Lindsey\n14,042'",
-        "label_stacked_m": "▲ Mount Lindsey\n4,280 m",
-        "sort_key": 25958,
+        "elevation_ft": 14049,
+        "elevation_m": 4282,
+        "elevation_formatted_ft": "14,049'",
+        "elevation_formatted_m": "4,282 m",
+        "label_ft": "▲ Mount Lindsey · 14,049'",
+        "label_m": "▲ Mount Lindsey · 4,282 m",
+        "label_stacked_ft": "▲ Mount Lindsey\n14,049'",
+        "label_stacked_m": "▲ Mount Lindsey\n4,282 m",
+        "sort_key": 25951,
         "continent": "North America"
       }
     },
@@ -41182,8 +41182,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.475,
-          39.1872
+          -106.475619,
+          39.18754
         ]
       },
       "properties": {
@@ -41207,22 +41207,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.604,
-          40.2486
+          -105.604938,
+          40.248436
         ]
       },
       "properties": {
         "id": "peak-2053",
         "name": "Mount Meeker",
-        "elevation_ft": 13911,
-        "elevation_m": 4240,
-        "elevation_formatted_ft": "13,911'",
-        "elevation_formatted_m": "4,240 m",
-        "label_ft": "▲ Mount Meeker · 13,911'",
-        "label_m": "▲ Mount Meeker · 4,240 m",
-        "label_stacked_ft": "▲ Mount Meeker\n13,911'",
-        "label_stacked_m": "▲ Mount Meeker\n4,240 m",
-        "sort_key": 26089,
+        "elevation_ft": 13868,
+        "elevation_m": 4227,
+        "elevation_formatted_ft": "13,868'",
+        "elevation_formatted_m": "4,227 m",
+        "label_ft": "▲ Mount Meeker · 13,868'",
+        "label_m": "▲ Mount Meeker · 4,227 m",
+        "label_stacked_ft": "▲ Mount Meeker\n13,868'",
+        "label_stacked_m": "▲ Mount Meeker\n4,227 m",
+        "sort_key": 26132,
         "continent": "North America"
       }
     },
@@ -41232,22 +41232,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.479,
-          39.4681
+          -106.481777,
+          39.466822
         ]
       },
       "properties": {
         "id": "peak-2054",
         "name": "Mount of the Holy Cross",
-        "elevation_ft": 14006,
-        "elevation_m": 4269,
-        "elevation_formatted_ft": "14,006'",
-        "elevation_formatted_m": "4,269 m",
-        "label_ft": "▲ Mount of the Holy Cross · 14,006'",
-        "label_m": "▲ Mount of the Holy Cross · 4,269 m",
-        "label_stacked_ft": "▲ Mount of the Holy Cross\n14,006'",
-        "label_stacked_m": "▲ Mount of the Holy Cross\n4,269 m",
-        "sort_key": 25994,
+        "elevation_ft": 14012,
+        "elevation_m": 4271,
+        "elevation_formatted_ft": "14,012'",
+        "elevation_formatted_m": "4,271 m",
+        "label_ft": "▲ Mount of the Holy Cross · 14,012'",
+        "label_m": "▲ Mount of the Holy Cross · 4,271 m",
+        "label_stacked_ft": "▲ Mount of the Holy Cross\n14,012'",
+        "label_stacked_m": "▲ Mount of the Holy Cross\n4,271 m",
+        "sort_key": 25988,
         "continent": "North America"
       }
     },
@@ -41257,22 +41257,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.68,
-          40.2922
+          -105.680561,
+          40.292207
         ]
       },
       "properties": {
         "id": "peak-2055",
         "name": "Mount Otis",
-        "elevation_ft": 12310,
-        "elevation_m": 3752,
-        "elevation_formatted_ft": "12,310'",
-        "elevation_formatted_m": "3,752 m",
-        "label_ft": "▲ Mount Otis · 12,310'",
-        "label_m": "▲ Mount Otis · 3,752 m",
-        "label_stacked_ft": "▲ Mount Otis\n12,310'",
-        "label_stacked_m": "▲ Mount Otis\n3,752 m",
-        "sort_key": 27690,
+        "elevation_ft": 12484,
+        "elevation_m": 3805,
+        "elevation_formatted_ft": "12,484'",
+        "elevation_formatted_m": "3,805 m",
+        "label_ft": "▲ Mount Otis · 12,484'",
+        "label_m": "▲ Mount Otis · 3,805 m",
+        "label_stacked_ft": "▲ Mount Otis\n12,484'",
+        "label_stacked_m": "▲ Mount Otis\n3,805 m",
+        "sort_key": 27516,
         "continent": "North America"
       }
     },
@@ -41282,22 +41282,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.225,
-          38.4225
+          -106.224787,
+          38.422777
         ]
       },
       "properties": {
         "id": "peak-2056",
         "name": "Mount Ouray",
-        "elevation_ft": 13970,
-        "elevation_m": 4258,
-        "elevation_formatted_ft": "13,970'",
-        "elevation_formatted_m": "4,258 m",
-        "label_ft": "▲ Mount Ouray · 13,970'",
-        "label_m": "▲ Mount Ouray · 4,258 m",
-        "label_stacked_ft": "▲ Mount Ouray\n13,970'",
-        "label_stacked_m": "▲ Mount Ouray\n4,258 m",
-        "sort_key": 26030,
+        "elevation_ft": 13888,
+        "elevation_m": 4233,
+        "elevation_formatted_ft": "13,888'",
+        "elevation_formatted_m": "4,233 m",
+        "label_ft": "▲ Mount Ouray · 13,888'",
+        "label_m": "▲ Mount Ouray · 4,233 m",
+        "label_stacked_ft": "▲ Mount Ouray\n13,888'",
+        "label_stacked_m": "▲ Mount Ouray\n4,233 m",
+        "sort_key": 26112,
         "continent": "North America"
       }
     },
@@ -41307,22 +41307,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.338,
-          38.9647
+          -106.338912,
+          38.964716
         ]
       },
       "properties": {
         "id": "peak-2057",
         "name": "Mount Oxford",
-        "elevation_ft": 14154,
-        "elevation_m": 4314,
-        "elevation_formatted_ft": "14,154'",
-        "elevation_formatted_m": "4,314 m",
-        "label_ft": "▲ Mount Oxford · 14,154'",
-        "label_m": "▲ Mount Oxford · 4,314 m",
-        "label_stacked_ft": "▲ Mount Oxford\n14,154'",
-        "label_stacked_m": "▲ Mount Oxford\n4,314 m",
-        "sort_key": 25846,
+        "elevation_ft": 14160,
+        "elevation_m": 4316,
+        "elevation_formatted_ft": "14,160'",
+        "elevation_formatted_m": "4,316 m",
+        "label_ft": "▲ Mount Oxford · 14,160'",
+        "label_m": "▲ Mount Oxford · 4,316 m",
+        "label_stacked_ft": "▲ Mount Oxford\n14,160'",
+        "label_stacked_m": "▲ Mount Oxford\n4,316 m",
+        "sort_key": 25840,
         "continent": "North America"
       }
     },
@@ -41332,22 +41332,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.242,
-          38.7494
+          -106.242491,
+          38.749236
         ]
       },
       "properties": {
         "id": "peak-2058",
         "name": "Mount Princeton",
-        "elevation_ft": 14196,
-        "elevation_m": 4327,
-        "elevation_formatted_ft": "14,196'",
-        "elevation_formatted_m": "4,327 m",
-        "label_ft": "▲ Mount Princeton · 14,196'",
-        "label_m": "▲ Mount Princeton · 4,327 m",
-        "label_stacked_ft": "▲ Mount Princeton\n14,196'",
-        "label_stacked_m": "▲ Mount Princeton\n4,327 m",
-        "sort_key": 25804,
+        "elevation_ft": 14203,
+        "elevation_m": 4329,
+        "elevation_formatted_ft": "14,203'",
+        "elevation_formatted_m": "4,329 m",
+        "label_ft": "▲ Mount Princeton · 14,203'",
+        "label_m": "▲ Mount Princeton · 4,329 m",
+        "label_stacked_ft": "▲ Mount Princeton\n14,203'",
+        "label_stacked_m": "▲ Mount Princeton\n4,329 m",
+        "sort_key": 25797,
         "continent": "North America"
       }
     },
@@ -41357,22 +41357,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.894,
-          40.4694
+          -105.895013,
+          40.469428
         ]
       },
       "properties": {
         "id": "peak-2059",
         "name": "Mount Richthofen",
-        "elevation_ft": 12949,
-        "elevation_m": 3947,
-        "elevation_formatted_ft": "12,949'",
-        "elevation_formatted_m": "3,947 m",
-        "label_ft": "▲ Mount Richthofen · 12,949'",
-        "label_m": "▲ Mount Richthofen · 3,947 m",
-        "label_stacked_ft": "▲ Mount Richthofen\n12,949'",
-        "label_stacked_m": "▲ Mount Richthofen\n3,947 m",
-        "sort_key": 27051,
+        "elevation_ft": 12890,
+        "elevation_m": 3929,
+        "elevation_formatted_ft": "12,890'",
+        "elevation_formatted_m": "3,929 m",
+        "label_ft": "▲ Mount Richthofen · 12,890'",
+        "label_m": "▲ Mount Richthofen · 3,929 m",
+        "label_stacked_ft": "▲ Mount Richthofen\n12,890'",
+        "label_stacked_m": "▲ Mount Richthofen\n3,929 m",
+        "sort_key": 27110,
         "continent": "North America"
       }
     },
@@ -41382,22 +41382,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.306,
-          40.036
+          -105.305285,
+          40.034368
         ]
       },
       "properties": {
         "id": "peak-2060",
         "name": "Mount Sanitas",
-        "elevation_ft": 6864,
-        "elevation_m": 2092,
-        "elevation_formatted_ft": "6,864'",
-        "elevation_formatted_m": "2,092 m",
-        "label_ft": "▲ Mount Sanitas · 6,864'",
-        "label_m": "▲ Mount Sanitas · 2,092 m",
-        "label_stacked_ft": "▲ Mount Sanitas\n6,864'",
-        "label_stacked_m": "▲ Mount Sanitas\n2,092 m",
-        "sort_key": 33136,
+        "elevation_ft": 6821,
+        "elevation_m": 2079,
+        "elevation_formatted_ft": "6,821'",
+        "elevation_formatted_m": "2,079 m",
+        "label_ft": "▲ Mount Sanitas · 6,821'",
+        "label_m": "▲ Mount Sanitas · 2,079 m",
+        "label_stacked_ft": "▲ Mount Sanitas\n6,821'",
+        "label_stacked_m": "▲ Mount Sanitas\n2,079 m",
+        "sort_key": 33179,
         "continent": "North America"
       }
     },
@@ -41407,22 +41407,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.239,
-          38.6189
+          -106.239238,
+          38.619099
         ]
       },
       "properties": {
         "id": "peak-2061",
         "name": "Mount Shavano",
-        "elevation_ft": 14229,
-        "elevation_m": 4337,
-        "elevation_formatted_ft": "14,229'",
-        "elevation_formatted_m": "4,337 m",
-        "label_ft": "▲ Mount Shavano · 14,229'",
-        "label_m": "▲ Mount Shavano · 4,337 m",
-        "label_stacked_ft": "▲ Mount Shavano\n14,229'",
-        "label_stacked_m": "▲ Mount Shavano\n4,337 m",
-        "sort_key": 25771,
+        "elevation_ft": 14157,
+        "elevation_m": 4315,
+        "elevation_formatted_ft": "14,157'",
+        "elevation_formatted_m": "4,315 m",
+        "label_ft": "▲ Mount Shavano · 14,157'",
+        "label_m": "▲ Mount Shavano · 4,315 m",
+        "label_stacked_ft": "▲ Mount Shavano\n14,157'",
+        "label_stacked_m": "▲ Mount Shavano\n4,315 m",
+        "sort_key": 25843,
         "continent": "North America"
       }
     },
@@ -41432,22 +41432,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.184,
-          39.2092
+          -106.184737,
+          39.209065
         ]
       },
       "properties": {
         "id": "peak-2062",
         "name": "Mount Sheridan",
-        "elevation_ft": 13747,
-        "elevation_m": 4190,
-        "elevation_formatted_ft": "13,747'",
-        "elevation_formatted_m": "4,190 m",
-        "label_ft": "▲ Mount Sheridan · 13,747'",
-        "label_m": "▲ Mount Sheridan · 4,190 m",
-        "label_stacked_ft": "▲ Mount Sheridan\n13,747'",
-        "label_stacked_m": "▲ Mount Sheridan\n4,190 m",
-        "sort_key": 26253,
+        "elevation_ft": 13743,
+        "elevation_m": 4189,
+        "elevation_formatted_ft": "13,743'",
+        "elevation_formatted_m": "4,189 m",
+        "label_ft": "▲ Mount Sheridan · 13,743'",
+        "label_m": "▲ Mount Sheridan · 4,189 m",
+        "label_stacked_ft": "▲ Mount Sheridan\n13,743'",
+        "label_stacked_m": "▲ Mount Sheridan\n4,189 m",
+        "sort_key": 26257,
         "continent": "North America"
       }
     },
@@ -41457,22 +41457,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.169,
-          39.225
+          -106.170067,
+          39.225079
         ]
       },
       "properties": {
         "id": "peak-2063",
         "name": "Mount Sherman",
-        "elevation_ft": 14035,
-        "elevation_m": 4278,
-        "elevation_formatted_ft": "14,035'",
-        "elevation_formatted_m": "4,278 m",
-        "label_ft": "▲ Mount Sherman · 14,035'",
-        "label_m": "▲ Mount Sherman · 4,278 m",
-        "label_stacked_ft": "▲ Mount Sherman\n14,035'",
-        "label_stacked_m": "▲ Mount Sherman\n4,278 m",
-        "sort_key": 25965,
+        "elevation_ft": 14042,
+        "elevation_m": 4280,
+        "elevation_formatted_ft": "14,042'",
+        "elevation_formatted_m": "4,280 m",
+        "label_ft": "▲ Mount Sherman · 14,042'",
+        "label_m": "▲ Mount Sherman · 4,280 m",
+        "label_stacked_ft": "▲ Mount Sherman\n14,042'",
+        "label_stacked_m": "▲ Mount Sherman\n4,280 m",
+        "sort_key": 25958,
         "continent": "North America"
       }
     },
@@ -41482,8 +41482,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.005,
-          39.3392
+          -106.005295,
+          39.339155
         ]
       },
       "properties": {
@@ -41507,22 +41507,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.792,
-          38.0033
+          -107.792269,
+          38.00379
         ]
       },
       "properties": {
         "id": "peak-2065",
         "name": "Mount Sneffels",
-        "elevation_ft": 14150,
-        "elevation_m": 4313,
-        "elevation_formatted_ft": "14,150'",
-        "elevation_formatted_m": "4,313 m",
-        "label_ft": "▲ Mount Sneffels · 14,150'",
-        "label_m": "▲ Mount Sneffels · 4,313 m",
-        "label_stacked_ft": "▲ Mount Sneffels\n14,150'",
-        "label_stacked_m": "▲ Mount Sneffels\n4,313 m",
-        "sort_key": 25850,
+        "elevation_ft": 14157,
+        "elevation_m": 4315,
+        "elevation_formatted_ft": "14,157'",
+        "elevation_formatted_m": "4,315 m",
+        "label_ft": "▲ Mount Sneffels · 14,157'",
+        "label_m": "▲ Mount Sneffels · 4,315 m",
+        "label_stacked_ft": "▲ Mount Sneffels\n14,157'",
+        "label_stacked_m": "▲ Mount Sneffels\n4,315 m",
+        "sort_key": 25843,
         "continent": "North America"
       }
     },
@@ -41557,22 +41557,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.171,
-          39.26
+          -107.164765,
+          39.261214
         ]
       },
       "properties": {
         "id": "peak-2067",
         "name": "Mount Sopris",
-        "elevation_ft": 12953,
-        "elevation_m": 3948,
-        "elevation_formatted_ft": "12,953'",
-        "elevation_formatted_m": "3,948 m",
-        "label_ft": "▲ Mount Sopris · 12,953'",
-        "label_m": "▲ Mount Sopris · 3,948 m",
-        "label_stacked_ft": "▲ Mount Sopris\n12,953'",
-        "label_stacked_m": "▲ Mount Sopris\n3,948 m",
-        "sort_key": 27047,
+        "elevation_ft": 12602,
+        "elevation_m": 3841,
+        "elevation_formatted_ft": "12,602'",
+        "elevation_formatted_m": "3,841 m",
+        "label_ft": "▲ Mount Sopris · 12,602'",
+        "label_m": "▲ Mount Sopris · 3,841 m",
+        "label_stacked_ft": "▲ Mount Sopris\n12,602'",
+        "label_stacked_m": "▲ Mount Sopris\n3,841 m",
+        "sort_key": 27398,
         "continent": "North America"
       }
     },
@@ -41607,22 +41607,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.991,
-          37.8392
+          -107.991631,
+          37.839211
         ]
       },
       "properties": {
         "id": "peak-2069",
         "name": "Mount Wilson",
-        "elevation_ft": 14245,
-        "elevation_m": 4342,
-        "elevation_formatted_ft": "14,245'",
-        "elevation_formatted_m": "4,342 m",
-        "label_ft": "▲ Mount Wilson · 14,245'",
-        "label_m": "▲ Mount Wilson · 4,342 m",
-        "label_stacked_ft": "▲ Mount Wilson\n14,245'",
-        "label_stacked_m": "▲ Mount Wilson\n4,342 m",
-        "sort_key": 25755,
+        "elevation_ft": 14252,
+        "elevation_m": 4344,
+        "elevation_formatted_ft": "14,252'",
+        "elevation_formatted_m": "4,344 m",
+        "label_ft": "▲ Mount Wilson · 14,252'",
+        "label_m": "▲ Mount Wilson · 4,344 m",
+        "label_stacked_ft": "▲ Mount Wilson\n14,252'",
+        "label_stacked_m": "▲ Mount Wilson\n4,344 m",
+        "sort_key": 25748,
         "continent": "North America"
       }
     },
@@ -41632,22 +41632,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.313,
-          38.8442
+          -106.313912,
+          38.844162
         ]
       },
       "properties": {
         "id": "peak-2070",
         "name": "Mount Yale",
-        "elevation_ft": 14196,
-        "elevation_m": 4327,
-        "elevation_formatted_ft": "14,196'",
-        "elevation_formatted_m": "4,327 m",
-        "label_ft": "▲ Mount Yale · 14,196'",
-        "label_m": "▲ Mount Yale · 4,327 m",
-        "label_stacked_ft": "▲ Mount Yale\n14,196'",
-        "label_stacked_m": "▲ Mount Yale\n4,327 m",
-        "sort_key": 25804,
+        "elevation_ft": 14199,
+        "elevation_m": 4328,
+        "elevation_formatted_ft": "14,199'",
+        "elevation_formatted_m": "4,328 m",
+        "label_ft": "▲ Mount Yale · 14,199'",
+        "label_m": "▲ Mount Yale · 4,328 m",
+        "label_stacked_ft": "▲ Mount Yale\n14,199'",
+        "label_stacked_m": "▲ Mount Yale\n4,328 m",
+        "sort_key": 25801,
         "continent": "North America"
       }
     },
@@ -41657,22 +41657,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.681,
-          40.4569
+          -105.681212,
+          40.45737
         ]
       },
       "properties": {
         "id": "peak-2071",
         "name": "Mount Ypsilon",
-        "elevation_ft": 13514,
-        "elevation_m": 4119,
-        "elevation_formatted_ft": "13,514'",
-        "elevation_formatted_m": "4,119 m",
-        "label_ft": "▲ Mount Ypsilon · 13,514'",
-        "label_m": "▲ Mount Ypsilon · 4,119 m",
-        "label_stacked_ft": "▲ Mount Ypsilon\n13,514'",
-        "label_stacked_m": "▲ Mount Ypsilon\n4,119 m",
-        "sort_key": 26486,
+        "elevation_ft": 13445,
+        "elevation_m": 4098,
+        "elevation_formatted_ft": "13,445'",
+        "elevation_formatted_m": "4,098 m",
+        "label_ft": "▲ Mount Ypsilon · 13,445'",
+        "label_m": "▲ Mount Ypsilon · 4,098 m",
+        "label_stacked_ft": "▲ Mount Ypsilon\n13,445'",
+        "label_stacked_m": "▲ Mount Ypsilon\n4,098 m",
+        "sort_key": 26555,
         "continent": "North America"
       }
     },
@@ -41682,8 +41682,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.646515,
-          40.053507
+          -105.64667,
+          40.053598
         ]
       },
       "properties": {
@@ -41707,22 +41707,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.043,
-          40.8727
+          -107.038108,
+          40.872747
         ]
       },
       "properties": {
         "id": "peak-2073",
         "name": "Nipple Peak",
-        "elevation_ft": 10325,
-        "elevation_m": 3147,
-        "elevation_formatted_ft": "10,325'",
-        "elevation_formatted_m": "3,147 m",
-        "label_ft": "▲ Nipple Peak · 10,325'",
-        "label_m": "▲ Nipple Peak · 3,147 m",
-        "label_stacked_ft": "▲ Nipple Peak\n10,325'",
-        "label_stacked_m": "▲ Nipple Peak\n3,147 m",
-        "sort_key": 29675,
+        "elevation_ft": 10341,
+        "elevation_m": 3152,
+        "elevation_formatted_ft": "10,341'",
+        "elevation_formatted_m": "3,152 m",
+        "label_ft": "▲ Nipple Peak · 10,341'",
+        "label_m": "▲ Nipple Peak · 3,152 m",
+        "label_stacked_ft": "▲ Nipple Peak\n10,341'",
+        "label_stacked_m": "▲ Nipple Peak\n3,152 m",
+        "sort_key": 29659,
         "continent": "North America"
       }
     },
@@ -41757,22 +41757,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.46,
-          39.4775
+          -106.460585,
+          39.477486
         ]
       },
       "properties": {
         "id": "peak-2075",
         "name": "Notch Mountain",
-        "elevation_ft": 13238,
-        "elevation_m": 4035,
-        "elevation_formatted_ft": "13,238'",
-        "elevation_formatted_m": "4,035 m",
-        "label_ft": "▲ Notch Mountain · 13,238'",
-        "label_m": "▲ Notch Mountain · 4,035 m",
-        "label_stacked_ft": "▲ Notch Mountain\n13,238'",
-        "label_stacked_m": "▲ Notch Mountain\n4,035 m",
-        "sort_key": 26762,
+        "elevation_ft": 13222,
+        "elevation_m": 4030,
+        "elevation_formatted_ft": "13,222'",
+        "elevation_formatted_m": "4,030 m",
+        "label_ft": "▲ Notch Mountain · 13,222'",
+        "label_m": "▲ Notch Mountain · 4,030 m",
+        "label_stacked_ft": "▲ Notch Mountain\n13,222'",
+        "label_stacked_m": "▲ Notch Mountain\n4,030 m",
+        "sort_key": 26778,
         "continent": "North America"
       }
     },
@@ -41782,22 +41782,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -104.943037,
-          38.955823
+          -104.934703,
+          38.950547
         ]
       },
       "properties": {
         "id": "peak-2076",
         "name": "Ormes Peak",
-        "elevation_ft": 9728,
-        "elevation_m": 2965,
-        "elevation_formatted_ft": "9,728'",
-        "elevation_formatted_m": "2,965 m",
-        "label_ft": "▲ Ormes Peak · 9,728'",
-        "label_m": "▲ Ormes Peak · 2,965 m",
-        "label_stacked_ft": "▲ Ormes Peak\n9,728'",
-        "label_stacked_m": "▲ Ormes Peak\n2,965 m",
-        "sort_key": 30272,
+        "elevation_ft": 9721,
+        "elevation_m": 2963,
+        "elevation_formatted_ft": "9,721'",
+        "elevation_formatted_m": "2,963 m",
+        "label_ft": "▲ Ormes Peak · 9,721'",
+        "label_m": "▲ Ormes Peak · 2,963 m",
+        "label_stacked_ft": "▲ Ormes Peak\n9,721'",
+        "label_stacked_m": "▲ Ormes Peak\n2,963 m",
+        "sort_key": 30279,
         "continent": "North America"
       }
     },
@@ -41807,22 +41807,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.829,
-          37.8836
+          -107.829231,
+          37.883606
         ]
       },
       "properties": {
         "id": "peak-2077",
         "name": "Palmyra Peak",
-        "elevation_ft": 13320,
-        "elevation_m": 4060,
-        "elevation_formatted_ft": "13,320'",
-        "elevation_formatted_m": "4,060 m",
-        "label_ft": "▲ Palmyra Peak · 13,320'",
-        "label_m": "▲ Palmyra Peak · 4,060 m",
-        "label_stacked_ft": "▲ Palmyra Peak\n13,320'",
-        "label_stacked_m": "▲ Palmyra Peak\n4,060 m",
-        "sort_key": 26680,
+        "elevation_ft": 13251,
+        "elevation_m": 4039,
+        "elevation_formatted_ft": "13,251'",
+        "elevation_formatted_m": "4,039 m",
+        "label_ft": "▲ Palmyra Peak · 13,251'",
+        "label_m": "▲ Palmyra Peak · 4,039 m",
+        "label_stacked_ft": "▲ Palmyra Peak\n13,251'",
+        "label_stacked_m": "▲ Palmyra Peak\n4,039 m",
+        "sort_key": 26749,
         "continent": "North America"
       }
     },
@@ -41832,8 +41832,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.136,
-          40.3303
+          -106.136278,
+          40.330197
         ]
       },
       "properties": {
@@ -41857,22 +41857,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.178,
-          39.1981
+          -106.17891,
+          39.198046
         ]
       },
       "properties": {
         "id": "peak-2079",
         "name": "Peerless Mountain",
-        "elevation_ft": 13350,
-        "elevation_m": 4069,
-        "elevation_formatted_ft": "13,350'",
-        "elevation_formatted_m": "4,069 m",
-        "label_ft": "▲ Peerless Mountain · 13,350'",
-        "label_m": "▲ Peerless Mountain · 4,069 m",
-        "label_stacked_ft": "▲ Peerless Mountain\n13,350'",
-        "label_stacked_m": "▲ Peerless Mountain\n4,069 m",
-        "sort_key": 26650,
+        "elevation_ft": 13337,
+        "elevation_m": 4065,
+        "elevation_formatted_ft": "13,337'",
+        "elevation_formatted_m": "4,065 m",
+        "label_ft": "▲ Peerless Mountain · 13,337'",
+        "label_m": "▲ Peerless Mountain · 4,065 m",
+        "label_stacked_ft": "▲ Peerless Mountain\n13,337'",
+        "label_stacked_m": "▲ Peerless Mountain\n4,065 m",
+        "sort_key": 26663,
         "continent": "North America"
       }
     },
@@ -41907,22 +41907,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.044,
-          38.8406
+          -105.043952,
+          38.840401
         ]
       },
       "properties": {
         "id": "peak-2081",
         "name": "Pikes Peak",
-        "elevation_ft": 14108,
-        "elevation_m": 4300,
-        "elevation_formatted_ft": "14,108'",
-        "elevation_formatted_m": "4,300 m",
-        "label_ft": "▲ Pikes Peak · 14,108'",
-        "label_m": "▲ Pikes Peak · 4,300 m",
-        "label_stacked_ft": "▲ Pikes Peak\n14,108'",
-        "label_stacked_m": "▲ Pikes Peak\n4,300 m",
-        "sort_key": 25892,
+        "elevation_ft": 14114,
+        "elevation_m": 4302,
+        "elevation_formatted_ft": "14,114'",
+        "elevation_formatted_m": "4,302 m",
+        "label_ft": "▲ Pikes Peak · 14,114'",
+        "label_m": "▲ Pikes Peak · 4,302 m",
+        "label_stacked_ft": "▲ Pikes Peak\n14,114'",
+        "label_stacked_m": "▲ Pikes Peak\n4,302 m",
+        "sort_key": 25886,
         "continent": "North America"
       }
     },
@@ -41932,22 +41932,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.174,
-          39.1506
+          -106.174465,
+          39.150547
         ]
       },
       "properties": {
         "id": "peak-2082",
         "name": "Ptarmigan Peak",
-        "elevation_ft": 13740,
-        "elevation_m": 4188,
-        "elevation_formatted_ft": "13,740'",
-        "elevation_formatted_m": "4,188 m",
-        "label_ft": "▲ Ptarmigan Peak · 13,740'",
-        "label_m": "▲ Ptarmigan Peak · 4,188 m",
-        "label_stacked_ft": "▲ Ptarmigan Peak\n13,740'",
-        "label_stacked_m": "▲ Ptarmigan Peak\n4,188 m",
-        "sort_key": 26260,
+        "elevation_ft": 13720,
+        "elevation_m": 4182,
+        "elevation_formatted_ft": "13,720'",
+        "elevation_formatted_m": "4,182 m",
+        "label_ft": "▲ Ptarmigan Peak · 13,720'",
+        "label_m": "▲ Ptarmigan Peak · 4,182 m",
+        "label_stacked_ft": "▲ Ptarmigan Peak\n13,720'",
+        "label_stacked_m": "▲ Ptarmigan Peak\n4,182 m",
+        "sort_key": 26280,
         "continent": "North America"
       }
     },
@@ -41982,22 +41982,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.106,
-          39.3972
+          -106.106431,
+          39.397289
         ]
       },
       "properties": {
         "id": "peak-2084",
         "name": "Quandary Peak",
-        "elevation_ft": 14265,
-        "elevation_m": 4348,
-        "elevation_formatted_ft": "14,265'",
-        "elevation_formatted_m": "4,348 m",
-        "label_ft": "▲ Quandary Peak · 14,265'",
-        "label_m": "▲ Quandary Peak · 4,348 m",
-        "label_stacked_ft": "▲ Quandary Peak\n14,265'",
-        "label_stacked_m": "▲ Quandary Peak\n4,348 m",
-        "sort_key": 25735,
+        "elevation_ft": 14272,
+        "elevation_m": 4350,
+        "elevation_formatted_ft": "14,272'",
+        "elevation_formatted_m": "4,350 m",
+        "label_ft": "▲ Quandary Peak · 14,272'",
+        "label_m": "▲ Quandary Peak · 4,350 m",
+        "label_stacked_ft": "▲ Quandary Peak\n14,272'",
+        "label_stacked_m": "▲ Quandary Peak\n4,350 m",
+        "sort_key": 25728,
         "continent": "North America"
       }
     },
@@ -42007,22 +42007,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.421,
-          37.9408
+          -107.421844,
+          37.940919
         ]
       },
       "properties": {
         "id": "peak-2085",
         "name": "Redcloud Peak",
-        "elevation_ft": 14035,
-        "elevation_m": 4278,
-        "elevation_formatted_ft": "14,035'",
-        "elevation_formatted_m": "4,278 m",
-        "label_ft": "▲ Redcloud Peak · 14,035'",
-        "label_m": "▲ Redcloud Peak · 4,278 m",
-        "label_stacked_ft": "▲ Redcloud Peak\n14,035'",
-        "label_stacked_m": "▲ Redcloud Peak\n4,278 m",
-        "sort_key": 25965,
+        "elevation_ft": 14042,
+        "elevation_m": 4280,
+        "elevation_formatted_ft": "14,042'",
+        "elevation_formatted_m": "4,280 m",
+        "label_ft": "▲ Redcloud Peak · 14,042'",
+        "label_m": "▲ Redcloud Peak · 4,280 m",
+        "label_stacked_ft": "▲ Redcloud Peak\n14,042'",
+        "label_stacked_m": "▲ Redcloud Peak\n4,280 m",
+        "sort_key": 25958,
         "continent": "North America"
       }
     },
@@ -42032,22 +42032,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.439,
-          39.037
+          -106.439749,
+          39.036659
         ]
       },
       "properties": {
         "id": "peak-2086",
         "name": "Rinker Peak",
-        "elevation_ft": 13783,
-        "elevation_m": 4201,
-        "elevation_formatted_ft": "13,783'",
-        "elevation_formatted_m": "4,201 m",
-        "label_ft": "▲ Rinker Peak · 13,783'",
-        "label_m": "▲ Rinker Peak · 4,201 m",
-        "label_stacked_ft": "▲ Rinker Peak\n13,783'",
-        "label_stacked_m": "▲ Rinker Peak\n4,201 m",
-        "sort_key": 26217,
+        "elevation_ft": 13730,
+        "elevation_m": 4185,
+        "elevation_formatted_ft": "13,730'",
+        "elevation_formatted_m": "4,185 m",
+        "label_ft": "▲ Rinker Peak · 13,730'",
+        "label_m": "▲ Rinker Peak · 4,185 m",
+        "label_stacked_ft": "▲ Rinker Peak\n13,730'",
+        "label_stacked_m": "▲ Rinker Peak\n4,185 m",
+        "sort_key": 26270,
         "continent": "North America"
       }
     },
@@ -42057,22 +42057,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.392,
-          37.6797
+          -107.392556,
+          37.679722
         ]
       },
       "properties": {
         "id": "peak-2087",
         "name": "Rio Grande Pyramid",
-        "elevation_ft": 13822,
-        "elevation_m": 4213,
-        "elevation_formatted_ft": "13,822'",
-        "elevation_formatted_m": "4,213 m",
-        "label_ft": "▲ Rio Grande Pyramid · 13,822'",
-        "label_m": "▲ Rio Grande Pyramid · 4,213 m",
-        "label_stacked_ft": "▲ Rio Grande Pyramid\n13,822'",
-        "label_stacked_m": "▲ Rio Grande Pyramid\n4,213 m",
-        "sort_key": 26178,
+        "elevation_ft": 13793,
+        "elevation_m": 4204,
+        "elevation_formatted_ft": "13,793'",
+        "elevation_formatted_m": "4,204 m",
+        "label_ft": "▲ Rio Grande Pyramid · 13,793'",
+        "label_m": "▲ Rio Grande Pyramid · 4,204 m",
+        "label_stacked_ft": "▲ Rio Grande Pyramid\n13,793'",
+        "label_stacked_m": "▲ Rio Grande Pyramid\n4,204 m",
+        "sort_key": 26207,
         "continent": "North America"
       }
     },
@@ -42082,22 +42082,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.931,
-          37.9869
+          -106.931283,
+          37.986804
         ]
       },
       "properties": {
         "id": "peak-2088",
         "name": "San Luis Peak",
-        "elevation_ft": 14016,
-        "elevation_m": 4272,
-        "elevation_formatted_ft": "14,016'",
-        "elevation_formatted_m": "4,272 m",
-        "label_ft": "▲ San Luis Peak · 14,016'",
-        "label_m": "▲ San Luis Peak · 4,272 m",
-        "label_stacked_ft": "▲ San Luis Peak\n14,016'",
-        "label_stacked_m": "▲ San Luis Peak\n4,272 m",
-        "sort_key": 25984,
+        "elevation_ft": 14022,
+        "elevation_m": 4274,
+        "elevation_formatted_ft": "14,022'",
+        "elevation_formatted_m": "4,274 m",
+        "label_ft": "▲ San Luis Peak · 14,022'",
+        "label_m": "▲ San Luis Peak · 4,274 m",
+        "label_stacked_ft": "▲ San Luis Peak\n14,022'",
+        "label_stacked_m": "▲ San Luis Peak\n4,274 m",
+        "sort_key": 25978,
         "continent": "North America"
       }
     },
@@ -42107,22 +42107,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.533,
-          40.128
+          -107.533673,
+          40.127477
         ]
       },
       "properties": {
         "id": "peak-2089",
         "name": "Sleepy Cat Peak",
-        "elevation_ft": 10846,
-        "elevation_m": 3306,
-        "elevation_formatted_ft": "10,846'",
-        "elevation_formatted_m": "3,306 m",
-        "label_ft": "▲ Sleepy Cat Peak · 10,846'",
-        "label_m": "▲ Sleepy Cat Peak · 3,306 m",
-        "label_stacked_ft": "▲ Sleepy Cat Peak\n10,846'",
-        "label_stacked_m": "▲ Sleepy Cat Peak\n3,306 m",
-        "sort_key": 29154,
+        "elevation_ft": 10810,
+        "elevation_m": 3295,
+        "elevation_formatted_ft": "10,810'",
+        "elevation_formatted_m": "3,295 m",
+        "label_ft": "▲ Sleepy Cat Peak · 10,810'",
+        "label_m": "▲ Sleepy Cat Peak · 3,295 m",
+        "label_stacked_ft": "▲ Sleepy Cat Peak\n10,810'",
+        "label_stacked_m": "▲ Sleepy Cat Peak\n3,295 m",
+        "sort_key": 29190,
         "continent": "North America"
       }
     },
@@ -42132,22 +42132,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.066,
-          39.1189
+          -107.066485,
+          39.11884
         ]
       },
       "properties": {
         "id": "peak-2090",
         "name": "Snowmass Mountain",
-        "elevation_ft": 14092,
-        "elevation_m": 4295,
-        "elevation_formatted_ft": "14,092'",
-        "elevation_formatted_m": "4,295 m",
-        "label_ft": "▲ Snowmass Mountain · 14,092'",
-        "label_m": "▲ Snowmass Mountain · 4,295 m",
-        "label_stacked_ft": "▲ Snowmass Mountain\n14,092'",
-        "label_stacked_m": "▲ Snowmass Mountain\n4,295 m",
-        "sort_key": 25908,
+        "elevation_ft": 14098,
+        "elevation_m": 4297,
+        "elevation_formatted_ft": "14,098'",
+        "elevation_formatted_m": "4,297 m",
+        "label_ft": "▲ Snowmass Mountain · 14,098'",
+        "label_m": "▲ Snowmass Mountain · 4,297 m",
+        "label_stacked_ft": "▲ Snowmass Mountain\n14,098'",
+        "label_stacked_m": "▲ Snowmass Mountain\n4,297 m",
+        "sort_key": 25902,
         "continent": "North America"
       }
     },
@@ -42157,22 +42157,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.650024,
-          40.01999
+          -105.649576,
+          40.019653
         ]
       },
       "properties": {
         "id": "peak-2091",
         "name": "South Arapaho Peak",
-        "elevation_ft": 13396,
-        "elevation_m": 4083,
-        "elevation_formatted_ft": "13,396'",
-        "elevation_formatted_m": "4,083 m",
-        "label_ft": "▲ South Arapaho Peak · 13,396'",
-        "label_m": "▲ South Arapaho Peak · 4,083 m",
-        "label_stacked_ft": "▲ South Arapaho Peak\n13,396'",
-        "label_stacked_m": "▲ South Arapaho Peak\n4,083 m",
-        "sort_key": 26604,
+        "elevation_ft": 13343,
+        "elevation_m": 4067,
+        "elevation_formatted_ft": "13,343'",
+        "elevation_formatted_m": "4,067 m",
+        "label_ft": "▲ South Arapaho Peak · 13,343'",
+        "label_m": "▲ South Arapaho Peak · 4,067 m",
+        "label_stacked_ft": "▲ South Arapaho Peak\n13,343'",
+        "label_stacked_m": "▲ South Arapaho Peak\n4,067 m",
+        "sort_key": 26657,
         "continent": "North America"
       }
     },
@@ -42182,22 +42182,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.923,
-          38.0233
+          -106.923405,
+          38.023104
         ]
       },
       "properties": {
         "id": "peak-2092",
         "name": "Stewart Peak",
-        "elevation_ft": 13983,
-        "elevation_m": 4262,
-        "elevation_formatted_ft": "13,983'",
-        "elevation_formatted_m": "4,262 m",
-        "label_ft": "▲ Stewart Peak · 13,983'",
-        "label_m": "▲ Stewart Peak · 4,262 m",
-        "label_stacked_ft": "▲ Stewart Peak\n13,983'",
-        "label_stacked_m": "▲ Stewart Peak\n4,262 m",
-        "sort_key": 26017,
+        "elevation_ft": 13953,
+        "elevation_m": 4253,
+        "elevation_formatted_ft": "13,953'",
+        "elevation_formatted_m": "4,253 m",
+        "label_ft": "▲ Stewart Peak · 13,953'",
+        "label_m": "▲ Stewart Peak · 4,253 m",
+        "label_stacked_ft": "▲ Stewart Peak\n13,953'",
+        "label_stacked_m": "▲ Stewart Peak\n4,253 m",
+        "sort_key": 26047,
         "continent": "North America"
       }
     },
@@ -42207,22 +42207,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.62,
-          40.2656
+          -105.620485,
+          40.265662
         ]
       },
       "properties": {
         "id": "peak-2093",
         "name": "Storm Peak",
-        "elevation_ft": 13327,
-        "elevation_m": 4062,
-        "elevation_formatted_ft": "13,327'",
-        "elevation_formatted_m": "4,062 m",
-        "label_ft": "▲ Storm Peak · 13,327'",
-        "label_m": "▲ Storm Peak · 4,062 m",
-        "label_stacked_ft": "▲ Storm Peak\n13,327'",
-        "label_stacked_m": "▲ Storm Peak\n4,062 m",
-        "sort_key": 26673,
+        "elevation_ft": 13320,
+        "elevation_m": 4060,
+        "elevation_formatted_ft": "13,320'",
+        "elevation_formatted_m": "4,060 m",
+        "label_ft": "▲ Storm Peak · 13,320'",
+        "label_m": "▲ Storm Peak · 4,060 m",
+        "label_stacked_ft": "▲ Storm Peak\n13,320'",
+        "label_stacked_m": "▲ Storm Peak\n4,060 m",
+        "sort_key": 26680,
         "continent": "North America"
       }
     },
@@ -42232,22 +42232,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.595,
-          37.6272
+          -107.595851,
+          37.627422
         ]
       },
       "properties": {
         "id": "peak-2094",
         "name": "Sunlight Peak",
-        "elevation_ft": 14058,
-        "elevation_m": 4285,
-        "elevation_formatted_ft": "14,058'",
-        "elevation_formatted_m": "4,285 m",
-        "label_ft": "▲ Sunlight Peak · 14,058'",
-        "label_m": "▲ Sunlight Peak · 4,285 m",
-        "label_stacked_ft": "▲ Sunlight Peak\n14,058'",
-        "label_stacked_m": "▲ Sunlight Peak\n4,285 m",
-        "sort_key": 25942,
+        "elevation_ft": 14065,
+        "elevation_m": 4287,
+        "elevation_formatted_ft": "14,065'",
+        "elevation_formatted_m": "4,287 m",
+        "label_ft": "▲ Sunlight Peak · 14,065'",
+        "label_m": "▲ Sunlight Peak · 4,287 m",
+        "label_stacked_ft": "▲ Sunlight Peak\n14,065'",
+        "label_stacked_m": "▲ Sunlight Peak\n4,287 m",
+        "sort_key": 25935,
         "continent": "North America"
       }
     },
@@ -42257,22 +42257,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.425,
-          37.9228
+          -107.42535,
+          37.922802
         ]
       },
       "properties": {
         "id": "peak-2095",
         "name": "Sunshine Peak",
-        "elevation_ft": 14003,
-        "elevation_m": 4268,
-        "elevation_formatted_ft": "14,003'",
-        "elevation_formatted_m": "4,268 m",
-        "label_ft": "▲ Sunshine Peak · 14,003'",
-        "label_m": "▲ Sunshine Peak · 4,268 m",
-        "label_stacked_ft": "▲ Sunshine Peak\n14,003'",
-        "label_stacked_m": "▲ Sunshine Peak\n4,268 m",
-        "sort_key": 25997,
+        "elevation_ft": 14006,
+        "elevation_m": 4269,
+        "elevation_formatted_ft": "14,006'",
+        "elevation_formatted_m": "4,269 m",
+        "label_ft": "▲ Sunshine Peak · 14,006'",
+        "label_m": "▲ Sunshine Peak · 4,269 m",
+        "label_stacked_ft": "▲ Sunshine Peak\n14,006'",
+        "label_stacked_m": "▲ Sunshine Peak\n4,269 m",
+        "sort_key": 25994,
         "continent": "North America"
       }
     },
@@ -42282,22 +42282,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.250833,
-          38.625556
+          -106.250824,
+          38.625502
         ]
       },
       "properties": {
         "id": "peak-2096",
         "name": "Tabeguache Peak",
-        "elevation_ft": 14154,
-        "elevation_m": 4314,
-        "elevation_formatted_ft": "14,154'",
-        "elevation_formatted_m": "4,314 m",
-        "label_ft": "▲ Tabeguache Peak · 14,154'",
-        "label_m": "▲ Tabeguache Peak · 4,314 m",
-        "label_stacked_ft": "▲ Tabeguache Peak\n14,154'",
-        "label_stacked_m": "▲ Tabeguache Peak\n4,314 m",
-        "sort_key": 25846,
+        "elevation_ft": 14163,
+        "elevation_m": 4317,
+        "elevation_formatted_ft": "14,163'",
+        "elevation_formatted_m": "4,317 m",
+        "label_ft": "▲ Tabeguache Peak · 14,163'",
+        "label_m": "▲ Tabeguache Peak · 4,317 m",
+        "label_stacked_ft": "▲ Tabeguache Peak\n14,163'",
+        "label_stacked_m": "▲ Tabeguache Peak\n4,317 m",
+        "sort_key": 25837,
         "continent": "North America"
       }
     },
@@ -42307,22 +42307,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.68,
-          40.2744
+          -105.680853,
+          40.274781
         ]
       },
       "properties": {
         "id": "peak-2097",
         "name": "Taylor Peak",
-        "elevation_ft": 13153,
-        "elevation_m": 4009,
-        "elevation_formatted_ft": "13,153'",
-        "elevation_formatted_m": "4,009 m",
-        "label_ft": "▲ Taylor Peak · 13,153'",
-        "label_m": "▲ Taylor Peak · 4,009 m",
-        "label_stacked_ft": "▲ Taylor Peak\n13,153'",
-        "label_stacked_m": "▲ Taylor Peak\n4,009 m",
-        "sort_key": 26847,
+        "elevation_ft": 13143,
+        "elevation_m": 4006,
+        "elevation_formatted_ft": "13,143'",
+        "elevation_formatted_m": "4,006 m",
+        "label_ft": "▲ Taylor Peak · 13,143'",
+        "label_m": "▲ Taylor Peak · 4,006 m",
+        "label_stacked_ft": "▲ Taylor Peak\n13,143'",
+        "label_stacked_m": "▲ Taylor Peak\n4,006 m",
+        "sort_key": 26857,
         "continent": "North America"
       }
     },
@@ -42332,22 +42332,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -105.821,
-          39.6428
+          -105.821227,
+          39.642767
         ]
       },
       "properties": {
         "id": "peak-2098",
         "name": "Torreys Peak",
-        "elevation_ft": 14268,
-        "elevation_m": 4349,
-        "elevation_formatted_ft": "14,268'",
-        "elevation_formatted_m": "4,349 m",
-        "label_ft": "▲ Torreys Peak · 14,268'",
-        "label_m": "▲ Torreys Peak · 4,349 m",
-        "label_stacked_ft": "▲ Torreys Peak\n14,268'",
-        "label_stacked_m": "▲ Torreys Peak\n4,349 m",
-        "sort_key": 25732,
+        "elevation_ft": 14275,
+        "elevation_m": 4351,
+        "elevation_formatted_ft": "14,275'",
+        "elevation_formatted_m": "4,351 m",
+        "label_ft": "▲ Torreys Peak · 14,275'",
+        "label_m": "▲ Torreys Peak · 4,351 m",
+        "label_stacked_ft": "▲ Torreys Peak\n14,275'",
+        "label_stacked_m": "▲ Torreys Peak\n4,351 m",
+        "sort_key": 25725,
         "continent": "North America"
       }
     },
@@ -42432,22 +42432,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.461,
-          38.0717
+          -107.462507,
+          38.071752
         ]
       },
       "properties": {
         "id": "peak-2102",
         "name": "Uncompahgre Peak",
-        "elevation_ft": 14308,
-        "elevation_m": 4361,
-        "elevation_formatted_ft": "14,308'",
-        "elevation_formatted_m": "4,361 m",
-        "label_ft": "▲ Uncompahgre Peak · 14,308'",
-        "label_m": "▲ Uncompahgre Peak · 4,361 m",
-        "label_stacked_ft": "▲ Uncompahgre Peak\n14,308'",
-        "label_stacked_m": "▲ Uncompahgre Peak\n4,361 m",
-        "sort_key": 25692,
+        "elevation_ft": 14321,
+        "elevation_m": 4365,
+        "elevation_formatted_ft": "14,321'",
+        "elevation_formatted_m": "4,365 m",
+        "label_ft": "▲ Uncompahgre Peak · 14,321'",
+        "label_m": "▲ Uncompahgre Peak · 4,365 m",
+        "label_stacked_ft": "▲ Uncompahgre Peak\n14,321'",
+        "label_stacked_m": "▲ Uncompahgre Peak\n4,365 m",
+        "sort_key": 25679,
         "continent": "North America"
       }
     },
@@ -42457,22 +42457,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.602,
-          37.6894
+          -107.60256,
+          37.689443
         ]
       },
       "properties": {
         "id": "peak-2103",
         "name": "Vestal Peak",
-        "elevation_ft": 13865,
-        "elevation_m": 4226,
-        "elevation_formatted_ft": "13,865'",
-        "elevation_formatted_m": "4,226 m",
-        "label_ft": "▲ Vestal Peak · 13,865'",
-        "label_m": "▲ Vestal Peak · 4,226 m",
-        "label_stacked_ft": "▲ Vestal Peak\n13,865'",
-        "label_stacked_m": "▲ Vestal Peak\n4,226 m",
-        "sort_key": 26135,
+        "elevation_ft": 13783,
+        "elevation_m": 4201,
+        "elevation_formatted_ft": "13,783'",
+        "elevation_formatted_m": "4,201 m",
+        "label_ft": "▲ Vestal Peak · 13,783'",
+        "label_m": "▲ Vestal Peak · 4,201 m",
+        "label_stacked_ft": "▲ Vestal Peak\n13,783'",
+        "label_stacked_m": "▲ Vestal Peak\n4,201 m",
+        "sort_key": 26217,
         "continent": "North America"
       }
     },
@@ -42482,22 +42482,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -104.983,
-          37.3667
+          -104.993738,
+          37.375793
         ]
       },
       "properties": {
         "id": "peak-2105",
         "name": "West Spanish Peak",
-        "elevation_ft": 13625,
-        "elevation_m": 4153,
-        "elevation_formatted_ft": "13,625'",
-        "elevation_formatted_m": "4,153 m",
-        "label_ft": "▲ West Spanish Peak · 13,625'",
-        "label_m": "▲ West Spanish Peak · 4,153 m",
-        "label_stacked_ft": "▲ West Spanish Peak\n13,625'",
-        "label_stacked_m": "▲ West Spanish Peak\n4,153 m",
-        "sort_key": 26375,
+        "elevation_ft": 13583,
+        "elevation_m": 4140,
+        "elevation_formatted_ft": "13,583'",
+        "elevation_formatted_m": "4,140 m",
+        "label_ft": "▲ West Spanish Peak · 13,583'",
+        "label_m": "▲ West Spanish Peak · 4,140 m",
+        "label_stacked_ft": "▲ West Spanish Peak\n13,583'",
+        "label_stacked_m": "▲ West Spanish Peak\n4,140 m",
+        "sort_key": 26417,
         "continent": "North America"
       }
     },
@@ -42507,22 +42507,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.163,
-          39.1367
+          -106.163909,
+          39.136659
         ]
       },
       "properties": {
         "id": "peak-2106",
         "name": "Weston Peak",
-        "elevation_ft": 13573,
-        "elevation_m": 4137,
-        "elevation_formatted_ft": "13,573'",
-        "elevation_formatted_m": "4,137 m",
-        "label_ft": "▲ Weston Peak · 13,573'",
-        "label_m": "▲ Weston Peak · 4,137 m",
-        "label_stacked_ft": "▲ Weston Peak\n13,573'",
-        "label_stacked_m": "▲ Weston Peak\n4,137 m",
-        "sort_key": 26427,
+        "elevation_ft": 13566,
+        "elevation_m": 4135,
+        "elevation_formatted_ft": "13,566'",
+        "elevation_formatted_m": "4,135 m",
+        "label_ft": "▲ Weston Peak · 13,566'",
+        "label_m": "▲ Weston Peak · 4,135 m",
+        "label_stacked_ft": "▲ Weston Peak\n13,566'",
+        "label_stacked_m": "▲ Weston Peak\n4,135 m",
+        "sort_key": 26434,
         "continent": "North America"
       }
     },
@@ -42532,22 +42532,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.51,
-          38.0606
+          -107.51101,
+          38.060796
         ]
       },
       "properties": {
         "id": "peak-2107",
         "name": "Wetterhorn Peak",
-        "elevation_ft": 14016,
-        "elevation_m": 4272,
-        "elevation_formatted_ft": "14,016'",
-        "elevation_formatted_m": "4,272 m",
-        "label_ft": "▲ Wetterhorn Peak · 14,016'",
-        "label_m": "▲ Wetterhorn Peak · 4,272 m",
-        "label_stacked_ft": "▲ Wetterhorn Peak\n14,016'",
-        "label_stacked_m": "▲ Wetterhorn Peak\n4,272 m",
-        "sort_key": 25984,
+        "elevation_ft": 14022,
+        "elevation_m": 4274,
+        "elevation_formatted_ft": "14,022'",
+        "elevation_formatted_m": "4,274 m",
+        "label_ft": "▲ Wetterhorn Peak · 14,022'",
+        "label_m": "▲ Wetterhorn Peak · 4,274 m",
+        "label_stacked_ft": "▲ Wetterhorn Peak\n14,022'",
+        "label_stacked_m": "▲ Wetterhorn Peak\n4,274 m",
+        "sort_key": 25978,
         "continent": "North America"
       }
     },
@@ -42557,22 +42557,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.984,
-          37.8603
+          -107.984691,
+          37.86043
         ]
       },
       "properties": {
         "id": "peak-2108",
         "name": "Wilson Peak",
-        "elevation_ft": 14016,
-        "elevation_m": 4272,
-        "elevation_formatted_ft": "14,016'",
-        "elevation_formatted_m": "4,272 m",
-        "label_ft": "▲ Wilson Peak · 14,016'",
-        "label_m": "▲ Wilson Peak · 4,272 m",
-        "label_stacked_ft": "▲ Wilson Peak\n14,016'",
-        "label_stacked_m": "▲ Wilson Peak\n4,272 m",
-        "sort_key": 25984,
+        "elevation_ft": 14022,
+        "elevation_m": 4274,
+        "elevation_formatted_ft": "14,022'",
+        "elevation_formatted_m": "4,274 m",
+        "label_ft": "▲ Wilson Peak · 14,022'",
+        "label_m": "▲ Wilson Peak · 4,274 m",
+        "label_stacked_ft": "▲ Wilson Peak\n14,022'",
+        "label_stacked_m": "▲ Wilson Peak\n4,274 m",
+        "sort_key": 25978,
         "continent": "North America"
       }
     },
@@ -42582,22 +42582,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -107.591,
-          37.6214
+          -107.591842,
+          37.62131
         ]
       },
       "properties": {
         "id": "peak-2109",
         "name": "Windom Peak",
-        "elevation_ft": 14081,
-        "elevation_m": 4292,
-        "elevation_formatted_ft": "14,081'",
-        "elevation_formatted_m": "4,292 m",
-        "label_ft": "▲ Windom Peak · 14,081'",
-        "label_m": "▲ Windom Peak · 4,292 m",
-        "label_stacked_ft": "▲ Windom Peak\n14,081'",
-        "label_stacked_m": "▲ Windom Peak\n4,292 m",
-        "sort_key": 25919,
+        "elevation_ft": 14094,
+        "elevation_m": 4296,
+        "elevation_formatted_ft": "14,094'",
+        "elevation_formatted_m": "4,296 m",
+        "label_ft": "▲ Windom Peak · 14,094'",
+        "label_m": "▲ Windom Peak · 4,296 m",
+        "label_stacked_ft": "▲ Windom Peak\n14,094'",
+        "label_stacked_m": "▲ Windom Peak\n4,296 m",
+        "sort_key": 25906,
         "continent": "North America"
       }
     },
@@ -43057,22 +43057,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -102.037141,
-          39.021982
+          -102.037253,
+          39.021929
         ]
       },
       "properties": {
         "id": "peak-2137",
         "name": "Mount Sunflower",
-        "elevation_ft": 4039,
-        "elevation_m": 1231,
-        "elevation_formatted_ft": "4,039'",
-        "elevation_formatted_m": "1,231 m",
-        "label_ft": "▲ Mount Sunflower · 4,039'",
-        "label_m": "▲ Mount Sunflower · 1,231 m",
-        "label_stacked_ft": "▲ Mount Sunflower\n4,039'",
-        "label_stacked_m": "▲ Mount Sunflower\n1,231 m",
-        "sort_key": 35961,
+        "elevation_ft": 4035,
+        "elevation_m": 1230,
+        "elevation_formatted_ft": "4,035'",
+        "elevation_formatted_m": "1,230 m",
+        "label_ft": "▲ Mount Sunflower · 4,035'",
+        "label_m": "▲ Mount Sunflower · 1,230 m",
+        "label_stacked_ft": "▲ Mount Sunflower\n4,035'",
+        "label_stacked_m": "▲ Mount Sunflower\n1,230 m",
+        "sort_key": 35965,
         "continent": "North America"
       }
     },
@@ -46032,22 +46032,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.683,
-          39.0833
+          -106.693318,
+          39.085837
         ]
       },
       "properties": {
         "id": "peak-2285",
         "name": "New York Peak",
-        "elevation_ft": 12812,
-        "elevation_m": 3905,
-        "elevation_formatted_ft": "12,812'",
-        "elevation_formatted_m": "3,905 m",
-        "label_ft": "▲ New York Peak · 12,812'",
-        "label_m": "▲ New York Peak · 3,905 m",
-        "label_stacked_ft": "▲ New York Peak\n12,812'",
-        "label_stacked_m": "▲ New York Peak\n3,905 m",
-        "sort_key": 27188,
+        "elevation_ft": 12799,
+        "elevation_m": 3901,
+        "elevation_formatted_ft": "12,799'",
+        "elevation_formatted_m": "3,901 m",
+        "label_ft": "▲ New York Peak · 12,799'",
+        "label_m": "▲ New York Peak · 3,901 m",
+        "label_stacked_ft": "▲ New York Peak\n12,799'",
+        "label_stacked_m": "▲ New York Peak\n3,901 m",
+        "sort_key": 27201,
         "continent": "North America"
       }
     },
@@ -57257,22 +57257,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.087,
-          39.4286
+          -106.087482,
+          39.428616
         ]
       },
       "properties": {
         "id": "peak-2781",
         "name": "Mount Helen",
-        "elevation_ft": 13619,
-        "elevation_m": 4151,
-        "elevation_formatted_ft": "13,619'",
-        "elevation_formatted_m": "4,151 m",
-        "label_ft": "▲ Mount Helen · 13,619'",
-        "label_m": "▲ Mount Helen · 4,151 m",
-        "label_stacked_ft": "▲ Mount Helen\n13,619'",
-        "label_stacked_m": "▲ Mount Helen\n4,151 m",
-        "sort_key": 26381,
+        "elevation_ft": 13176,
+        "elevation_m": 4016,
+        "elevation_formatted_ft": "13,176'",
+        "elevation_formatted_m": "4,016 m",
+        "label_ft": "▲ Mount Helen · 13,176'",
+        "label_m": "▲ Mount Helen · 4,016 m",
+        "label_stacked_ft": "▲ Mount Helen\n13,176'",
+        "label_stacked_m": "▲ Mount Helen\n4,016 m",
+        "sort_key": 26824,
         "continent": "North America"
       }
     },
@@ -62057,22 +62057,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.741,
-          40.457
+          -106.740324,
+          40.456089
         ]
       },
       "properties": {
         "id": "peak-add-5",
         "name": "Mount Werner",
-        "elevation_ft": 10568,
-        "elevation_m": 3221,
-        "elevation_formatted_ft": "10,568'",
-        "elevation_formatted_m": "3,221 m",
-        "label_ft": "▲ Mount Werner · 10,568'",
-        "label_m": "▲ Mount Werner · 3,221 m",
-        "label_stacked_ft": "▲ Mount Werner\n10,568'",
-        "label_stacked_m": "▲ Mount Werner\n3,221 m",
-        "sort_key": 29432,
+        "elevation_ft": 10564,
+        "elevation_m": 3220,
+        "elevation_formatted_ft": "10,564'",
+        "elevation_formatted_m": "3,220 m",
+        "label_ft": "▲ Mount Werner · 10,564'",
+        "label_m": "▲ Mount Werner · 3,220 m",
+        "label_stacked_ft": "▲ Mount Werner\n10,564'",
+        "label_stacked_m": "▲ Mount Werner\n3,220 m",
+        "sort_key": 29436,
         "continent": "North America"
       }
     },
@@ -62082,22 +62082,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.438,
-          39.336
+          -106.41475,
+          39.367488
         ]
       },
       "properties": {
         "id": "peak-add-6",
         "name": "Homestake Peak",
-        "elevation_ft": 13209,
-        "elevation_m": 4026,
-        "elevation_formatted_ft": "13,209'",
-        "elevation_formatted_m": "4,026 m",
-        "label_ft": "▲ Homestake Peak · 13,209'",
-        "label_m": "▲ Homestake Peak · 4,026 m",
-        "label_stacked_ft": "▲ Homestake Peak\n13,209'",
-        "label_stacked_m": "▲ Homestake Peak\n4,026 m",
-        "sort_key": 26791,
+        "elevation_ft": 13215,
+        "elevation_m": 4028,
+        "elevation_formatted_ft": "13,215'",
+        "elevation_formatted_m": "4,028 m",
+        "label_ft": "▲ Homestake Peak · 13,215'",
+        "label_m": "▲ Homestake Peak · 4,028 m",
+        "label_stacked_ft": "▲ Homestake Peak\n13,215'",
+        "label_stacked_m": "▲ Homestake Peak\n4,028 m",
+        "sort_key": 26785,
         "continent": "North America"
       }
     },
@@ -62107,22 +62107,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.184,
-          39.638
+          -106.171183,
+          39.636565
         ]
       },
       "properties": {
         "id": "peak-add-7",
         "name": "Red Peak",
-        "elevation_ft": 13189,
-        "elevation_m": 4020,
-        "elevation_formatted_ft": "13,189'",
-        "elevation_formatted_m": "4,020 m",
-        "label_ft": "▲ Red Peak · 13,189'",
-        "label_m": "▲ Red Peak · 4,020 m",
-        "label_stacked_ft": "▲ Red Peak\n13,189'",
-        "label_stacked_m": "▲ Red Peak\n4,020 m",
-        "sort_key": 26811,
+        "elevation_ft": 13136,
+        "elevation_m": 4004,
+        "elevation_formatted_ft": "13,136'",
+        "elevation_formatted_m": "4,004 m",
+        "label_ft": "▲ Red Peak · 13,136'",
+        "label_m": "▲ Red Peak · 4,004 m",
+        "label_stacked_ft": "▲ Red Peak\n13,136'",
+        "label_stacked_m": "▲ Red Peak\n4,004 m",
+        "sort_key": 26864,
         "continent": "North America"
       }
     }

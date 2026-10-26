@@ -440,6 +440,16 @@ export default function App() {
           if (n.includes('proposed') || n.includes('planned') || n.includes('abandoned') || n.includes('disused') || n.includes('in project')) {
             continue;
           }
+        } else if (p?.kind === 'piste') {
+          const ptype = p['piste:type'];
+          const uses = Array.isArray(p.uses) ? p.uses : [];
+          if (
+            (ptype && ['skitour', 'backcountry', 'fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) ||
+            uses.includes('skitour') ||
+            uses.includes('backcountry')
+          ) {
+            continue;
+          }
         }
         if (!f.id && p?.id) {
           f.id = p.id;
@@ -1172,24 +1182,34 @@ export default function App() {
         },
       });
 
-      // Curated Single Label (Visible from zoom 6.0+)
+      // Curated Single Label (Visible from zoom 5.5+)
       map.addLayer({
         id: 'resorts-labels',
         type: 'symbol',
         source: 'resorts-source',
-        minzoom: 6.0,
+        minzoom: 5.5,
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-          'text-size': 11,
-          'text-offset': [0, 1.2],
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            6, 12,
+            9, 13.5,
+            12, 15,
+            15, 17
+          ],
+          'text-offset': [0, 1.4],
           'text-anchor': 'top',
-          'text-optional': true,
+          'text-letter-spacing': 0.02,
+          'text-max-width': 18,
+          'symbol-sort-key': 1,
+          'text-optional': false,
         },
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 1.5,
+          'text-halo-width': 2.8,
+          'text-halo-blur': 0.5,
         },
       });
 
@@ -1323,16 +1343,25 @@ export default function App() {
         minzoom: 6.5,
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-          'text-size': 11,
-          'text-offset': [0, 1.2],
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            6.5, 11,
+            9, 12.5,
+            12, 14,
+            15, 15.5
+          ],
+          'text-offset': [0, 1.4],
           'text-anchor': 'top',
+          'symbol-sort-key': 2,
+          'text-max-width': 16,
           'text-optional': true,
         },
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 1.5,
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.5,
         },
       });
 
@@ -1347,15 +1376,14 @@ export default function App() {
         id: 'major-peaks-marker',
         type: 'circle',
         source: 'major-peaks-source',
-        minzoom: 7.5,
+        minzoom: 11.5,
         layout: {
           visibility: showPeaks ? 'visible' : 'none',
         },
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
-            7.5, 2.0,
-            11.0, 3.2,
+            11.5, 2.5,
             14.0, 4.0,
           ],
           'circle-color': '#B84A39',
@@ -1368,16 +1396,15 @@ export default function App() {
         id: 'major-peaks-label',
         type: 'symbol',
         source: 'major-peaks-source',
-        minzoom: 7.5,
+        minzoom: 12.0,
         layout: {
           'visibility': showPeaks ? 'visible' : 'none',
-          'symbol-sort-key': ['get', 'sort_key'],
+          'symbol-sort-key': 10,
           'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
           'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            7.5, 9.5,
-            11.0, 10.5,
+            12.0, 10.0,
             14.0, 11.5,
           ],
           'text-max-width': 26,
@@ -1558,13 +1585,13 @@ export default function App() {
       ]);
     }
 
-    // Explicitly exclude non-ski municipal features (roads, rec paths, walking loops, playgrounds, sledding)
+    // Explicitly exclude non-ski municipal features (roads, rec paths, walking loops, playgrounds, sledding) and backcountry skitours
     const nonSkiExclusion = [
       '!',
       [
         'in',
         ['coalesce', ['get', 'piste:type'], ''],
-        ['literal', ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other']],
+        ['literal', ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other', 'skitour', 'backcountry']],
       ],
     ];
 

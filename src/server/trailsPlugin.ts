@@ -123,14 +123,18 @@ export function localTrailsPlugin(): Plugin {
               if (Math.abs(maxLng - minLng) <= 0.6 && Math.abs(maxLat - minLat) <= 0.5) {
                 // Query all pistes and operating lifts in the bounding box directly from trails table
                 const stmt = database.prepare(`
-                  SELECT DISTINCT t.geojson FROM trails t
+                  SELECT DISTINCT t.geojson, rt.resort_id FROM trails t
+                  LEFT JOIN resort_trails rt ON t.id = rt.trail_id
                   WHERE t.min_lng <= ? AND t.max_lng >= ? AND t.min_lat <= ? AND t.max_lat >= ?
                   LIMIT 5000
                 `);
-                const rows = stmt.all(maxLng, minLng, maxLat, minLat) as { geojson: string }[];
+                const rows = stmt.all(maxLng, minLng, maxLat, minLat) as { geojson: string; resort_id: string | null }[];
                 features = rows.map((r) => {
                   const f = JSON.parse(r.geojson);
                   if (!f.id && f.properties?.id) f.id = f.properties.id;
+                  if (r.resort_id && f.properties) {
+                    f.properties.resort_id = r.resort_id;
+                  }
                   return f;
                 });
               }
@@ -155,9 +159,39 @@ export function localTrailsPlugin(): Plugin {
               }
             } else if (p.kind === 'piste') {
               const ptype = p['piste:type'];
-              // Reject non-ski features (fatbike municipal roads/paths, town walking loops, sled hills, playgrounds)
-              if (ptype && ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) {
+              const uses = Array.isArray(p.uses) ? p.uses : [];
+              const isBackcountryGrooming = p.grooming === 'backcountry' || p['piste:grooming'] === 'backcountry' || p.backcountry === 'yes';
+
+              // Reject non-resort pistes: backcountry touring/mountaineering routes, fatbike, hike, sled, playgrounds, etc.
+              if (
+                (ptype && ['skitour', 'backcountry', 'fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) ||
+                uses.includes('skitour') ||
+                uses.includes('backcountry')
+              ) {
                 return false;
+              }
+
+              // Reject wild backcountry trails not associated with any ski resort
+              if (isBackcountryGrooming && !p.resort_id) {
+                const coordsMap = getAreaCoords();
+                const coords = f.geometry?.coordinates;
+                const samplePt = Array.isArray(coords) && typeof coords[0] === 'number'
+                  ? coords
+                  : (Array.isArray(coords) && Array.isArray(coords[0]) && typeof coords[0][0] === 'number' ? coords[0] : null);
+
+                let nearResort = false;
+                if (samplePt && coordsMap) {
+                  const [lng, lat] = samplePt;
+                  for (const [, [rLng, rLat]] of coordsMap) {
+                    if (Math.abs(lng - rLng) < 0.06 && Math.abs(lat - rLat) < 0.05) {
+                      nearResort = true;
+                      break;
+                    }
+                  }
+                }
+                if (!nearResort) {
+                  return false;
+                }
               }
             }
             return true;
