@@ -6,6 +6,30 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: calibrate peak label visibility for mountain perspective scale while maintaining regional clarity`
+- **User Intent & Problem Context**:
+  - The user uploaded a screenshot looking at Portillo in the Andes at a 7 km scale bar and noted: *"At whatever this scale is, I think we should be showing the peak names."*
+- **Root Cause**:
+  - Previously, to eliminate peak clutter at the statewide regional view of Colorado (zoom 9.3, ~17 km scale bar), peak labels were set to `minzoom: 12.0` and markers to `11.5`.
+  - However, at a 7 km scale bar (zoom ~10.7), the user is viewing mountain perspective (e.g. looking across the Andes behind Portillo or looking at peaks across a valley). Hiding peaks up to zoom 12.0 prevented prominent peaks like *Aconcagua* ($22,841'$) and *Cerro Cuerno* ($17,920'$) from being identified on the horizon.
+- **Architectural Resolution ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Calibrated `minzoom` Threshold**: Adjusted `major-peaks-label` and `major-peaks-marker` `minzoom` to **`10.0`**.
+  - **Scale Separation**:
+    - **Regional Scale (Zoom 6.0 – 9.9, $\ge 15\text{ km}$ scale)**: Peak labels and markers remain completely hidden. The state/continental view remains 100% clean and uncluttered with prominent ski area labels.
+    - **Mountain Perspective Scale (Zoom 10.0+, $\le 10\text{ km}$ scale)**: Peak labels and markers smoothly appear on the 3D horizon.
+  - **Dynamic Elevation Prioritization**:
+    - Set `'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000]`. Higher and more prominent peaks (smaller sort keys) are granted priority so the most iconic peaks label first.
+    - Ski areas maintain absolute priority (`symbol-sort-key: 1` and `2`), ensuring peak labels yield whenever in close proximity to ski resorts.
+    - Set `'text-padding': 12` to eliminate label collisions between adjacent peaks.
+- **Verification via Headless Chrome CDP**:
+  - `screen_portillo_peaks_7km.png`: Verified at 7 km scale bar (zoom 10.7) that Portillo is clearly visible in the foreground with *Aconcagua* ($22,841'$) and *Cerro Cuerno* ($17,920'$) cleanly labeled on the horizon.
+  - `screen_colorado_regional_clear.png`: Re-verified Colorado regional view at 17 km scale bar (zoom 9.3) has 0 peak labels or clutter.
+  - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-25
+
 ### `fix: maintain steady flight elevation on keyboard controls, unify mini-map popup behavior, and reposition mountain profile title`
 - **User Intent & Problem Context**:
   - The user reported three functional and layout issues:
