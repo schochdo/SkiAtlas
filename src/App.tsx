@@ -548,8 +548,25 @@ export default function App() {
       maxPitch: 85,
       dragRotate: true,
       boxZoom: false, // Prevents Shift-key from hijacking left-click panning into a box-zoom box
-      maxTileCacheSize: 250, // Keep pitched/recently-viewed tiles in memory during 3D camera sweeps
+      maxTileCacheSize: 800, // Keep 360° of pitched & distant tiles in memory to prevent re-fetching on rotation
     });
+
+    // Calibrate TileManager in-memory retention to keep 360° panorama warm in RAM
+    const calibrateTileCaches = () => {
+      try {
+        const tm = (map as any).style?.tileManagers;
+        if (!tm) return;
+        for (const id in tm) {
+          const manager = tm[id];
+          manager._maxTileCacheSize = 800;
+          manager._maxTileCacheZoomLevels = 60;
+          manager._outOfViewCache?.setMaxSize(800);
+        }
+      } catch (_) {}
+    };
+
+    map.on('style.load', calibrateTileCaches);
+    map.on('styledata', calibrateTileCaches);
 
     // Disable boxZoom explicitly to prevent Shift-key conflicts
     try { map.boxZoom.disable(); } catch (_) {}
@@ -2067,35 +2084,16 @@ export default function App() {
       return tag === 'INPUT' || tag === 'TEXTAREA' || (el as HTMLElement).isContentEditable;
     };
 
-    let flightElevation: number | null = null;
-    let clampRestoreTimeout: any = null;
-
-    const stopFlight = (immediate = false) => {
+    const stopFlight = (_immediate = false) => {
       activeKeys.clear();
       if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
       }
       lastTimestamp = null;
-      if (clampRestoreTimeout) {
-        clearTimeout(clampRestoreTimeout);
-        clampRestoreTimeout = null;
-      }
-      if (immediate) {
-        flightElevation = null;
-        try {
-          (mapRef.current as any)?.setCenterClampedToGround?.(true);
-        } catch (_) {}
-      } else {
-        // Debounce ground clamping restoration by 250ms so rapid key tapping doesn't snap altitude,
-        // but restore ground clamping firmly once keys are released
-        clampRestoreTimeout = setTimeout(() => {
-          flightElevation = null;
-          try {
-            (mapRef.current as any)?.setCenterClampedToGround?.(true);
-          } catch (_) {}
-        }, 250);
-      }
+      try {
+        (mapRef.current as any)?.setCenterClampedToGround?.(true);
+      } catch (_) {}
     };
 
     const flightStep = (timestamp: number) => {
@@ -2105,7 +2103,6 @@ export default function App() {
       }
 
       if (isProgrammaticFlightActive) {
-        flightElevation = null;
         stopFlight(true);
         return;
       }
@@ -2120,17 +2117,6 @@ export default function App() {
       if (!hasNavKey) {
         stopFlight(false);
         return;
-      }
-
-      // Initialize flightElevation and ensure native ground clamping is disabled
-      if (flightElevation === null) {
-        try { (map as any).setCenterClampedToGround?.(false); } catch (_) {}
-        const curCenter = map.getCenter();
-        const curElev = map.getCenterElevation();
-        const ground = map.queryTerrainElevation(curCenter);
-        flightElevation = (curElev !== null && curElev !== undefined && isFinite(curElev))
-          ? curElev
-          : ((ground !== null && ground !== undefined && isFinite(ground)) ? ground : 0);
       }
 
       const isShift = activeKeys.has('ShiftLeft') || activeKeys.has('ShiftRight');
@@ -2165,69 +2151,48 @@ export default function App() {
       if (activeKeys.has('Equal') || activeKeys.has('NumpadAdd') || activeKeys.has('KeyZ')) zoomDelta += 1;
       if (activeKeys.has('Minus') || activeKeys.has('NumpadSubtract') || activeKeys.has('KeyX')) zoomDelta -= 1;
 
-      if (pitchDelta !== 0) {
-        const curPitch = map.getPitch();
-        const pitchSpeed = (isShift ? 2.0 : 1.0) * 36;
-        const nextPitch = Math.max(0, Math.min(85, curPitch + pitchDelta * pitchSpeed * dt));
-        map.setPitch(nextPitch);
-        setMapPitch(Math.round(nextPitch));
-      }
-
-      if (rotateBearing !== 0) {
-        const curBearing = map.getBearing();
-        const bearingSpeed = (isShift ? 2.0 : 1.0) * 42;
-        const nextBearing = (curBearing + rotateBearing * bearingSpeed * dt) % 360;
-        const normalized = nextBearing < 0 ? nextBearing + 360 : nextBearing;
-        map.setBearing(normalized);
-        setMapBearing(Math.round(normalized));
-      }
-
-      if (zoomDelta !== 0) {
-        const curZoom = map.getZoom();
-        const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.5;
-        const nextZoom = Math.max(1.0, Math.min(19.0, curZoom + zoomDelta * zoomSpeed * dt));
-        map.setZoom(nextZoom);
-      }
-
       const curZoom = map.getZoom();
       const speedMps = 720 * Math.pow(2, 14 - curZoom) * (isShift ? 2.5 : 1.0);
 
-      // Manual altitude control (Q/E or PageUp/PageDown)
-      if (altitudeDelta !== 0) {
-        const altSpeed = Math.max(250, speedMps * 0.75) * (isShift ? 2.0 : 1.0);
-        let deltaAlt = altitudeDelta * altSpeed * dt;
+      const tr = (map as any)._camera?.transform;
+      const curCamLngLat = tr?.getCameraLngLat?.() || map.getCenter();
+      let curCamAlt = tr?.getCameraAltitude?.() ?? map.getCenterElevation?.() ?? 0;
+      let curBearing = map.getBearing();
+      let curPitch = map.getPitch();
 
-        // Ground clearance protection for the camera eye:
-        // Do not let camera descend below ground terrain directly underneath the camera eye
-        if (deltaAlt < 0) {
-          const tr = (map as any)._camera?.transform;
-          const camLngLat = tr?.getCameraLngLat?.() || map.getCenter();
-          const camAlt = tr?.getCameraAltitude?.();
-          const groundUnderCam = map.queryTerrainElevation(camLngLat);
-          const MIN_CLEARANCE = 5.0; // meters
+      let nextPitch = curPitch;
+      let nextBearing = curBearing;
+      let nextCamAlt = curCamAlt;
+      let nextCamLng = curCamLngLat.lng;
+      let nextCamLat = curCamLngLat.lat;
 
-          if (camAlt !== null && camAlt !== undefined && isFinite(camAlt) &&
-              groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam)) {
-            const maxDescent = camAlt - (groundUnderCam + MIN_CLEARANCE);
-            if (maxDescent <= 0) {
-              deltaAlt = 0;
-            } else if (-deltaAlt > maxDescent) {
-              deltaAlt = -maxDescent;
-            }
-          }
-        }
-
-        flightElevation += deltaAlt;
+      if (pitchDelta !== 0) {
+        const pitchSpeed = (isShift ? 2.0 : 1.0) * 36;
+        nextPitch = Math.max(0, Math.min(85, curPitch + pitchDelta * pitchSpeed * dt));
       }
 
-      // Smooth horizontal flight with steady-altitude physics & minimum-clearance ground protection
+      if (rotateBearing !== 0) {
+        const bearingSpeed = (isShift ? 2.0 : 1.0) * 42;
+        nextBearing = (curBearing + rotateBearing * bearingSpeed * dt) % 360;
+        if (nextBearing < 0) nextBearing += 360;
+      }
+
+      const MIN_CLEARANCE = 15.0; // meters minimum ground clearance buffer
+
+      if (altitudeDelta !== 0) {
+        const altSpeed = Math.max(250, speedMps * 0.75) * (isShift ? 2.0 : 1.0);
+        nextCamAlt = curCamAlt + altitudeDelta * altSpeed * dt;
+        const groundUnderCam = map.queryTerrainElevation([curCamLngLat.lng, curCamLngLat.lat]) || 0;
+        if (nextCamAlt < groundUnderCam + MIN_CLEARANCE) {
+          nextCamAlt = groundUnderCam + MIN_CLEARANCE;
+        }
+      }
+
       if (moveForward !== 0 || moveStrafe !== 0) {
         const len = Math.hypot(moveForward, moveStrafe);
         moveForward /= len;
         moveStrafe /= len;
 
-        const curCenter = map.getCenter();
-        const curBearing = map.getBearing();
         const bearingRad = (curBearing * Math.PI) / 180;
         const distMeters = speedMps * dt;
 
@@ -2236,50 +2201,63 @@ export default function App() {
         const deltaEastMeters = (sinB * moveForward + cosB * moveStrafe) * distMeters;
         const deltaNorthMeters = (cosB * moveForward - sinB * moveStrafe) * distMeters;
 
-        const latRad = (curCenter.lat * Math.PI) / 180;
+        const latRad = (curCamLngLat.lat * Math.PI) / 180;
         const metersPerDegLat = 111320;
         const metersPerDegLng = 111320 * Math.max(0.1, Math.cos(latRad));
 
         const deltaLat = deltaNorthMeters / metersPerDegLat;
         const deltaLng = deltaEastMeters / metersPerDegLng;
 
-        const nextLat = Math.max(-85, Math.min(85, curCenter.lat + deltaLat));
-        const nextLng = curCenter.lng + deltaLng;
+        nextCamLat = Math.max(-85, Math.min(85, curCamLngLat.lat + deltaLat));
+        nextCamLng = curCamLngLat.lng + deltaLng;
 
-        // Minimum height rule:
-        // Sample ground terrain under next camera position.
-        // If terrain rises above current altitude, climb smoothly to stay above the mountain.
-        // If flight altitude is well above the ground, IGNORE ground height and keep elevation rock-steady!
-        const tr = (map as any)._camera?.transform;
-        const camLngLat = tr?.getCameraLngLat?.() || curCenter;
-        const camAlt = tr?.getCameraAltitude?.();
-        const nextCamLat = Math.max(-85, Math.min(85, camLngLat.lat + deltaLat));
-        const nextCamLng = camLngLat.lng + deltaLng;
-        const groundUnderCam = map.queryTerrainElevation([nextCamLng, nextCamLat]);
-
-        if (groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam) &&
-            camAlt !== null && camAlt !== undefined && isFinite(camAlt)) {
-          const MIN_CLEARANCE = 5.0; // meters minimum ground clearance buffer
-          const minAllowedElevation = groundUnderCam + MIN_CLEARANCE;
-
-          if (minAllowedElevation > camAlt) {
-            // Mountain / ridge rising ahead: lift smoothly to clear the slope
-            const climbDiff = minAllowedElevation - camAlt;
-            const climbFactor = 1 - Math.exp(-dt * 6.0);
-            const maxClimbSpeed = Math.max(speedMps * 1.5, 450); // m/s
-            const climbDelta = Math.min(climbDiff, Math.max(climbDiff * climbFactor, maxClimbSpeed * dt));
-            flightElevation += climbDelta;
-          }
+        // Ground clearance protection for terrain ahead
+        const groundAhead = map.queryTerrainElevation([nextCamLng, nextCamLat]) || 0;
+        if (groundAhead + MIN_CLEARANCE > nextCamAlt) {
+          const climbDiff = (groundAhead + MIN_CLEARANCE) - nextCamAlt;
+          const climbFactor = 1 - Math.exp(-dt * 6.0);
+          const maxClimbSpeed = Math.max(speedMps * 1.5, 450); // m/s
+          const climbDelta = Math.min(climbDiff, Math.max(climbDiff * climbFactor, maxClimbSpeed * dt));
+          nextCamAlt += climbDelta;
         }
+      }
 
-        map.jumpTo({
-          center: [nextLng, nextLat],
-          elevation: flightElevation,
-        });
-      } else if (altitudeDelta !== 0) {
-        map.jumpTo({
-          elevation: flightElevation,
-        });
+      // Apply 3D camera transformation using calculateCameraOptionsFromCameraLngLatAltRotation
+      // to keep terrain ground clamped and camera position strictly preserved without snapping
+      if (pitchDelta !== 0 || rotateBearing !== 0 || altitudeDelta !== 0 || moveForward !== 0 || moveStrafe !== 0) {
+        if (typeof (map as any).calculateCameraOptionsFromCameraLngLatAltRotation === 'function') {
+          const opts = (map as any).calculateCameraOptionsFromCameraLngLatAltRotation(
+            [nextCamLng, nextCamLat],
+            nextCamAlt,
+            nextBearing,
+            nextPitch,
+            0
+          );
+          if (opts && opts.center && isFinite(opts.zoom) && isFinite(opts.elevation)) {
+            map.jumpTo({
+              center: opts.center,
+              elevation: opts.elevation,
+              zoom: opts.zoom,
+              bearing: opts.bearing,
+              pitch: opts.pitch,
+            });
+            setMapPitch(Math.round(nextPitch));
+            setMapBearing(Math.round(nextBearing));
+          } else {
+            map.setPitch(nextPitch);
+            map.setBearing(nextBearing);
+          }
+        } else {
+          map.setPitch(nextPitch);
+          map.setBearing(nextBearing);
+        }
+      }
+
+      if (zoomDelta !== 0) {
+        const curZ = map.getZoom();
+        const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.5;
+        const nextZoom = Math.max(1.0, Math.min(19.0, curZ + zoomDelta * zoomSpeed * dt));
+        map.setZoom(nextZoom);
       }
 
       // Live update camera altitude metric during flight

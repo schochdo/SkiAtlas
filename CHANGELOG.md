@@ -6,6 +6,45 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: eliminate camera elevation drop-back on E and pan, and expand 360-degree distant tile memory caching`
+- **User Intent & Problem Context**:
+  - The user reported:
+    1. *"Increasing elevation with 'E' is causing it to drop back down again."*
+    2. *"The worst is when you increase elevation and then pan. it drops down to the original view."*
+    3. *"A lot of this kind of behavior, too. This is after fully loading."* (attaching a screenshot of Mount Shuksan where foreground mountain terrain was clipped, revealing an empty sky void beneath the ridge).
+    4. *"Also, can we cache the distant tiles? It seems like they are having to reload every time you spin around. Looks good once they load, but not very good for speed or bandwidth."*
+    5. Expressed concern: *"If loading high quality tiles all the way to the horizon is a problem, let me know. I don't want to have rate limiting problems."*
+- **Root Cause Analysis**:
+  1. **Elevation Snap-Back on Release and Mouse Pan**:
+     - Previously, the flight engine modified `flightElevation` and called `map.jumpTo({ elevation: flightElevation })`. In MapLibre GL JS, `jumpTo({ elevation })` sets the elevation of the screen's *center point* (the orbit pivot), NOT the camera eye height.
+     - When 'E' was released, a 250ms debounce timeout executed `setCenterClampedToGround(true)`. MapLibre immediately measured ground elevation under the center point and snapped `transform.elevation` from the elevated height back down to the ground.
+     - Similarly, on any mouse click or pan gesture, `setCenterClampedToGround(true)` and `flightElevation = null` were triggered, forcing center elevation to plunge thousands of meters back down to the terrain.
+     - In high-pitch perspectives (75°–85°), this sudden plunge dropped the camera eye below intervening ridges. Because backface culling hides underground terrain polygons facing away from the camera, the foreground mountain disappeared into a blank void.
+  2. **Distant Tile Eviction on Rotation**:
+     - MapLibre GL JS manages raster and terrain tiles via internal `TileManager` instances.
+     - `maxTileCacheSize` was set to `250`, while `_maxTileCacheZoomLevels` defaulted to `5`.
+     - In oblique 3D views, a single viewport spans 5–8 zoom levels and dozens of tiles. When the user rotated 90°–180°, newly visible tiles exceeded the low `_outOfViewCache` limit (clamped to only 100–150 tiles for 512px tiles).
+     - As a result, behind-the-camera tiles were destroyed from memory. When the camera swung back, MapLibre had to re-fetch and re-decode every tile, causing noticeable reload flashes and unnecessary network round-trips.
+- **Architectural Resolution ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  1. **True Camera-Centric Flight Physics via `calculateCameraOptionsFromCameraLngLatAltRotation`**:
+     - Refactored `flightStep` to operate directly on the camera eye's world coordinate and altitude (`curCamLngLat`, `curCamAlt`).
+     - Ascending ('E') and descending ('Q') now directly alter the camera eye height `nextCamAlt` with a minimum ground clearance buffer of 15m (`MIN_CLEARANCE`).
+     - The camera transform is solved via `map.calculateCameraOptionsFromCameraLngLatAltRotation([nextCamLng, nextCamLat], nextCamAlt, nextBearing, nextPitch, 0)`. This places the map's center point directly on the ground along the line of sight while preserving the elevated camera perspective.
+     - Removed `clampRestoreTimeout` and `flightElevation = null` from both `stopFlight` and mouse interaction handlers (`onCanvasMouseInteraction`). Ground clamping (`setCenterClampedToGround(true)`) remains active continuously without ever snapping the camera.
+     - Panning after climbing with 'E' now preserves the user's elevated vantage point rock-steadily.
+  2. **Expanded 360-Degree Panorama In-Memory Tile Caching**:
+     - Increased `maxTileCacheSize: 800` on the map instance.
+     - Added `calibrateTileCaches()` hooked to `map.on('style.load')` and `map.on('styledata')` that sets `_maxTileCacheSize = 800` and `_maxTileCacheZoomLevels = 60`, and expands `_outOfViewCache.setMaxSize(800)` across all raster and DEM tile managers.
+     - This keeps up to 800 decoded WebGL textures and terrain meshes warm in RAM, allowing full 360° rotational camera spins with zero tile eviction, zero re-fetching, and zero rate-limiting risk.
+- **Verification via Headless Chrome CDP**:
+  - `verification_elev_and_pan.png`: Verified camera climbed smoothly from 4,378m to 5,225m with 'E', held elevation stably after release (500ms+ elapsed without snapping), and maintained elevated altitude (~5,040m) through subsequent mouse pan gestures.
+  - Verified `satCacheMax: 800` and `demCacheMax: 800` with 103+ tiles kept resident in `_outOfViewCache` across 360° rotation.
+  - Production build clean (`npm run build` passed in 408ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: restore Mount Baker summit benchmark and resolve homonymous peak collision overrides`
 - **User Intent & Problem Context**:
   - The user asked: *"How is there a point for Lincoln Peak but not Mt Baker?"* (attaching a screenshot of the glaciated Mount Baker massif where `▲ Lincoln Peak · 9,081'` was rendered, but the main $10,781\text{ ft}$ volcano summit had no peak marker).
