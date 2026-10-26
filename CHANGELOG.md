@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `refactor: drop Open-Meteo external links from resort cards and mountain profiles`
+- **User Intent & Problem Context**:
+  - The user observed that the generic Open-Meteo docs page did not automatically highlight snow variables, lacked the mountain's name, and created visual clutter: *"Those openmeteo forecasts are not matching what I see on the site. The site also does not automatically select snow. And there is no name for the location on the site. If you can click the snow and link to the site, this is not necessary either. Drop this openmeteo link."*
+- **Clean Editorial Restoration**:
+  - **`ResortCard.tsx` ([`src/components/sidebar/ResortCard.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/ResortCard.tsx))**:
+    - Reverted the 7-day snow chip to a clean, non-linking badge without external link icons.
+    - Removed the `[ Open-Meteo ↗ ]` action button from the selected card drawer, leaving only the primary `[ Deselect ]` and `[ Mountain Profile > ]` actions.
+    - Removed unused `ExternalLink` icon import.
+  - **`MountainProfile.tsx` ([`src/components/profile/MountainProfile.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/profile/MountainProfile.tsx))**:
+    - Removed the `Open-Meteo ↗` link from the `Summit Meteorology` header, keeping the focus entirely on the domain meteorology bars and metrics.
+- **Verification via Headless Chrome CDP**:
+  - Verified on resort cards that snow chips and selected card action rows have 0 external Open-Meteo links.
+  - Production build clean (`npm run build` passed in 380ms).
+
+---
+
+## 2026-10-25
+
 ### `feat: add direct links to Open-Meteo interactive forecast page on resort cards and mountain profiles`
 - **User Intent & Problem Context**:
   - The user requested: *"Can we link to the openmeteo page on the card (I assume there is an associated page)?"*
