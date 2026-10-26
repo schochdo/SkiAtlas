@@ -548,6 +548,7 @@ export default function App() {
       maxPitch: 85,
       dragRotate: true,
       boxZoom: false, // Prevents Shift-key from hijacking left-click panning into a box-zoom box
+      maxTileCacheSize: 250, // Keep pitched/recently-viewed tiles in memory during 3D camera sweeps
     });
 
     // Disable boxZoom explicitly to prevent Shift-key conflicts
@@ -880,6 +881,17 @@ export default function App() {
         }
       } catch (e) {
         console.warn('SetTerrain error:', e);
+      }
+
+      // Calibrate Level-of-Detail (LOD) for oblique 3D viewing
+      // MapLibre's default maxZoomLevelsOnScreen (9.314) and tileCountMaxMinRatio (3) aggressively demote
+      // middle-distance tiles to coarse zoom levels when tilted. Calibrate satellite and DEM sources
+      // so tilted mountain slopes retain crisp high-resolution zoom levels looking across the terrain.
+      try {
+        map.setSourceTileLodParams(3.5, 6.0, 'satellite-tiles');
+        map.setSourceTileLodParams(4.0, 5.0, 'terrain-dem');
+      } catch (e) {
+        console.warn('setSourceTileLodParams error:', e);
       }
 
       // 1. Localhost SQLite Real Vector Ski Trails Source & Layers
@@ -1938,6 +1950,9 @@ export default function App() {
     // Satellite
     if (map.getLayer('basemap-satellite')) {
       map.setLayoutProperty('basemap-satellite', 'visibility', basemapMode === 'satellite' ? 'visible' : 'none');
+      if (basemapMode === 'satellite') {
+        try { map.setSourceTileLodParams(3.5, 6.0, 'satellite-tiles'); } catch (_) {}
+      }
     }
     // OpenStreetMap
     if (map.getLayer('basemap-osm')) {

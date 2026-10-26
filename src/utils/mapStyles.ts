@@ -11,12 +11,12 @@ export const createMapStyle = (
   projection: { type: earthProjection },
   glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
   sources: {
-    // 1. Esri World Imagery (Clarity) — Curated archive optimized for cloud-free alpine views, seamless joins, and high contrast
+    // 1. Esri World Imagery (Standard) — Seamless global orthoimagery with continuous color balancing and edge blending
     'satellite-tiles': {
       type: 'raster',
-      tiles: ['https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
       tileSize: 256,
-      maxzoom: 18,
+      maxzoom: 19,
       attribution: 'Esri Satellite',
     },
     // 2. OpenStreetMap (Clean vector roads, towns & trails)
@@ -80,7 +80,10 @@ export const createMapStyle = (
       type: 'raster',
       source: 'satellite-tiles',
       layout: { visibility: basemapMode === 'satellite' ? 'visible' : 'none' },
-      paint: { 'raster-contrast': 0.1 },
+      paint: {
+        'raster-contrast': 0.08,
+        'raster-fade-duration': 0,
+      },
     },
     // Base 2: OpenStreetMap
     {
@@ -88,7 +91,12 @@ export const createMapStyle = (
       type: 'raster',
       source: 'osm-tiles',
       layout: { visibility: basemapMode === 'osm' ? 'visible' : 'none' },
-      paint: { 'raster-contrast': 0.06, 'raster-saturation': 0.05, 'raster-brightness-min': 0.02 },
+      paint: {
+        'raster-contrast': 0.06,
+        'raster-saturation': 0.05,
+        'raster-brightness-min': 0.02,
+        'raster-fade-duration': 0,
+      },
     },
     // Base 3: Alpine Topo Map (Clean contours, summits, elevations & passes from z=0 to z=19)
     {
@@ -101,6 +109,7 @@ export const createMapStyle = (
         'raster-saturation': 0.12,
         'raster-brightness-min': 0.05,
         'raster-opacity': 1.0,
+        'raster-fade-duration': 0,
       },
     },
     // Alpine Multi-Color Painted Hillshade

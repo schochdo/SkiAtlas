@@ -6,6 +6,41 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: restore seamless standard satellite imagery and calibrate 3D pitch LOD for sharp alpine views`
+- **User Intent & Problem Context**:
+  - The user reported:
+    1. *"Not sure if something changed or if I am picking bad examples, but I keep getting this behavior with the satellite images now."* (attached screenshot showing Whitefish Mountain Resort with blurry, low-resolution tiles and harsh, patchy boundary seams).
+    2. *"It is not loading in the high quality tiles when it should be."*
+    3. *"It feels like it is only loading in quality tiles looking down."*
+- **Root Cause Analysis**:
+  1. **Esri Clarity Boundary Mismatch & Truncation**:
+     - In a previous update, `satellite-tiles` was directed to Esri Clarity (`clarity.maptiles.arcgis.com`). Esri Clarity is an unblended, experimental archive of historical cloud-free scenes. While it solved a localized cloud at Sunlight Mountain, it does not provide seamless coverage across all ski regions. In Whitefish, Big Sky, and many other areas, Clarity only covers the immediate resort boundaries; outside the boundary, tiles drop to coarse, dark, or underexposed imagery (`c_wf_north.jpg` was literally truncated black noise in the upper half). In contrast, Standard Esri World Imagery (`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`) is a fully color-balanced, edge-blended global mosaic going up to zoom level 19.
+  2. **MapLibre GL JS 3D LOD Distance Demotion ("Only Loading Quality Tiles Looking Down")**:
+     - MapLibre calculates covering tile zoom using `createCalculateTileZoomFunction(maxZoomLevelsOnScreen = 9.314, tileCountMaxMinRatio = 3)`.
+     - When the camera is looking straight down (pitch 0°), all ground points are equidistant to the camera, so full-resolution tiles (zoom 14-16) load across the view.
+     - When tilted obliquely (pitch 60°–75°) looking forward at the mountain, distance $D \propto \frac{1}{\cos(\text{pitch})}$. MapLibre's default formula aggressively demotes the requested zoom for middle-distance terrain by 2 to 4 zoom levels (e.g. dropping from zoom 15 down to zoom 10–12). On high-DPI screens, zoom 11 tiles are scaled up $16\times$, rendering mountain faces, trails, and trees as a blurry, pixelated smear.
+     - Furthermore, `tileCountMaxMinRatio = 3` uniformly demotes all tiles on screen once the total tile count exceeds $3\times$ pitch 0.
+     - Finally, the default `raster-fade-duration` of 300ms produced a sluggish, foggy crossfade whenever new raster tiles arrived.
+- **Architectural Resolution**:
+  - **Restored Standard Esri World Imagery ([`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts))**:
+    - Reverted `satellite-tiles` back to Standard Esri World Imagery: `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}` with `maxzoom: 19`.
+    - Eliminated sharp boundary seams, harsh contrast transitions, and missing coverage boxes across all mountains and valleys.
+  - **Calibrated 3D Level of Detail (LOD) ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+    - Applied `map.setSourceTileLodParams(3.5, 6.0, 'satellite-tiles')` and `map.setSourceTileLodParams(4.0, 5.0, 'terrain-dem')` on map load and basemap switch.
+    - Constraining `maxZoomLevelsOnScreen` to 3.5 and increasing `tileCountMaxMinRatio` to 6.0 prevents MapLibre from demoting middle-distance alpine slopes to low zoom levels. Pitching up to 70°+ maintains zoom 14-16 coverage across the mountain face.
+    - Set `maxTileCacheSize: 250` on `new maplibregl.Map(...)` so recently loaded tiles are not prematurely purged during 3D camera sweeps.
+  - **Zero Raster Fade Duration ([`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts))**:
+    - Added `'raster-fade-duration': 0` to `basemap-satellite`, `basemap-osm`, and `basemap-topo` layers, eliminating the 300ms crossfade blurriness.
+- **Verification via Headless Chrome CDP**:
+  - **Whitefish Mountain Resort, MT** (`wf_standard_lod_calibrated.png` & `wf_closeup_lod.png`): Captured at pitch 72° and pitch 68°. Seam cuts and black boundaries completely gone; continuous forest and valley terrain. In closeup view, in-view tiles are 175 at z14, 198 at z15, and 56 at z16, displaying razor-sharp ski trails, lift lines, and trees.
+  - **Aspen Mountain, CO** (`aspen_standard_lod.png`): Captured at pitch 65°. In-view distribution: 250 tiles at z14, 262 at z15, 76 at z16. Crisp town streets, forest canopy, and steep cut runs.
+  - **Zermatt / Matterhorn, Switzerland** (`zermatt_standard_lod.png`): Captured at pitch 70°. Seamless glacier ice flows and rock moraines across Trockener Steg, Klein Matterhorn, and Gornergrat without blur or seams.
+  - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-25
+
 ### `feat: display camera elevation on scale bar and fix flight descent elevation floor bug`
 - **User Intent & Problem Context**:
   - The user requested:

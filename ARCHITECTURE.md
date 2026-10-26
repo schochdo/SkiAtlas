@@ -155,6 +155,8 @@ GLOBAL_SKI_ATLAS (static)
 - Encoding: `terrarium`
 
 **Basemap modes:** `satellite` | `osm` | `topo`
+- `satellite`: Esri World Imagery (Standard) at `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}` (seamless global multi-scale orthoimagery with color-balanced edges up to z19; avoid Clarity due to resort boundary cutoffs and missing fringe tiles).
+- 3D Oblique LOD: Calibrated via `map.setSourceTileLodParams(3.5, 6.0, 'satellite-tiles')` to prevent MapLibre from downgrading pitched mountain faces to coarse zoom levels when looking toward the horizon. `raster-fade-duration` set to 0.
 
 **Key layers (in order):**
 1. Terrain (DEM source)
