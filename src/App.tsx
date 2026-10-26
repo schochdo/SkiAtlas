@@ -1327,11 +1327,12 @@ export default function App() {
         data: { type: 'FeatureCollection', features: curatedFeatures as any },
       });
 
-      // Curated Outer Ring (Visible across all zoom levels with smooth zoom interpolation)
+      // Curated Outer Ring (fades out at z12 when trail lines take over)
       map.addLayer({
         id: 'resorts-outer-ring',
         type: 'circle',
         source: 'resorts-source',
+        maxzoom: 12,
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
@@ -1346,11 +1347,12 @@ export default function App() {
         },
       });
 
-      // Curated Inner Ring (Visible across all zoom levels with crisp halo)
+      // Curated Inner Ring (fades out at z12 when trail lines take over)
       map.addLayer({
         id: 'resorts-inner-dot',
         type: 'circle',
         source: 'resorts-source',
+        maxzoom: 12,
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
@@ -1364,12 +1366,13 @@ export default function App() {
         },
       });
 
-      // Curated Single Label (Visible from zoom 5.5+)
+      // Curated Single Label (minzoom 5.5, maxzoom 12 — yields to trail detail above z12)
       map.addLayer({
         id: 'resorts-labels',
         type: 'symbol',
         source: 'resorts-source',
         minzoom: 5.5,
+        maxzoom: 12,
         layout: {
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
@@ -1457,13 +1460,14 @@ export default function App() {
         },
       });
 
-      // Global Ski Areas Outer Concentric Ring
+      // Global Ski Areas Outer Concentric Ring (fades at z12 when trails take over)
       map.addLayer({
         id: 'global-unclustered-outer-ring',
         type: 'circle',
         source: 'global-ski-areas-source',
         filter: ['!', ['has', 'point_count']],
         minzoom: 6.0,
+        maxzoom: 12,
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
@@ -1490,12 +1494,13 @@ export default function App() {
         },
       });
 
-      // Global Ski Areas Core Point
+      // Global Ski Areas Core Point (fades at z12 when trails take over)
       map.addLayer({
         id: 'global-unclustered-point',
         type: 'circle',
         source: 'global-ski-areas-source',
         filter: ['!', ['has', 'point_count']],
+        maxzoom: 12,
         paint: {
           'circle-color': [
             'match',
@@ -1516,13 +1521,14 @@ export default function App() {
         },
       });
 
-      // Global Ski Areas Name Label
+      // Global Ski Areas Name Label (minzoom 6.5, maxzoom 12 — yields to trail detail above z12)
       map.addLayer({
         id: 'global-unclustered-label',
         type: 'symbol',
         source: 'global-ski-areas-source',
         filter: ['!', ['has', 'point_count']],
         minzoom: 6.5,
+        maxzoom: 12,
         layout: {
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],

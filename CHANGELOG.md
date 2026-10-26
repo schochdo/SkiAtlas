@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -47,6 +61,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -98,6 +126,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -145,6 +187,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -178,6 +234,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -232,6 +302,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -272,6 +356,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -325,6 +423,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -374,6 +486,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -422,6 +548,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -463,6 +603,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -500,6 +654,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -540,6 +708,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -571,6 +753,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -624,6 +820,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -661,6 +871,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -692,6 +916,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -730,6 +968,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -766,6 +1018,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -815,6 +1081,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -853,6 +1133,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -887,6 +1181,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -927,6 +1235,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -952,6 +1274,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -982,6 +1318,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -1023,6 +1373,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -1068,6 +1432,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -1130,6 +1508,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -1175,6 +1567,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -1214,6 +1620,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -1259,6 +1679,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -1321,6 +1755,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -1366,6 +1814,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -1433,6 +1895,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -1478,6 +1954,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -1540,6 +2030,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -1585,6 +2089,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -1624,6 +2142,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -1669,6 +2201,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
@@ -1731,6 +2277,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
+
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
 - **Solution**:
@@ -1776,6 +2336,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
+- **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
+- **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
+  - `resorts-outer-ring` (curated dot outer ring)
+  - `resorts-inner-dot` (curated dot core)
+  - `resorts-labels` (curated resort name text)
+  - `global-unclustered-outer-ring` (global dot outer ring)
+  - `global-unclustered-point` (global dot core)
+  - `global-unclustered-label` (global resort name text)
+- **Crossfade zone**: Trail lines begin appearing at zoom 11 while markers are still present; by zoom 12 the markers/names are fully gone and only trail geometry + trail labels remain. This creates a natural editorial handoff — wide shot shows the resort name, close-up shows the trail map.
+- **No toggle needed**: Entirely zoom-driven; no new UI controls.
+
+---
 
 ### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
 - **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
