@@ -6,6 +6,39 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: restore intuitive A/D steering rotation and eliminate camera vertical bouncing with steady-altitude cruising`
+- **User Intent & Problem Context**:
+  - The user reported:
+    1. *"The A and D buttons apparently got switched so the rotation behavior is backwards."*
+    2. *"The camera also bounces up and down the whole time. We have tried to get rid of this behavior many many times at this point."*
+    3. *"The camera up and down movement is very jerky now, too. Probably related to the bouncing camera."*
+- **Root Cause Analysis**:
+  1. **A/D Steering Inversion**:
+     - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), `KeyA` incremented `rotateBearing` ($+1$) while `KeyD` decremented it ($-1$). In standard compass bearing (where North is $0^\circ$, East is $90^\circ$, and West is $270^\circ$), pressing 'A' to turn left requires rotating counter-clockwise (decreasing bearing), while pressing 'D' to turn right requires rotating clockwise (increasing bearing). The signs were inverted.
+  2. **Camera Vertical Bouncing & Jerky Elevation**:
+     - In the prior commit, `flightStep` attempted to solve camera options via `calculateCameraOptionsFromCameraLngLatAltRotation` on every frame.
+     - Because `calculateCameraOptionsFromCameraLngLatAltRotation` projects the camera gaze forward across the physical 3D terrain mesh, any movement across undulating ridges, valleys, and peaks caused the projected ground intersection distance to oscillate violently.
+     - This altered `zoom`, `center`, and `elevation` at 60Hz. Simultaneously, MapLibre's internal terrain ground clamping fought these adjustments, causing the camera to vibrate, bounce up and down, and jerk during flight.
+- **Architectural Resolution ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Corrected Steering Rotation**:
+    - `KeyA`: `rotateBearing -= 1` (turns camera left / counter-clockwise).
+    - `KeyD`: `rotateBearing += 1` (turns camera right / clockwise).
+  - **Level, Steady-Altitude Flight Physics**:
+    - Decoupled camera flight from ground intersection raycasts. Flight now operates on level, steady-altitude physics where `flightElevation` is preserved directly in meters.
+    - Direct Pitch (`map.setPitch()`) and Bearing (`map.setBearing()`) manipulation eliminates 60Hz terrain-solver feedback oscillation, yielding rock-steady, buttery smooth motion.
+    - Smooth vertical climbing via **E** and descending via **Q** adjusts `flightElevation` with a continuous $15\text{ m}$ ($50\text{ ft}$) minimum ground clearance buffer.
+    - Removed `setCenterClampedToGround(true)` from mouse interaction and flight stop handlers, ensuring user-commanded elevations are preserved exactly through key releases and mouse panning with zero snap-back and zero bouncing.
+- **Verification via Headless Chrome CDP**:
+  - Verified KeyA turns left (bearing decreased from $0^\circ$ to $-5.5^\circ$).
+  - Verified KeyD turns right (bearing increased smoothly to $+19.8^\circ$).
+  - Verified KeyE climbs smoothly (elevation rose from $1,056\text{ m}$ to $1,619\text{ m}$ with zero jitter or bounce).
+  - Verified mouse panning after climbing preserved elevation identically to the decimal place ($1,619.5048\text{ m}$).
+  - Production build clean (`npm run build` passed in 336ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: anchor Blackcomb Peak to surveyed geodetic summit and clear misplaced mid-mountain pin`
 - **User Intent & Problem Context**:
   - The user reported: *"Yet another wrong peak location"* (attaching a screenshot of `▲ Blackcomb Peak · 7,992'` rendered in dense forest on Whistler Mountain between ski runs *Where's Joe*, *Last Resort*, and *Watch Out*).
