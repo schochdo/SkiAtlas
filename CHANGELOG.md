@@ -6,6 +6,26 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: anchor Blackcomb Peak to surveyed geodetic summit and clear misplaced mid-mountain pin`
+- **User Intent & Problem Context**:
+  - The user reported: *"Yet another wrong peak location"* (attaching a screenshot of `▲ Blackcomb Peak · 7,992'` rendered in dense forest on Whistler Mountain between ski runs *Where's Joe*, *Last Resort*, and *Watch Out*).
+- **Root Cause Analysis**:
+  - In [`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), `peak-add-4` (Blackcomb Peak) had its coordinates recorded as `[-122.905, 50.086]`.
+  - These coordinates were located in mid-mountain trees on Whistler Mountain at an elevation of only $1,129\text{ m}$ ($3,705\text{ ft}$), miles west of the true Blackcomb Peak massif across the Fitzsimmons Creek valley.
+- **Architectural Resolution ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson))**:
+  - Re-anchored `peak-add-4` (Blackcomb Peak) to the official surveyed geodetic benchmark (OSM node `2057435315` / BC Geographical Names):
+    - Coordinates: `[-122.87083, 50.08139]`
+    - Elevation: $2,436\text{ m}$ ($7,992\text{ ft}$)
+  - Fine-tuned adjacent `peak-add-3` (Whistler Peak) to its surveyed summit benchmark `[-122.95695, 50.05917]` ($2,181\text{ m}$ / $7,159\text{ ft}$).
+- **Verification via Headless Chrome CDP**:
+  - `blackcomb_summit_verified.png`: Verified `▲ Blackcomb Peak · 7,992'` pin now sits directly on the glaciated rocky summit horn east of the 7th Heaven express lift.
+  - `wheres_joe_trails_clean.png`: Verified the mid-mountain ski trails on Whistler Mountain are completely clear of the misplaced peak pin.
+  - Production build clean (`npm run build` passed in 335ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: eliminate camera elevation drop-back on E and pan, and expand 360-degree distant tile memory caching`
 - **User Intent & Problem Context**:
   - The user reported:
