@@ -2117,10 +2117,7 @@ export default function App() {
         animationFrameId = null;
       }
       lastTimestamp = null;
-      flightElevation = null;
-      try {
-        (mapRef.current as any)?.setCenterClampedToGround?.(true);
-      } catch (_) {}
+      // Preserve flightElevation across flight key releases so camera altitude stays steady
     };
 
     const flightStep = (timestamp: number) => {
@@ -2334,10 +2331,6 @@ export default function App() {
     const onCanvasMouseInteraction = () => {
       if (animationFrameId !== null || activeKeys.size > 0) {
         stopFlight();
-      } else {
-        try {
-          (mapRef.current as any)?.setCenterClampedToGround?.(true);
-        } catch (_) {}
       }
     };
     canvasContainer.addEventListener('mousedown', onCanvasMouseInteraction, { capture: true });
@@ -2757,12 +2750,8 @@ export default function App() {
 
   const handleSelectResort = async (id: string) => {
     setSelectedResortId(id);
-    if (typeof window !== 'undefined') {
-      if (window.innerWidth < 768) {
-        setMobileSheetState('half');
-      } else {
-        setLocatorOpen(true);
-      }
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setMobileSheetState('half');
     }
     const resort = displayedResorts.find((r) => r.id === id) || resorts.find((r) => r.id === id);
     if (!resort || !mapRef.current) return;

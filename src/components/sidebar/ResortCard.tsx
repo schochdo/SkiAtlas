@@ -31,6 +31,7 @@ export const ResortCard: React.FC<ResortCardProps> = ({
 
   return (
     <div
+      data-resort-id={r.id}
       onClick={() => {
         if (isSelected) {
           onDeselect();

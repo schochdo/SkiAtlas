@@ -45,8 +45,6 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5 text-xs text-[#5C5852] font-medium leading-tight">
               <span>{resort.region ? `${resort.region}, ` : ''}{resort.country}</span>
-              <span className="text-[#A8A299]">·</span>
-              <span className="text-[#8A847C] uppercase tracking-wider font-semibold text-[10px]">Mountain Profile</span>
             </div>
             <h2 className="text-lg font-bold text-[#1C1B18] tracking-tight mt-0.5 break-words leading-snug">
               {resort.name}
@@ -129,7 +127,11 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
       {/* Mountain Profile Scrollable Body */}
       <div className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3.5 bg-[#F7F4ED]">
         {/* Metric Tables */}
-        <div className="bg-[#FAF8F3] border border-[#D6D0C2] rounded-md overflow-hidden text-center shadow-2xs">
+        <div className="space-y-1.5">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-[#5C5852]">
+            Mountain Profile
+          </div>
+          <div className="bg-[#FAF8F3] border border-[#D6D0C2] rounded-md overflow-hidden text-center shadow-2xs">
           {/* Row 1: Infrastructure */}
           <div className="grid grid-cols-3 divide-x divide-[#D6D0C2] border-b border-[#D6D0C2] p-2.5">
             {resort.category === 'nordic' ? (
@@ -181,6 +183,7 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
               <div className="text-sm font-bold text-[#1C1B18] mt-0.5">{formatVert(resort.base_elev_ft, unitsMetric)}</div>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Summit Weather Forecast */}

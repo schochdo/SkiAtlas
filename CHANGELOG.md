@@ -6,6 +6,31 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: maintain steady flight elevation on keyboard controls, unify mini-map popup behavior, and reposition mountain profile title`
+- **User Intent & Problem Context**:
+  - The user reported three functional and layout issues:
+    1. *"The elevation camera control with the keyboard is buggy. It will not maintain the elevation and slams down to a lower elevation instead. At least in some areas."*
+    2. *"I clicked on Cardrona's point and the mini map popped up. I clicked on neighboring points and the mini map did not pop up. I don't care one way or the other, but the behavior needs to be consistent."*
+    3. *"I think the MOUNTAIN PROFILE text should go above the table with the mountain stats and not up top with the name"*
+- **Camera Elevation Control Fix ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Root Cause**: In `stopFlight()`, `flightElevation` was being wiped to `null` and `setCenterClampedToGround(true)` was being invoked on every key release. Because MapLibre GL JS forces the camera center to the terrain surface when `centerClampedToGround` is true, the camera instantly plummeted thousands of feet down to ground level the moment the user released `PageUp` or `E`. On the next keypress, it re-initialized from ground level rather than holding altitude.
+  - **Resolution**:
+    - Removed `flightElevation = null` and `setCenterClampedToGround(true)` from `stopFlight()`.
+    - Preserved `flightElevation` persistently across key presses, pauses, and turns.
+    - Ground clearance protection remains active during forward flight and manual descent so the camera cannot clip into mountains.
+  - **CDP Verified**: Ascending with `E` to 1,847m held perfectly at 1,847m after release and during forward flight (0m deviation).
+- **Mini-Map (Regional Locator) Consistency ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Root Cause**: `handleSelectResort()` (for curated resorts like Cardrona) had an automatic `setLocatorOpen(true)` call, whereas `handleSelectGlobalResort()` (for global ski areas like Treble Cone or Soho Basin) did not.
+  - **Resolution**: Removed automatic `setLocatorOpen(true)` from resort selection. Clicking any resort point now consistently focuses and flies to the resort without unexpectedly popping open the mini-map window. The mini-map opens exclusively and reliably on demand via the `[ 🌐 Regional Overview ]` button (and updates its viewport/pin if already open).
+- **Mountain Profile Header Layout ([`src/components/profile/MountainProfile.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/profile/MountainProfile.tsx))**:
+  - Removed the redundant `· MOUNTAIN PROFILE` tag from the top header next to the region/country line.
+  - Placed a clean, bold `MOUNTAIN PROFILE` section title directly above the mountain stats table (`Lifts`, `Pistes`, `Acres`, `Vertical`, `Summit`, `Base`).
+- **Production Build Clean**: `npm run build` completed with 0 errors.
+
+---
+
+## 2026-10-25
+
 ### `feat: upgrade satellite basemap to Esri World Imagery Clarity for cloudless alpine terrain and seamless edge joins`
 - **User Intent & Problem Context**:
   - The user asked: *"Are there any higher quality free satellite sources? With fewer clouds and better edge joins?"* and attached an image over Sunlight Mountain showing thick puffy clouds covering the ridge with a harsh triangular seam across the terrain.
