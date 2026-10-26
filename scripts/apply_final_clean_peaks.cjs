@@ -77,7 +77,6 @@ const surveyedOverrides = {
   'Yulong Xue Shan': { name: 'Yulong Xue Shan (Jade Dragon)', coords: [100.177222, 27.098889], elev_m: 5596, elev_ft: 18360 },
   'Wutai Shan': { coords: [113.593889, 39.018889], elev_m: 3058, elev_ft: 10033 },
   'Hua Shan': { coords: [110.083333, 34.483333], elev_m: 2155, elev_ft: 7070 },
-  'Mount Baker': { name: 'Mount Baker (Ruwenzori)', coords: [29.894444, 0.366389], elev_m: 4844, elev_ft: 15889 },
   'Mount Luigi': { name: 'Mount Luigi di Savoia', coords: [29.897222, 0.329722], elev_m: 4627, elev_ft: 15180 },
   'Cerro Alto Rio Blanco': { coords: [-70.088889, -32.966667], elev_m: 5200, elev_ft: 17060 }
 };

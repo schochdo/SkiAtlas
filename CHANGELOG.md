@@ -6,6 +6,33 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: restore Mount Baker summit benchmark and resolve homonymous peak collision overrides`
+- **User Intent & Problem Context**:
+  - The user asked: *"How is there a point for Lincoln Peak but not Mt Baker?"* (attaching a screenshot of the glaciated Mount Baker massif where `▲ Lincoln Peak · 9,081'` was rendered, but the main $10,781\text{ ft}$ volcano summit had no peak marker).
+- **Root Cause Analysis**:
+  - In commit `4b8c32a`, an automated peak cleanup script ([`scripts/apply_final_clean_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/apply_final_clean_peaks.cjs)) was executed to reconcile prominent peaks with surveyed geodetic benchmarks.
+  - The script matched overrides strictly by name: `const override = surveyedOverrides[name]`.
+  - The dictionary contained an override: `'Mount Baker': { name: 'Mount Baker (Ruwenzori)', coords: [29.894444, 0.366389], elev_m: 4844, elev_ft: 15889 }` intended for Mount Baker in Uganda / DRC.
+  - Because `peak-2617` (Mount Baker, Washington, $10,781\text{ ft}$) shared the exact same name, it was unintentionally matched and overwritten with the African coordinates and name (`Mount Baker (Ruwenzori)`), leaving Lincoln Peak ($9,081\text{ ft}$) as the only summit labeled on the Mount Baker massif.
+  - A systematic audit revealed that several other homonymous peaks (e.g. `Mount Olympus` in Greece and Utah, `Cathedral Peak` in Colorado and South Africa, `Mount Washington` in Oregon, Washington, and New Hampshire) were similarly affected by name-collision overrides.
+- **Architectural Resolution ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson), [`scripts/apply_final_clean_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/apply_final_clean_peaks.cjs))**:
+  - **Restored Mount Baker (`peak-2617`)**:
+    - Re-anchored to official USGS GNIS ID 1516084 geodetic benchmark: `[-121.814532, 48.776895]`, elevation $10,781\text{ ft}$ ($3,286\text{ m}$), with `label_ft`: `▲ Mount Baker · 10,781'` and `sort_key: 29219`.
+  - **Restored Additional Homonymous Peaks**:
+    - Restored `Mount Olympus (Mytikas)` in Greece (`[22.349722, 40.088333]`, $9,570\text{ ft}$ / $2,917\text{ m}$) and `Mount Olympus` in Olympic National Park, WA (`[-123.710861, 47.801251]`, $7,965\text{ ft}$).
+    - Restored `Cathedral Peak` in the Elk Mountains (Aspen), CO (`[-106.852778, 39.034722]`, $13,943\text{ ft}$).
+    - Restored `Mount Washington` in the Oregon Cascades (`[-121.838593, 44.332229]`, $7,794\text{ ft}$), Olympic Mountains (`[-123.246002, 47.531343]`, $6,255\text{ ft}$), and Arizona (`[-110.758333, 31.338611]`, $7,221\text{ ft}$).
+    - Restored `Echo Peak` at Lake Tahoe, CA (`[-120.072962, 38.856574]`, $8,895\text{ ft}$) and `Black Mountain` in New Mexico (`[-105.067222, 36.433333]`, $10,892\text{ ft}$).
+  - Cleaned [`scripts/apply_final_clean_peaks.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/apply_final_clean_peaks.cjs) to prevent future script runs from applying ambiguous global name overrides.
+- **Verification via Headless Chrome CDP**:
+  - `baker_lincoln_rendered.png`: Captured from the exact perspective of the user's screenshot looking south-southeast at the Mount Baker massif.
+  - Both `▲ Mount Baker · 10,781'` and `▲ Lincoln Peak · 9,081'` render with vermilion pinpoint markers directly anchored to their respective 3D summit apexes on the Coleman Glacier and Black Buttes ridge.
+  - Production build clean (`npm run build` passed in 390ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: restore center ground clamping and multi-button drag cleanup to prevent right-click orbit amnesia`
 - **User Intent & Problem Context**:
   - The user reported: *"The right click camera movements sometimes get amnesia and start getting janky where it does not move from the center. Refreshing the page fixes it."*

@@ -16332,22 +16332,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -111.771111,
-          40.652222
+          22.349722,
+          40.088333
         ]
       },
       "properties": {
         "id": "peak-831",
-        "name": "Mount Olympus",
-        "elevation_ft": 9026,
-        "elevation_m": 2751,
-        "elevation_formatted_ft": "9,026'",
-        "elevation_formatted_m": "2,751 m",
-        "label_ft": "▲ Mount Olympus · 9,026'",
-        "label_m": "▲ Mount Olympus · 2,751 m",
-        "label_stacked_ft": "▲ Mount Olympus\n9,026'",
-        "label_stacked_m": "▲ Mount Olympus\n2,751 m",
-        "sort_key": 30974,
+        "name": "Mount Olympus (Mytikas)",
+        "elevation_ft": 9570,
+        "elevation_m": 2917,
+        "elevation_formatted_ft": "9,570'",
+        "elevation_formatted_m": "2,917 m",
+        "label_ft": "▲ Mount Olympus (Mytikas) · 9,570'",
+        "label_m": "▲ Mount Olympus (Mytikas) · 2,917 m",
+        "label_stacked_ft": "▲ Mount Olympus (Mytikas)\n9,570'",
+        "label_stacked_m": "▲ Mount Olympus (Mytikas)\n2,917 m",
+        "sort_key": 30430,
         "continent": "Europe"
       }
     },
@@ -36582,22 +36582,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -71.303333,
-          44.270556
+          -110.758333,
+          31.338611
         ]
       },
       "properties": {
         "id": "peak-1862",
         "name": "Mount Washington",
-        "elevation_ft": 6288,
-        "elevation_m": 1917,
-        "elevation_formatted_ft": "6,288'",
-        "elevation_formatted_m": "1,917 m",
-        "label_ft": "▲ Mount Washington · 6,288'",
-        "label_m": "▲ Mount Washington · 1,917 m",
-        "label_stacked_ft": "▲ Mount Washington\n6,288'",
-        "label_stacked_m": "▲ Mount Washington\n1,917 m",
-        "sort_key": 33712,
+        "elevation_ft": 7221,
+        "elevation_m": 2201,
+        "elevation_formatted_ft": "7,221'",
+        "elevation_formatted_m": "2,201 m",
+        "label_ft": "▲ Mount Washington · 7,221'",
+        "label_m": "▲ Mount Washington · 2,201 m",
+        "label_stacked_ft": "▲ Mount Washington\n7,221'",
+        "label_stacked_m": "▲ Mount Washington\n2,201 m",
+        "sort_key": 32779,
         "continent": "North America"
       }
     },
@@ -37232,22 +37232,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -111.458056,
-          44.869722
+          -120.072962,
+          38.856574
         ]
       },
       "properties": {
         "id": "peak-1890",
         "name": "Echo Peak",
-        "elevation_ft": 11060,
-        "elevation_m": 3371,
-        "elevation_formatted_ft": "11,060'",
-        "elevation_formatted_m": "3,371 m",
-        "label_ft": "▲ Echo Peak · 11,060'",
-        "label_m": "▲ Echo Peak · 3,371 m",
-        "label_stacked_ft": "▲ Echo Peak\n11,060'",
-        "label_stacked_m": "▲ Echo Peak\n3,371 m",
-        "sort_key": 28940,
+        "elevation_ft": 8895,
+        "elevation_m": 2711,
+        "elevation_formatted_ft": "8,895'",
+        "elevation_formatted_m": "2,711 m",
+        "label_ft": "▲ Echo Peak · 8,895'",
+        "label_m": "▲ Echo Peak · 2,711 m",
+        "label_stacked_ft": "▲ Echo Peak\n8,895'",
+        "label_stacked_m": "▲ Echo Peak\n2,711 m",
+        "sort_key": 31105,
         "continent": "North America"
       }
     },
@@ -39682,22 +39682,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          29.2025,
-          -28.922222
+          -106.852778,
+          39.034722
         ]
       },
       "properties": {
         "id": "peak-1992",
         "name": "Cathedral Peak",
-        "elevation_ft": 9856,
-        "elevation_m": 3004,
-        "elevation_formatted_ft": "9,856'",
-        "elevation_formatted_m": "3,004 m",
-        "label_ft": "▲ Cathedral Peak · 9,856'",
-        "label_m": "▲ Cathedral Peak · 3,004 m",
-        "label_stacked_ft": "▲ Cathedral Peak\n9,856'",
-        "label_stacked_m": "▲ Cathedral Peak\n3,004 m",
-        "sort_key": 30144,
+        "elevation_ft": 13943,
+        "elevation_m": 4250,
+        "elevation_formatted_ft": "13,943'",
+        "elevation_formatted_m": "4,250 m",
+        "label_ft": "▲ Cathedral Peak · 13,943'",
+        "label_m": "▲ Cathedral Peak · 4,250 m",
+        "label_stacked_ft": "▲ Cathedral Peak\n13,943'",
+        "label_stacked_m": "▲ Cathedral Peak\n4,250 m",
+        "sort_key": 26057,
         "continent": "North America"
       }
     },
@@ -45082,22 +45082,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -82.903889,
-          36.915278
+          -105.067222,
+          36.433333
         ]
       },
       "properties": {
         "id": "peak-2243",
         "name": "Black Mountain",
-        "elevation_ft": 4144,
-        "elevation_m": 1263,
-        "elevation_formatted_ft": "4,144'",
-        "elevation_formatted_m": "1,263 m",
-        "label_ft": "▲ Black Mountain · 4,144'",
-        "label_m": "▲ Black Mountain · 1,263 m",
-        "label_stacked_ft": "▲ Black Mountain\n4,144'",
-        "label_stacked_m": "▲ Black Mountain\n1,263 m",
-        "sort_key": 35856,
+        "elevation_ft": 10892,
+        "elevation_m": 3320,
+        "elevation_formatted_ft": "10,892'",
+        "elevation_formatted_m": "3,320 m",
+        "label_ft": "▲ Black Mountain · 10,892'",
+        "label_m": "▲ Black Mountain · 3,320 m",
+        "label_stacked_ft": "▲ Black Mountain\n10,892'",
+        "label_stacked_m": "▲ Black Mountain\n3,320 m",
+        "sort_key": 29108,
         "continent": "North America"
       }
     },
@@ -47782,22 +47782,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -71.303333,
-          44.270556
+          -121.838593,
+          44.332229
         ]
       },
       "properties": {
         "id": "peak-2370",
         "name": "Mount Washington",
-        "elevation_ft": 6288,
-        "elevation_m": 1917,
-        "elevation_formatted_ft": "6,288'",
-        "elevation_formatted_m": "1,917 m",
-        "label_ft": "▲ Mount Washington · 6,288'",
-        "label_m": "▲ Mount Washington · 1,917 m",
-        "label_stacked_ft": "▲ Mount Washington\n6,288'",
-        "label_stacked_m": "▲ Mount Washington\n1,917 m",
-        "sort_key": 33712,
+        "elevation_ft": 7794,
+        "elevation_m": 2376,
+        "elevation_formatted_ft": "7,794'",
+        "elevation_formatted_m": "2,376 m",
+        "label_ft": "▲ Mount Washington · 7,794'",
+        "label_m": "▲ Mount Washington · 2,376 m",
+        "label_stacked_ft": "▲ Mount Washington\n7,794'",
+        "label_stacked_m": "▲ Mount Washington\n2,376 m",
+        "sort_key": 32206,
         "continent": "North America"
       }
     },
@@ -53357,22 +53357,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          29.894444,
-          0.366389
+          -121.814532,
+          48.776895
         ]
       },
       "properties": {
         "id": "peak-2617",
-        "name": "Mount Baker (Ruwenzori)",
-        "elevation_ft": 15889,
-        "elevation_m": 4844,
-        "elevation_formatted_ft": "15,889'",
-        "elevation_formatted_m": "4,844 m",
-        "label_ft": "▲ Mount Baker (Ruwenzori) · 15,889'",
-        "label_m": "▲ Mount Baker (Ruwenzori) · 4,844 m",
-        "label_stacked_ft": "▲ Mount Baker (Ruwenzori)\n15,889'",
-        "label_stacked_m": "▲ Mount Baker (Ruwenzori)\n4,844 m",
-        "sort_key": 24111,
+        "name": "Mount Baker",
+        "elevation_ft": 10781,
+        "elevation_m": 3286,
+        "elevation_formatted_ft": "10,781'",
+        "elevation_formatted_m": "3,286 m",
+        "label_ft": "▲ Mount Baker · 10,781'",
+        "label_m": "▲ Mount Baker · 3,286 m",
+        "label_stacked_ft": "▲ Mount Baker\n10,781'",
+        "label_stacked_m": "▲ Mount Baker\n3,286 m",
+        "sort_key": 29219,
         "continent": "North America"
       }
     },
@@ -54132,22 +54132,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -111.771111,
-          40.652222
+          -123.710861,
+          47.801251
         ]
       },
       "properties": {
         "id": "peak-2648",
         "name": "Mount Olympus",
-        "elevation_ft": 9026,
-        "elevation_m": 2751,
-        "elevation_formatted_ft": "9,026'",
-        "elevation_formatted_m": "2,751 m",
-        "label_ft": "▲ Mount Olympus · 9,026'",
-        "label_m": "▲ Mount Olympus · 2,751 m",
-        "label_stacked_ft": "▲ Mount Olympus\n9,026'",
-        "label_stacked_m": "▲ Mount Olympus\n2,751 m",
-        "sort_key": 30974,
+        "elevation_ft": 7965,
+        "elevation_m": 2428,
+        "elevation_formatted_ft": "7,965'",
+        "elevation_formatted_m": "2,428 m",
+        "label_ft": "▲ Mount Olympus · 7,965'",
+        "label_m": "▲ Mount Olympus · 2,428 m",
+        "label_stacked_ft": "▲ Mount Olympus\n7,965'",
+        "label_stacked_m": "▲ Mount Olympus\n2,428 m",
+        "sort_key": 32035,
         "continent": "North America"
       }
     },
@@ -54707,22 +54707,22 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -71.303333,
-          44.270556
+          -123.246002,
+          47.531343
         ]
       },
       "properties": {
         "id": "peak-2671",
         "name": "Mount Washington",
-        "elevation_ft": 6288,
-        "elevation_m": 1917,
-        "elevation_formatted_ft": "6,288'",
-        "elevation_formatted_m": "1,917 m",
-        "label_ft": "▲ Mount Washington · 6,288'",
-        "label_m": "▲ Mount Washington · 1,917 m",
-        "label_stacked_ft": "▲ Mount Washington\n6,288'",
-        "label_stacked_m": "▲ Mount Washington\n1,917 m",
-        "sort_key": 33712,
+        "elevation_ft": 6255,
+        "elevation_m": 1907,
+        "elevation_formatted_ft": "6,255'",
+        "elevation_formatted_m": "1,907 m",
+        "label_ft": "▲ Mount Washington · 6,255'",
+        "label_m": "▲ Mount Washington · 1,907 m",
+        "label_stacked_ft": "▲ Mount Washington\n6,255'",
+        "label_stacked_m": "▲ Mount Washington\n1,907 m",
+        "sort_key": 33745,
         "continent": "North America"
       }
     },
