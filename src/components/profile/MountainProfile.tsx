@@ -190,9 +190,21 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
               <Snowflake className="w-3.5 h-3.5 text-[#3B627E]" />
               <span>Summit Meteorology</span>
             </div>
-            {resort.weather?.is_live && (
-              <span className="text-[10px] font-medium text-[#8A847C]">{resort.weather.last_updated}</span>
-            )}
+            <div className="flex items-center gap-2">
+              <a
+                href={`https://open-meteo.com/en/docs?latitude=${resort.lat.toFixed(4)}&longitude=${resort.lng.toFixed(4)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#3B627E] hover:text-[#1C1B18] transition-colors"
+                title="View full forecast on Open-Meteo"
+              >
+                <span>Open-Meteo</span>
+                <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+              </a>
+              {resort.weather?.is_live && (
+                <span className="text-[10px] font-medium text-[#8A847C]">· {resort.weather.last_updated}</span>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-xs text-center">

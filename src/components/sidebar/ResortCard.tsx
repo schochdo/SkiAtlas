@@ -1,5 +1,5 @@
 import React from 'react';
-import { Snowflake, X, ChevronRight } from 'lucide-react';
+import { Snowflake, X, ChevronRight, ExternalLink } from 'lucide-react';
 import type { SkiResort } from '../../types';
 import { formatSnow, formatVert, formatAcres, formatDistance } from '../../utils/formatters';
 import {
@@ -108,26 +108,31 @@ export const ResortCard: React.FC<ResortCardProps> = ({
           })()}
         </div>
 
-        {/* Live Upcoming Snowfall Forecast Chip */}
+        {/* Live Upcoming Snowfall Forecast Chip with Open-Meteo Link */}
         {r.weather?.is_live && (
           <div className="shrink-0 flex items-center text-xs">
-            <span
-              className={`px-2 py-1 rounded-md border flex items-center gap-1 text-xs font-bold ${
+            <a
+              href={`https://open-meteo.com/en/docs?latitude=${r.lat.toFixed(4)}&longitude=${r.lng.toFixed(4)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className={`px-2 py-1 rounded-md border flex items-center gap-1 text-xs font-bold transition-all hover:scale-105 hover:shadow-xs group/chip cursor-pointer ${
                 snow7d > 0
-                  ? 'bg-[#3B627E]/10 border-[#3B627E]/40 text-[#3B627E]'
-                  : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C]'
+                  ? 'bg-[#3B627E]/10 border-[#3B627E]/40 text-[#3B627E] hover:bg-[#3B627E]/20 hover:border-[#3B627E]/60'
+                  : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#8A847C] hover:border-[#1C1B18] hover:text-[#1C1B18]'
               }`}
-              title="Upcoming 7-day forecast snowfall"
+              title="Open-Meteo forecast page for this mountain"
             >
               <Snowflake className="w-3 h-3 text-[#3B627E]" />
               <span>{formatSnow(snow7d, unitsMetric)}</span>
-            </span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-50 group-hover/chip:opacity-100 transition-opacity" />
+            </a>
           </div>
         )}
       </div>
 
       {isSelected && (
-        <div className="mt-2 pt-2 border-t border-[#D6D0C2] flex items-center justify-between">
+        <div className="mt-2 pt-2 border-t border-[#D6D0C2] flex items-center justify-between gap-1.5 flex-wrap">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -140,17 +145,31 @@ export const ResortCard: React.FC<ResortCardProps> = ({
             <span>Deselect</span>
           </button>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewProfile();
-            }}
-            className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#1C1B18] hover:bg-[#33312B] text-[#FAF8F3] text-xs font-bold rounded transition-colors cursor-pointer shadow-2xs"
-            title="View detailed mountain profile and weather"
-          >
-            <span>Mountain Profile</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <a
+              href={`https://open-meteo.com/en/docs?latitude=${r.lat.toFixed(4)}&longitude=${r.lng.toFixed(4)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F3] hover:bg-[#EAE5D9] border border-[#D6D0C2] hover:border-[#1C1B18] text-[#5C5852] hover:text-[#1C1B18] text-xs font-semibold rounded transition-colors cursor-pointer"
+              title="View Open-Meteo weather page"
+            >
+              <span>Open-Meteo</span>
+              <ExternalLink className="w-3 h-3 opacity-70" />
+            </a>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewProfile();
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#1C1B18] hover:bg-[#33312B] text-[#FAF8F3] text-xs font-bold rounded transition-colors cursor-pointer shadow-2xs"
+              title="View detailed mountain profile and weather"
+            >
+              <span>Mountain Profile</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       )}
     </div>

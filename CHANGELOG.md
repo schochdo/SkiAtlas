@@ -6,6 +6,29 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `feat: add direct links to Open-Meteo interactive forecast page on resort cards and mountain profiles`
+- **User Intent & Problem Context**:
+  - The user requested: *"Can we link to the openmeteo page on the card (I assume there is an associated page)?"*
+  - Users inspecting ski areas want quick one-click access to the full Open-Meteo meteorological models, hourly wind/temperature charts, and synoptic details for that specific mountain coordinate.
+- **Direct Coordinate Deep Links ([`src/components/sidebar/ResortCard.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/ResortCard.tsx), [`src/components/profile/MountainProfile.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/profile/MountainProfile.tsx))**:
+  - **Forecast Chip Deep Link**:
+    - Converted the 7-day snow chip on resort cards into an interactive external link:
+      `https://open-meteo.com/en/docs?latitude=${lat}&longitude=${lng}`
+    - Added subtle external link icon (`↗`) with hover lift and tooltip (`"Open-Meteo forecast page for this mountain"`).
+    - Uses `e.stopPropagation()` and `target="_blank" rel="noopener noreferrer"` so clicking the chip opens the forecast without triggering card selection.
+  - **Selected Card Action Bar**:
+    - Added an `[ Open-Meteo ↗ ]` action button next to `[ Mountain Profile > ]` when a card is selected.
+  - **Mountain Profile Header**:
+    - Linked `Open-Meteo ↗` right within the `Summit Meteorology` section header in `MountainProfile.tsx`.
+- **Verification via Headless Chrome CDP**:
+  - Verified card snow chips navigate to the mountain's exact coordinate URL (e.g. `https://open-meteo.com/en/docs?latitude=40.5800&longitude=-111.6550` for Snowbird).
+  - Verified selected card action drawer and Mountain Profile header links render cleanly without layout shift or text clipping.
+  - Production build clean (`npm run build` passed in 374ms).
+
+---
+
+## 2026-10-25
+
 ### `perf: enforce 24-hour daily cache TTL and automatic circuit breaker to prevent hammering Open-Meteo`
 - **User Intent & Problem Context**:
   - The user instructed: *"Once a day is more than enough. Let's not ever hammer openmeteo again."*
