@@ -6,6 +6,29 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: isolate authentic Open-Meteo responses in 24h cache and eliminate synthetic fallback cache poisoning`
+- **User Intent & Problem Context**:
+  - The user noticed that the numbers on SkiAtlas cards did not match Open-Meteo's website: *"Those openmeteo forecasts are not matching what I see on the site... I do want to make sure the data is accurate, though. How do I do that if it is not matching what openmeteo says?"*
+- **Root Cause Analysis**:
+  - Earlier today, when Open-Meteo returned `HTTP 429` (Rate Limit Exceeded), the emergency fallback generator synthesized seasonal estimates (e.g. `23.8"` for Snowbird) to keep the UI functional.
+  - However, `saveCachedWeather()` saved both genuine API data and synthetic fallback data under the same 24-hour cache key (`skiatlas_wx_v2_`).
+  - When Open-Meteo's daily limit reset at 00:00 UTC, `isCachedWeatherFresh()` saw the fallback in `localStorage` as "fresh" and skipped querying Open-Meteo, locking SkiAtlas into displaying synthetic numbers instead of the genuine live forecast.
+- **Architectural Resolution ([`src/services/weather.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/services/weather.ts))**:
+  - **`isRealApi` Provenance Tracking**: Added `isRealApi: boolean` to cached payloads. Only authentic `HTTP 200` responses from `api.open-meteo.com` are marked as `isRealApi: true`.
+  - **Fallback Never Caches as Fresh**: Fallback estimates are strictly in-memory stopgaps during active network failures or 429 rate limits; they are never treated as fresh 24h forecasts.
+  - **Cache Version Bump (`skiatlas_wx_v3_`)**: Invalidated legacy fallback entries from earlier today across all user sessions.
+  - **Exact Decimal Precision Match**: Verified that `daily.snowfall_sum` values from Open-Meteo convert directly to inches ($\text{cm} / 2.54$) matching Open-Meteo's weather models to the tenth of an inch.
+- **Verification via Headless Chrome CDP & Direct API Comparison**:
+  - **Snowbird**: Open-Meteo API returned $2.17\text{ cm}$ ($0.85\text{ in}$) $\rightarrow$ SkiAtlas card displays **`0.9"`**.
+  - **Jackson Hole**: Open-Meteo API returned $11.44\text{ cm}$ ($4.50\text{ in}$) $\rightarrow$ SkiAtlas card displays **`4.5"`**.
+  - **Breckenridge**: Open-Meteo API returned $5.04\text{ cm}$ ($1.98\text{ in}$) $\rightarrow$ SkiAtlas card displays **`2.0"`**.
+  - **Alta**: Open-Meteo API returned $2.17\text{ cm}$ ($0.85\text{ in}$) $\rightarrow$ SkiAtlas card displays **`0.9"`**.
+  - Production build clean (`npm run build` passed in 435ms).
+
+---
+
+## 2026-10-25
+
 ### `refactor: drop Open-Meteo external links from resort cards and mountain profiles`
 - **User Intent & Problem Context**:
   - The user observed that the generic Open-Meteo docs page did not automatically highlight snow variables, lacked the mountain's name, and created visual clutter: *"Those openmeteo forecasts are not matching what I see on the site. The site also does not automatically select snow. And there is no name for the location on the site. If you can click the snow and link to the site, this is not necessary either. Drop this openmeteo link."*

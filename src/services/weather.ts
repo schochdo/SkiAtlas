@@ -3,16 +3,22 @@ import type { DailyForecast, ResortWeatherData, SkiResort } from '../types';
 /* =========================================================================
    REAL WEATHER ENGINE (OPEN-METEO) WITH 24-HOUR CACHING & CIRCUIT BREAKER
    - 24-hour cache TTL: Once a day is more than enough; never hammer the API.
+   - Genuine Data Guarantee: ONLY successful Open-Meteo API responses are
+     cached as fresh 24h forecasts. Fallback estimates never poison the cache.
    - Automatic 24-hour circuit breaker: If HTTP 429 or daily limit is hit,
      all network requests to Open-Meteo are suspended immediately for 24h.
-   - Deterministic seasonal fallback: When offline or circuit is tripped,
-     synthesizes realistic 7-day storm cycles from elevation and annual averages.
    ========================================================================= */
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours (once per day)
-const CACHE_PREFIX = 'skiatlas_wx_v2_';
+const CACHE_PREFIX = 'skiatlas_wx_v3_'; // v3: only genuine Open-Meteo responses are cached as fresh
 const CIRCUIT_BREAKER_KEY = 'skiatlas_wx_circuit_tripped_until';
 const CIRCUIT_TRIP_MS = 24 * 60 * 60 * 1000; // Suspend for 24 hours on limit
+
+interface CachePayload {
+  timestamp: number;
+  isRealApi: boolean;
+  data: ResortWeatherData;
+}
 
 function hashString(str: string): number {
   let hash = 5381;
@@ -67,7 +73,7 @@ export function getCachedWeather(resortId: string): ResortWeatherData | null {
   try {
     const raw = window.localStorage.getItem(CACHE_PREFIX + resortId);
     if (!raw) return null;
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(raw) as CachePayload;
     if (!parsed || !parsed.data) return null;
     return parsed.data as ResortWeatherData;
   } catch {
@@ -80,20 +86,26 @@ export function isCachedWeatherFresh(resortId: string): boolean {
   try {
     const raw = window.localStorage.getItem(CACHE_PREFIX + resortId);
     if (!raw) return false;
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed.timestamp !== 'number') return false;
+    const parsed = JSON.parse(raw) as CachePayload;
+    // Only real API responses are treated as fresh daily cache
+    if (!parsed || !parsed.isRealApi || typeof parsed.timestamp !== 'number') return false;
     return Date.now() - parsed.timestamp < CACHE_TTL_MS;
   } catch {
     return false;
   }
 }
 
-export function saveCachedWeather(resortId: string, data: ResortWeatherData): void {
+export function saveCachedWeather(resortId: string, data: ResortWeatherData, isRealApi: boolean = false): void {
   if (typeof window === 'undefined' || !window.localStorage) return;
   try {
+    const payload: CachePayload = {
+      timestamp: Date.now(),
+      isRealApi,
+      data,
+    };
     window.localStorage.setItem(
       CACHE_PREFIX + resortId,
-      JSON.stringify({ timestamp: Date.now(), data })
+      JSON.stringify(payload)
     );
   } catch {
     // Quota limits or private browsing
@@ -122,7 +134,7 @@ export function getNeutralWeather(resort: SkiResort): ResortWeatherData {
 /**
  * Generates a realistic, deterministic seasonal forecast for a ski area
  * based on elevation, latitude, and annual snowfall averages.
- * Stable for the calendar day so it never flickers on reloads.
+ * Used temporarily when offline or during active rate limiting.
  */
 export function generateFallbackForecast(resort: SkiResort): ResortWeatherData {
   const elev = resort.summit_elev_ft || 8000;
@@ -155,7 +167,7 @@ export function generateFallbackForecast(resort: SkiResort): ResortWeatherData {
     else seasonFactor = 0.05;
   }
 
-  // Weekly storm potential (e.g. 15-20 inches/wk in high Rockies, 5-10 in early season)
+  // Weekly storm potential
   const baseWeeklySnowIn = (annualSnow / 22) * seasonFactor;
 
   const daily_forecast: DailyForecast[] = [];
@@ -208,24 +220,25 @@ export function generateFallbackForecast(resort: SkiResort): ResortWeatherData {
     rain_to_base_risk: false,
     daily_forecast,
     is_live: true,
-    last_updated: 'Synoptic Forecast',
+    last_updated: 'Seasonal Baseline',
   };
 }
 
 /**
- * Returns initial weather data on startup (cached if valid, otherwise fallback forecast)
- * so resort cards immediately render their 7-day snow chips without blank delays.
+ * Returns initial weather data on startup:
+ * Uses fresh real Open-Meteo cache if present, otherwise initial neutral/fallback
+ * so resort cards render cleanly while background prefetch loads authentic data.
  */
 export function getInitialWeather(resort: SkiResort): ResortWeatherData {
   const cached = getCachedWeather(resort.id);
   if (cached && cached.is_live) {
     return cached;
   }
-  return generateFallbackForecast(resort);
+  return getNeutralWeather(resort);
 }
 
 export async function fetchLiveWeather(resort: SkiResort): Promise<ResortWeatherData | null> {
-  // 1. If fresh cache exists (< 24 hours), return it immediately without network request
+  // 1. If fresh real Open-Meteo cache exists (< 24 hours), return it immediately without network request
   if (isCachedWeatherFresh(resort.id)) {
     const cached = getCachedWeather(resort.id);
     if (cached) return cached;
@@ -235,9 +248,7 @@ export async function fetchLiveWeather(resort: SkiResort): Promise<ResortWeather
   if (isWeatherCircuitTripped()) {
     const cached = getCachedWeather(resort.id);
     if (cached && cached.is_live) return cached;
-    const fallback = generateFallbackForecast(resort);
-    saveCachedWeather(resort.id, fallback);
-    return fallback;
+    return generateFallbackForecast(resort);
   }
 
   // 3. Attempt live satellite & model forecast from Open-Meteo
@@ -257,9 +268,7 @@ export async function fetchLiveWeather(resort: SkiResort): Promise<ResortWeather
       tripWeatherCircuit();
       const cached = getCachedWeather(resort.id);
       if (cached && cached.is_live) return cached;
-      const fallback = generateFallbackForecast(resort);
-      saveCachedWeather(resort.id, fallback);
-      return fallback;
+      return generateFallbackForecast(resort);
     }
 
     if (!res.ok) {
@@ -271,9 +280,7 @@ export async function fetchLiveWeather(resort: SkiResort): Promise<ResortWeather
       } catch {}
       const cached = getCachedWeather(resort.id);
       if (cached && cached.is_live) return cached;
-      const fallback = generateFallbackForecast(resort);
-      saveCachedWeather(resort.id, fallback);
-      return fallback;
+      return generateFallbackForecast(resort);
     }
 
     const data = await res.json();
@@ -283,9 +290,7 @@ export async function fetchLiveWeather(resort: SkiResort): Promise<ResortWeather
       }
       const cached = getCachedWeather(resort.id);
       if (cached && cached.is_live) return cached;
-      const fallback = generateFallbackForecast(resort);
-      saveCachedWeather(resort.id, fallback);
-      return fallback;
+      return generateFallbackForecast(resort);
     }
 
     const hourlySnow: number[] = data?.hourly?.snowfall || [];
@@ -334,14 +339,13 @@ export async function fetchLiveWeather(resort: SkiResort): Promise<ResortWeather
       last_updated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    saveCachedWeather(resort.id, liveData);
+    // ONLY cache as fresh when it is genuine Open-Meteo data!
+    saveCachedWeather(resort.id, liveData, true);
     return liveData;
   } catch {
     // Network failure, timeout, or abort
     const cached = getCachedWeather(resort.id);
     if (cached && cached.is_live) return cached;
-    const fallback = generateFallbackForecast(resort);
-    saveCachedWeather(resort.id, fallback);
-    return fallback;
+    return generateFallbackForecast(resort);
   }
 }
