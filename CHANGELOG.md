@@ -6,6 +6,44 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: restore center ground clamping and multi-button drag cleanup to prevent right-click orbit amnesia`
+- **User Intent & Problem Context**:
+  - The user reported: *"The right click camera movements sometimes get amnesia and start getting janky where it does not move from the center. Refreshing the page fixes it."*
+- **Root Cause Analysis**:
+  1. **Persistent Loss of Ground Clamping (`setCenterClampedToGround`)**:
+     - During keyboard navigation (WASD / arrow keys), `map.setCenterClampedToGround(false)` was invoked to prevent camera altitude from snapping to terrain contours on every frame.
+     - However, in commit `80fb60f`, the call to restore `setCenterClampedToGround(true)` was removed from both `stopFlight()` and `onCanvasMouseInteraction`.
+     - As a result, after a single keypress, `setCenterClampedToGround(false)` remained permanently active for the rest of the session until page refresh.
+     - When `centerClampedToGround` is `false`, MapLibre GL JS decouples the camera transform's pivot point from the physical DEM terrain mesh, leaving the center elevation frozen in space at `flightElevation`.
+     - When the user then right-clicks to orbit or pitch, MapLibre rotates around this phantom elevation (often hundreds or thousands of feet above or below the terrain surface). This creates an enormous parallax lever arm that swings the camera off-axis, making right-click orbit feel disconnected and erratic ("does not move from the center").
+     - On page reload, map initialization sets `setCenterClampedToGround(true)`, immediately re-anchoring the pivot directly to the mountain surface (explaining why refreshing fixed it).
+  2. **Missing Right-Click Handler Cleanup & Orphan Protection**:
+     - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), canvas mousedown, window pointerup, and window mouseenter listeners were hardcoded to check only `e.button === 0` (left click) and bitmask `1`.
+     - Right-click (`e.button === 2`, bitmask `2`) drag events (`_mouseRotate`, `_mousePitch`) had zero cleanup triggers. If a right-click drag ended outside the window, over an HTML UI overlay, or was interrupted by a browser context menu, `_lastPoint` or `_active` stayed orphaned on `_mouseRotate` and `_mousePitch`.
+     - In that orphaned state, subsequent right-clicks either failed to start (`if (this._lastPoint) return;`) or calculated huge Delta jumps from a stale mouse position.
+- **Architectural Resolution ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+  - **Debounced Ground Clamping Restoration in Flight Engine**:
+    - `stopFlight(immediate)` now restores `setCenterClampedToGround(true)` and resets `flightElevation = null` after a 250ms debounce (preserving smooth altitude across rapid key taps while releasing to true ground clamping once keys are released).
+    - Window blur, visibility change, and programmatic flight interrupts immediately restore ground clamping without delay.
+  - **Immediate Ground Clamping on Canvas Mouse Interaction**:
+    - Inside `onCanvasMouseInteraction`, any `mousedown`, `pointerdown`, or `wheel` event on `canvasContainer` immediately clears any pending flight timer, stops flight, and invokes `setCenterClampedToGround(true)` before MapLibre's drag/pitch handlers begin.
+  - **Multi-Button Drag Cleanup & Defensive Center Anchor**:
+    - Updated `onCanvasMouseDown`, `onGlobalPointerUp`, and `onWindowMouseEnter` to handle all mouse buttons (`0`, `1`, `2`) and all released button bitmasks (`e.buttons === 0`).
+    - Defensively re-enforces `map.dragRotate.enable({ around: 'center', movement: 'linear' })` and clears orphaned drag states on any new mouse click.
+    - Added `contextmenu` suppression on `canvasContainer` in addition to `canvas` to prevent browser menus from interrupting drag captures over UI edges.
+- **Verification via Headless Chrome CDP**:
+  - Tested at Vail Mountain (`pitch: 65°`):
+    1. Pre-flight state: `clamped: true`, `diff: 0m`.
+    2. During flight: un-clamps (`clamped: false`) for smooth cruise.
+    3. Post-flight release: debounced restore confirmed `clamped: true, diff: 2m`.
+    4. Post-flight right-click drag: confirmed `clamped: true, diff: 0m, dragRotateAround: 'center', bearing: -132, pitch: 45`. The rotation pivoted tightly on the mountain ground surface without any amnesia or altitude offset.
+  - Tested orphaned right-click recovery: interrupted right-click drag without sending mouseup; verified `resetOrphanedDragHandlers()` and confirmed subsequent right-click immediately rotated smoothly without lag or jank.
+  - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-25
+
 ### `fix: restore seamless standard satellite imagery and calibrate 3D pitch LOD for sharp alpine views`
 - **User Intent & Problem Context**:
   - The user reported:

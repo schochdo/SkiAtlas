@@ -699,22 +699,27 @@ export default function App() {
     const canvasContainer = map.getCanvasContainer();
 
     // 1. Intercept mousedown at capture phase on canvasContainer:
-    // If a new left click begins but an old orphaned drag was never cleared, reset it before starting
+    // If a new click begins (left, middle, right), ensure ground clamping is restored,
+    // dragRotate is properly calibrated, and any orphaned drag is cleared.
     const onCanvasMouseDown = (e: MouseEvent) => {
-      if (e.button === 0 && map.dragPan?._mousePan?._lastPoint) {
-        resetOrphanedDragHandlers();
+      try {
+        (map as any).setCenterClampedToGround?.(true);
+      } catch (_) {}
+      if (map.dragRotate && (map.dragRotate.around !== 'center' || map.dragRotate.movement !== 'linear')) {
+        map.dragRotate.enable({ around: 'center', movement: 'linear' });
       }
+      resetOrphanedDragHandlers();
     };
 
     canvasContainer.addEventListener('mousedown', onCanvasMouseDown, { capture: true });
 
     // 2. Window-level cleanup when mouse button is released outside canvas or window
     const onGlobalPointerUp = (e: PointerEvent | MouseEvent) => {
-      if (e.button === 0 || (e.buttons !== undefined && (e.buttons & 1) === 0)) {
+      const noButtons = e.buttons === 0 || (e.buttons === undefined && (e.button === 0 || e.button === 1 || e.button === 2));
+      if (noButtons) {
         setTimeout(() => {
-          if ((e.buttons === undefined || (e.buttons & 1) === 0) && map.dragPan?._mousePan?._lastPoint) {
-            resetOrphanedDragHandlers();
-          }
+          resetOrphanedDragHandlers();
+          try { (map as any).setCenterClampedToGround?.(true); } catch (_) {}
         }, 16);
       }
     };
@@ -725,9 +730,13 @@ export default function App() {
     // 3. Window blur / visibility change: reset stuck drag state on Alt-Tab or switching windows
     const onWindowBlur = () => {
       resetOrphanedDragHandlers();
+      try { (map as any).setCenterClampedToGround?.(true); } catch (_) {}
     };
     const onVisibilityChange = () => {
-      if (document.hidden) resetOrphanedDragHandlers();
+      if (document.hidden) {
+        resetOrphanedDragHandlers();
+        try { (map as any).setCenterClampedToGround?.(true); } catch (_) {}
+      }
     };
     window.addEventListener('blur', onWindowBlur);
     window.addEventListener('focus', onWindowBlur);
@@ -735,8 +744,9 @@ export default function App() {
 
     // 4. Mouse re-enters window with no buttons pressed: heal orphaned drag
     const onWindowMouseEnter = (e: MouseEvent) => {
-      if ((e.buttons & 1) === 0 && map.dragPan?._mousePan?._lastPoint) {
+      if (e.buttons === 0) {
         resetOrphanedDragHandlers();
+        try { (map as any).setCenterClampedToGround?.(true); } catch (_) {}
       }
     };
     window.addEventListener('mouseenter', onWindowMouseEnter);
@@ -745,6 +755,7 @@ export default function App() {
       e.preventDefault();
     };
     canvas.addEventListener('contextmenu', onContextMenu);
+    canvasContainer.addEventListener('contextmenu', onContextMenu);
 
     map.on('rotate', () => setMapBearing(Math.round(map.getBearing())));
     map.on('pitch', () => {
@@ -1526,6 +1537,7 @@ export default function App() {
 
     return () => {
       canvas.removeEventListener('contextmenu', onContextMenu);
+      canvasContainer.removeEventListener('contextmenu', onContextMenu);
       container.removeEventListener('gesturestart', onGestureStart as any);
       container.removeEventListener('gesturechange', onGestureChange as any);
       container.removeEventListener('gestureend', onGestureEnd as any);
@@ -2056,26 +2068,45 @@ export default function App() {
     };
 
     let flightElevation: number | null = null;
+    let clampRestoreTimeout: any = null;
 
-    const stopFlight = () => {
+    const stopFlight = (immediate = false) => {
       activeKeys.clear();
       if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
       }
       lastTimestamp = null;
-      // Preserve flightElevation across flight key releases so camera altitude stays steady
+      if (clampRestoreTimeout) {
+        clearTimeout(clampRestoreTimeout);
+        clampRestoreTimeout = null;
+      }
+      if (immediate) {
+        flightElevation = null;
+        try {
+          (mapRef.current as any)?.setCenterClampedToGround?.(true);
+        } catch (_) {}
+      } else {
+        // Debounce ground clamping restoration by 250ms so rapid key tapping doesn't snap altitude,
+        // but restore ground clamping firmly once keys are released
+        clampRestoreTimeout = setTimeout(() => {
+          flightElevation = null;
+          try {
+            (mapRef.current as any)?.setCenterClampedToGround?.(true);
+          } catch (_) {}
+        }, 250);
+      }
     };
 
     const flightStep = (timestamp: number) => {
       if (!mapRef.current) {
-        stopFlight();
+        stopFlight(true);
         return;
       }
 
       if (isProgrammaticFlightActive) {
         flightElevation = null;
-        stopFlight();
+        stopFlight(true);
         return;
       }
 
@@ -2087,7 +2118,7 @@ export default function App() {
 
       const hasNavKey = Array.from(activeKeys).some((k) => NAVIGATION_KEYS.has(k));
       if (!hasNavKey) {
-        stopFlight();
+        stopFlight(false);
         return;
       }
 
@@ -2288,22 +2319,31 @@ export default function App() {
       }
       const hasNavKey = Array.from(activeKeys).some((k) => NAVIGATION_KEYS.has(k));
       if (!hasNavKey && animationFrameId !== null) {
-        stopFlight();
+        stopFlight(false);
       }
     };
 
+    const stopFlightOnBlur = () => stopFlight(true);
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    window.addEventListener('blur', stopFlight);
-    window.addEventListener('focus', stopFlight);
-    document.addEventListener('visibilitychange', stopFlight);
+    window.addEventListener('blur', stopFlightOnBlur);
+    window.addEventListener('focus', stopFlightOnBlur);
+    document.addEventListener('visibilitychange', stopFlightOnBlur);
 
     // Yield flight engine immediately when user uses mouse to pan or rotate
     const canvasContainer = map.getCanvasContainer();
     const onCanvasMouseInteraction = () => {
       flightElevation = null; // Re-anchor elevation on mouse interaction
+      if (clampRestoreTimeout) {
+        clearTimeout(clampRestoreTimeout);
+        clampRestoreTimeout = null;
+      }
+      try {
+        (mapRef.current as any)?.setCenterClampedToGround?.(true);
+      } catch (_) {}
       if (animationFrameId !== null || activeKeys.size > 0) {
-        stopFlight();
+        stopFlight(true);
       }
     };
     canvasContainer.addEventListener('mousedown', onCanvasMouseInteraction, { capture: true });
@@ -2311,15 +2351,16 @@ export default function App() {
     canvasContainer.addEventListener('wheel', onCanvasMouseInteraction, { capture: true });
 
     return () => {
+      if (clampRestoreTimeout) clearTimeout(clampRestoreTimeout);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-      window.removeEventListener('blur', stopFlight);
-      window.removeEventListener('focus', stopFlight);
-      document.removeEventListener('visibilitychange', stopFlight);
+      window.removeEventListener('blur', stopFlightOnBlur);
+      window.removeEventListener('focus', stopFlightOnBlur);
+      document.removeEventListener('visibilitychange', stopFlightOnBlur);
       canvasContainer.removeEventListener('mousedown', onCanvasMouseInteraction, { capture: true } as any);
       canvasContainer.removeEventListener('pointerdown', onCanvasMouseInteraction, { capture: true } as any);
       canvasContainer.removeEventListener('wheel', onCanvasMouseInteraction, { capture: true } as any);
-      stopFlight();
+      stopFlight(true);
     };
   }, [mapLoaded]);
 
