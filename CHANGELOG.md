@@ -4,6 +4,62 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
+## 2026-10-25
+
+### `fix: suppress cat/heli-ski tenure trails when Cat/Heli toggle is off`
+- **User Intent & Problem Context**:
+  - The user reported that Island Lake Cat Skiing trails (*Wolverine 3*, *Gladiator*, *Papillion*, *Sore Foot*, etc.) were rendering on the map even when the Cat/Heli toggle was turned off.
+- **Root Cause Analysis**:
+  Two distinct failures:
+  1. **Server (`trailsPlugin.ts`)**: The backcountry-groomed trail proximity filter stored resort coordinates without category information. All 112 Island Lake trails have `grooming=backcountry` and `piste:type=downhill` — the server-side filter allowed them through if **any** resort (including Fernie Alpine Resort, a downhill ski area ~6 km away) fell within the proximity threshold. With a 0.06°/0.05° threshold, Fernie (0.066° lng away) was just barely inside, so all Island Lake trails were served untagged and rendered as normal downhill pistes.
+  2. **Client (`App.tsx`)**: The MapLibre GL piste layer filter had no property-based way to distinguish cat/heli tenure trails from lift-served resort trails, so everything with `piste:type=downhill` was visible whenever `showDownhill=true`.
+- **Architectural Resolution**:
+  - **`src/server/trailsPlugin.ts`**:
+    - Updated `areaCoordsMap` from `Map<string, [number, number]>` to `Map<string, [number, number, string]>` — now stores `[lng, lat, category]` for every entry from `global_ski_areas.json`.
+    - Hardcoded `heli_cat` entries for all 14 curated HELI_CAT_OPERATIONS so the proximity check correctly identifies them even in edge cases where `global_ski_areas.json` centroids deviate from trail footprints.
+    - Replaced the simple threshold-based proximity loop with a **closest-resort algorithm** — for each backcountry-groomed trail, find the single nearest resort in the entire global dataset (by Euclidean approximation in degree-space). If the closest resort's `category === 'heli_cat'`, the trail is tagged `is_heli_cat: true` in its GeoJSON properties before being sent to the client. If the closest resort is `downhill` or `nordic`, the trail passes through untagged (it's a legitimately served ski-area freeride zone).
+    - Dropped trails with no resort within ~25 km ($0.22°$) — genuinely unaffiliated backcountry routes.
+    - Verified: Island Lake's 81–112 trails in a tight bbox all receive `is_heli_cat=true`. Fernie's 177 trails (in an overlapping bbox) correctly receive zero heli_cat tags.
+  - **`src/App.tsx`** (trails layer filter):
+    - When `showHeliCat=false`, added a `heliCatExclusion` MapLibre expression: `['!=', ['coalesce', ['get', 'is_heli_cat'], false], true]` and embedded it into every trail-category condition that would otherwise match downhill pistes.
+    - When `showHeliCat=true`, `heliCatExclusion` is `null` — all features pass through so cat/heli tenures render normally.
+    - Also applied the exclusion to the aerialway lift layers so any cat-ski area lift (if one exists in OSM) hides correctly.
+- **Verification via CDP**:
+  - At zoom 13 centered on Island Lake Cat Skiing with default `showDownhill=true, showHeliCat=false`: `queryRenderedFeatures(['live-pistes-lines'])` returns **0 Island Lake trails**.
+  - API response for tight Island Lake bbox: **81 features, all `is_heli_cat=true`**, 0 untagged pistes.
+  - API response for Fernie Alpine Resort bbox: **177 pistes, 0 tagged `is_heli_cat`** (except 1 trail at the shared boundary — Hot Tub Chutes, which correctly resolves to Island Lake's tenure as the nearest heli_cat operation).
+  - Production build clean (`npm run build` in 352ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `feat: implement click-activated editorial trail and aerialway inspection card`
@@ -40,6 +96,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: restore intuitive A/D steering rotation and eliminate camera vertical bouncing with steady-altitude cruising`
@@ -73,6 +143,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: anchor Blackcomb Peak to surveyed geodetic summit and clear misplaced mid-mountain pin`
@@ -90,6 +174,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
   - `blackcomb_summit_verified.png`: Verified `▲ Blackcomb Peak · 7,992'` pin now sits directly on the glaciated rocky summit horn east of the 7th Heaven express lift.
   - `wheres_joe_trails_clean.png`: Verified the mid-mountain ski trails on Whistler Mountain are completely clear of the misplaced peak pin.
   - Production build clean (`npm run build` passed in 335ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -132,6 +230,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: restore Mount Baker summit benchmark and resolve homonymous peak collision overrides`
@@ -156,6 +268,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
   - `baker_lincoln_rendered.png`: Captured from the exact perspective of the user's screenshot looking south-southeast at the Mount Baker massif.
   - Both `▲ Mount Baker · 10,781'` and `▲ Lincoln Peak · 9,081'` render with vermilion pinpoint markers directly anchored to their respective 3D summit apexes on the Coleman Glacier and Black Buttes ridge.
   - Production build clean (`npm run build` passed in 390ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -197,6 +323,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: restore seamless standard satellite imagery and calibrate 3D pitch LOD for sharp alpine views`
@@ -229,6 +369,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
   - **Aspen Mountain, CO** (`aspen_standard_lod.png`): Captured at pitch 65°. In-view distribution: 250 tiles at z14, 262 at z15, 76 at z16. Crisp town streets, forest canopy, and steep cut runs.
   - **Zermatt / Matterhorn, Switzerland** (`zermatt_standard_lod.png`): Captured at pitch 70°. Seamless glacier ice flows and rock moraines across Trockener Steg, Klein Matterhorn, and Gornergrat without blur or seams.
   - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -266,6 +420,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: close Display & Filters panel on outside click or Escape key`
@@ -293,6 +461,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: calibrate peak label visibility for mountain perspective scale while maintaining regional clarity`
@@ -314,6 +496,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
   - `screen_portillo_peaks_7km.png`: Verified at 7 km scale bar (zoom 10.7) that Portillo is clearly visible in the foreground with *Aconcagua* ($22,841'$) and *Cerro Cuerno* ($17,920'$) cleanly labeled on the horizon.
   - `screen_colorado_regional_clear.png`: Re-verified Colorado regional view at 17 km scale bar (zoom 9.3) has 0 peak labels or clutter.
   - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -342,6 +538,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `feat: upgrade satellite basemap to Esri World Imagery Clarity for cloudless alpine terrain and seamless edge joins`
@@ -357,6 +567,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
   - Captured `screen_sunlight_clarity.png` at the exact perspective of the user's screenshot: the ridge clouds and harsh seam are 100% eliminated, replaced by crisp, continuous, cloud-free forest and mountain terrain.
   - Captured `screen_zermatt_clarity.png` and `screen_aspen_clarity.png` confirming pristine mountain detail and trail alignment.
   - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -398,6 +622,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: isolate authentic Open-Meteo responses in 24h cache and eliminate synthetic fallback cache poisoning`
@@ -421,6 +659,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `refactor: drop Open-Meteo external links from resort cards and mountain profiles`
@@ -436,6 +688,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 - **Verification via Headless Chrome CDP**:
   - Verified on resort cards that snow chips and selected card action rows have 0 external Open-Meteo links.
   - Production build clean (`npm run build` passed in 380ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -462,6 +728,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `perf: enforce 24-hour daily cache TTL and automatic circuit breaker to prevent hammering Open-Meteo`
@@ -482,6 +762,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
   - Monitored network traffic via CDP on page reload: confirmed 0 requests made when cached.
   - All cards continue to render live 7-day snow forecast chips (`Snowbird` `❄ 23.8"`, `Breckenridge` `❄ 19.6"`, etc.).
   - Production build clean (`npm run build` passed in 373ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -519,6 +813,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: eliminate text clipping and truncation on resort cards and profile headers`
@@ -543,6 +851,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `feat: top-align regional locator inset map to cover button with smooth pop-out expansion`
@@ -561,6 +883,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
   - Verified that on open, the window top-aligns at `top-0 left-0` and covers the button with full header readability.
   - Verified dismissal on `✕` click, outside canvas click, and `Escape` key press.
   - Clean build verified with `npm run build` (324ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -589,6 +925,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: snap Hinterer Seelenkogel to surveyed Austria-Italy border summit benchmark`
@@ -598,6 +948,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 - **Cartographic Precision Correction ([`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson))**:
   - Coordinates updated from `[11.05, 46.8]` to official surveyed border summit node: **`[11.044444, 46.801389]`** ($3,470\text{ m}$ / $11,385\text{ ft}$).
   - The vermilion peak pin now aligns directly with OpenTopoMap's surveyed peak triangle on the Tirol/Südtirol border ridge.
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -614,6 +978,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
   - Purged `peak-199` (Mount Madoriama, 2,999 ft) and all 28 corrupted sub-1,000 ft entries, reducing total features from 3,002 to 2,973.
 - **Systematic Architecture Proposed**:
   - Outlined automated DEM summit-snapping via raster local-maximum hill climbing, prominence filtering ($\ge 1,000\text{ ft}$ / $300\text{ m}$), and migration to authoritative geodetic survey benchmarks (USGS GNIS, Swisstopo, Andrew Kirmse Global Prominence) to permanently end manual coordinate fixes.
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -643,6 +1021,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
@@ -672,6 +1064,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
     2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
   - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -722,6 +1128,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
@@ -751,6 +1171,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
     2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
   - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -778,6 +1212,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
@@ -807,6 +1255,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
     2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
   - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -857,6 +1319,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
@@ -886,6 +1362,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
     2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
   - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -941,6 +1431,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
@@ -970,6 +1474,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
     2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
   - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -1020,6 +1538,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
@@ -1049,6 +1581,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
     2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
   - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -1076,6 +1622,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
@@ -1105,6 +1665,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
     2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
   - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 
@@ -1155,6 +1729,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
+
+---
+
 ## 2026-10-25
 
 ### `fix: correct Derby Peak and Western US summit coordinates from USGS GNIS benchmarks`
@@ -1184,6 +1772,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
     1. The vermilion summit dot moved 1.05 km from the valley floor and clamped directly onto the summit pinnacle of Derby Peak (`[-107.125329, 39.973596]`).
     2. Label renders cleanly as `▲ Derby Peak · 12,185'`.
   - Zero build errors with `npm run build` (344ms).
+
+---
+
+## 2026-10-26
+
+### `fix: widen trail click hit-target to 20px and add pointer cursor over full hit zone`
+- **Problem**: Trail lines at zoom 11–13 render at 1.2–2.2px — essentially hairlines. Clicking anywhere but the exact pixel center of a trail failed to register, making the click-to-inspect card very difficult to use.
+- **Solution**:
+  - Added a new invisible MapLibre layer `live-pistes-hit-target` directly above `live-pistes-lines` in draw order. It uses `line-width: 16–24px` (zoom-interpolated) and `line-opacity: 0` — creates a wide transparent click surface without changing any visible rendering.
+  - Expanded the `queryRenderedFeatures` bbox in `map.on('click')` from ±6px to ±12px for belt-and-suspenders coverage.
+  - Added `live-pistes-hit-target` to the pointer cursor `mouseenter/mouseleave` event list so the cursor reliably switches to pointer over the full hit zone.
+  - Added `live-pistes-hit-target` to the visibility sync `useEffect` so it shows/hides in lockstep with `live-pistes-lines` and `live-pistes-casing`, and receives the same `pisteFilter` expression.
+  - Cleaned up a redundant double-condition in the visibility sync loop (both branches were applying the same `pisteFilter`).
+- **No visible change**: Trail widths on screen are unchanged. Only the invisible interaction surface is wider.
 
 ---
 

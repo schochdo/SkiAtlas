@@ -1087,6 +1087,22 @@ export default function App() {
         },
       });
 
+      // Wide invisible hit-target layer for piste lines — makes trails easy to click/tap
+      // without changing any visible widths. Must sit above the visible lines in draw order
+      // so it intercepts pointer events, but opacity=0 keeps it fully transparent.
+      map.addLayer({
+        id: 'live-pistes-hit-target',
+        type: 'line',
+        source: 'live-pistes-vector',
+        filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
+        layout: { visibility: 'none', 'line-cap': 'round' },
+        paint: {
+          'line-color': 'transparent',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 16, 14, 20, 17, 24],
+          'line-opacity': 0,
+        },
+      });
+
       // Aerialways / Lifts (Terracotta dashed line)
       map.addLayer({
         id: 'live-pistes-lifts',
@@ -1653,6 +1669,7 @@ export default function App() {
         }
 
         const trailLayers = [
+          'live-pistes-hit-target',
           'live-pistes-lines',
           'live-pistes-casing',
           'live-pistes-lifts',
@@ -1663,8 +1680,8 @@ export default function App() {
 
         if (trailLayers.length > 0) {
           const clickBbox: [maplibregl.PointLike, maplibregl.PointLike] = [
-            [e.point.x - 6, e.point.y - 6],
-            [e.point.x + 6, e.point.y + 6],
+            [e.point.x - 12, e.point.y - 12],
+            [e.point.x + 12, e.point.y + 12],
           ];
           const trailFeats = map.queryRenderedFeatures(clickBbox, { layers: trailLayers });
           if (trailFeats && trailFeats.length > 0) {
@@ -1692,6 +1709,7 @@ export default function App() {
         'global-unclustered-outer-ring',
         'global-unclustered-point',
         'global-unclustered-label',
+        'live-pistes-hit-target',
         'live-pistes-lines',
         'live-pistes-lifts',
         'live-pistes-labels',
@@ -1775,14 +1793,27 @@ export default function App() {
     // Build conditions for each active category
     const allowedConditions: any[] = [];
 
+    // Exclude cat/heli-only trails unless the Cat/Heli toggle is on
+    // is_heli_cat=true is stamped server-side on trails that sit exclusively inside a
+    // cat/heli tenure with no adjacent lift-served resort boundary.
+    const heliCatExclusion: any = showHeliCat
+      ? null // allow everything when toggle is on
+      : ['!=', ['coalesce', ['get', 'is_heli_cat'], false], true];
+
     if (showDownhill) {
-      // Strictly match downhill alpine pistes and connector trails; exclude nordic and municipal paths
-      allowedConditions.push([
+      // Strictly match downhill alpine pistes and connector trails; exclude nordic and municipal paths.
+      // When showHeliCat is off, also exclude trails tagged is_heli_cat=true.
+      const dlCond: any[] = [
         'any',
         ['==', ['get', 'piste:type'], 'downhill'],
         ['==', ['get', 'piste:type'], 'connection'],
         ['all', ['!', ['has', 'piste:type']], ['!=', ['get', 'piste:type'], 'nordic']],
-      ]);
+      ];
+      if (heliCatExclusion) {
+        allowedConditions.push(['all', dlCond, heliCatExclusion]);
+      } else {
+        allowedConditions.push(dlCond);
+      }
     }
 
     if (showNordic) {
@@ -1797,6 +1828,9 @@ export default function App() {
         ['==', ['get', 'piste:type'], 'connection'],
       ]);
     }
+    // Note: if showHeliCat && showDownhill, the downhill condition above already runs
+    // without the heliCatExclusion (since heliCatExclusion is null when showHeliCat=true),
+    // so is_heli_cat trails are already included.
 
     // Explicitly exclude non-ski municipal features (roads, rec paths, walking loops, playgrounds, sledding) and backcountry skitours
     const nonSkiExclusion = [
@@ -1849,7 +1883,7 @@ export default function App() {
       ['!', ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]]],
     ];
 
-    ['live-pistes-casing', 'live-pistes-lines'].forEach((id) => {
+    ['live-pistes-casing', 'live-pistes-lines', 'live-pistes-hit-target'].forEach((id) => {
       if (map.getLayer(id)) {
         map.setLayoutProperty(id, 'visibility', anyTrails ? 'visible' : 'none');
         if (anyTrails) map.setFilter(id, pisteFilter);
@@ -1873,12 +1907,19 @@ export default function App() {
       if (anyTrails) map.setFilter('live-pistes-polygons-labels', polyLabelFilter);
     }
 
-    // Aerialway Lifts & Cable-Aligned Labels are tied directly to Downhill ski infrastructure
+    // Aerialway Lifts & Cable-Aligned Labels are tied directly to Downhill ski infrastructure.
+    // Also apply is_heli_cat exclusion to lifts so cat-ski area lifts hide correctly.
+    const liftVisible = showDownhill || showHeliCat;
+    const liftFilter: any = heliCatExclusion
+      ? ['all', ['==', ['get', 'kind'], 'lift'], heliCatExclusion]
+      : null;
     if (map.getLayer('live-pistes-lifts')) {
-      map.setLayoutProperty('live-pistes-lifts', 'visibility', showDownhill ? 'visible' : 'none');
+      map.setLayoutProperty('live-pistes-lifts', 'visibility', liftVisible ? 'visible' : 'none');
+      if (liftVisible && liftFilter) map.setFilter('live-pistes-lifts', liftFilter);
     }
     if (map.getLayer('live-pistes-lifts-labels')) {
-      map.setLayoutProperty('live-pistes-lifts-labels', 'visibility', showDownhill ? 'visible' : 'none');
+      map.setLayoutProperty('live-pistes-lifts-labels', 'visibility', liftVisible ? 'visible' : 'none');
+      if (liftVisible && liftFilter) map.setFilter('live-pistes-lifts-labels', liftFilter);
     }
   }, [showDownhill, showNordic, showHeliCat, mapLoaded]);
 

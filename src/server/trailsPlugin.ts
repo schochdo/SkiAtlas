@@ -7,7 +7,8 @@ export function localTrailsPlugin(): Plugin {
   let db: DatabaseSync | null = null;
   let dbMtime = 0;
   const dbPath = path.resolve(process.cwd(), 'data_pipeline/trails.db');
-  let areaCoordsMap: Map<string, [number, number]> | null = null;
+  // Map of resort id -> [lng, lat, category]
+  let areaCoordsMap: Map<string, [number, number, string]> | null = null;
 
   function getDb() {
     if (fs.existsSync(dbPath)) {
@@ -32,15 +33,40 @@ export function localTrailsPlugin(): Plugin {
     if (!areaCoordsMap) {
       areaCoordsMap = new Map();
       try {
+        // Load global ski areas (downhill, nordic, heli_cat) from the public dataset
         const p = path.resolve(process.cwd(), 'public/data/global_ski_areas.json');
         if (fs.existsSync(p)) {
           const raw = JSON.parse(fs.readFileSync(p, 'utf8'));
           for (const f of raw.features || []) {
             const id = f.properties?.id;
             const coords = f.geometry?.coordinates;
+            const category = f.properties?.category || 'downhill';
             if (id && Array.isArray(coords) && coords.length >= 2) {
-              areaCoordsMap.set(id, [coords[0], coords[1]]);
+              areaCoordsMap.set(id, [coords[0], coords[1], category]);
             }
+          }
+        }
+        // Also add curated heli/cat operations from their known coordinates
+        // so cat-ski tenure areas are always recognized, even if not in the global dataset
+        const heliCatOps: Array<{ id: string; lng: number; lat: number }> = [
+          { id: 'cat-island-lake',      lng: -115.1472,  lat: 49.5292 },
+          { id: 'cat-baldface',         lng: -117.3825,  lat: 49.7592 },
+          { id: 'cat-selkirk',          lng: -117.8900,  lat: 51.1700 },
+          { id: 'cat-chatter-creek',    lng: -117.7770,  lat: 51.1600 },
+          { id: 'cat-bella-coola',      lng: -126.7644,  lat: 52.3722 },
+          { id: 'heli-cmh-bugaboos',    lng: -116.7786,  lat: 50.7442 },
+          { id: 'heli-mike-wiegele',    lng: -119.2814,  lat: 51.9553 },
+          { id: 'heli-chugach',         lng: -149.1081,  lat: 60.9702 },
+          { id: 'heli-valdez',          lng: -146.3500,  lat: 61.1200 },
+          { id: 'cat-steam-powdercats', lng: -106.6789,  lat: 40.5401 },
+          { id: 'cat-silverton',        lng: -107.6658,  lat: 37.8847 },
+          { id: 'heli-southern-lakes',  lng:  168.7231,  lat: -44.8512 },
+          { id: 'heli-air-zermatt',     lng:    7.8668,  lat: 45.9372 },
+          { id: 'heli-hokkaido',        lng:  140.8576,  lat: 42.8465 },
+        ];
+        for (const op of heliCatOps) {
+          if (!areaCoordsMap.has(op.id)) {
+            areaCoordsMap.set(op.id, [op.lng, op.lat, 'heli_cat']);
           }
         }
       } catch (e) {
@@ -171,7 +197,10 @@ export function localTrailsPlugin(): Plugin {
                 return false;
               }
 
-              // Reject wild backcountry trails not associated with any ski resort
+              // Reject wild backcountry trails not associated with any ski resort.
+              // Use the closest resort to determine ownership. If the closest resort is a
+              // heli/cat operation, tag the trail as is_heli_cat=true so the client can
+              // suppress it when the Cat/Heli toggle is off.
               if (isBackcountryGrooming && !p.resort_id) {
                 const coordsMap = getAreaCoords();
                 const coords = f.geometry?.coordinates;
@@ -179,19 +208,32 @@ export function localTrailsPlugin(): Plugin {
                   ? coords
                   : (Array.isArray(coords) && Array.isArray(coords[0]) && typeof coords[0][0] === 'number' ? coords[0] : null);
 
-                let nearResort = false;
-                if (samplePt && coordsMap) {
-                  const [lng, lat] = samplePt;
-                  for (const [, [rLng, rLat]] of coordsMap) {
-                    if (Math.abs(lng - rLng) < 0.06 && Math.abs(lat - rLat) < 0.05) {
-                      nearResort = true;
-                      break;
-                    }
+                if (!samplePt || !coordsMap) {
+                  return false; // Cannot geolocate — drop it
+                }
+
+                const [lng, lat] = samplePt;
+                let closestDist = Infinity;
+                let closestCategory = '';
+
+                for (const [, [rLng, rLat, rCat]] of coordsMap) {
+                  const d = Math.hypot(lng - rLng, lat - rLat);
+                  if (d < closestDist) {
+                    closestDist = d;
+                    closestCategory = rCat;
                   }
                 }
-                if (!nearResort) {
+
+                // No resort within a reasonable radius (~25 km, ~0.22 deg) → drop
+                if (closestDist > 0.22 || !closestCategory) {
                   return false;
                 }
+
+                if (closestCategory === 'heli_cat') {
+                  // Exclusively cat/heli terrain — tag for client-side toggle filtering
+                  if (f.properties) f.properties.is_heli_cat = true;
+                }
+                // If closest is downhill/nordic, allow through untagged
               }
             }
             return true;
