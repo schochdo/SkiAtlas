@@ -6,6 +6,42 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `feat: implement click-activated editorial trail and aerialway inspection card`
+- **User Intent & Problem Context**:
+  - The user requested: *"Build the run card on click"* with explicit constraints:
+    1. **On click only** — strictly no card or popup on hover.
+    2. **Zero grooming mentions** — strictly omit any mention of grooming status (no "groomed", "ungroomed", or "backcountry" labels).
+    3. Editorial cartographic layout adhering to anti-SaaS principles.
+- **Architectural Resolution**:
+  - **Type Definitions ([`src/types/index.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/types/index.ts))**:
+    - Created `TrailInspectionData` interface capturing trail ID, name, kind (`'piste' | 'lift'`), difficulty, aerialway type, capacity, duration, occupancy, lit/gladed flags, top and base elevations, vertical drop/rise, 3D surface length, average/max slope angles and grade percent, fall-line aspect, and anchor geographic coordinates.
+  - **Geometry & Terrain Analysis Engine ([`src/utils/trailAnalysis.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/trailAnalysis.ts))**:
+    - Implemented `analyzeTrailFeature` which extracts 3D coordinates `[lng, lat, elev_m]` from GeoJSON `LineString`, `MultiLineString`, and `Polygon` geometries (falling back to live DEM sampling via `map.queryTerrainElevation()` when needed).
+    - Computes 3D surface length via 3D Pythagorean distance, vertical drop $\Delta H = z_{\max} - z_{\min}$, average pitch $\arctan(\Delta H / \text{dist}_{2D})$, maximum pitch across coordinate segments, and true fall-line aspect vector $\theta = \arctan2(\Delta x, \Delta y)$ from the summit benchmark to base terminus.
+  - **Editorial Trail Profile Card ([`src/components/map/TrailProfileCard.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/TrailProfileCard.tsx))**:
+    - Handcrafted floating cartographic inspection card styled in warm off-white `#FCFAF7/95` with stone hairline borders and serif typography.
+    - Features international difficulty badges (`●` Novice/Easy, `■` Intermediate, `◆` Advanced, `◆◆` Expert, `⬢` Freeride, and cable car icon for aerialways).
+    - Displays vertical rise/drop (`formatVert`), length (`formatDistance`), pitch/gradient ($^\circ$ and $\%$), solar aspect cardinal direction, top and base elevation benchmarks, and carrier/occupancy metrics for chairlifts.
+    - Strictly omits grooming status anywhere in the interface.
+    - Dynamically anchors near the clicked geographic coordinates on desktop (with dock and viewport boundary clamping) and docks into an accessible card on mobile.
+  - **Map Orchestration & Highlighting ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+    - Added dedicated `selected-trail-source` GeoJSON source and highlight layers (`selected-trail-casing`, `selected-trail-line`, `selected-trail-polygon-fill`, `selected-trail-polygon-outline`) illuminating selected pistes in warm amber gold `#D97706` with a crisp `#FAF8F3` halo.
+    - Configured pointer cursor on hover for trail and lift layers without triggering any hover tooltips (click-only interaction).
+    - Wired `map.on('click')` with a 6-pixel click tolerance box, prioritizing linear downhill trails/lifts over enclosing polygon areas.
+    - Registered `map.on('move')` screen position tracking via `map.project(anchorLngLat)` keeping the inspection card smoothly anchored in screen space during panning, rotating, and zooming.
+    - Coordinated dismissals: clicking `[ × ]`, pressing `Escape`, clicking empty map canvas, or selecting a resort cleanly closes the card and clears the trail highlight.
+- **Verification via Headless Chrome CDP**:
+  - Verified click on Whistler Blackcomb trails (*Fraggle Rock*, *Gun Barrels*, *Winky Pop*): card renders with correct difficulty badge, vertical drop, length, pitch, aspect, and summit/base. Verified grooming status is 100% absent.
+  - Verified click on chairlift (*Showcase Quad*): card renders with "CHAIR LIFT" badge, vertical rise ($555\text{ ft}$), length ($0.4\text{ mi}$), occupancy (4-person), and top/base elevations.
+  - Verified Escape key dismissal (`cardPresent: false`).
+  - Verified empty map canvas click dismissal (`cardPresent: false`).
+  - Verified close button `[ × ]` dismissal.
+  - Production build clean (`npm run build` passed in 355ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: restore intuitive A/D steering rotation and eliminate camera vertical bouncing with steady-altitude cruising`
 - **User Intent & Problem Context**:
   - The user reported:

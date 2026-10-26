@@ -95,3 +95,26 @@ export interface PisteFeature {
     lift_type?: string;
   };
 }
+
+export interface TrailInspectionData {
+  id: string;
+  name: string;
+  kind: 'piste' | 'lift';
+  difficulty?: string;
+  aerialway?: string;
+  capacity?: number | string | null;
+  duration?: number | string | null;
+  occupancy?: number | string | null;
+  lit?: boolean;
+  gladed?: boolean;
+  oneway?: boolean;
+  topElevationFt?: number;
+  baseElevationFt?: number;
+  verticalDropFt?: number;
+  lengthKm?: number;
+  avgSlopeDeg?: number;
+  avgSlopeGrade?: number;
+  maxSlopeDeg?: number;
+  aspect?: string;
+  anchorLngLat: [number, number];
+}

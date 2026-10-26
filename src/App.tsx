@@ -24,6 +24,8 @@ import { BasemapMenu } from './components/map/BasemapMenu';
 import { CartographicLegend } from './components/map/CartographicLegend';
 import { CompassGimbal } from './components/map/CompassGimbal';
 import { AttributionBadge } from './components/map/AttributionBadge';
+import { TrailProfileCard } from './components/map/TrailProfileCard';
+import { analyzeTrailFeature } from './utils/trailAnalysis';
 import { createMapStyle } from './utils/mapStyles';
 import { registerTerrainAnalysisProtocols } from './utils/terrainAnalysis';
 import type {
@@ -42,6 +44,7 @@ import type {
   SkiResort,
   Resort,
   PisteFeature,
+  TrailInspectionData,
 } from './types';
 export type {
   PassNetwork,
@@ -58,6 +61,7 @@ export type {
   SkiResort,
   Resort,
   PisteFeature,
+  TrailInspectionData,
 };
 import { formatSnow, formatVert, formatAcres, formatDistance, formatCoords } from './utils/formatters';
 import { safeFlyTo, safeEaseTo, isProgrammaticFlightActive, setIsProgrammaticFlightActive } from './utils/camera';
@@ -273,6 +277,56 @@ export default function App() {
   const activeOverpassAbortRef = useRef<AbortController | null>(null);
   const lastFetchedBboxKeyRef = useRef<string>('');
   const handleDeselectResortRef = useRef<() => void>(() => {});
+
+  // Clicked Trail / Slope Inspection State
+  const [selectedTrail, setSelectedTrail] = useState<TrailInspectionData | null>(null);
+  const [selectedTrailScreenPos, setSelectedTrailScreenPos] = useState<{ x: number; y: number } | null>(null);
+  const selectedTrailRef = useRef<TrailInspectionData | null>(null);
+  selectedTrailRef.current = selectedTrail;
+
+  const handleDeselectTrail = useCallback(() => {
+    setSelectedTrail(null);
+    setSelectedTrailScreenPos(null);
+    if (mapRef.current) {
+      const src = mapRef.current.getSource('selected-trail-source') as GeoJSONSource;
+      if (src) {
+        src.setData({
+          type: 'FeatureCollection',
+          features: [],
+        });
+      }
+    }
+  }, []);
+  const handleDeselectTrailRef = useRef<() => void>(handleDeselectTrail);
+  handleDeselectTrailRef.current = handleDeselectTrail;
+
+  const handleSelectTrail = useCallback(
+    (feature: any, clickedLngLat: [number, number], screenPoint: { x: number; y: number }) => {
+      if (!mapRef.current) return;
+      const analysis = analyzeTrailFeature(feature, mapRef.current, clickedLngLat);
+      setSelectedTrail(analysis);
+      setSelectedTrailScreenPos(screenPoint);
+
+      const src = mapRef.current.getSource('selected-trail-source') as GeoJSONSource;
+      if (src) {
+        src.setData({
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: feature.geometry,
+              properties: feature.properties || {},
+            },
+          ],
+        });
+      }
+    },
+    []
+  );
+  const handleSelectTrailRef = useRef<
+    (feature: any, clickedLngLat: [number, number], screenPoint: { x: number; y: number }) => void
+  >(handleSelectTrail);
+  handleSelectTrailRef.current = handleSelectTrail;
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -844,6 +898,12 @@ export default function App() {
         setMapPitch(Math.round(map.getPitch()));
         const alt = getCamAltitude();
         if (alt !== null) setCameraAltitudeMeters(alt);
+        if (selectedTrailRef.current) {
+          try {
+            const pt = map.project(selectedTrailRef.current.anchorLngLat);
+            setSelectedTrailScreenPos({ x: pt.x, y: pt.y });
+          } catch (_) {}
+        }
       }
     };
 
@@ -854,6 +914,12 @@ export default function App() {
       setMapPitch(Math.round(map.getPitch()));
       const alt = getCamAltitude();
       if (alt !== null) setCameraAltitudeMeters(alt);
+      if (selectedTrailRef.current) {
+        try {
+          const pt = map.project(selectedTrailRef.current.anchorLngLat);
+          setSelectedTrailScreenPos({ x: pt.x, y: pt.y });
+        } catch (_) {}
+      }
       const z = map.getZoom();
       // Ensure camera does not dip below terrain surface when pitched steeply at high zoom
       if (z > 16.0 && map.getPitch() > 65) {
@@ -1168,6 +1234,59 @@ export default function App() {
           'text-halo-color': '#FAF8F3',
           'text-halo-width': 2.5,
           'text-halo-blur': 0.5,
+        },
+      });
+
+      // Clicked Trail / Slope Selected Highlight Source & Layers
+      map.addSource('selected-trail-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+
+      map.addLayer({
+        id: 'selected-trail-casing',
+        type: 'line',
+        source: 'selected-trail-source',
+        filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
+        paint: {
+          'line-color': '#FAF8F3',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 4.0, 14, 6.0, 17, 8.0],
+          'line-opacity': 0.95,
+        },
+      });
+
+      map.addLayer({
+        id: 'selected-trail-line',
+        type: 'line',
+        source: 'selected-trail-source',
+        filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
+        paint: {
+          'line-color': '#D97706',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2.2, 14, 3.6, 17, 5.0],
+          'line-opacity': 1.0,
+        },
+      });
+
+      map.addLayer({
+        id: 'selected-trail-polygon-fill',
+        type: 'fill',
+        source: 'selected-trail-source',
+        filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
+        paint: {
+          'fill-color': '#D97706',
+          'fill-opacity': 0.35,
+        },
+      });
+
+      map.addLayer({
+        id: 'selected-trail-polygon-outline',
+        type: 'line',
+        source: 'selected-trail-source',
+        filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
+        paint: {
+          'line-color': '#D97706',
+          'line-width': 2.8,
+          'line-dasharray': [2, 1.5],
         },
       });
 
@@ -1515,9 +1634,9 @@ export default function App() {
         }
       });
 
-      // Click on empty map canvas deselects active resort
+      // Click on empty map canvas deselects active resort or inspects clicked trail / lift
       map.on('click', (e) => {
-        const interactiveLayers = [
+        const resortLayers = [
           'resorts-outer-ring',
           'resorts-inner-dot',
           'resorts-labels',
@@ -1526,14 +1645,58 @@ export default function App() {
           'global-unclustered-label',
           'global-clusters',
         ].filter((id) => map.getLayer(id));
-        const feats = map.queryRenderedFeatures(e.point, { layers: interactiveLayers });
-        if (!feats || feats.length === 0) {
-          handleDeselectResortRef.current();
+        const resortFeats = map.queryRenderedFeatures(e.point, { layers: resortLayers });
+        if (resortFeats && resortFeats.length > 0) {
+          // Marker or cluster clicked; close any open trail profile card
+          handleDeselectTrailRef.current();
+          return;
         }
+
+        const trailLayers = [
+          'live-pistes-lines',
+          'live-pistes-casing',
+          'live-pistes-lifts',
+          'live-pistes-labels',
+          'live-pistes-lifts-labels',
+          'live-pistes-polygons-fill',
+        ].filter((id) => map.getLayer(id));
+
+        if (trailLayers.length > 0) {
+          const clickBbox: [maplibregl.PointLike, maplibregl.PointLike] = [
+            [e.point.x - 6, e.point.y - 6],
+            [e.point.x + 6, e.point.y + 6],
+          ];
+          const trailFeats = map.queryRenderedFeatures(clickBbox, { layers: trailLayers });
+          if (trailFeats && trailFeats.length > 0) {
+            // Prioritize linear downhill pistes or lifts over enclosing polygon areas
+            const bestFeat =
+              trailFeats.find(
+                (f) => f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'
+              ) || trailFeats[0];
+            handleSelectTrailRef.current(bestFeat, [e.lngLat.lng, e.lngLat.lat], e.point);
+            return;
+          }
+        }
+
+        // Empty canvas click
+        handleDeselectResortRef.current();
+        handleDeselectTrailRef.current();
       });
 
       // Pointer cursor
-      ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels', 'global-clusters', 'global-unclustered-outer-ring', 'global-unclustered-point', 'global-unclustered-label'].forEach((layerId) => {
+      [
+        'resorts-outer-ring',
+        'resorts-inner-dot',
+        'resorts-labels',
+        'global-clusters',
+        'global-unclustered-outer-ring',
+        'global-unclustered-point',
+        'global-unclustered-label',
+        'live-pistes-lines',
+        'live-pistes-lifts',
+        'live-pistes-labels',
+        'live-pistes-lifts-labels',
+      ].forEach((layerId) => {
         map.on('mouseenter', layerId, () => {
           map.getCanvas().style.cursor = 'pointer';
         });
@@ -2745,6 +2908,7 @@ export default function App() {
      ========================================================================= */
 
   const handleSelectResort = async (id: string) => {
+    handleDeselectTrail();
     setSelectedResortId(id);
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setMobileSheetState('half');
@@ -2829,6 +2993,7 @@ export default function App() {
   };
 
   const handleSelectGlobalResort = async (p: any, coords: [number, number]) => {
+    handleDeselectTrail();
     const id = p.id || `global-${Math.round(coords[0] * 1000)}-${Math.round(coords[1] * 1000)}`;
     setSelectedResortId(id);
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -2886,6 +3051,7 @@ export default function App() {
   };
 
   const handleResetToGlobalExtent = useCallback(() => {
+    handleDeselectTrail();
     setSelectedResortId(null);
     setPanelView('directory');
     setSearchQuery('');
@@ -2909,9 +3075,10 @@ export default function App() {
       setMapPitch(0);
       setMapBearing(0);
     }
-  }, []);
+  }, [handleDeselectTrail]);
 
   const handleDeselectResort = () => {
+    handleDeselectTrail();
     setSelectedResortId(null);
     setPanelView('directory');
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -2936,13 +3103,17 @@ export default function App() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && selectedResortId) {
-        handleDeselectResort();
+      if (e.key === 'Escape') {
+        if (selectedTrailRef.current) {
+          handleDeselectTrail();
+        } else if (selectedResortId) {
+          handleDeselectResort();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedResortId]);
+  }, [selectedResortId, handleDeselectTrail]);
 
   // On page load/refresh, ensure all existing selections are cleared and URL is clean
   useEffect(() => {
@@ -3238,6 +3409,18 @@ export default function App() {
         onToggle={() => setAttributionOpen(!attributionOpen)}
         onClose={() => setAttributionOpen(false)}
       />
+
+      {/* CLICK-ACTIVATED RUN & LIFT INSPECTION CARD */}
+      {selectedTrail && (
+        <TrailProfileCard
+          trail={selectedTrail}
+          unitsMetric={unitsMetric}
+          onClose={handleDeselectTrail}
+          screenPos={selectedTrailScreenPos}
+          leftDockOpen={leftDockOpen}
+          isMobile={isMobile}
+        />
+      )}
     </div>
   );
 }
