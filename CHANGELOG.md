@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `feat: upgrade satellite basemap to Esri World Imagery Clarity for cloudless alpine terrain and seamless edge joins`
+- **User Intent & Problem Context**:
+  - The user asked: *"Are there any higher quality free satellite sources? With fewer clouds and better edge joins?"* and attached an image over Sunlight Mountain showing thick puffy clouds covering the ridge with a harsh triangular seam across the terrain.
+- **Root Cause Analysis**:
+  - The default Esri World Imagery tile endpoint (`server.arcgisonline.com`) strictly prioritizes the *most recent* imagery capture dates. In mountainous terrain, recent satellite passes frequently capture cloud banks, atmospheric haze, or harsh seasonal seams spliced over older cloud-free passes.
+- **Architectural Resolution ([`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts))**:
+  - Upgraded the satellite basemap source to **Esri World Imagery (Clarity)** (`https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`).
+  - Esri maintains the Clarity archive specifically as a free, public global service curated for **minimal cloud cover, zero atmospheric obstruction, high contrast, and seamless edge joins**, selecting older cloudless scenes whenever newer standard imagery is obstructed by weather or clouds.
+  - Verified global coverage across Colorado (Sunlight, Aspen), the European Alps (Zermatt, Chamonix), Japan (Niseko), the Andes (Portillo), and New Zealand (Treble Cone).
+- **Verification via Headless Chrome CDP**:
+  - Captured `screen_sunlight_clarity.png` at the exact perspective of the user's screenshot: the ridge clouds and harsh seam are 100% eliminated, replaced by crisp, continuous, cloud-free forest and mountain terrain.
+  - Captured `screen_zermatt_clarity.png` and `screen_aspen_clarity.png` confirming pristine mountain detail and trail alignment.
+  - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-25
+
 ### `fix: elevate ski area label prominence, hide peaks at regional scale, exclude wild backcountry trails, and snap summits to geodetic benchmarks`
 - **User Intent & Problem Context**:
   - The user raised three critical cartographic issues:

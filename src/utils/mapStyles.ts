@@ -11,10 +11,10 @@ export const createMapStyle = (
   projection: { type: earthProjection },
   glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
   sources: {
-    // 1. Esri World Imagery Satellite (Crisp 3D photo terrain)
+    // 1. Esri World Imagery (Clarity) — Curated archive optimized for cloud-free alpine views, seamless joins, and high contrast
     'satellite-tiles': {
       type: 'raster',
-      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+      tiles: ['https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
       tileSize: 256,
       maxzoom: 18,
       attribution: 'Esri Satellite',
