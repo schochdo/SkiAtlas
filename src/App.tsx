@@ -72,7 +72,12 @@ import {
   getResortWebsite,
   getCategoryBadge,
 } from './utils/classification';
-import { getNeutralWeather, getInitialWeather, fetchLiveWeather } from './services/weather';
+import {
+  getNeutralWeather,
+  getInitialWeather,
+  fetchLiveWeather,
+  isWeatherCircuitTripped,
+} from './services/weather';
 import { GLOBAL_SKI_ATLAS } from './data/resorts';
 import { HELI_CAT_OPERATIONS } from './data/heliCat';
 
@@ -469,6 +474,7 @@ export default function App() {
   /* =========================================================================
      BACKGROUND WEATHER PREFETCH — load 7-day snow for all resorts on mount
      Batched (5 concurrent) to avoid hammering the API.
+     Protected by 24-hour cache TTL and 24-hour circuit breaker.
      ========================================================================= */
 
   useEffect(() => {
@@ -477,8 +483,13 @@ export default function App() {
     const BATCH = 5;
 
     async function prefetchAll() {
+      // If the circuit breaker is active, skip all network queries immediately
+      if (isWeatherCircuitTripped()) return;
+
       for (let i = 0; i < allResorts.length; i += BATCH) {
         if (cancelled) break;
+        if (isWeatherCircuitTripped()) break; // Halt immediately if breaker trips mid-run
+
         const batch = allResorts.slice(i, i + BATCH);
         const results = await Promise.allSettled(batch.map((r) => fetchLiveWeather(r)));
         if (cancelled) break;

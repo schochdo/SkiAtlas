@@ -6,6 +6,29 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `perf: enforce 24-hour daily cache TTL and automatic circuit breaker to prevent hammering Open-Meteo`
+- **User Intent & Problem Context**:
+  - The user instructed: *"Once a day is more than enough. Let's not ever hammer openmeteo again."*
+  - Previously, caching was set to 2 hours, and failed or rate-limited requests still permitted subsequent requests in the loop to fire, risking quota exhaustion on dev reloads and multiple sessions.
+- **Architectural Safeguards & 24-Hour Rate Policy**:
+  - **24-Hour Cache TTL ([`src/services/weather.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/services/weather.ts))**:
+    - Changed `CACHE_TTL_MS` from 2 hours to 24 hours (`24 * 60 * 60 * 1000`). Once a forecast is cached for a resort, zero network requests will be made for that resort for the next 24 hours.
+    - Verified in CDP that upon page reload, total network requests fired to Open-Meteo is **0**.
+  - **Automatic 24-Hour Circuit Breaker ([`src/services/weather.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/services/weather.ts))**:
+    - Added persistent circuit breaker (`isWeatherCircuitTripped()`, `tripWeatherCircuit()`).
+    - If Open-Meteo ever returns `HTTP 429` (Too Many Requests), `400` with rate limit text, or if an API error mentions limits, the circuit breaker immediately trips for 24 hours.
+    - While tripped, all subsequent calls across the app bypass the network entirely and instantly serve cached or deterministic fallback forecasts.
+  - **Prefetch Loop Termination ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+    - `prefetchAll` checks `isWeatherCircuitTripped()` before starting and between batches. If the breaker is active or trips mid-run, the loop terminates immediately (`break`), preventing any further requests from being sent.
+- **Verification**:
+  - Monitored network traffic via CDP on page reload: confirmed 0 requests made when cached.
+  - All cards continue to render live 7-day snow forecast chips (`Snowbird` `❄ 23.8"`, `Breckenridge` `❄ 19.6"`, etc.).
+  - Production build clean (`npm run build` passed in 373ms).
+
+---
+
+## 2026-10-25
+
 ### `fix: restore live 7-day snow forecast prefetch and implement resilient client-side caching & fallback`
 - **User Intent & Problem Context**:
   - The user noticed that the snow forecast chips (`❄ 23.8"`, `❄ 12.4"`) had completely vanished from resort cards in the left directory list.
