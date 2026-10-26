@@ -32,3 +32,21 @@ export function formatCoords(lat: number, lng: number): string {
   const lngStr = `${Math.abs(lng).toFixed(1)}°${lng >= 0 ? 'E' : 'W'}`;
   return `${latStr}, ${lngStr}`;
 }
+
+export function formatCameraAltitude(altitudeMeters: number | null | undefined, unitsMetric: boolean = false): string {
+  if (altitudeMeters === null || altitudeMeters === undefined || !isFinite(altitudeMeters)) return '—';
+  const altFt = altitudeMeters * 3.28084;
+  if (unitsMetric) {
+    if (altitudeMeters >= 50000) {
+      const km = Math.round(altitudeMeters / 1000);
+      return `${km.toLocaleString()} km`;
+    }
+    return `${Math.round(altitudeMeters).toLocaleString()} m`;
+  } else {
+    if (altFt >= 100000) {
+      const mi = Math.round(altFt / 5280);
+      return `${mi.toLocaleString()} mi`;
+    }
+    return `${Math.round(altFt).toLocaleString()}'`;
+  }
+}

@@ -228,6 +228,7 @@ export default function App() {
   // Derived 3D perspective state based on camera tilt angle (> 3° is oblique 3D perspective)
   const is3D = mapPitch > 3;
   const [mapScale, setMapScale] = useState({ distStr: '500 km', barWidth: 80 });
+  const [cameraAltitudeMeters, setCameraAltitudeMeters] = useState<number | null>(null);
   const isDraggingCompassRef = useRef(false);
   const didDragCompassRef = useRef(false);
   const [isCompassDragging, setIsCompassDragging] = useState(false);
@@ -800,6 +801,17 @@ export default function App() {
       } catch (_) {}
     };
 
+    const getCamAltitude = (): number | null => {
+      try {
+        const tr = (map as any)._camera?.transform;
+        const alt = tr?.getCameraAltitude?.();
+        if (alt !== null && alt !== undefined && isFinite(alt)) return alt;
+        return map.getCenterElevation?.() || null;
+      } catch (_) {
+        return null;
+      }
+    };
+
     let lastMoveThrottleTime = 0;
     const handleMapMove = () => {
       const now = performance.now();
@@ -808,6 +820,8 @@ export default function App() {
         updateBounds();
         setMapBearing(Math.round(map.getBearing()));
         setMapPitch(Math.round(map.getPitch()));
+        const alt = getCamAltitude();
+        if (alt !== null) setCameraAltitudeMeters(alt);
       }
     };
 
@@ -816,6 +830,8 @@ export default function App() {
       updateScale();
       setMapBearing(Math.round(map.getBearing()));
       setMapPitch(Math.round(map.getPitch()));
+      const alt = getCamAltitude();
+      if (alt !== null) setCameraAltitudeMeters(alt);
       const z = map.getZoom();
       // Ensure camera does not dip below terrain surface when pitched steeply at high zoom
       if (z > 16.0 && map.getPitch() > 65) {
@@ -854,6 +870,8 @@ export default function App() {
       map.resize();
       updateBounds();
       updateScale();
+      const initialAlt = getCamAltitude();
+      if (initialAlt !== null) setCameraAltitudeMeters(initialAlt);
 
       // Enable 3D Terrain mesh (calibrated mountain relief)
       try {
@@ -2131,7 +2149,29 @@ export default function App() {
       // Manual altitude control (Q/E or PageUp/PageDown)
       if (altitudeDelta !== 0) {
         const altSpeed = Math.max(250, speedMps * 0.75) * (isShift ? 2.0 : 1.0);
-        flightElevation += altitudeDelta * altSpeed * dt;
+        let deltaAlt = altitudeDelta * altSpeed * dt;
+
+        // Ground clearance protection for the camera eye:
+        // Do not let camera descend below ground terrain directly underneath the camera eye
+        if (deltaAlt < 0) {
+          const tr = (map as any)._camera?.transform;
+          const camLngLat = tr?.getCameraLngLat?.() || map.getCenter();
+          const camAlt = tr?.getCameraAltitude?.();
+          const groundUnderCam = map.queryTerrainElevation(camLngLat);
+          const MIN_CLEARANCE = 5.0; // meters
+
+          if (camAlt !== null && camAlt !== undefined && isFinite(camAlt) &&
+              groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam)) {
+            const maxDescent = camAlt - (groundUnderCam + MIN_CLEARANCE);
+            if (maxDescent <= 0) {
+              deltaAlt = 0;
+            } else if (-deltaAlt > maxDescent) {
+              deltaAlt = -maxDescent;
+            }
+          }
+        }
+
+        flightElevation += deltaAlt;
       }
 
       // Smooth horizontal flight with steady-altitude physics & minimum-clearance ground protection
@@ -2161,27 +2201,29 @@ export default function App() {
         const nextLng = curCenter.lng + deltaLng;
 
         // Minimum height rule:
-        // Sample ground terrain under next flight coordinate.
+        // Sample ground terrain under next camera position.
         // If terrain rises above current altitude, climb smoothly to stay above the mountain.
         // If flight altitude is well above the ground, IGNORE ground height and keep elevation rock-steady!
-        const rawGround = map.queryTerrainElevation([nextLng, nextLat]);
-        if (rawGround !== null && rawGround !== undefined && isFinite(rawGround)) {
-          const MIN_CLEARANCE = 5.0; // meters minimum ground clearance buffer
-          const minAllowedElevation = rawGround + MIN_CLEARANCE;
+        const tr = (map as any)._camera?.transform;
+        const camLngLat = tr?.getCameraLngLat?.() || curCenter;
+        const camAlt = tr?.getCameraAltitude?.();
+        const nextCamLat = Math.max(-85, Math.min(85, camLngLat.lat + deltaLat));
+        const nextCamLng = camLngLat.lng + deltaLng;
+        const groundUnderCam = map.queryTerrainElevation([nextCamLng, nextCamLat]);
 
-          if (minAllowedElevation > flightElevation) {
+        if (groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam) &&
+            camAlt !== null && camAlt !== undefined && isFinite(camAlt)) {
+          const MIN_CLEARANCE = 5.0; // meters minimum ground clearance buffer
+          const minAllowedElevation = groundUnderCam + MIN_CLEARANCE;
+
+          if (minAllowedElevation > camAlt) {
             // Mountain / ridge rising ahead: lift smoothly to clear the slope
-            const climbDiff = minAllowedElevation - flightElevation;
+            const climbDiff = minAllowedElevation - camAlt;
             const climbFactor = 1 - Math.exp(-dt * 6.0);
             const maxClimbSpeed = Math.max(speedMps * 1.5, 450); // m/s
             const climbDelta = Math.min(climbDiff, Math.max(climbDiff * climbFactor, maxClimbSpeed * dt));
             flightElevation += climbDelta;
-            if (flightElevation < minAllowedElevation) {
-              flightElevation = minAllowedElevation;
-            }
           }
-          // When flightElevation >= minAllowedElevation:
-          // Keep elevation completely steady! Zero rollercoaster dipping into valleys or ravines.
         }
 
         map.jumpTo({
@@ -2189,17 +2231,18 @@ export default function App() {
           elevation: flightElevation,
         });
       } else if (altitudeDelta !== 0) {
-        // Enforce ground clearance when manually adjusting altitude in place
-        const curCenter = map.getCenter();
-        const rawGround = map.queryTerrainElevation(curCenter);
-        if (rawGround !== null && rawGround !== undefined && isFinite(rawGround)) {
-          const minAllowed = rawGround + 5.0;
-          if (flightElevation < minAllowed) flightElevation = minAllowed;
-        }
         map.jumpTo({
           elevation: flightElevation,
         });
       }
+
+      // Live update camera altitude metric during flight
+      try {
+        const alt = (map as any)._camera?.transform?.getCameraAltitude?.() ?? map.getCenterElevation?.();
+        if (alt !== null && alt !== undefined && isFinite(alt)) {
+          setCameraAltitudeMeters(alt);
+        }
+      } catch (_) {}
 
       animationFrameId = requestAnimationFrame(flightStep);
     };
@@ -2243,6 +2286,7 @@ export default function App() {
     // Yield flight engine immediately when user uses mouse to pan or rotate
     const canvasContainer = map.getCanvasContainer();
     const onCanvasMouseInteraction = () => {
+      flightElevation = null; // Re-anchor elevation on mouse interaction
       if (animationFrameId !== null || activeKeys.size > 0) {
         stopFlight();
       }
@@ -3124,6 +3168,8 @@ export default function App() {
         onCloseLegend={() => setMapLegendOpen(false)}
         leftDockOpen={leftDockOpen}
         mapScale={mapScale}
+        cameraAltitudeMeters={cameraAltitudeMeters}
+        unitsMetric={unitsMetric}
       />
 
       {/* UNIFIED CARTOGRAPHIC NAVIGATION GIMBAL & COMPASS INSTRUMENT */}

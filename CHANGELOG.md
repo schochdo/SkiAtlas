@@ -6,6 +6,40 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `feat: display camera elevation on scale bar and fix flight descent elevation floor bug`
+- **User Intent & Problem Context**:
+  - The user requested:
+    1. *"Is there a way to show the camera elevation next to the scale bar?"*
+    2. *"The reason I am asking is, as well as curiosity, the camera elevation would not go below a certain level until I refreshed the page. Probably a bug."*
+- **Root Cause Analysis (Camera Elevation Floor Bug)**:
+  - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), keyboard flight engine manual descent (`KeyQ` / `PageDown`) checked `map.queryTerrainElevation(curCenter)` where `curCenter` is the crosshair focal point on the map.
+  - When the camera is pitched forward looking towards distant mountain summits (e.g. 14,000 ft peaks at Breckenridge or Vail), `curCenter` is miles ahead on a high summit.
+  - The collision check forced `flightElevation >= rawGround + 5.0` based on that distant summit's elevation. Consequently:
+    - Pressing `KeyQ` to descend while looking at a summit actually pushed `flightElevation` up to the summit elevation ($14,000'+$).
+    - Once clamped up, `flightElevation` was permanently latched above that elevation, blocking the user from flying down into valleys until the page was reloaded.
+    - On mouse interaction, `flightElevation` was also never re-anchored, allowing old flight elevations to persist across pan/zoom gestures.
+- **Architectural Resolution**:
+  - **Camera Eye Ground Clearance Protection ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+    - During descent (`KeyQ` / `PageDown`), collision protection now samples `getCameraLngLat()` and checks clearance between `getCameraAltitude()` and `groundUnderCam`.
+    - Distant peaks on the horizon no longer block descent into local valleys; the camera can freely fly down to 5 meters above the local terrain surface directly underneath the viewer.
+    - During forward flight, clearance checks sample the camera's path rather than the distant horizon focal point.
+    - On canvas mouse interaction (drag, pan, scroll), `flightElevation` is cleared to `null` so subsequent flights re-anchor freshly to the current view.
+  - **Live Camera Elevation Indicator ([`src/components/map/CartographicLegend.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/CartographicLegend.tsx), [`src/utils/formatters.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/formatters.ts))**:
+    - Added `formatCameraAltitude()` formatter with strict unit hygiene:
+      - Mountain/regional scope: `▲ 14,157'` (imperial) or `▲ 4,315 m` (metric).
+      - Sub-orbital/orbital space scope: `▲ 17,794 mi` (imperial) or `▲ 28,636 km` (metric).
+    - Integrated the camera elevation indicator directly into the bottom-left cartographic furniture pill next to the alternating scale bar (`[ Key ] | 660 m [ ▬▬▬ ] | ▲ 14,157'`).
+    - Dynamically updates on zoom, pan, pitch tilt, and keyboard flight.
+- **Verification via Headless Chrome CDP**:
+  - `screen_scale_and_elevation.png`: Verified visual appearance at Breckenridge with pitch 65°: scale bar shows `660 m` and camera elevation `▲ 14,157'`.
+  - Tested holding `KeyQ` (descend) while pitched at 65°: camera smoothly descended from 4,417m ($14,493'$) down to 4,315m ($14,157'$), completely resolving the elevation floor clamp.
+  - `screen_scale_metric_verified.png`: Verified metric toggle instantly updates camera elevation to `▲ 4,315 m`.
+  - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-25
+
 ### `fix: close Display & Filters panel on outside click or Escape key`
 - **User Intent & Problem Context**:
   - The user requested: *"Change the behavior for Display and Filters to close the panel if user clicks outside it"*.

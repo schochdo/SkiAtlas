@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Layers, X } from 'lucide-react';
+import { formatCameraAltitude } from '../../utils/formatters';
 
 interface CartographicLegendProps {
   mapLegendOpen: boolean;
@@ -7,6 +8,8 @@ interface CartographicLegendProps {
   onCloseLegend: () => void;
   leftDockOpen: boolean;
   mapScale: { distStr: string; barWidth: number };
+  cameraAltitudeMeters?: number | null;
+  unitsMetric: boolean;
 }
 
 export const CartographicLegend: React.FC<CartographicLegendProps> = ({
@@ -15,6 +18,8 @@ export const CartographicLegend: React.FC<CartographicLegendProps> = ({
   onCloseLegend,
   leftDockOpen,
   mapScale,
+  cameraAltitudeMeters,
+  unitsMetric,
 }) => {
   const mapLegendRef = useRef<HTMLDivElement | null>(null);
 
@@ -103,6 +108,20 @@ export const CartographicLegend: React.FC<CartographicLegendProps> = ({
             <div className="h-full bg-[#FAF8F3] flex-1" />
           </div>
         </div>
+        {cameraAltitudeMeters !== null && cameraAltitudeMeters !== undefined && (
+          <>
+            <div className="h-3 w-px bg-[#D6D0C2]" />
+            <div
+              className="flex items-center gap-1 text-[#5C5852]"
+              title="Camera Altitude Above Sea Level"
+            >
+              <span className="text-[10px] text-[#8A847C] select-none">▲</span>
+              <span className="font-bold tabular-nums text-[#1C1B18]">
+                {formatCameraAltitude(cameraAltitudeMeters, unitsMetric)}
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
