@@ -6,6 +6,33 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-25
 
+### `fix: close Display & Filters panel on outside click or Escape key`
+- **User Intent & Problem Context**:
+  - The user requested: *"Change the behavior for Display and Filters to close the panel if user clicks outside it"*.
+- **Root Cause**:
+  - In [`src/components/header/TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx), the container wrapping the "Display & Filters" button and floating `<FilterModal>` lacked click-outside and escape-key event listeners.
+  - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), a legacy `filtersMenuRef` was declared and evaluated in an effect, but was never attached to any element in the DOM tree, causing outside clicks to be completely ignored.
+- **Architectural Resolution**:
+  - **Self-Contained Outside Click Handler ([`src/components/header/TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx))**:
+    - Attached `filtersRef` to the `<div ref={filtersRef} className="relative">` container wrapping both the trigger button and the popover panel.
+    - Added an outside-click handler listening to `pointerdown` and `mousedown` that invokes `onCloseFilters()`.
+    - Added an `Escape` key listener to dismiss the panel on keyboard command.
+    - Preserved click interactions inside the panel (sliders, pass toggles, projection choices, metric switch) without unintended closure.
+  - **Modular Cleanup ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+    - Passed `onCloseFilters={() => setFiltersMenuOpen(false)}` to `TopNavBar`.
+    - Removed dangling, unattached refs and redundant outside-click effects (`filtersMenuRef`, `basemapMenuRef`, `mapLegendRef`, `attributionRef`), keeping instrument event lifecycles modularly self-contained.
+- **Verification via Headless Chrome CDP**:
+  - Clicking the "Display & Filters" button opens the popover (`aria-expanded="true"`, `.sm:w-92` rendered).
+  - Clicking inside the modal (e.g. at coords within panel) maintains open state (`true`).
+  - Clicking outside on the map canvas immediately dismisses the modal (`isClosed: true`).
+  - Opening and pressing the `Escape` key immediately dismisses the modal (`isClosed: true`).
+  - Clicking the trigger button when open smoothly toggles it closed (`isClosed: true`) without reopening glitch.
+  - Production build clean (`npm run build` passed).
+
+---
+
+## 2026-10-25
+
 ### `fix: calibrate peak label visibility for mountain perspective scale while maintaining regional clarity`
 - **User Intent & Problem Context**:
   - The user uploaded a screenshot looking at Portillo in the Andes at a 7 km scale bar and noted: *"At whatever this scale is, I think we should be showing the peak names."*

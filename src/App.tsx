@@ -124,7 +124,6 @@ export default function App() {
   const [mobileSheetState, setMobileSheetState] = useState<'peek' | 'half' | 'full'>('peek');
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [filtersMenuOpen, setFiltersMenuOpen] = useState(false);
-  const filtersMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -173,10 +172,7 @@ export default function App() {
   const [terrainExaggeration, setTerrainExaggeration] = useState<number>(0.70);
   const [showHillshade, setShowHillshade] = useState(true);
   const [showPeaks, setShowPeaks] = useState<boolean>(true);
-  const basemapMenuRef = useRef<HTMLDivElement | null>(null);
-  const mapLegendRef = useRef<HTMLDivElement | null>(null);
   const [attributionOpen, setAttributionOpen] = useState(false);
-  const attributionRef = useRef<HTMLDivElement | null>(null);
 
   const handleTerrainExaggerationChange = (val: number) => {
     setTerrainExaggeration(val);
@@ -1869,90 +1865,6 @@ export default function App() {
     mapRef.current.setRenderWorldCopies(false);
   }, [mapPitch, earthProjection, mapLoaded]);
 
-  /* =========================================================================
-     OUTSIDE-CLICK DISMISSAL FOR BASEMAP, MAP KEY & DISPLAY/FILTERS PANELS
-     ========================================================================= */
-
-  useEffect(() => {
-    if (!filtersMenuOpen) return;
-    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
-      if (filtersMenuRef.current && !filtersMenuRef.current.contains(e.target as Node)) {
-        setFiltersMenuOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setFiltersMenuOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', handleOutsideClick);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handleOutsideClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [filtersMenuOpen]);
-
-  useEffect(() => {
-    if (!mapMenuOpen) return;
-    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
-      if (basemapMenuRef.current && !basemapMenuRef.current.contains(e.target as Node)) {
-        setMapMenuOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setMapMenuOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', handleOutsideClick);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handleOutsideClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [mapMenuOpen]);
-
-  useEffect(() => {
-    if (!mapLegendOpen) return;
-    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
-      if (mapLegendRef.current && !mapLegendRef.current.contains(e.target as Node)) {
-        setMapLegendOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setMapLegendOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', handleOutsideClick);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handleOutsideClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [mapLegendOpen]);
-
-  useEffect(() => {
-    if (!attributionOpen) return;
-    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
-      if (attributionRef.current && !attributionRef.current.contains(e.target as Node)) {
-        setAttributionOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setAttributionOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', handleOutsideClick);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handleOutsideClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [attributionOpen]);
-
 
 
   /* =========================================================================
@@ -3015,6 +2927,7 @@ export default function App() {
         onResetToGlobal={handleResetToGlobalExtent}
         filtersMenuOpen={filtersMenuOpen}
         onToggleFilters={() => setFiltersMenuOpen((prev) => !prev)}
+        onCloseFilters={() => setFiltersMenuOpen(false)}
         activeFiltersCount={activeFiltersCount}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
