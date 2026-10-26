@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -61,6 +66,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -126,6 +136,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -187,6 +202,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -234,6 +254,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -302,6 +327,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -356,6 +386,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -423,6 +458,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -486,6 +526,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -548,6 +593,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -603,6 +653,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -654,6 +709,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -708,6 +768,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -753,6 +818,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -820,6 +890,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -871,6 +946,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -916,6 +996,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -968,6 +1053,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -1018,6 +1108,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -1081,6 +1176,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -1133,6 +1233,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -1181,6 +1286,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -1235,6 +1345,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -1274,6 +1389,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -1318,6 +1438,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -1373,6 +1498,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -1432,6 +1562,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -1508,6 +1643,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -1567,6 +1707,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -1620,6 +1765,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -1679,6 +1829,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -1755,6 +1910,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -1814,6 +1974,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -1895,6 +2060,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -1954,6 +2124,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -2030,6 +2205,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -2089,6 +2269,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -2142,6 +2327,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -2201,6 +2391,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
@@ -2277,6 +2472,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-26
 
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
+
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.
 - **Solution**: Added `maxzoom: 12` to all six point-and-label layers that represent ski areas as markers:
@@ -2336,6 +2536,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 ---
 
 ## 2026-10-26
+
+### `feat: add Open-Meteo credit to Summit Meteorology card`
+- Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
+
+---
 
 ### `feat: auto-toggle resort name labels off at zoom 12 when trail detail takes over`
 - **Problem**: Both the area/resort name label and the full ski trail network were visible simultaneously at close zoom, creating label clutter over the trail diagram.

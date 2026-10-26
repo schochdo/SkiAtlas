@@ -243,6 +243,11 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
               })}
             </div>
           )}
+
+          {/* Data credit */}
+          <div className="text-right">
+            <span className="text-[9px] text-[#8A847C]">Weather data: Open-Meteo</span>
+          </div>
         </div>
       </div>
     </div>
