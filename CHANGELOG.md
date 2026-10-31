@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `feat: add toggleable vector country outlines and major cities points/labels`
+- **What was wrong before**:
+  - Navigating the globe—especially on pure satellite 3D imagery or in regions with sparse ski resorts (e.g. South America, Central Europe, Scandinavia, Central Asia, New Zealand)—was disorienting because there were no political boundaries, country names, or major cities and ski gateway hubs to serve as geographical reference anchors.
+- **Solution**:
+  - Built and bundled two lightweight client-side GeoJSON reference datasets:
+    1. `src/data/countryBoundaries.ts`: 177 global nations with simplified political boundary lines, dual casing/core dashes (`#FAF8F3` and `#2C4C64`), and uppercase country name symbol labels (visible at z1.5 to z8).
+    2. `src/data/majorCities.ts`: 573 major world cities, national capitals, and ski gateway hubs (e.g. Denver, Salt Lake City, Calgary, Vancouver, Seattle, Reno, Boise, Geneva, Zürich, Innsbruck, Salzburg, Munich, Milan, Turin, Lyon, Grenoble, Oslo, Tokyo, Sapporo, Santiago, Queenstown). Rendered with crisp haloed cartographic dots and collision-managed typographic labels.
+  - Added dedicated toggle controls (`Country Outlines` and `Major Cities`) under a new "Geographic Reference" section in the cartographic hamburger menu (`BasemapMenu`), off by default as requested.
+  - Layer visibility updates reactively via MapLibre layout properties without reloading or invalidating base map styles.
+
+---
+
 ### `feat: replace basemap text button with hover-responsive sticky hamburger menu`
 - **What was wrong before**:
   - The basemap button was a large pill button displaying `[ Layers icon Basemap ]` permanently fixed right below the top navbar's `[ Display & Filters ]` button, creating visual clutter and an unappealing double-button stack in the top-right corner.

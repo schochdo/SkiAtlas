@@ -84,6 +84,8 @@ import {
 } from './services/weather';
 import { GLOBAL_SKI_ATLAS } from './data/resorts';
 import { HELI_CAT_OPERATIONS } from './data/heliCat';
+import { COUNTRY_BOUNDARIES_GEOJSON } from './data/countryBoundaries';
+import { MAJOR_CITIES_GEOJSON } from './data/majorCities';
 
 export {
   formatSnow,
@@ -183,6 +185,8 @@ export default function App() {
   const [terrainExaggeration, setTerrainExaggeration] = useState<number>(0.70);
   const [showHillshade, setShowHillshade] = useState(true);
   const [showPeaks, setShowPeaks] = useState<boolean>(true);
+  const [showCountryOutlines, setShowCountryOutlines] = useState<boolean>(false);
+  const [showMajorCities, setShowMajorCities] = useState<boolean>(false);
   const [attributionOpen, setAttributionOpen] = useState(false);
 
   const handleTerrainExaggerationChange = (val: number) => {
@@ -1371,6 +1375,156 @@ export default function App() {
         },
       });
 
+      // Country Boundaries & Political Outlines
+      map.addSource('country-boundaries-source', {
+        type: 'geojson',
+        data: COUNTRY_BOUNDARIES_GEOJSON as any,
+      });
+
+      map.addLayer({
+        id: 'country-boundaries-casing',
+        type: 'line',
+        source: 'country-boundaries-source',
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'line-cap': 'round',
+          'line-join': 'round',
+        },
+        paint: {
+          'line-color': '#FAF8F3',
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            1, 1.8,
+            4, 2.8,
+            8, 4.0,
+          ],
+          'line-opacity': 0.7,
+        },
+      });
+
+      map.addLayer({
+        id: 'country-boundaries-line',
+        type: 'line',
+        source: 'country-boundaries-source',
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'line-cap': 'round',
+          'line-join': 'round',
+        },
+        paint: {
+          'line-color': '#2C4C64',
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            1, 0.9,
+            4, 1.4,
+            8, 2.0,
+          ],
+          'line-dasharray': [3, 2],
+          'line-opacity': 0.85,
+        },
+      });
+
+      map.addLayer({
+        id: 'country-boundaries-labels',
+        type: 'symbol',
+        source: 'country-boundaries-source',
+        maxzoom: 8,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            1.5, 9,
+            3.5, 11,
+            6, 14,
+          ],
+          'text-transform': 'uppercase',
+          'text-letter-spacing': 0.12,
+          'text-max-width': 8,
+        },
+        paint: {
+          'text-color': '#2C4C64',
+          'text-halo-color': '#FAF8F3',
+          'text-halo-width': 1.5,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Major Cities Points and Labels
+      map.addSource('major-cities-source', {
+        type: 'geojson',
+        data: MAJOR_CITIES_GEOJSON as any,
+      });
+
+      map.addLayer({
+        id: 'major-cities-glow',
+        type: 'circle',
+        source: 'major-cities-source',
+        layout: {
+          visibility: showMajorCities ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            2, 4,
+            6, 5.5,
+            10, 7,
+          ],
+          'circle-color': '#FAF8F3',
+          'circle-opacity': 0.85,
+        },
+      });
+
+      map.addLayer({
+        id: 'major-cities-point',
+        type: 'circle',
+        source: 'major-cities-source',
+        layout: {
+          visibility: showMajorCities ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            2, 2.2,
+            6, 3.2,
+            10, 4.2,
+          ],
+          'circle-color': '#1C1B18',
+          'circle-stroke-width': 1.2,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      map.addLayer({
+        id: 'major-cities-labels',
+        type: 'symbol',
+        source: 'major-cities-source',
+        layout: {
+          visibility: showMajorCities ? 'visible' : 'none',
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            2, 9,
+            5, 10.5,
+            8, 12.5,
+            12, 14,
+          ],
+          'text-offset': [0, 0.75],
+          'text-anchor': 'top',
+          'text-padding': 6,
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+        },
+        paint: {
+          'text-color': '#1C1B18',
+          'text-halo-color': '#FAF8F3',
+          'text-halo-width': 1.5,
+          'text-halo-blur': 0.5,
+        },
+      });
+
       // 2. Curated Seed Resorts Source (Concentric Ring Markers)
       const curatedFeatures = GLOBAL_SKI_ATLAS.map((r) => ({
         type: 'Feature',
@@ -2395,6 +2549,32 @@ export default function App() {
       map.setLayoutProperty('major-peaks-label', 'text-field', ['get', unitsMetric ? 'label_m' : 'label_ft']);
     }
   }, [showPeaks, unitsMetric, mapLoaded]);
+
+  /* =========================================================================
+     GEOGRAPHIC REFERENCE: COUNTRY OUTLINES & MAJOR CITIES
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    const visibility = showCountryOutlines ? 'visible' : 'none';
+    ['country-boundaries-casing', 'country-boundaries-line', 'country-boundaries-labels'].forEach((id) => {
+      if (map.getLayer(id)) {
+        map.setLayoutProperty(id, 'visibility', visibility);
+      }
+    });
+  }, [showCountryOutlines, mapLoaded]);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    const visibility = showMajorCities ? 'visible' : 'none';
+    ['major-cities-glow', 'major-cities-point', 'major-cities-labels'].forEach((id) => {
+      if (map.getLayer(id)) {
+        map.setLayoutProperty(id, 'visibility', visibility);
+      }
+    });
+  }, [showMajorCities, mapLoaded]);
 
   /* =========================================================================
      60 FPS KEYBOARD CAMERA FLIGHT ENGINE (WASD + QE + ARROW KEYS)
@@ -3580,6 +3760,10 @@ export default function App() {
         onSelectBasemap={setBasemapMode}
         showPeaks={showPeaks}
         onTogglePeaks={() => setShowPeaks((prev) => !prev)}
+        showCountryOutlines={showCountryOutlines}
+        onToggleCountryOutlines={() => setShowCountryOutlines((prev) => !prev)}
+        showMajorCities={showMajorCities}
+        onToggleMajorCities={() => setShowMajorCities((prev) => !prev)}
         terrainExaggeration={terrainExaggeration}
         onChangeTerrainExaggeration={handleTerrainExaggerationChange}
         terrainOverlay={terrainOverlay}

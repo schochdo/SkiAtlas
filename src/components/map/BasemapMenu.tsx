@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Menu, X, Layers, Mountain } from 'lucide-react';
+import { Menu, X, Layers, Mountain, Globe, MapPin } from 'lucide-react';
 import type { BasemapMode, TerrainOverlayMode } from '../../types';
 
 interface BasemapMenuProps {
@@ -10,6 +10,10 @@ interface BasemapMenuProps {
   onSelectBasemap: (mode: BasemapMode) => void;
   showPeaks: boolean;
   onTogglePeaks: () => void;
+  showCountryOutlines: boolean;
+  onToggleCountryOutlines: () => void;
+  showMajorCities: boolean;
+  onToggleMajorCities: () => void;
   terrainExaggeration: number;
   onChangeTerrainExaggeration: (val: number) => void;
   terrainOverlay: TerrainOverlayMode;
@@ -26,6 +30,10 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
   onSelectBasemap,
   showPeaks,
   onTogglePeaks,
+  showCountryOutlines,
+  onToggleCountryOutlines,
+  showMajorCities,
+  onToggleMajorCities,
   terrainExaggeration,
   onChangeTerrainExaggeration,
   terrainOverlay,
@@ -261,6 +269,66 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                   {showPeaks ? 'Visible' : 'Hidden'}
                 </span>
               </button>
+            </div>
+
+            {/* GEOGRAPHIC REFERENCE (COUNTRY BOUNDARIES & MAJOR CITIES) */}
+            <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">
+              <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
+                Geographic Reference
+              </div>
+              <div className="space-y-1">
+                {/* Country Outlines Toggle */}
+                <button
+                  type="button"
+                  onClick={onToggleCountryOutlines}
+                  className={`w-full flex items-center justify-between p-2 rounded-md border text-xs transition-all cursor-pointer ${
+                    showCountryOutlines
+                      ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
+                      : 'bg-[#F7F4ED] text-[#736E67] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
+                  }`}
+                  title="Toggle international political boundaries and country names"
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-3.5 h-3.5 text-[#2C4C64]" />
+                    <span>Country Outlines</span>
+                  </div>
+                  <span
+                    className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
+                      showCountryOutlines
+                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299]'
+                        : 'bg-[#F2EFE8] text-[#8A847C] border-[#D6D0C2]'
+                    }`}
+                  >
+                    {showCountryOutlines ? 'Active' : 'Off'}
+                  </span>
+                </button>
+
+                {/* Major Cities Toggle */}
+                <button
+                  type="button"
+                  onClick={onToggleMajorCities}
+                  className={`w-full flex items-center justify-between p-2 rounded-md border text-xs transition-all cursor-pointer ${
+                    showMajorCities
+                      ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
+                      : 'bg-[#F7F4ED] text-[#736E67] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
+                  }`}
+                  title="Toggle major world cities, regional capitals, and ski gateway hubs"
+                >
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-3.5 h-3.5 text-[#B84A39]" />
+                    <span>Major Cities</span>
+                  </div>
+                  <span
+                    className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
+                      showMajorCities
+                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299]'
+                        : 'bg-[#F2EFE8] text-[#8A847C] border-[#D6D0C2]'
+                    }`}
+                  >
+                    {showMajorCities ? 'Active' : 'Off'}
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* TERRAIN ANALYSIS OVERLAYS (SLOPE & ASPECT) */}
