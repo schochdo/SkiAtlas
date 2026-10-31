@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `fix: snap Mount Olympus and Greek/global peaks to surveyed geodetic benchmarks and eliminate duplicate collisions`
+- **What was wrong before**:
+  - In Greece, Mount Olympus (`peak-831` and `peak-832`) was duplicated and positioned at `[22.349722, 40.088333]`, over 800 meters west-northwest off the summit pyramid down into an empty western ravine.
+  - Several other prominent Greek summits suffered from coarse degree/arcminute coordinate truncations (e.g. Mount Parnassus/Liakoura off by 800m, Falakro off by 2.5 km, Erymanthos/Olenos off by over 8 km, Pieria Ori off by 5.8 km, Koziakas off by 4.2 km).
+  - Greece's second highest peak (Mount Smolikas, 2,637m), third highest (Mount Voras/Kaimaktsalan, 2,524m, home to Kaimaktsalan ski center), Mount Giona (2,510m), Mount Tymfi (2,497m), Mount Taygetus (2,404m), and resort summits (Kyllini/Ziria, Helmos/Kalavryta, Vasilitsa, Mainalo, Pelion) were missing from the major peaks dataset.
+  - 10 global duplicate coordinate collision groups existed across the dataset where two or three distinct summits shared identical rounded coordinates (e.g. `Hochwand` & `Partenkirchener Dreitorspitze` in the Alps, `Kedarnath` & `Kedarnath Dome` in the Himalayas, `Monte Matto` in the Maritime Alps misplaced in Tuscany, `North Suicide Peak` & `South Suicide Peak` in Alaska, `Paine Grande` & `Torre Sur` in Patagonia, and triple duplicate `Famatina` / `Cerro Belgrano` entries in Argentina).
+- **Solution**:
+  - Snapped Mount Olympus (Mytikas summit) to surveyed geodetic benchmark coordinate `[22.358553, 40.086239]` (elevation 2,918 m / 9,573 ft), landing squarely on the 3D DEM pinnacle. Removed duplicate `peak-832`.
+  - Re-anchored Greek summits to exact geodetic summit coordinates: Mount Parnassus (Liakoura, 2,457m), Falakro (2,232m), Erymanthos (Olenos, 2,224m), Pieria Ori (Flambouro, 2,190m), Koziakas (1,901m), Karava (2,184m), Psiloreitis (2,456m), Katafidhi (2,393m), Pinovo (2,156m), Kakarditsa (2,429m), Gingilos (2,080m), Loupata (2,066m), Othrys (1,726m), and Paiko (1,650m).
+  - Added Greece's premier ultra-prominent peaks and ski resort massifs: Mount Smolikas (2,637m), Mount Voras/Kaimaktsalan (2,524m), Mount Giona/Pyramida (2,510m), Mount Tymfi/Gamila (2,497m), Mount Taygetus (2,404m), Mount Kyllini/Ziria (2,376m), Mount Helmos/Aroania (2,355m), Mount Vasilitsa (2,249m), Mount Mainalo (1,981m), and Mount Pelion (1,624m).
+  - Resolved all 10 duplicate coordinate collisions globally with high-precision surveyed geodetic benchmark coordinates, eliminating 100% of duplicate coordinate collisions.
+
+---
+
+## 2026-10-30
+
 ### `feat: add toggleable vector country outlines and major cities points/labels`
 - **What was wrong before**:
   - Navigating the globe—especially on pure satellite 3D imagery or in regions with sparse ski resorts (e.g. South America, Central Europe, Scandinavia, Central Asia, New Zealand)—was disorienting because there were no political boundaries, country names, or major cities and ski gateway hubs to serve as geographical reference anchors.
