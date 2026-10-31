@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `feat: configure GitHub Pages CI/CD workflow and static trail data fallbacks`
+- **What changed**:
+  - Added `.github/workflows/deploy.yml` for automated GitHub Pages build and deployment on pushes to `main`.
+  - Configured `base` in `vite.config.ts` to support GitHub Pages subpath (`/SkiAtlas/`) when built in GitHub Actions, while defaulting to root `/` in local development.
+  - Implemented `getStaticDataUrl` helper in `src/App.tsx` and updated static assets (`major_peaks.geojson`, `global_ski_areas.json`, and resort trail JSONs) to resolve against `import.meta.env.BASE_URL`.
+  - Added static pre-baked trail fallback in `fetchOverpassBbox` and eager static trail loading in `handleSelectResort` so trails load instantly on static hosts where `/api/trails` is not available.
+  - Fixed namespace import in `src/utils/trailAnalysis.ts` (`import * as maplibregl from 'maplibre-gl'`) to ensure clean `tsc --noEmit` validation.
+
+---
+
 ### `chore: add start script to package.json`
 - Added `"start": "vite --port=3000 --host=0.0.0.0"` script alias to `package.json` for running the dev server with standard `npm start`.
 

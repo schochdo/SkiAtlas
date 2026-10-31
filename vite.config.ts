@@ -6,6 +6,7 @@ import { localTrailsPlugin } from './src/server/trailsPlugin.ts';
 
 export default defineConfig(() => {
   return {
+    base: process.env.BASE_URL || (process.env.GITHUB_ACTIONS ? '/SkiAtlas/' : '/'),
     plugins: [react(), tailwindcss(), localTrailsPlugin()],
     resolve: {
       alias: {

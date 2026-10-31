@@ -111,6 +111,13 @@ export {
    APP COMPONENT
    ========================================================================= */
 
+export const getStaticDataUrl = (relPath: string): string => {
+  const base = import.meta.env.BASE_URL || '/';
+  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+  const cleanPath = relPath.startsWith('/') ? relPath.slice(1) : relPath;
+  return `${cleanBase}${cleanPath}`;
+};
+
 export default function App() {
   const [resorts, setResorts] = useState<SkiResort[]>(() => [
     ...GLOBAL_SKI_ATLAS.map((r) => ({
@@ -460,8 +467,67 @@ export default function App() {
   }, [displayedResorts, resorts, selectedResortId]);
 
   /* =========================================================================
-     LOCALHOST TRAILS STREAMING ENGINE
+     TRAILS STREAMING & STATIC PRE-BAKED ENGINE
      ========================================================================= */
+
+  const ingestTrailFeatures = useCallback((features: any[]) => {
+    if (!features || !features.length || !mapRef.current) return;
+
+    for (const f of features) {
+      const p = f.properties;
+      if (p?.kind === 'lift') {
+        if (p.status && p.status !== 'operating') continue;
+        const n = (p.name || '').toLowerCase();
+        if (n.includes('proposed') || n.includes('planned') || n.includes('abandoned') || n.includes('disused') || n.includes('in project')) {
+          continue;
+        }
+      } else if (p?.kind === 'piste') {
+        const ptype = p['piste:type'];
+        const uses = Array.isArray(p.uses) ? p.uses : [];
+        if (
+          (ptype && ['skitour', 'backcountry', 'fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) ||
+          uses.includes('skitour') ||
+          uses.includes('backcountry')
+        ) {
+          continue;
+        }
+      }
+      if (!f.id && p?.id) {
+        f.id = p.id;
+      }
+      liveFeaturesMapRef.current.set(String(f.id || p?.id), f);
+    }
+
+    if (liveFeaturesMapRef.current.size > 4500) {
+      const keys = Array.from(liveFeaturesMapRef.current.keys());
+      const toDelete = keys.slice(0, keys.length - 3500);
+      toDelete.forEach((k) => liveFeaturesMapRef.current.delete(k));
+    }
+
+    const src = mapRef.current.getSource('live-pistes-vector') as GeoJSONSource;
+    if (src) {
+      src.setData({
+        type: 'FeatureCollection',
+        features: Array.from(liveFeaturesMapRef.current.values()),
+      });
+    }
+  }, []);
+
+  const loadedResortTrailsRef = useRef<Set<string>>(new Set());
+
+  const fetchResortStaticTrails = useCallback(async (resortId: string) => {
+    if (loadedResortTrailsRef.current.has(resortId)) return;
+    try {
+      const res = await fetch(getStaticDataUrl(`data/trails/${resortId}.json`));
+      if (res.ok) {
+        const data = await res.json();
+        if (data.features && data.features.length) {
+          ingestTrailFeatures(data.features);
+          loadedResortTrailsRef.current.add(resortId);
+        }
+      }
+    } catch (_) {}
+  }, [ingestTrailFeatures]);
 
   const fetchOverpassBbox = useCallback(async (south: number, west: number, north: number, east: number) => {
     if (north - south > 0.35 || east - west > 0.45) return;
@@ -475,57 +541,31 @@ export default function App() {
     activeOverpassAbortRef.current = controller;
     lastFetchedBboxKeyRef.current = bboxKey;
 
+    let apiSuccess = false;
     try {
       const res = await fetch(`/api/trails?bbox=${west},${south},${east},${north}`, {
         signal: controller.signal,
       });
-      if (!res.ok) return;
-      const data = await res.json();
-      if (!data.features || !data.features.length || !mapRef.current) return;
-
-      for (const f of data.features) {
-        const p = f.properties;
-        if (p?.kind === 'lift') {
-          if (p.status && p.status !== 'operating') continue;
-          const n = (p.name || '').toLowerCase();
-          if (n.includes('proposed') || n.includes('planned') || n.includes('abandoned') || n.includes('disused') || n.includes('in project')) {
-            continue;
-          }
-        } else if (p?.kind === 'piste') {
-          const ptype = p['piste:type'];
-          const uses = Array.isArray(p.uses) ? p.uses : [];
-          if (
-            (ptype && ['skitour', 'backcountry', 'fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) ||
-            uses.includes('skitour') ||
-            uses.includes('backcountry')
-          ) {
-            continue;
-          }
+      if (res.ok) {
+        const data = await res.json();
+        if (data.features && data.features.length) {
+          ingestTrailFeatures(data.features);
+          apiSuccess = true;
         }
-        if (!f.id && p?.id) {
-          f.id = p.id;
-        }
-        liveFeaturesMapRef.current.set(String(f.id || p?.id), f);
-      }
-
-      if (liveFeaturesMapRef.current.size > 4500) {
-        const keys = Array.from(liveFeaturesMapRef.current.keys());
-        const toDelete = keys.slice(0, keys.length - 3500);
-        toDelete.forEach((k) => liveFeaturesMapRef.current.delete(k));
-      }
-
-      const src = mapRef.current.getSource('live-pistes-vector') as GeoJSONSource;
-      if (src) {
-        src.setData({
-          type: 'FeatureCollection',
-          features: Array.from(liveFeaturesMapRef.current.values()),
-        });
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return;
-      console.warn('Local bbox query fallback:', err);
     }
-  }, []);
+
+    // Static fallback: find any curated resorts in this bounding box area (±0.04° margin)
+    if (!apiSuccess) {
+      for (const r of GLOBAL_SKI_ATLAS) {
+        if (r.lat >= south - 0.04 && r.lat <= north + 0.04 && r.lng >= west - 0.04 && r.lng <= east + 0.04) {
+          fetchResortStaticTrails(r.id);
+        }
+      }
+    }
+  }, [fetchResortStaticTrails, ingestTrailFeatures]);
 
   const fetchOverpassBboxRef = useRef(fetchOverpassBbox);
   useEffect(() => {
@@ -1557,7 +1597,7 @@ export default function App() {
       map.addSource('major-peaks-source', {
         type: 'geojson',
         promoteId: 'id',
-        data: '/data/major_peaks.geojson',
+        data: getStaticDataUrl('data/major_peaks.geojson'),
       });
 
       map.addLayer({
@@ -2568,7 +2608,7 @@ export default function App() {
         // Load local curated JSON first, fallback to CDN
         let data: any = null;
         try {
-          const localRes = await fetch('/data/global_ski_areas.json');
+          const localRes = await fetch(getStaticDataUrl('data/global_ski_areas.json'));
           if (localRes.ok) data = await localRes.json();
         } catch (_) {}
 
@@ -3023,6 +3063,7 @@ export default function App() {
     setMapBearing(bearing);
 
     // Stream trails for this mountain with tight resort bounding box
+    fetchResortStaticTrails(resort.id);
     if (fetchOverpassBboxRef.current) {
       fetchOverpassBboxRef.current(
         resort.lat - 0.05,
@@ -3087,6 +3128,9 @@ export default function App() {
     setMapPitch(pitch);
     setMapBearing(bearing);
 
+    if (p.id) {
+      fetchResortStaticTrails(p.id);
+    }
     if (fetchOverpassBboxRef.current) {
       fetchOverpassBboxRef.current(
         coords[1] - 0.05,

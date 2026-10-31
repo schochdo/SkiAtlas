@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { TrailInspectionData } from '../types';
 
 function haversineMeters(p1: [number, number], p2: [number, number]): number {
