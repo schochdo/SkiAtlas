@@ -6,6 +6,25 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `fix: keep cartographic hamburger visible, overlay menu table directly on top, and streamline dismiss interaction`
+- **What was wrong before**:
+  - The hamburger icon on desktop was hidden by default (`opacity-0`) and only revealed when hovering over its hit target, which felt broken and unpredictable.
+  - When opened, the cartographic controls menu panel dropped down below the hamburger button (`top-10`), pushing it far down the screen away from the top nav bar.
+  - The open state displayed two redundant 'X' close buttons simultaneously (one replacing the hamburger icon and another in the panel's header), creating visual clutter.
+  - Interaction states were not aligned with expected desktop and tablet patterns.
+- **Solution**:
+  - Made the hamburger button permanently visible on all devices (`opacity-100`, `#FAF8F3` container with `#D6D0C2` border and `#5C5852` Menu icon).
+  - Repositioned the menu panel to open directly over top of the hamburger button (`top-0 right-0`), raising it to `top-14` (a clean 12px margin beneath the `h-11` top navigation bar).
+  - Eliminated the redundant double 'X': the underlying hamburger button keeps its menu icon, and the overlaid panel provides a single, prominent 'X' close button at top-right.
+  - Streamlined hover and sticky behaviors:
+    - Hovering over the hamburger opens the panel; mousing out closes it after a 200ms grace period.
+    - Clicking the hamburger button or clicking anywhere inside the panel immediately locks it into sticky mode.
+    - When sticky, the panel remains open until closed via the header 'X' button, tapping/clicking outside the panel, or pressing `Escape`.
+
+---
+
+## 2026-10-30
+
 ### `fix: snap Mount Olympus and Greek/global peaks to surveyed geodetic benchmarks and eliminate duplicate collisions`
 - **What was wrong before**:
   - In Greece, Mount Olympus (`peak-831` and `peak-832`) was duplicated and positioned at `[22.349722, 40.088333]`, over 800 meters west-northwest off the summit pyramid down into an empty western ravine.

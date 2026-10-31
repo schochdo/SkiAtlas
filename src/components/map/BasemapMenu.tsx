@@ -143,10 +143,7 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
 
     if (!isSticky) {
       leaveTimeoutRef.current = setTimeout(() => {
-        setIsHovered(false);
-        if (mapMenuOpen) {
-          onCloseMenu();
-        }
+        handleClose();
       }, 200);
     }
   };
@@ -156,33 +153,29 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
       ref={basemapMenuRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="absolute top-14 right-3 md:right-4 z-20 flex items-center select-none"
+      className={`absolute top-14 right-3 md:right-4 ${
+        mapMenuOpen ? 'z-35' : 'z-20'
+      } flex items-center select-none`}
     >
-      <div className="relative group">
+      <div className="relative">
         <button
           onClick={handleButtonClick}
-          className={`w-8 h-8 rounded-md border flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs ${
-            mapMenuOpen
-              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
-              : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
-          } ${
-            isTouchDevice || mapMenuOpen || isHovered
-              ? 'opacity-100'
-              : 'max-md:opacity-100 opacity-0 group-hover:opacity-100 hover:opacity-100 focus:opacity-100'
-          }`}
-          title={mapMenuOpen ? 'Close Cartographic Controls' : 'Basemap Styles & Cartographic Controls'}
-          aria-label={mapMenuOpen ? 'Close Cartographic Controls' : 'Basemap Styles & Cartographic Controls'}
+          className="w-8 h-8 rounded-md border flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]"
+          title="Cartographic Controls"
+          aria-label="Cartographic Controls"
           aria-expanded={mapMenuOpen}
         >
-          {mapMenuOpen ? (
-            <X className="w-4 h-4 text-[#1C1B18]" />
-          ) : (
-            <Menu className="w-4 h-4 text-[#5C5852]" />
-          )}
+          <Menu className="w-4 h-4 text-[#5C5852]" />
         </button>
 
         {mapMenuOpen && (
-          <div className="absolute right-0 top-10 w-80 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150 max-h-[calc(100vh-5.5rem)] overflow-y-auto">
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsSticky(true);
+            }}
+            className="absolute right-0 top-0 w-80 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150 max-h-[calc(100vh-4.5rem)] overflow-y-auto"
+          >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
               <div className="flex items-center gap-1.5">
@@ -192,12 +185,15 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                 </span>
               </div>
               <button
-                onClick={handleClose}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClose();
+                }}
                 className="p-1 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer"
                 title="Close (Esc)"
                 aria-label="Close"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
