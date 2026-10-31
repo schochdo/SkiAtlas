@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `fix: expand trail inspection click buffer to 40px and implement screen-distance ranking`
+- **What was wrong before**:
+  - Clicking or tapping on a ski run or chairlift to open the information card required near pixel-level precision. The query bounding box was set to a narrow 12-pixel radius (`[-12, -12]` to `[+12, +12]`), causing finger taps on iPads/touchscreens and oblique 3D clicks to miss thin vectors and deselect.
+  - Furthermore, chairlifts had no invisible wide hit-target layer, and candidate features returned by MapLibre were chosen based on tile index order rather than actual geometric proximity to the cursor.
+- **Solution**:
+  - Expanded the query bounding box to an adaptive 40px radius on touch/mobile/iPad devices (28px on desktop), providing an 80px by 80px forgiving touch target.
+  - Implemented a screen-space geometric distance solver (`getDistanceToFeaturePx`) that calculates the exact pixel distance from the click point to each candidate feature's line segments using `map.project`, reliably picking the closest trail or lift to the tap.
+  - Added an invisible wide hit-target layer for lifts (`live-pistes-lifts-hit-target`) and increased piste hit-target width up to 52px at high zoom.
+  - Added priority ranking so linear pistes and lifts take precedence over large enclosing freeride polygon areas when tapped near a trail.
+
+---
+
 ### `perf: optimize tile loading, unify source LOD parameters, and deduplicate DEM streams`
 - **What was wrong before**:
   1. Performance and memory degradation were occurring (especially on mobile/iPad devices) because MapLibre was configured with an extreme tile cache (`maxTileCacheSize: 800`, `_maxTileCacheZoomLevels: 60`, `_outOfViewCache: 800`), causing thousands of heavy 512x512 textures to remain locked in WebGL VRAM.

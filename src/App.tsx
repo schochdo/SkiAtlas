@@ -1141,7 +1141,7 @@ export default function App() {
         layout: { visibility: 'none', 'line-cap': 'round' },
         paint: {
           'line-color': 'transparent',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 16, 14, 20, 17, 24],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 28, 14, 40, 17, 52],
           'line-opacity': 0,
         },
       });
@@ -1164,6 +1164,28 @@ export default function App() {
           'line-color': '#B84A39',
           'line-width': 2.5,
           'line-dasharray': [3, 2],
+        },
+      });
+
+      // Wide invisible hit-target layer for lifts / aerialways — makes chairlifts and gondolas easy to tap
+      map.addLayer({
+        id: 'live-pistes-lifts-hit-target',
+        type: 'line',
+        source: 'live-pistes-vector',
+        filter: [
+          'all',
+          ['==', ['get', 'kind'], 'lift'],
+          ['==', ['coalesce', ['get', 'status'], 'operating'], 'operating'],
+          ['!', ['in', 'proposed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'planned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'abandoned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'disused', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+        ],
+        layout: { visibility: 'none', 'line-cap': 'round' },
+        paint: {
+          'line-color': 'transparent',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 28, 14, 40, 17, 52],
+          'line-opacity': 0,
         },
       });
 
@@ -1719,28 +1741,116 @@ export default function App() {
 
         const trailLayers = [
           'live-pistes-hit-target',
+          'live-pistes-lifts-hit-target',
           'live-pistes-lines',
           'live-pistes-casing',
           'live-pistes-lifts',
           'live-pistes-labels',
           'live-pistes-lifts-labels',
           'live-pistes-polygons-fill',
+          'live-pistes-polygons-outline',
+          'live-pistes-polygons-labels',
         ].filter((id) => map.getLayer(id));
 
         if (trailLayers.length > 0) {
+          // Generous touch & click target buffer (40px on touch/mobile/iPad, 28px on desktop)
+          // Eliminates the need for pixel-level precision when inspecting ski runs and chairlifts
+          const isTouch =
+            typeof window !== 'undefined' &&
+            (window.innerWidth < 768 || 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0));
+          const hitRadius = isTouch ? 40 : 28;
           const clickBbox: [maplibregl.PointLike, maplibregl.PointLike] = [
-            [e.point.x - 12, e.point.y - 12],
-            [e.point.x + 12, e.point.y + 12],
+            [e.point.x - hitRadius, e.point.y - hitRadius],
+            [e.point.x + hitRadius, e.point.y + hitRadius],
           ];
           const trailFeats = map.queryRenderedFeatures(clickBbox, { layers: trailLayers });
+
           if (trailFeats && trailFeats.length > 0) {
-            // Prioritize linear downhill pistes or lifts over enclosing polygon areas
-            const bestFeat =
-              trailFeats.find(
-                (f) => f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'
-              ) || trailFeats[0];
-            handleSelectTrailRef.current(bestFeat, [e.lngLat.lng, e.lngLat.lat], e.point);
-            return;
+            // Helper to compute exact screen pixel distance from click/tap point to candidate feature
+            const getDistanceToFeaturePx = (feat: any, clickPt: { x: number; y: number }): number => {
+              const geom = feat.geometry;
+              if (!geom) return Infinity;
+
+              const distToSegmentSq = (p: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }) => {
+                const dx = b.x - a.x;
+                const dy = b.y - a.y;
+                const lenSq = dx * dx + dy * dy;
+                if (lenSq === 0) return (p.x - a.x) ** 2 + (p.y - a.y) ** 2;
+                const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
+                const projX = a.x + t * dx;
+                const projY = a.y + t * dy;
+                return (p.x - projX) ** 2 + (p.y - projY) ** 2;
+              };
+
+              let minSq = Infinity;
+
+              const testLine = (coords: any[]) => {
+                if (!coords || coords.length < 2) return;
+                let prev = map.project([coords[0][0], coords[0][1]]);
+                for (let i = 1; i < coords.length; i++) {
+                  const cur = map.project([coords[i][0], coords[i][1]]);
+                  const dSq = distToSegmentSq(clickPt, prev, cur);
+                  if (dSq < minSq) minSq = dSq;
+                  prev = cur;
+                }
+              };
+
+              if (geom.type === 'LineString') {
+                testLine(geom.coordinates);
+              } else if (geom.type === 'MultiLineString') {
+                for (const line of geom.coordinates || []) {
+                  testLine(line);
+                }
+              } else if (geom.type === 'Polygon') {
+                for (const ring of geom.coordinates || []) {
+                  testLine(ring);
+                }
+              } else if (geom.type === 'MultiPolygon') {
+                for (const poly of geom.coordinates || []) {
+                  for (const ring of poly || []) {
+                    testLine(ring);
+                  }
+                }
+              }
+
+              return Math.sqrt(minSq);
+            };
+
+            // Rank candidate features by proximity to the tap/click point
+            let bestLineFeat: any = null;
+            let bestLineDist = Infinity;
+            let bestPolyFeat: any = null;
+            let bestPolyDist = Infinity;
+
+            for (const f of trailFeats) {
+              const geom = f.geometry;
+              if (!geom) continue;
+              const isLine = geom.type === 'LineString' || geom.type === 'MultiLineString';
+              const dist = getDistanceToFeaturePx(f, e.point);
+
+              if (isLine) {
+                if (dist < bestLineDist) {
+                  bestLineDist = dist;
+                  bestLineFeat = f;
+                }
+              } else {
+                if (dist < bestPolyDist) {
+                  bestPolyDist = dist;
+                  bestPolyFeat = f;
+                }
+              }
+            }
+
+            // Prioritize linear downhill pistes or lifts if within search radius;
+            // fall back to enclosing freeride bowl / polygon if clicked directly in an open bowl
+            const selectedFeat = (bestLineFeat && bestLineDist <= hitRadius + 8)
+              ? bestLineFeat
+              : (bestLineFeat || bestPolyFeat || trailFeats[0]);
+
+            if (selectedFeat) {
+              handleSelectTrailRef.current(selectedFeat, [e.lngLat.lng, e.lngLat.lat], e.point);
+              return;
+            }
           }
         }
 
@@ -1759,17 +1869,21 @@ export default function App() {
         'global-unclustered-point',
         'global-unclustered-label',
         'live-pistes-hit-target',
+        'live-pistes-lifts-hit-target',
         'live-pistes-lines',
         'live-pistes-lifts',
         'live-pistes-labels',
         'live-pistes-lifts-labels',
+        'live-pistes-polygons-labels',
       ].forEach((layerId) => {
-        map.on('mouseenter', layerId, () => {
-          map.getCanvas().style.cursor = 'pointer';
-        });
-        map.on('mouseleave', layerId, () => {
-          map.getCanvas().style.cursor = '';
-        });
+        if (map.getLayer(layerId)) {
+          map.on('mouseenter', layerId, () => {
+            map.getCanvas().style.cursor = 'pointer';
+          });
+          map.on('mouseleave', layerId, () => {
+            map.getCanvas().style.cursor = '';
+          });
+        }
       });
 
       setMapLoaded(true);
@@ -1962,10 +2076,12 @@ export default function App() {
     const liftFilter: any = heliCatExclusion
       ? ['all', ['==', ['get', 'kind'], 'lift'], heliCatExclusion]
       : null;
-    if (map.getLayer('live-pistes-lifts')) {
-      map.setLayoutProperty('live-pistes-lifts', 'visibility', liftVisible ? 'visible' : 'none');
-      if (liftVisible && liftFilter) map.setFilter('live-pistes-lifts', liftFilter);
-    }
+    ['live-pistes-lifts', 'live-pistes-lifts-hit-target'].forEach((id) => {
+      if (map.getLayer(id)) {
+        map.setLayoutProperty(id, 'visibility', liftVisible ? 'visible' : 'none');
+        if (liftVisible && liftFilter) map.setFilter(id, liftFilter);
+      }
+    });
     if (map.getLayer('live-pistes-lifts-labels')) {
       map.setLayoutProperty('live-pistes-lifts-labels', 'visibility', liftVisible ? 'visible' : 'none');
       if (liftVisible && liftFilter) map.setFilter('live-pistes-lifts-labels', liftFilter);
