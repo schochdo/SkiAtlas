@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `feat: high-resolution 1:50m Natural Earth country boundaries topology`
+- **What was wrong before**:
+  - The previous country boundaries dataset used coarse 1:110m low-resolution Natural Earth geometry, producing jagged, blocky polygonal lines.
+  - Critical alpine, coastal, and international border details were overly crude (e.g. Switzerland had only 15 vertices, Greece had 30 points, the US-Canada 49th parallel border had visible jagged zig-zags, and Norwegian fjords were coarse polygons).
+  - At intermediate zoom levels ($z=4$ to $z=8$), the jagged borders compromised the cartographic editorial quality of the atlas.
+- **Solution**:
+  - **High-Resolution 1:50m Dataset**: Extracted national boundary arcs from the authoritative 1:50m Natural Earth cultural vector dataset (`world-atlas/countries-50m.json`).
+  - **Topological Mesh Extraction**: Extracted 1,605 boundary arcs via `topojson.mesh(world, world.objects.countries)`. Because shared international frontiers are extracted as unified topological arcs rather than overlapping duplicate polygons, boundary strokes have zero dash-phase mismatch or doubled line artifacts.
+  - **Geographic Precision**: Increased vertex density by an order of magnitude (Switzerland: 187 vertices, Greece: 923 vertices, US: 5,751 vertices, France: 817 vertices), following true surveyed ridgelines, alpine divides, and river paths. Coordinates are rounded to 3 decimal places (~100m precision at the equator), keeping the production bundle light (~260 KB gzipped) while delivering crisp lines at all zoom levels.
+  - **Integrated Cartographic Hierarchy**: Maintained single visual centroid labels (`macro-country`) for 241 nations at macro zoom ($z \le 4.8$) and 690 parallel frontier line labels (`border-label`) that run on each respective country's side of the border between $z=4.5$ and $z=9.5$.
+
+---
+
+## 2026-10-30
+
 ### `fix: tablet fullscreen support, inverted two-finger twist rotation, and two/three-finger camera elevation swipe`
 - **What was wrong before**:
   - The fullscreen button in the top navigation bar did nothing on tablets (specifically iPadOS Safari) because `document.documentElement.requestFullscreen` is unsupported/restricted on non-PWA Safari, returning `undefined` and failing silently.

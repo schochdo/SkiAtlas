@@ -1541,7 +1541,7 @@ export default function App() {
         id: 'country-boundaries-casing',
         type: 'line',
         source: 'country-boundaries-source',
-        filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
+        filter: ['==', ['get', 'type'], 'country-boundary'],
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'line-cap': 'round',
@@ -1563,7 +1563,7 @@ export default function App() {
         id: 'country-boundaries-line',
         type: 'line',
         source: 'country-boundaries-source',
-        filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
+        filter: ['==', ['get', 'type'], 'country-boundary'],
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'line-cap': 'round',
