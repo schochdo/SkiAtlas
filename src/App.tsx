@@ -716,14 +716,14 @@ export default function App() {
       center: [12, 28], // Global scope flat map (Mercator)
       zoom: 1.8,
       minZoom: 1.2,
-      maxZoom: 16.5, // Prevent over-zooming past DEM resolution into the subterranean surface
+      maxZoom: 20.5, // Allow zooming in close to ground level (down to ~100-150ft elevation)
       pitch: 0,
       bearing: 0,
       maxPitch: 85,
       dragRotate: true,
       boxZoom: false, // Prevents Shift-key from hijacking left-click panning into a box-zoom box
       maxTileCacheSize: initialIsMobile ? 60 : 120, // Lightweight mobile-friendly tile cache (prevents iPad/browser VRAM exhaustion)
-      zoomLevelsToOverscale: 3, // Overscale tiles past source maxzoom to avoid loading extra zoom levels
+      zoomLevelsToOverscale: 6, // Overscale DEM tiles seamlessly past source maxzoom (z15 -> z21) so terrain mesh remains continuous
       centerClampedToGround: false, // Decouple camera altitude from terrain elevation spikes at high altitudes and during pans
     });
 
@@ -868,7 +868,7 @@ export default function App() {
       // 2. Continuous pinch to zoom
       if (typeof e.scale === 'number' && e.scale > 0) {
         const nextZoom = gestureStartZoom + Math.log2(e.scale);
-        const clampedZoom = Math.max(1.2, Math.min(16.5, nextZoom));
+        const clampedZoom = Math.max(1.2, Math.min(20.5, nextZoom));
         map.setZoom(clampedZoom);
       }
     };
@@ -890,7 +890,7 @@ export default function App() {
         e.stopImmediatePropagation();
         const zoomDelta = -e.deltaY * 0.015;
         const curZoom = map.getZoom();
-        const nextZoom = Math.max(1.2, Math.min(16.5, curZoom + zoomDelta));
+        const nextZoom = Math.max(1.2, Math.min(20.5, curZoom + zoomDelta));
         map.setZoom(nextZoom);
         return;
       }
@@ -972,6 +972,20 @@ export default function App() {
     const canvas = map.getCanvas();
     const canvasContainer = map.getCanvasContainer();
 
+    // Dynamic ground clamping based on altitude scale:
+    // When zoomed into mountain terrain (z >= 11.0), lock center to terrain elevation so zooming,
+    // panning, and orbiting operate directly on the mountain surface down to ground level.
+    // At macro/global scale (z < 11.0), unclamp to prevent camera altitude bouncing during cross-country pans.
+    const updateGroundClamping = (currentZoom: number) => {
+      if (isProgrammaticFlightActive) return;
+      const shouldClamp = currentZoom >= 11.0;
+      try {
+        if ((map as any).getCenterClampedToGround?.() !== shouldClamp) {
+          (map as any).setCenterClampedToGround?.(shouldClamp);
+        }
+      } catch (_) {}
+    };
+
     // 1. Intercept mousedown at capture phase on canvasContainer:
     // If a new click begins (left, middle, right), ensure dragRotate is properly calibrated
     // and any orphaned drag is cleared.
@@ -979,6 +993,7 @@ export default function App() {
       if (map.dragRotate && (map.dragRotate.around !== 'center' || map.dragRotate.movement !== 'linear')) {
         map.dragRotate.enable({ around: 'center', movement: 'linear' });
       }
+      updateGroundClamping(map.getZoom());
       resetOrphanedDragHandlers();
     };
 
@@ -1034,10 +1049,14 @@ export default function App() {
       // Do not fight programmatic flights across continents
       if (isProgrammaticFlightActive) return;
       const z = map.getZoom();
-      // Ensure camera does not dip below terrain surface when pitched steeply at high zoom
-      if (z > 16.0 && map.getPitch() > 65) {
-        map.setPitch(65);
-        setMapPitch(65);
+      updateGroundClamping(z);
+      // Ensure camera does not dip below terrain surface when pitched steeply at high zoom close to ground
+      if (z > 16.0) {
+        const maxPitchAtZoom = z <= 17.0 ? 75 : (z <= 19.0 ? 65 : 55);
+        if (map.getPitch() > maxPitchAtZoom) {
+          map.setPitch(maxPitchAtZoom);
+          setMapPitch(maxPitchAtZoom);
+        }
       }
       // Ensure globe always stays centered when in view:
       // When zooming out to globe level, smoothly constrain pitch toward 0° so globe never drops down
@@ -1099,6 +1118,7 @@ export default function App() {
         updateBounds();
         setMapBearing(Math.round(map.getBearing()));
         setMapPitch(Math.round(map.getPitch()));
+        updateGroundClamping(map.getZoom());
         const alt = getCamAltitude();
         if (alt !== null) setCameraAltitudeMeters(alt);
         if (selectedTrailRef.current) {
@@ -1124,10 +1144,14 @@ export default function App() {
         } catch (_) {}
       }
       const z = map.getZoom();
-      // Ensure camera does not dip below terrain surface when pitched steeply at high zoom
-      if (z > 16.0 && map.getPitch() > 65) {
-        map.setPitch(65);
-        setMapPitch(65);
+      updateGroundClamping(z);
+      // Ensure camera does not dip below terrain surface when pitched steeply at high zoom close to ground
+      if (z > 16.0) {
+        const maxPitchAtZoom = z <= 17.0 ? 75 : (z <= 19.0 ? 65 : 55);
+        if (map.getPitch() > maxPitchAtZoom) {
+          map.setPitch(maxPitchAtZoom);
+          setMapPitch(maxPitchAtZoom);
+        }
       }
       if (z >= 10.5 && fetchOverpassBboxRef.current) {
         try {
@@ -2934,7 +2958,7 @@ export default function App() {
       if (zoomDelta !== 0) {
         const curZoom = map.getZoom();
         const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.5;
-        const nextZoom = Math.max(1.0, Math.min(19.0, curZoom + zoomDelta * zoomSpeed * dt));
+        const nextZoom = Math.max(1.0, Math.min(20.5, curZoom + zoomDelta * zoomSpeed * dt));
         map.setZoom(nextZoom);
       }
 

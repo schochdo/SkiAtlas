@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `fix: enable close-to-ground zooming down to snow level and dynamically anchor ground clamping in alpine terrain`
+- **What was wrong before**:
+  - Zooming in was artificially restricted to around 14,000 feet altitude ($z \approx 14–16.5$) because:
+    1. `maxZoom` was globally capped at `16.5` across MapLibre options, trackpad pinch, and mouse wheel handlers, preventing users from descending closer than ~2,500 feet above the center.
+    2. In commit `621a21e`, `centerClampedToGround` was set to `false` permanently (and re-disabled on every flight `onEnd`), leaving the camera target elevation at sea level ($0\text{ m}$). In high-altitude mountain environments like Colorado or the Alps (where summits and bases sit at 8,000–13,000 feet), aiming through the mountain at sea level placed the focus point miles inside the earth. When zooming in past ~14k feet, the camera trajectory collided with the mountain surface and stopped.
+    3. DEM overscaling was limited to 3 zoom levels (`zoomLevelsToOverscale: 3`), which prevented continuous terrain mesh generation at close zooms.
+- **Solution**:
+  - **Dynamic Ground Clamping**: Automatically enabled `setCenterClampedToGround(true)` whenever zoomed into alpine/resort terrain ($z \ge 11.0$, on resort arrival, and on canvas mousedown). Clamping the center directly to the local mountain surface anchors the orbit pivot to the snow, allowing effortless zooming all the way to ground level. At macro/global views ($z < 11.0$), ground clamping is disengaged to maintain bounce-free continental cruising.
+  - **Ground-Level Max Zoom**: Increased `maxZoom` to `20.5` across the map constructor, trackpad gesture controller, wheel handler, and keyboard flight controls. At $z = 20.5$, camera altitude reaches ~100–150 feet above the snow, providing clear views of individual chairlift lines, piste markers, chalets, and glades.
+  - **Continuous DEM Mesh Overscaling**: Expanded `zoomLevelsToOverscale` to `6`, allowing Mapterhorn DEM tiles (source $z=15$) to smoothly overscale all the way to zoom 21 without missing mesh tiles or geometry spikes.
+  - **Progressive Pitch Protection**: Implemented smooth progressive pitch limits at extreme close-up zooms ($z > 16.0$: max $75^\circ$ at $z=17$, $65^\circ$ at $z=19$, $55^\circ$ at $z=20.5$) to prevent the camera eye from clipping beneath steep mountain slopes when right above the terrain.
+
+---
+
+## 2026-10-30
+
 ### `feat: high-resolution 1:50m Natural Earth country boundaries topology`
 - **What was wrong before**:
   - The previous country boundaries dataset used coarse 1:110m low-resolution Natural Earth geometry, producing jagged, blocky polygonal lines.

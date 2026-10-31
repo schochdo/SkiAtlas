@@ -53,9 +53,11 @@ export function safeFlyTo(map: MapLibreMap | null, options: any) {
     const onEnd = () => {
       if (flightId === currentFlightId) {
         isProgrammaticFlightActive = false;
-        // Re-disable center ground clamping at rest to eliminate high-altitude and pan release bounces
+        // Retain ground clamping at alpine/resort zoom (z >= 11.0) so ground navigation and close-up zoom work smoothly.
+        // At macro/global scale (z < 11.0), unclamp to prevent camera altitude bouncing during cross-country pans.
         try {
-          (map as any).setCenterClampedToGround?.(false);
+          const z = map.getZoom();
+          (map as any).setCenterClampedToGround?.(z >= 11.0);
         } catch (_) {}
       }
       map.off('moveend', onEnd);
@@ -65,7 +67,8 @@ export function safeFlyTo(map: MapLibreMap | null, options: any) {
     console.warn('safeFlyTo caught exception:', err);
     isProgrammaticFlightActive = false;
     try {
-      (map as any).setCenterClampedToGround?.(false);
+      const z = map.getZoom();
+      (map as any).setCenterClampedToGround?.(z >= 11.0);
     } catch (_) {}
   }
 }
