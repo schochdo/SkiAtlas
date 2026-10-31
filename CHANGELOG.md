@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `feat: cartographic country labeling — single macro centroid label zoomed out, parallel border labels zoomed in`
+- **What was wrong before**:
+  - The political boundaries dataset applied a symbol layer directly across all polygon / MultiPolygon features, resulting in excessive repeated labels across islands, fragmented territories, and map tile boundaries (e.g. repeated "CANADA", "GREECE", "UNITED STATES OF AMERICA", "NORWAY" on every island/tile).
+  - There were no frontier border labels running along international boundaries, leaving regional zoom levels cluttered with redundant centroid labels rather than clean, border-aligned identifiers.
+- **Solution**:
+  - Structured the cartographic reference layer according to best editorial atlas standards (Swiss/National Geographic):
+    1. **Single Macro Country Label ($z \le 4.8$)**: Derived the primary mainland visual centroid for all 177 sovereign nations (`macro-country` point features) with uppercase tracked typography (`text-letter-spacing: 0.22`), ensuring each nation is labeled exactly once. The macro labels gracefully fade out as the user zooms into regional terrain (`text-opacity: [1.5, 0.9, 4.0, 0.9, 4.8, 0.0]`).
+    2. **Frontier Border Labels ($z \ge 4.5$ to $z=9.5$)**: Stitched shared international land boundaries into continuous frontier line strings and generated parallel offset labels (`border-label` LineString features) placed precisely within each respective country's side of the border.
+    3. **Line-Aligned Typography**: Rendered frontier labels with `symbol-placement: "line"`, `text-keep-upright: true`, subtle slate color `#2C4C64`, warm `#FAF8F3` halo, and `symbol-spacing: 350` to maintain disciplined spacing without text collision. Beyond $z=9.5$, labels fade out completely to keep local ski terrain unobstructed.
+
+---
+
+## 2026-10-30
+
 ### `fix: keep cartographic hamburger visible, overlay menu table directly on top, and streamline dismiss interaction`
 - **What was wrong before**:
   - The hamburger icon on desktop was hidden by default (`opacity-0`) and only revealed when hovering over its hit target, which felt broken and unpredictable.
