@@ -275,7 +275,7 @@ export default function App() {
 
   // Global Points Ref & Features
   const [showGlobalPoints, setShowGlobalPoints] = useState(true);
-  const [categoryCounts, setCategoryCounts] = useState({ downhill: 6955, nordic: 5276, heli_cat: 15 });
+  const [categoryCounts, setCategoryCounts] = useState({ downhill: 6955, nordic: 5276, heli_cat: HELI_CAT_OPERATIONS.length });
   const allGlobalFeaturesRef = useRef<any[]>([]);
   const globalFeaturesRef = useRef<any[]>([]);
 

@@ -66,6 +66,7 @@ export function localTrailsPlugin(): Plugin {
         // Also add curated heli/cat operations from their known coordinates
         // so cat-ski tenure areas are always recognized, even if not in the global dataset
         const heliCatOps: Array<{ id: string; lng: number; lat: number }> = [
+          { id: 'heli-mica',            lng: -118.5714,  lat: 52.0532 },
           { id: 'cat-island-lake',      lng: -115.1472,  lat: 49.5292 },
           { id: 'cat-baldface',         lng: -117.3825,  lat: 49.7592 },
           { id: 'cat-selkirk',          lng: -117.8900,  lat: 51.1700 },
@@ -73,6 +74,7 @@ export function localTrailsPlugin(): Plugin {
           { id: 'cat-bella-coola',      lng: -126.7644,  lat: 52.3722 },
           { id: 'heli-cmh-bugaboos',    lng: -116.7786,  lat: 50.7442 },
           { id: 'heli-mike-wiegele',    lng: -119.2814,  lat: 51.9553 },
+          { id: 'heli-last-frontier',   lng: -129.9833,  lat: 56.8042 },
           { id: 'heli-chugach',         lng: -149.1081,  lat: 60.9702 },
           { id: 'heli-valdez',          lng: -146.3500,  lat: 61.1200 },
           { id: 'cat-steam-powdercats', lng: -106.6789,  lat: 40.5401 },

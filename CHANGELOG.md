@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `feat: add Mica Heliskiing and expand premier global heli/cat skiing dataset to 44 operations`
+- **What was wrong before**:
+  - The curated heli/cat dataset (`HELI_CAT_OPERATIONS`) had only 14 entries and was missing legendary operations, notably Mica Heliskiing (Kinbasket Lake / Monashees) as well as titans like Last Frontier (largest Canadian tenure at 2.5M acres), Eagle Pass, Selkirk Tangiers, Great Canadian, Retallack, Mustang Powder, Alaska Heliskiing Haines, Points North, Tordrillo Mountain Lodge, Ruby Mountain Heli, and Arctic Heliskiing Iceland.
+- **Solution**:
+  - Expanded `HELI_CAT_OPERATIONS` in `src/data/heliCat.ts` from 14 to 44 premier worldwide helicopter and snowcat operations.
+  - Added Mica Heliskiing with accurate cartographic and operational metadata: 300,000 permitted acres on Kinbasket Lake in the Monashee/Cariboo mountains, 8,100 ft vertical drop, 650 in snowfall, and small-group AStar B3e infrastructure.
+  - Added major BC Monashee, Selkirk, and Purcell flagships (CMH Bobbie Burns, CMH Galena, CMH Monashees, Eagle Pass, Selkirk Tangiers, Great Canadian, RK Heliski, Purcell, Snowwater, Stellar, Skeena, Retallack, Mustang Powder, White Grizzly, Monashee Powder, Keefer Lake).
+  - Added premier Alaska, Western US, and international destinations (Haines Alaska Heliskiing, SEABA, Points North Cordova, Tordrillo Mountain Lodge, Majestic, Ruby 360 Lodge, Park City Powder Cats, North Cascades, Arctic & Viking Iceland, Puma Lodge Chile, Harris Mountains NZ).
+  - Dynamically bound initial `categoryCounts.heli_cat` in `src/App.tsx` to `HELI_CAT_OPERATIONS.length`.
+
+---
+
 ### `fix: eliminate high-altitude camera bouncing by disabling center ground-clamping and decoupling level flight`
 - **What was wrong before**:
   1. The map camera violently bounced up and down during high-altitude cruising (e.g. 30,000 feet) and when releasing mouse/trackpad drag pans. In MapLibre GL JS, when `centerClampedToGround` is `true` (the default, and explicitly set to `true` in `App.tsx`), `HandlerManager` executes `putCenterBackOnTerrain()` at the end of every gesture, triggering `recalculateZoomAndCenter(terrain)`. As the screen crosshair passes over peaks (3,500m+) and valleys (500m), the camera altitude was yanked vertically by thousands of feet.
