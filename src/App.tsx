@@ -159,19 +159,95 @@ export default function App() {
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const doc = document as any;
+      const isNative = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+      setIsFullscreen(isNative);
+      setTimeout(() => {
+        if (mapRef.current) mapRef.current.resize();
+      }, 100);
     };
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
+    const doc = document as any;
+    const docEl = document.documentElement as any;
+
+    const isNativeFull = !!(
+      doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.mozFullScreenElement ||
+      doc.msFullscreenElement
+    );
+
+    if (isFullscreen || isNativeFull) {
+      if (isNativeFull) {
+        if (doc.exitFullscreen) {
+          doc.exitFullscreen().catch(() => {});
+        } else if (doc.webkitExitFullscreen) {
+          doc.webkitExitFullscreen();
+        } else if (doc.webkitCancelFullScreen) {
+          doc.webkitCancelFullScreen();
+        } else if (doc.mozCancelFullScreen) {
+          doc.mozCancelFullScreen();
+        } else if (doc.msExitFullscreen) {
+          doc.msExitFullscreen();
+        }
+      }
+      setIsFullscreen(false);
+      setTimeout(() => {
+        if (mapRef.current) mapRef.current.resize();
+      }, 100);
     } else {
-      document.exitFullscreen?.().catch(() => {});
+      const enterNative = () => {
+        if (docEl.requestFullscreen) {
+          return docEl.requestFullscreen();
+        } else if (docEl.webkitRequestFullscreen) {
+          docEl.webkitRequestFullscreen();
+          return Promise.resolve();
+        } else if (docEl.webkitRequestFullScreen) {
+          docEl.webkitRequestFullScreen();
+          return Promise.resolve();
+        } else if (docEl.mozRequestFullScreen) {
+          docEl.mozRequestFullScreen();
+          return Promise.resolve();
+        } else if (docEl.msRequestFullscreen) {
+          docEl.msRequestFullscreen();
+          return Promise.resolve();
+        }
+        return Promise.reject(new Error('Fullscreen API not supported'));
+      };
+
+      enterNative()
+        .then(() => {
+          setIsFullscreen(true);
+        })
+        .catch(() => {
+          // Fallback for tablets / iPadOS Safari where native Element.requestFullscreen is restricted:
+          // Toggle full-viewport edge-to-edge mode
+          setIsFullscreen(true);
+          try { window.scrollTo(0, 1); } catch (_) {}
+        })
+        .finally(() => {
+          setTimeout(() => {
+            if (mapRef.current) mapRef.current.resize();
+          }, 150);
+        });
     }
   };
   const [leftDockOpen, setLeftDockOpen] = useState(true);
@@ -689,6 +765,42 @@ export default function App() {
       map.touchZoomRotate.enable({ around: 'center' });
       map.touchZoomRotate.enableRotation();
       map.touchPitch.enable();
+
+      // Fix 1: Invert two-finger twist rotation to match natural physical object rotation
+      // By default MapLibre rotates the camera clockwise on clockwise twist, which causes the terrain
+      // underneath to rotate counter-clockwise (backwards). Inverting bearingDelta makes the terrain rotate with the fingers.
+      const touchRotate = (map as any).touchZoomRotate?._touchRotate;
+      if (touchRotate && typeof touchRotate._move === 'function') {
+        const origMove = touchRotate._move.bind(touchRotate);
+        touchRotate._move = function (points: any, center: any, event: any) {
+          const res = origMove(points, center, event);
+          if (res && typeof res.bearingDelta === 'number') {
+            res.bearingDelta = -res.bearingDelta;
+          }
+          return res;
+        };
+      }
+
+      // Fix 2: Remove artificial vertical alignment block in MapLibre touchPitch
+      // MapLibre's default _start invalidates touchPitch whenever the two fingers are placed vertically (FP check).
+      // Relaxing this allows two-finger vertical swipe to elevate/pitch reliably in any initial finger orientation.
+      const touchPitch = (map as any).touchPitch;
+      if (touchPitch) {
+        touchPitch._start = function (points: any) {
+          this._lastPoints = points;
+          this._valid = undefined;
+        };
+        touchPitch.gestureBeginsVertically = function (r: any, i: any) {
+          if (Math.abs(r.y) >= 2 && Math.abs(i.y) >= 2) {
+            const sameDirection = (r.y > 0) === (i.y > 0);
+            const verticalDominant = Math.abs(r.y) > Math.abs(r.x) * 0.7 && Math.abs(i.y) > Math.abs(i.x) * 0.7;
+            if (sameDirection && verticalDominant) {
+              return true;
+            }
+          }
+          return false;
+        };
+      }
     } catch (_) {}
 
     // MapLibre GL JS fix: MapLibre's HandlerManager listens to 'mouseup' on document and dispatches 'mouseupWindow'.
@@ -812,6 +924,50 @@ export default function App() {
     container.addEventListener('gesturechange', onGestureChange as any, { passive: false });
     container.addEventListener('gestureend', onGestureEnd as any, { passive: false });
     container.addEventListener('wheel', onWheel, { passive: false, capture: true });
+
+    // 4. Tablet Touch Gestures: Three-finger vertical swipe to elevate/pitch up & down
+    let touch3Active = false;
+    let touch3LastY = 0;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 3) {
+        touch3Active = true;
+        touch3LastY = (e.touches[0].clientY + e.touches[1].clientY + e.touches[2].clientY) / 3;
+      } else {
+        touch3Active = false;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 3 && touch3Active) {
+        const curY = (e.touches[0].clientY + e.touches[1].clientY + e.touches[2].clientY) / 3;
+        const dy = curY - touch3LastY;
+        touch3LastY = curY;
+
+        // Swiping up (dy < 0): increase pitch towards 3D oblique perspective (elevate terrain/tilt down)
+        // Swiping down (dy > 0): decrease pitch towards top-down 2D map (elevate camera up)
+        const pitchDelta = -dy * 0.45;
+        const curPitch = map.getPitch();
+        const nextPitch = Math.max(0, Math.min(85, curPitch + pitchDelta));
+        map.setPitch(nextPitch);
+        setMapPitch(Math.round(nextPitch));
+
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 3 && touch3Active) {
+        touch3Active = false;
+        setMapPitch(Math.round(map.getPitch()));
+      }
+    };
+
+    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchend', onTouchEnd, { passive: true });
+    container.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
     const canvas = map.getCanvas();
     const canvasContainer = map.getCanvasContainer();
@@ -2102,6 +2258,10 @@ export default function App() {
       container.removeEventListener('gesturechange', onGestureChange as any);
       container.removeEventListener('gestureend', onGestureEnd as any);
       container.removeEventListener('wheel', onWheel as any, { capture: true } as any);
+      container.removeEventListener('touchstart', onTouchStart as any);
+      container.removeEventListener('touchmove', onTouchMove as any);
+      container.removeEventListener('touchend', onTouchEnd as any);
+      container.removeEventListener('touchcancel', onTouchEnd as any);
       canvasContainer.removeEventListener('mousedown', onCanvasMouseDown as any, { capture: true } as any);
       window.removeEventListener('mouseup', onGlobalPointerUp, { capture: true } as any);
       window.removeEventListener('pointerup', onGlobalPointerUp, { capture: true } as any);
@@ -3618,7 +3778,11 @@ export default function App() {
      ========================================================================= */
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#F7F4ED] text-[#1C1B18] font-sans select-none">
+    <div
+      className={`relative w-screen h-screen ${
+        isFullscreen ? 'fixed inset-0 z-50 h-[100dvh] w-[100dvw]' : ''
+      } overflow-hidden bg-[#F7F4ED] text-[#1C1B18] font-sans select-none`}
+    >
       {/* 3D MAP CANVAS (ALWAYS 100% INSET-0, NEVER BLANK ON START) */}
       <div
         ref={mapContainerRef}

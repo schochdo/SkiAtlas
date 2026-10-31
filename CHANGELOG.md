@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `fix: tablet fullscreen support, inverted two-finger twist rotation, and two/three-finger camera elevation swipe`
+- **What was wrong before**:
+  - The fullscreen button in the top navigation bar did nothing on tablets (specifically iPadOS Safari) because `document.documentElement.requestFullscreen` is unsupported/restricted on non-PWA Safari, returning `undefined` and failing silently.
+  - Two-finger twist-to-rotate on touchscreens felt backwards: twisting clockwise rotated the camera clockwise, which rotated the terrain *counter-clockwise* under the user's fingers, inverting natural direct-manipulation physics.
+  - Two-finger vertical swipe to elevate/pitch up and down failed to trigger because MapLibre's default `touchPitch` invalidated gestures if the two fingers were placed with any vertical offset (`FP` check). Furthermore, three-finger swipe was completely unhandled.
+- **Solution**:
+  - **Tablet Fullscreen with Fallback**: Implemented vendor-prefixed Fullscreen API handling (`webkitRequestFullscreen`, `webkitRequestFullScreen`, `msRequestFullscreen`) paired with a full-viewport edge-to-edge mode fallback (`fixed inset-0 z-50 h-[100dvh] w-[100dvw]`) and Safari URL bar collapsing (`window.scrollTo(0, 1)`), making the button fully functional on iPadOS and Android tablets.
+  - **Natural Touch Twist Rotation**: Inverted the sign of `bearingDelta` in `touchZoomRotate._touchRotate` so that clockwise finger twisting turns the terrain clockwise directly beneath the user's fingers 1:1.
+  - **Camera Tilt & Elevation Gestures**: Relaxed MapLibre's `touchPitch` orientation constraints to reliably trigger on two-finger vertical swipe, and implemented a dedicated three-finger vertical swipe controller on the map container that elevates camera pitch smoothly between flat 2D top-down ($0^\circ$) and oblique 3D relief ($85^\circ$).
+
+---
+
+## 2026-10-30
+
 ### `feat: cartographic country labeling — single macro centroid label zoomed out, parallel border labels zoomed in`
 - **What was wrong before**:
   - The political boundaries dataset applied a symbol layer directly across all polygon / MultiPolygon features, resulting in excessive repeated labels across islands, fragmented territories, and map tile boundaries (e.g. repeated "CANADA", "GREECE", "UNITED STATES OF AMERICA", "NORWAY" on every island/tile).
