@@ -40,6 +40,7 @@ export const createMapStyle = (
       attribution: 'Esri Topo',
     },
     // 4. Mapterhorn Global DEM (Copernicus GLO-30 + JAXA void-free 3D elevation mesh)
+    // Unified source for both 3D terrain extrusion and 2D hillshade relief shading
     'terrain-dem': {
       type: 'raster-dem',
       tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
@@ -48,15 +49,7 @@ export const createMapStyle = (
       maxzoom: 15,
       attribution: '© Mapterhorn',
     },
-    // 6. Dedicated DEM source for painted hillshade relief
-    'hillshade-dem': {
-      type: 'raster-dem',
-      tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
-      encoding: 'terrarium',
-      tileSize: 512,
-      maxzoom: 15,
-    },
-    // 7. Dynamic Client-Side Slope Angle Overlay (CalTopo Avalanche Grade 0° - 90°)
+    // 5. Dynamic Client-Side Slope Angle Overlay (CalTopo Avalanche Grade 0° - 90°)
     'slope-tiles': {
       type: 'raster',
       tiles: ['slope://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
@@ -112,11 +105,11 @@ export const createMapStyle = (
         'raster-fade-duration': 0,
       },
     },
-    // Alpine Multi-Color Painted Hillshade
+    // Alpine Multi-Color Painted Hillshade (uses unified terrain-dem source)
     {
       id: 'alpine-painted-hillshade',
       type: 'hillshade',
-      source: 'hillshade-dem',
+      source: 'terrain-dem',
       layout: { visibility: basemapMode === 'topo' ? 'visible' : 'none' },
       paint: {
         'hillshade-exaggeration': 0.45,
@@ -127,11 +120,11 @@ export const createMapStyle = (
         'hillshade-accent-color': 'rgba(74, 107, 83, 0.22)',
       },
     },
-    // Subtle hillshade for OSM mode
+    // Subtle hillshade for OSM mode (uses unified terrain-dem source)
     {
       id: 'hillshade-relief',
       type: 'hillshade',
-      source: 'hillshade-dem',
+      source: 'terrain-dem',
       layout: { visibility: basemapMode === 'osm' ? 'visible' : 'none' },
       paint: {
         'hillshade-exaggeration': 0.35,

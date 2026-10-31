@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `perf: optimize tile loading, unify source LOD parameters, and deduplicate DEM streams`
+- **What was wrong before**:
+  1. Performance and memory degradation were occurring (especially on mobile/iPad devices) because MapLibre was configured with an extreme tile cache (`maxTileCacheSize: 800`, `_maxTileCacheZoomLevels: 60`, `_outOfViewCache: 800`), causing thousands of heavy 512x512 textures to remain locked in WebGL VRAM.
+  2. In tilted oblique perspective, previous overrides forced `setSourceTileLodParams(3.5, 6.0, 'satellite-tiles')` and `(4.0, 5.0, 'terrain-dem')`. Setting `tileCountMaxMinRatio: 6.0` prevented distant tiles from decaying, downloading massive numbers of high-resolution tiles on the distant horizon where they are visually imperceptible.
+  3. Because satellite and terrain DEM used differing LOD decay formulas, their tile zoom levels decayed at different rates towards the horizon, causing visual tile mismatches and seams between the draped surface and the 3D elevation mesh.
+  4. In `src/utils/mapStyles.ts`, a separate duplicate `hillshade-dem` source was downloading the exact same Mapterhorn DEM tiles as `terrain-dem`, doubling network bandwidth and GPU memory usage.
+- **Solution**:
+  - Unified Level-of-Detail (LOD) parameters across all active sources via `map.setSourceTileLodParams(6.0, 2.5)`: basemap imagery and 3D elevation mesh now decay in perfect synchronization towards the horizon, eliminating tile mismatches.
+  - Distant horizon tiles naturally decay to lighter low-zoom tiles, eliminating wasteful high-quality tile downloads in the distance.
+  - Reduced tile cache to lightweight mobile-optimized levels (`initialIsMobile ? 60 : 120` with standard `_maxTileCacheZoomLevels: 5`), reducing texture memory pressure by ~85% on tablets and mobile devices.
+  - Added `zoomLevelsToOverscale: 3` to overscale native DEM tiles rather than requesting extra zoom levels.
+  - Deduplicated DEM sources: deleted `hillshade-dem` and pointed `alpine-painted-hillshade` and `hillshade-relief` directly to the unified `terrain-dem` source.
+
+---
+
 ### `feat: add Mica Heliskiing and expand premier global heli/cat skiing dataset to 44 operations`
 - **What was wrong before**:
   - The curated heli/cat dataset (`HELI_CAT_OPERATIONS`) had only 14 entries and was missing legendary operations, notably Mica Heliskiing (Kinbasket Lake / Monashees) as well as titans like Last Frontier (largest Canadian tenure at 2.5M acres), Eagle Pass, Selkirk Tangiers, Great Canadian, Retallack, Mustang Powder, Alaska Heliskiing Haines, Points North, Tordrillo Mountain Lodge, Ruby Mountain Heli, and Arctic Heliskiing Iceland.

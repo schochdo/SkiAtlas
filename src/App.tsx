@@ -642,20 +642,22 @@ export default function App() {
       maxPitch: 85,
       dragRotate: true,
       boxZoom: false, // Prevents Shift-key from hijacking left-click panning into a box-zoom box
-      maxTileCacheSize: 800, // Keep 360° of pitched & distant tiles in memory to prevent re-fetching on rotation
+      maxTileCacheSize: initialIsMobile ? 60 : 120, // Lightweight mobile-friendly tile cache (prevents iPad/browser VRAM exhaustion)
+      zoomLevelsToOverscale: 3, // Overscale tiles past source maxzoom to avoid loading extra zoom levels
       centerClampedToGround: false, // Decouple camera altitude from terrain elevation spikes at high altitudes and during pans
     });
 
-    // Calibrate TileManager in-memory retention to keep 360° panorama warm in RAM
+    // Calibrate TileManager in-memory retention for smooth panning without memory exhaustion
     const calibrateTileCaches = () => {
       try {
         const tm = (map as any).style?.tileManagers;
         if (!tm) return;
+        const cacheLimit = initialIsMobile ? 60 : 120;
         for (const id in tm) {
           const manager = tm[id];
-          manager._maxTileCacheSize = 800;
-          manager._maxTileCacheZoomLevels = 60;
-          manager._outOfViewCache?.setMaxSize(800);
+          manager._maxTileCacheSize = cacheLimit;
+          manager._maxTileCacheZoomLevels = 5;
+          manager._outOfViewCache?.setMaxSize(cacheLimit);
         }
       } catch (_) {}
     };
@@ -1011,13 +1013,13 @@ export default function App() {
         console.warn('SetTerrain error:', e);
       }
 
-      // Calibrate Level-of-Detail (LOD) for oblique 3D viewing
-      // MapLibre's default maxZoomLevelsOnScreen (9.314) and tileCountMaxMinRatio (3) aggressively demote
-      // middle-distance tiles to coarse zoom levels when tilted. Calibrate satellite and DEM sources
-      // so tilted mountain slopes retain crisp high-resolution zoom levels looking across the terrain.
+      // Calibrate unified Level-of-Detail (LOD) across all active raster sources
+      // Applying identical LOD parameters ensures the draped basemap imagery and the 3D elevation mesh
+      // decay towards the horizon at the exact same rate, eliminating tile-level mismatches.
+      // A balanced horizon decay (6.0 maxZoomLevels, 2.5 maxMinRatio) prevents requesting heavy high-zoom
+      // tiles in the far distance while keeping immediate mountain terrain crisp and performant.
       try {
-        map.setSourceTileLodParams(3.5, 6.0, 'satellite-tiles');
-        map.setSourceTileLodParams(4.0, 5.0, 'terrain-dem');
+        map.setSourceTileLodParams(6.0, 2.5);
       } catch (e) {
         console.warn('setSourceTileLodParams error:', e);
       }
@@ -2223,9 +2225,6 @@ export default function App() {
     // Satellite
     if (map.getLayer('basemap-satellite')) {
       map.setLayoutProperty('basemap-satellite', 'visibility', basemapMode === 'satellite' ? 'visible' : 'none');
-      if (basemapMode === 'satellite') {
-        try { map.setSourceTileLodParams(3.5, 6.0, 'satellite-tiles'); } catch (_) {}
-      }
     }
     // OpenStreetMap
     if (map.getLayer('basemap-osm')) {
