@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `fix: eliminate high-altitude camera bouncing by disabling center ground-clamping and decoupling level flight`
+- **What was wrong before**:
+  1. The map camera violently bounced up and down during high-altitude cruising (e.g. 30,000 feet) and when releasing mouse/trackpad drag pans. In MapLibre GL JS, when `centerClampedToGround` is `true` (the default, and explicitly set to `true` in `App.tsx`), `HandlerManager` executes `putCenterBackOnTerrain()` at the end of every gesture, triggering `recalculateZoomAndCenter(terrain)`. As the screen crosshair passes over peaks (3,500m+) and valleys (500m), the camera altitude was yanked vertically by thousands of feet.
+  2. Additionally, incoming DEM tile completions fired `applyTerrainChange()`, which popped `tr.setElevation()`.
+  3. In keyboard flight mode (`flightStep`), `map.jumpTo` was continuously passed `elevation: flightElevation` on every frame even during level horizontal flight, and `flightElevation` was not reset to `null` on key release or mouse interaction, retaining stale ground elevations and causing camera jitter.
+- **Solution**:
+  - Initialized `centerClampedToGround: false` in `new maplibregl.Map(...)` and in initialization logic, disabling `putCenterBackOnTerrain()` gesture recalculations and DEM tile elevation popping.
+  - In `safeFlyTo` (`src/utils/camera.ts`), temporarily set `setCenterClampedToGround(true)` during programmatic flight animations so the camera lands accurately on the resort's mountain terrain elevation, then gracefully re-disables clamping on `moveend` with race-condition protection via monotonic `flightId`.
+  - In `flightStep`, decoupled level cruising from elevation overrides: `map.jumpTo({ center: [nextLng, nextLat] })` is called without `elevation` when cruising, allowing perfectly flat cruising at 30,000 feet over ridges. `elevation` is only supplied when manual vertical thrust (Q/E) is active or ground clearance protection actively climbs over peaks.
+  - Cleanly reset `flightElevation = null` on flight stop and mouse interaction.
+
+---
+
 ### `fix: restore freeride terrain areas and re-export complete trail datasets for all 75 resorts`
 - **What was wrong before**:
   1. Freeride areas, bowls, chutes, and glades at destinations like Crested Butte (e.g. *Spellbound Bowl*, *Phoenix Bowl*, *Headwall*, *Rambo Glades*, *The Peak*) disappeared. In `trailsPlugin.ts`, the backcountry proximity filter checked `typeof coords[0][0] === 'number'`, which only worked for LineStrings. For Polygons (`coords[0][0]` is `[lng, lat]`), it evaluated to `false`, returning `samplePt = null` and dropping all backcountry-groomed polygons.

@@ -643,6 +643,7 @@ export default function App() {
       dragRotate: true,
       boxZoom: false, // Prevents Shift-key from hijacking left-click panning into a box-zoom box
       maxTileCacheSize: 800, // Keep 360° of pitched & distant tiles in memory to prevent re-fetching on rotation
+      centerClampedToGround: false, // Decouple camera altitude from terrain elevation spikes at high altitudes and during pans
     });
 
     // Calibrate TileManager in-memory retention to keep 360° panorama warm in RAM
@@ -671,9 +672,9 @@ export default function App() {
     mapRef.current = map;
     (window as any).__skiAtlasMap = map;
 
-    // Enable native linear drag-to-rotate around center with ground-clamped terrain elevation
+    // Enable native linear drag-to-rotate around center without center ground clamping
     try {
-      (map as any).setCenterClampedToGround?.(true);
+      (map as any).setCenterClampedToGround?.(false);
       map.dragRotate.enable({ around: 'center', movement: 'linear' });
     } catch (_) {}
 
@@ -2335,6 +2336,7 @@ export default function App() {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
       }
+      flightElevation = null;
       lastTimestamp = null;
     };
 
@@ -2493,6 +2495,7 @@ export default function App() {
         const nextCamLng = camLngLat.lng + deltaLng;
         const groundUnderCam = map.queryTerrainElevation([nextCamLng, nextCamLat]);
 
+        let didClimb = false;
         if (groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam) &&
             camAlt !== null && camAlt !== undefined && isFinite(camAlt)) {
           const MIN_CLEARANCE = 15.0; // meters minimum ground clearance buffer
@@ -2503,17 +2506,28 @@ export default function App() {
             const climbFactor = 1 - Math.exp(-dt * 6.0);
             const maxClimbSpeed = Math.max(speedMps * 1.5, 450); // m/s
             const climbDelta = Math.min(climbDiff, Math.max(climbDiff * climbFactor, maxClimbSpeed * dt));
-            flightElevation += climbDelta;
+            if (flightElevation !== null) {
+              flightElevation += climbDelta;
+              didClimb = true;
+            }
           }
         }
 
-        map.jumpTo({
-          center: [nextLng, nextLat],
-          elevation: flightElevation,
-        });
+        // When cruising horizontally without altitude modifications, omit elevation so MapLibre
+        // doesn't force terrain raycast recalculations or vertical camera jumps.
+        if (didClimb || altitudeDelta !== 0) {
+          map.jumpTo({
+            center: [nextLng, nextLat],
+            elevation: flightElevation ?? undefined,
+          });
+        } else {
+          map.jumpTo({
+            center: [nextLng, nextLat],
+          });
+        }
       } else if (altitudeDelta !== 0) {
         map.jumpTo({
-          elevation: flightElevation,
+          elevation: flightElevation ?? undefined,
         });
       }
 
@@ -2572,11 +2586,9 @@ export default function App() {
       if (animationFrameId !== null || activeKeys.size > 0) {
         stopFlight(true);
       }
+      flightElevation = null;
       try {
-        const curElev = mapRef.current?.getCenterElevation();
-        if (curElev !== null && curElev !== undefined && isFinite(curElev)) {
-          flightElevation = curElev;
-        }
+        (mapRef.current as any)?.setCenterClampedToGround?.(false);
       } catch (_) {}
     };
     canvasContainer.addEventListener('mousedown', onCanvasMouseInteraction, { capture: true });

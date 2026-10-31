@@ -6,6 +6,7 @@ import type { Map as MapLibreMap } from 'maplibre-gl';
    ========================================================================= */
 
 export let isProgrammaticFlightActive = false;
+let flightId = 0;
 
 export function setIsProgrammaticFlightActive(v: boolean) {
   isProgrammaticFlightActive = v;
@@ -42,16 +43,30 @@ export function safeFlyTo(map: MapLibreMap | null, options: any) {
     options.center = [lng, lat];
   }
   try {
+    const currentFlightId = ++flightId;
     isProgrammaticFlightActive = true;
+    // Enable center ground clamping during programmatic flight so MapLibre eases smoothly onto the target terrain
+    try {
+      (map as any).setCenterClampedToGround?.(true);
+    } catch (_) {}
     map.flyTo(options);
     const onEnd = () => {
-      isProgrammaticFlightActive = false;
+      if (flightId === currentFlightId) {
+        isProgrammaticFlightActive = false;
+        // Re-disable center ground clamping at rest to eliminate high-altitude and pan release bounces
+        try {
+          (map as any).setCenterClampedToGround?.(false);
+        } catch (_) {}
+      }
       map.off('moveend', onEnd);
     };
     map.once('moveend', onEnd);
   } catch (err) {
     console.warn('safeFlyTo caught exception:', err);
     isProgrammaticFlightActive = false;
+    try {
+      (map as any).setCenterClampedToGround?.(false);
+    } catch (_) {}
   }
 }
 
