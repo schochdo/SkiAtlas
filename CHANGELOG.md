@@ -6,6 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `fix: use Node 22 for CI/CD and gracefully import node:sqlite in trails plugin`
+- **Problem**: GitHub Actions build failed on Node 20 because `node:sqlite` was only introduced in Node 22.5+.
+- **Solution**: Upgraded `.github/workflows/deploy.yml` runner to Node 22 and converted `node:sqlite` in `trailsPlugin.ts` to dynamic safe import.
+
+---
+
 ### `feat: configure GitHub Pages CI/CD workflow and static trail data fallbacks`
 - **What changed**:
   - Added `.github/workflows/deploy.yml` for automated GitHub Pages build and deployment on pushes to `main`.

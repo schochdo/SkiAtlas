@@ -1,24 +1,29 @@
 import type { Plugin } from 'vite';
 import path from 'path';
 import fs from 'fs';
-import { DatabaseSync } from 'node:sqlite';
+
+let DatabaseSyncClass: any = null;
+try {
+  const sqliteMod = await import('node:sqlite');
+  DatabaseSyncClass = sqliteMod.DatabaseSync;
+} catch (_) {}
 
 export function localTrailsPlugin(): Plugin {
-  let db: DatabaseSync | null = null;
+  let db: any = null;
   let dbMtime = 0;
   const dbPath = path.resolve(process.cwd(), 'data_pipeline/trails.db');
   // Map of resort id -> [lng, lat, category]
   let areaCoordsMap: Map<string, [number, number, string]> | null = null;
 
   function getDb() {
-    if (fs.existsSync(dbPath)) {
+    if (fs.existsSync(dbPath) && DatabaseSyncClass) {
       try {
         const stat = fs.statSync(dbPath);
         if (!db || stat.mtimeMs !== dbMtime) {
           if (db) {
             try { db.close(); } catch (_) {}
           }
-          db = new DatabaseSync(dbPath, { readOnly: true });
+          db = new DatabaseSyncClass(dbPath, { readOnly: true });
           db.exec('PRAGMA cache_size = 20000;');
           dbMtime = stat.mtimeMs;
         }
