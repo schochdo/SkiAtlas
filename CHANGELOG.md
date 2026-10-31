@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `feat: replace basemap text button with hover-responsive sticky hamburger menu`
+- **What was wrong before**:
+  - The basemap button was a large pill button displaying `[ Layers icon Basemap ]` permanently fixed right below the top navbar's `[ Display & Filters ]` button, creating visual clutter and an unappealing double-button stack in the top-right corner.
+  - It had no hover-reveal behavior and lacked a sticky toggle mode with clean dismiss options for touch devices like iPads and phones.
+- **Solution**:
+  - Replaced the large text button with a text-free, compact 32x32px square hamburger icon button (`Menu` from `lucide-react`, switching to `X` when open).
+  - Implemented desktop hover responsiveness: on mouse devices, the hamburger icon appears on hover (`opacity-100`) and fades away on mouseout (`opacity-0`) when idle. Hovering for 120ms smoothly opens the cartographic controls menu, and mousing out with a 200ms grace window closes it automatically.
+  - Implemented sticky mode: clicking or tapping the button locks the menu open (sticky). It remains open regardless of cursor movement until dismissed.
+  - Multi-method dismissal: when sticky or open, the menu can be closed by tapping the `X` button on the trigger, tapping the `X` button in the header, clicking/tapping anywhere outside the window (`pointerdown` and `mousedown`), or pressing `Escape`.
+  - Tablet/phone touch accessibility: on touchscreens and tablets (`@media (hover: none)` / coarse pointers / iPad), the hamburger button remains permanently visible (`opacity-100`) so mobile and iPad users can easily tap it to open the sticky menu.
+
+---
+
 ### `fix: unpin overview minimap to dynamically track live camera position and viewport extent`
 - **What was wrong before**:
   - Clicking or selecting any ski resort pinned the overview minimap (`RegionalLocator`) to that resort's coordinates (`targetLng = resort ? resort.lng : center[0]`).

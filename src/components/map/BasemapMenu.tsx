@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Layers, X, Mountain } from 'lucide-react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Menu, X, Layers, Mountain } from 'lucide-react';
 import type { BasemapMode, TerrainOverlayMode } from '../../types';
 
 interface BasemapMenuProps {
@@ -34,38 +34,143 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
   onChangeTerrainOverlayOpacity,
 }) => {
   const basemapMenuRef = useRef<HTMLDivElement | null>(null);
+  const [isSticky, setIsSticky] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
+  const hoverOpenTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Detect coarse pointer or touch screen (iPad, phone, tablet)
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    if (typeof window !== 'undefined') {
+      const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      setIsTouchDevice(isCoarse || (hasTouch && !window.matchMedia('(pointer: fine)').matches));
+    }
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setIsSticky(false);
+    setIsHovered(false);
+    if (hoverOpenTimeoutRef.current) clearTimeout(hoverOpenTimeoutRef.current);
+    if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
+    onCloseMenu();
+  }, [onCloseMenu]);
+
+  // Click/tap outside and Escape key handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (basemapMenuRef.current && !basemapMenuRef.current.contains(event.target as Node)) {
-        onCloseMenu();
+        handleClose();
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+
     if (mapMenuOpen) {
+      document.addEventListener('pointerdown', handleClickOutside);
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
+      document.removeEventListener('pointerdown', handleClickOutside);
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [mapMenuOpen, onCloseMenu]);
+  }, [mapMenuOpen, handleClose]);
+
+  // If menu is closed externally, reset sticky and hover state
+  useEffect(() => {
+    if (!mapMenuOpen) {
+      setIsSticky(false);
+      setIsHovered(false);
+      if (hoverOpenTimeoutRef.current) clearTimeout(hoverOpenTimeoutRef.current);
+      if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
+    }
+  }, [mapMenuOpen]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverOpenTimeoutRef.current) clearTimeout(hoverOpenTimeoutRef.current);
+      if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
+    };
+  }, []);
+
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hoverOpenTimeoutRef.current) clearTimeout(hoverOpenTimeoutRef.current);
+    if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
+
+    if (mapMenuOpen && isSticky) {
+      handleClose();
+    } else {
+      setIsSticky(true);
+      setIsHovered(true);
+      if (!mapMenuOpen) {
+        onToggleMenu();
+      }
+    }
+  };
+
+  const handleMouseEnter = () => {
+    if (isTouchDevice) return;
+    if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
+    setIsHovered(true);
+
+    if (!mapMenuOpen && !isSticky) {
+      hoverOpenTimeoutRef.current = setTimeout(() => {
+        onToggleMenu();
+      }, 120);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isTouchDevice) return;
+    if (hoverOpenTimeoutRef.current) clearTimeout(hoverOpenTimeoutRef.current);
+
+    if (!isSticky) {
+      leaveTimeoutRef.current = setTimeout(() => {
+        setIsHovered(false);
+        if (mapMenuOpen) {
+          onCloseMenu();
+        }
+      }, 200);
+    }
+  };
 
   return (
     <div
       ref={basemapMenuRef}
-      className="absolute top-14 right-3 md:right-4 z-20 flex items-center gap-2 transition-all duration-300 select-none"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="absolute top-14 right-3 md:right-4 z-20 flex items-center select-none"
     >
-      <div className="relative">
+      <div className="relative group">
         <button
-          onClick={onToggleMenu}
-          className={`flex items-center gap-1.5 px-3 py-1.5 h-8 rounded-md border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
+          onClick={handleButtonClick}
+          className={`w-8 h-8 rounded-md border flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs ${
             mapMenuOpen
-              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-semibold'
+              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
               : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
+          } ${
+            isTouchDevice || mapMenuOpen || isHovered
+              ? 'opacity-100'
+              : 'max-md:opacity-100 opacity-0 group-hover:opacity-100 hover:opacity-100 focus:opacity-100'
           }`}
-          title="Basemap Styles & Earth Projection"
+          title={mapMenuOpen ? 'Close Cartographic Controls' : 'Basemap Styles & Cartographic Controls'}
+          aria-label={mapMenuOpen ? 'Close Cartographic Controls' : 'Basemap Styles & Cartographic Controls'}
+          aria-expanded={mapMenuOpen}
         >
-          <Layers className="w-3.5 h-3.5 text-[#5C5852]" />
-          <span className="text-xs font-semibold">Basemap</span>
+          {mapMenuOpen ? (
+            <X className="w-4 h-4 text-[#1C1B18]" />
+          ) : (
+            <Menu className="w-4 h-4 text-[#5C5852]" />
+          )}
         </button>
 
         {mapMenuOpen && (
@@ -79,9 +184,10 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                 </span>
               </div>
               <button
-                onClick={onCloseMenu}
-                className="p-0.5 text-[#8A847C] hover:text-[#1C1B18] cursor-pointer"
-                title="Close"
+                onClick={handleClose}
+                className="p-1 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer"
+                title="Close (Esc)"
+                aria-label="Close"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
