@@ -21,7 +21,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   locatorOpen,
   onToggleLocator,
   onCloseLocator,
-  selectedResort,
+  selectedResort: _selectedResort,
   mapCenter,
   mapZoom,
   viewportBounds,
@@ -29,32 +29,27 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   onFlyTo,
   onResetToGlobal,
 }) => {
-  const [locatorZoomPreset, setLocatorZoomPreset] = useState<'regional' | 'continental' | 'global'>(() => selectedResort ? 'regional' : 'continental');
+  const [locatorZoomPreset, setLocatorZoomPreset] = useState<'regional' | 'continental' | 'global'>(() =>
+    mapZoom >= 8.5 ? 'regional' : mapZoom < 3.5 ? 'global' : 'continental'
+  );
   const locatorMenuRef = useRef<HTMLDivElement | null>(null);
   const locatorContainerRef = useRef<HTMLDivElement | null>(null);
   const locatorMapRef = useRef<maplibregl.Map | null>(null);
 
-  // Automatically switch zoom preset based on whether a resort is selected or map zoom level
+  // Automatically switch zoom preset based on main map zoom level (unpinned from selected resort)
   useEffect(() => {
-    if (selectedResort) {
-      setLocatorZoomPreset('regional');
-    } else if (mapZoom < 4) {
+    if (mapZoom < 3.5) {
       setLocatorZoomPreset('global');
+    } else if (mapZoom >= 8.5) {
+      setLocatorZoomPreset('regional');
     } else {
       setLocatorZoomPreset(prev => prev === 'global' ? 'continental' : prev);
     }
-  }, [selectedResort, mapZoom < 4]);
+  }, [mapZoom]);
 
-  // Geographic context for Regional Locator
+  // Geographic context for Regional Locator dynamically derived from live camera position
   const activeRegionContext = useMemo(() => {
-    if (selectedResort) {
-      return {
-        region: selectedResort.region || '',
-        country: selectedResort.country || '',
-        name: selectedResort.name,
-      };
-    }
-    // Find closest resort within 600km of mapCenter
+    // Find closest resort to live camera center
     if (resorts && resorts.length > 0) {
       const [lng, lat] = mapCenter;
       let closest: SkiResort | null = null;
@@ -75,7 +70,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         return {
           region: closest.region || '',
           country: closest.country || '',
-          name: `Near ${closest.name}`,
+          name: minDist < 35 ? closest.name : `Near ${closest.name}`,
         };
       }
     }
@@ -84,12 +79,9 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       country: '',
       name: '',
     };
-  }, [selectedResort, mapCenter, resorts]);
+  }, [mapCenter, resorts]);
 
   const triggerLabel = useMemo(() => {
-    if (selectedResort) {
-      return selectedResort.region || selectedResort.country;
-    }
     if (mapZoom >= 4 && activeRegionContext.region) {
       return activeRegionContext.region;
     }
@@ -97,12 +89,9 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       return activeRegionContext.country;
     }
     return 'Overview';
-  }, [selectedResort, activeRegionContext, mapZoom]);
+  }, [activeRegionContext, mapZoom]);
 
   const regionButtonLabel = useMemo(() => {
-    if (selectedResort) {
-      return selectedResort.region || selectedResort.country || 'Region';
-    }
     if (mapZoom >= 4 && activeRegionContext.region) {
       return activeRegionContext.region;
     }
@@ -110,7 +99,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       return activeRegionContext.country;
     }
     return null;
-  }, [selectedResort, mapZoom, activeRegionContext]);
+  }, [mapZoom, activeRegionContext]);
 
   const getViewportGeoJson = useCallback((): any => {
     if (!viewportBounds) return { type: 'FeatureCollection', features: [] };
@@ -143,39 +132,24 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     };
   }, [viewportBounds]);
 
-  const getResortPinGeoJson = useCallback((): any => {
-    if (selectedResort) {
-      return {
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [selectedResort.lng, selectedResort.lat],
-            },
-            properties: { name: selectedResort.name, isSelected: true },
+  // Live camera center indicator GeoJSON
+  const getCameraCenterGeoJson = useCallback((): any => {
+    return {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [mapCenter[0], mapCenter[1]],
           },
-        ],
-      };
-    }
-    if (mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country)) {
-      return {
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [mapCenter[0], mapCenter[1]],
-            },
-            properties: { name: activeRegionContext.region || 'Current Area', isSelected: false },
+          properties: {
+            name: activeRegionContext.name || activeRegionContext.region || 'Camera View',
           },
-        ],
-      };
-    }
-    return { type: 'FeatureCollection', features: [] };
-  }, [selectedResort, mapZoom, activeRegionContext, mapCenter]);
+        },
+      ],
+    };
+  }, [mapCenter, activeRegionContext]);
 
   // Handle outside click and Escape key to close locator menu
   useEffect(() => {
@@ -201,52 +175,44 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     };
   }, [locatorOpen, onCloseLocator]);
 
-  // Helper to determine optimal overview map center
+  // Helper to determine optimal overview map center based on live camera center
   const getOverviewTargetCenter = useCallback((
-    resort: SkiResort | null,
     center: [number, number],
     preset: 'regional' | 'continental' | 'global'
   ): [number, number] => {
-    const targetLng = resort ? resort.lng : center[0];
-    const targetLat = resort ? resort.lat : center[1];
+    const [targetLng, targetLat] = center;
 
     if (preset === 'regional') {
       return [targetLng, targetLat];
     }
 
     if (preset === 'continental') {
-      if (resort || mapZoom >= 4) {
+      if (mapZoom >= 4) {
         const balancedLat = Math.max(-45, Math.min(55, targetLat));
         return [targetLng, balancedLat];
       }
       // When at global scope with nothing selected, continental preset targets primary ski continents
-      const [lng] = center;
-      if (lng >= -170 && lng <= -50) return [-98, 40]; // North America
-      if (lng >= 120 && lng <= 150) return [138, 38]; // Japan
+      if (targetLng >= -170 && targetLng <= -50) return [-98, 40]; // North America
+      if (targetLng >= 120 && targetLng <= 150) return [138, 38]; // Japan
       return [12, 48]; // Europe
     }
 
     // World / global view:
-    // If a resort is selected or user is in a region (mapZoom >= 4), center horizontally on targetLng,
-    // and keep latitude balanced so user's active region is dead center and neither pole is clipped.
-    if (resort || mapZoom >= 4) {
+    // Center horizontally on targetLng, balanced latitude
+    if (mapZoom >= 4) {
       const balancedLat = Math.max(-25, Math.min(48, targetLat));
       return [targetLng, balancedLat];
     }
 
-    // Otherwise at global scope with nothing selected, center on global map center
+    // Otherwise at global scope
     return [12, 28];
   }, [mapZoom]);
 
   // Helper to determine optimal overview map zoom
   const getOverviewTargetZoom = useCallback((
-    resort: SkiResort | null,
     preset: 'regional' | 'continental' | 'global'
   ): number => {
-    if (resort) {
-      return preset === 'regional' ? 5.8 : preset === 'continental' ? 3.2 : 1.1;
-    }
-    return preset === 'regional' ? 5.2 : preset === 'continental' ? 3.0 : 1.1;
+    return preset === 'regional' ? 5.5 : preset === 'continental' ? 3.0 : 1.1;
   }, []);
 
   // Initialize and manage secondary 2D MapLibre instance for Regional Locator
@@ -261,8 +227,8 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
 
     if (!locatorContainerRef.current) return;
 
-    const initialCenter = getOverviewTargetCenter(selectedResort, mapCenter, locatorZoomPreset);
-    const initialZoom = getOverviewTargetZoom(selectedResort, locatorZoomPreset);
+    const initialCenter = getOverviewTargetCenter(mapCenter, locatorZoomPreset);
+    const initialZoom = getOverviewTargetZoom(locatorZoomPreset);
 
     const lmap = new maplibregl.Map({
       container: locatorContainerRef.current,
@@ -321,55 +287,37 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         },
       });
 
-      // Add Selected Resort Pin layer
-      lmap.addSource('locator-resort', {
+      // Add live camera center indicator layer (unpinned)
+      lmap.addSource('locator-camera', {
         type: 'geojson',
-        data: getResortPinGeoJson(),
+        data: getCameraCenterGeoJson(),
       });
       lmap.addLayer({
-        id: 'locator-resort-outer',
+        id: 'locator-camera-outer',
         type: 'circle',
-        source: 'locator-resort',
+        source: 'locator-camera',
         paint: {
-          'circle-radius': 14,
-          'circle-color': '#B84A39',
+          'circle-radius': 7,
+          'circle-color': '#2C4C64',
           'circle-opacity': 0.25,
         },
       });
       lmap.addLayer({
-        id: 'locator-resort-middle',
+        id: 'locator-camera-dot',
         type: 'circle',
-        source: 'locator-resort',
+        source: 'locator-camera',
         paint: {
-          'circle-radius': 8,
-          'circle-color': '#FAF8F3',
+          'circle-radius': 3.5,
+          'circle-color': '#2C4C64',
           'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#1C1B18',
-        },
-      });
-      lmap.addLayer({
-        id: 'locator-resort-inner',
-        type: 'circle',
-        source: 'locator-resort',
-        paint: {
-          'circle-radius': 5.5,
-          'circle-color': '#B84A39',
-        },
-      });
-      lmap.addLayer({
-        id: 'locator-resort-pip',
-        type: 'circle',
-        source: 'locator-resort',
-        paint: {
-          'circle-radius': 1.8,
-          'circle-color': '#FAF8F3',
+          'circle-stroke-color': '#FAF8F3',
         },
       });
 
       locatorMapRef.current = lmap;
       // Immediately set center and zoom upon load completion
-      const targetCenter = getOverviewTargetCenter(selectedResort, mapCenter, locatorZoomPreset);
-      const targetZoom = getOverviewTargetZoom(selectedResort, locatorZoomPreset);
+      const targetCenter = getOverviewTargetCenter(mapCenter, locatorZoomPreset);
+      const targetZoom = getOverviewTargetZoom(locatorZoomPreset);
       lmap.jumpTo({ center: targetCenter, zoom: targetZoom });
 
       setTimeout(() => {
@@ -399,32 +347,31 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       vpSource.setData(getViewportGeoJson());
     }
 
-    const rSource = lmap.getSource('locator-resort') as maplibregl.GeoJSONSource | undefined;
-    if (rSource) {
-      rSource.setData(getResortPinGeoJson());
+    const cSource = lmap.getSource('locator-camera') as maplibregl.GeoJSONSource | undefined;
+    if (cSource) {
+      cSource.setData(getCameraCenterGeoJson());
     }
-  }, [viewportBounds, selectedResort, mapCenter, locatorOpen, getViewportGeoJson, getResortPinGeoJson]);
+  }, [viewportBounds, mapCenter, locatorOpen, getViewportGeoJson, getCameraCenterGeoJson]);
 
-  // Sync center and zoom in locator map
+  // Sync center and zoom in locator map with live camera
   useEffect(() => {
     const lmap = locatorMapRef.current;
     if (!lmap || !locatorOpen) return;
 
-    const targetCenter = getOverviewTargetCenter(selectedResort, mapCenter, locatorZoomPreset);
-    const targetZoom = getOverviewTargetZoom(selectedResort, locatorZoomPreset);
+    const targetCenter = getOverviewTargetCenter(mapCenter, locatorZoomPreset);
+    const targetZoom = getOverviewTargetZoom(locatorZoomPreset);
 
-    lmap.easeTo({
+    lmap.jumpTo({
       center: targetCenter,
       zoom: targetZoom,
-      duration: 350,
     });
-  }, [selectedResort, mapCenter, mapZoom, locatorZoomPreset, locatorOpen, getOverviewTargetCenter, getOverviewTargetZoom]);
+  }, [mapCenter, locatorZoomPreset, locatorOpen, getOverviewTargetCenter, getOverviewTargetZoom]);
 
   const handleSetLocatorPreset = (preset: 'regional' | 'continental' | 'global') => {
     setLocatorZoomPreset(preset);
     if (!locatorMapRef.current) return;
-    const targetCenter = getOverviewTargetCenter(selectedResort, mapCenter, preset);
-    const targetZoom = getOverviewTargetZoom(selectedResort, preset);
+    const targetCenter = getOverviewTargetCenter(mapCenter, preset);
+    const targetZoom = getOverviewTargetZoom(preset);
     locatorMapRef.current.easeTo({
       center: targetCenter,
       zoom: targetZoom,
@@ -518,60 +465,42 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
             </div>
           </div>
 
-          {/* Location Context Banner: What Country, State, or Resort is pinned? */}
+          {/* Location Context Banner: Live Camera Location and View Extent */}
           <div className="px-3 py-2 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between">
             <div className="min-w-0 pr-2">
               <div className="text-[10px] uppercase font-bold text-[#736E67] tracking-wider leading-none flex items-center gap-1.5">
-                {selectedResort ? (
-                  <>
-                    <span className="w-2 h-2 rounded-full bg-[#B84A39] shrink-0" />
-                    <span>Pinned Resort</span>
-                  </>
-                ) : mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country) ? (
-                  <>
-                    <span className="w-2 h-2 rounded-full bg-[#B84A39] shrink-0" />
-                    <span>Pinned Region</span>
-                  </>
-                ) : (
-                  <>
-                    <Compass className="w-3 h-3 text-[#736E67] shrink-0" />
-                    <span>Overview Context</span>
-                  </>
-                )}
+                <span className="w-2 h-2 rounded-full bg-[#2C4C64] shrink-0" />
+                <span>Camera View</span>
               </div>
               <div className="font-bold text-xs text-[#1C1B18] break-words leading-tight mt-0.5">
-                {selectedResort
-                  ? selectedResort.name
-                  : activeRegionContext.region && activeRegionContext.country && mapZoom >= 4
-                  ? `${activeRegionContext.region}, ${activeRegionContext.country}`
-                  : activeRegionContext.country && mapZoom >= 4
-                  ? activeRegionContext.country
+                {mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country)
+                  ? activeRegionContext.name
+                    ? `${activeRegionContext.name}${activeRegionContext.region ? `, ${activeRegionContext.region}` : ''}`
+                    : activeRegionContext.region && activeRegionContext.country
+                    ? `${activeRegionContext.region}, ${activeRegionContext.country}`
+                    : activeRegionContext.country
                   : 'World Overview'}
               </div>
             </div>
             <div className="text-right shrink-0">
-              {selectedResort ? (
-                <div>
-                  <span className="text-[10px] font-bold text-[#1C1B18] block">
-                    {selectedResort.region ? `${selectedResort.region}, ` : ''}{selectedResort.country}
-                  </span>
-                  <span className="font-mono text-[9px] text-[#8A847C] block mt-0.5">
-                    {formatCoords(selectedResort.lat, selectedResort.lng)}
-                  </span>
-                </div>
-              ) : mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country) ? (
+              {mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country) ? (
                 <div>
                   <span className="text-[10px] font-bold text-[#1C1B18] block break-words leading-tight max-w-[130px]">
-                    {activeRegionContext.name || activeRegionContext.country}
+                    {activeRegionContext.region ? `${activeRegionContext.region}, ` : ''}{activeRegionContext.country}
                   </span>
                   <span className="font-mono text-[9px] text-[#8A847C] block mt-0.5">
                     {formatCoords(mapCenter[1], mapCenter[0])}
                   </span>
                 </div>
               ) : (
-                <span className="text-[10px] font-medium text-[#8A847C]">
-                  All Regions
-                </span>
+                <div>
+                  <span className="text-[10px] font-medium text-[#8A847C] block">
+                    Global Extent
+                  </span>
+                  <span className="font-mono text-[9px] text-[#8A847C] block mt-0.5">
+                    {formatCoords(mapCenter[1], mapCenter[0])}
+                  </span>
+                </div>
               )}
             </div>
           </div>

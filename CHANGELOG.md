@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `fix: unpin overview minimap to dynamically track live camera position and viewport extent`
+- **What was wrong before**:
+  - Clicking or selecting any ski resort pinned the overview minimap (`RegionalLocator`) to that resort's coordinates (`targetLng = resort ? resort.lng : center[0]`).
+  - If the user panned away from the selected resort, the minimap stayed centered on the old resort coordinates, rendering a red "Pinned Resort" marker and region label for a location thousands of miles away from the camera.
+  - The viewport bounding rectangle drifted off-screen on the minimap as the camera moved, leaving the user confused about where the camera actually was.
+- **Solution**:
+  - Decoupled the overview minimap completely from `selectedResort`. The minimap target center now strictly tracks the main camera's current coordinate (`mapCenter`).
+  - Replaced the static resort pin layer (`locator-resort`) with an unpinned, cartographic live camera position reticle (`locator-camera`) at `mapCenter`, aligned with the camera viewport bounding polygon (`locator-viewport`).
+  - Dynamically derived `activeRegionContext` from live camera proximity to global ski regions and resorts, updating the header and context banner in real time as the user pans across mountains, states, or continents.
+  - Synchronized minimap movement using instant camera alignment (`jumpTo`) during live drags and flights, eliminating rubber-banding and lag.
+  - Automatically adapts locator zoom presets based on main map altitude/zoom without locking to selected items.
+
+---
+
 ### `fix: expand trail inspection click buffer to 40px and implement screen-distance ranking`
 - **What was wrong before**:
   - Clicking or tapping on a ski run or chairlift to open the information card required near pixel-level precision. The query bounding box was set to a narrow 12-pixel radius (`[-12, -12]` to `[+12, +12]`), causing finger taps on iPads/touchscreens and oblique 3D clicks to miss thin vectors and deselect.
