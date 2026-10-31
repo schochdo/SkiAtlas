@@ -8,15 +8,16 @@ const db = new DatabaseSync(dbPath);
 const globalAreasPath = path.join(__dirname, '../public/data/global_ski_areas.json');
 const globalAreas = JSON.parse(fs.readFileSync(globalAreasPath, 'utf8')).features;
 
-const appText = fs.readFileSync(path.join(__dirname, '../src/App.tsx'), 'utf8');
-const match = appText.match(/const GLOBAL_SKI_ATLAS: SkiResort\[\] = \[([\s\S]*?)\];/);
-
+// Read all curated flagship resorts from src/data/resorts.ts
+const resortsText = fs.readFileSync(path.join(__dirname, '../src/data/resorts.ts'), 'utf8');
 const atlasResorts = [];
 const itemRegex = /{\s*id:\s*['"]([^'"]+)['"][\s\S]*?name:\s*['"]([^'"]+)['"][\s\S]*?lat:\s*([0-9.-]+)[\s\S]*?lng:\s*([0-9.-]+)/g;
 let m;
-while ((m = itemRegex.exec(match[1])) !== null) {
+while ((m = itemRegex.exec(resortsText)) !== null) {
   atlasResorts.push({ id: m[1], name: m[2], lat: parseFloat(m[3]), lng: parseFloat(m[4]) });
 }
+
+console.log(`Found ${atlasResorts.length} curated resorts in src/data/resorts.ts.`);
 
 function dist(lat1, lon1, lat2, lon2) {
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -25,16 +26,10 @@ function dist(lat1, lon1, lat2, lon2) {
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-const idStmt = db.prepare(`
-  SELECT t.geojson FROM trails t
-  JOIN resort_trails rt ON t.id = rt.trail_id
-  WHERE rt.resort_id = ?
-`);
-
 const bboxStmt = db.prepare(`
   SELECT geojson FROM trails
   WHERE min_lng <= ? AND max_lng >= ? AND min_lat <= ? AND max_lat >= ?
-  LIMIT 800
+  LIMIT 2500
 `);
 
 const outDir = path.join(__dirname, '../public/data/trails');
@@ -42,13 +37,13 @@ if (!fs.existsSync(outDir)) {
   fs.mkdirSync(outDir, { recursive: true });
 }
 
-console.log('Exporting curated resort trails to public/data/trails/...');
+console.log('Exporting curated resort trails and polygon areas to public/data/trails/...');
 
 let exportedCount = 0;
 const manifest = {};
 
 for (const r of atlasResorts) {
-  // Find candidates within 25km
+  // Find candidates in global_ski_areas within 25km
   const candidates = [];
   for (const g of globalAreas) {
     const [gLng, gLat] = g.geometry.coordinates;
@@ -58,38 +53,56 @@ for (const r of atlasResorts) {
     }
   }
 
-  // Sort candidates: prefer category === 'downhill', then name match, then closest distance
   candidates.sort((a, b) => {
     const aDownhill = a.feat.properties.category === 'downhill' ? 1 : 0;
     const bDownhill = b.feat.properties.category === 'downhill' ? 1 : 0;
     if (aDownhill !== bDownhill) return bDownhill - aDownhill;
 
-    const aNameMatch = a.feat.properties.name?.toLowerCase().includes(r.name.toLowerCase().split(' ')[0]) ? 1 : 0;
-    const bNameMatch = b.feat.properties.name?.toLowerCase().includes(r.name.toLowerCase().split(' ')[0]) ? 1 : 0;
+    const firstWord = r.name.toLowerCase().split(' ')[0];
+    const aNameMatch = a.feat.properties.name?.toLowerCase().includes(firstWord) ? 1 : 0;
+    const bNameMatch = b.feat.properties.name?.toLowerCase().includes(firstWord) ? 1 : 0;
     if (aNameMatch !== bNameMatch) return bNameMatch - aNameMatch;
 
     return a.dist - b.dist;
   });
 
+  const chosenArea = candidates[0]?.feat || null;
+
+  // Spatial query centered on resort summit/base bounds (tight ~6-7 km window)
+  const dLng = 0.065;
+  const dLat = 0.05;
+  const rows = bboxStmt.all(r.lng + dLng, r.lng - dLng, r.lat + dLat, r.lat - dLat);
+
   let features = [];
-  let chosenArea = null;
+  for (const row of rows) {
+    const f = JSON.parse(row.geojson);
+    const p = f.properties;
+    if (!p) continue;
 
-  for (const cand of candidates) {
-    const rows = idStmt.all(cand.feat.properties.id);
-    if (rows.length > features.length) {
-      features = rows.map(row => JSON.parse(row.geojson));
-      chosenArea = cand.feat;
+    // Filter out abandoned/proposed lifts
+    if (p.kind === 'lift') {
+      if (p.status && p.status !== 'operating') continue;
+      const n = (p.name || '').toLowerCase();
+      if (n.includes('proposed') || n.includes('planned') || n.includes('abandoned') || n.includes('disused') || n.includes('in project')) {
+        continue;
+      }
+    } else if (p.kind === 'piste') {
+      const ptype = p['piste:type'];
+      // Filter out non-ski municipal features (fatbike, hike, sled, playgrounds)
+      if (
+        (ptype && ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype))
+      ) {
+        continue;
+      }
     }
+
+    if (!f.id && p.id) f.id = p.id;
+    features.push(f);
   }
 
-  // If still empty or few features, try spatial bounding box query around resort coordinates
-  if (features.length < 5) {
-    const dDeg = 0.07;
-    const rows = bboxStmt.all(r.lng + dDeg, r.lng - dDeg, r.lat + dDeg, r.lat - dDeg);
-    if (rows.length > features.length) {
-      features = rows.map(row => JSON.parse(row.geojson));
-    }
-  }
+  const pisteCount = features.filter(f => f.properties?.kind === 'piste').length;
+  const polyCount = features.filter(f => f.geometry?.type === 'Polygon' || f.geometry?.type === 'MultiPolygon').length;
+  const liftCount = features.filter(f => f.properties?.kind === 'lift').length;
 
   const fc = {
     type: 'FeatureCollection',
@@ -99,13 +112,14 @@ for (const r of atlasResorts) {
       matched_area_id: chosenArea?.properties?.id,
       matched_area_name: chosenArea?.properties?.name,
       feature_count: features.length,
-      pistes: features.filter(f => f.properties?.kind === 'piste').length,
-      lifts: features.filter(f => f.properties?.kind === 'lift').length
+      pistes: pisteCount,
+      polygons: polyCount,
+      lifts: liftCount,
     },
-    features
+    features,
   };
 
-  // Write by atlas slug: e.g. jackson-hole.json
+  // Write by atlas slug: e.g. crested-butte.json, jackson-hole.json
   const slugPath = path.join(outDir, `${r.id}.json`);
   fs.writeFileSync(slugPath, JSON.stringify(fc));
 
@@ -117,8 +131,8 @@ for (const r of atlasResorts) {
   }
 
   exportedCount++;
-  console.log(`[${exportedCount}/${atlasResorts.length}] ${r.name} (${r.id}): ${fc.properties.pistes} pistes, ${fc.properties.lifts} lifts -> ${r.id}.json`);
+  console.log(`[${exportedCount}/${atlasResorts.length}] ${r.name} (${r.id}): ${pisteCount} pistes (${polyCount} areas/polygons), ${liftCount} lifts -> ${r.id}.json`);
 }
 
 fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
-console.log('All curated trails exported successfully!');
+console.log('All curated resort trails and terrain areas exported successfully!');

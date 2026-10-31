@@ -8,6 +8,18 @@ try {
   DatabaseSyncClass = sqliteMod.DatabaseSync;
 } catch (_) {}
 
+function getSamplePoint(geom: any): [number, number] | null {
+  if (!geom || !geom.coordinates) return null;
+  let c = geom.coordinates;
+  while (Array.isArray(c) && c.length > 0 && Array.isArray(c[0])) {
+    c = c[0];
+  }
+  if (Array.isArray(c) && typeof c[0] === 'number' && typeof c[1] === 'number') {
+    return [c[0], c[1]];
+  }
+  return null;
+}
+
 export function localTrailsPlugin(): Plugin {
   let db: any = null;
   let dbMtime = 0;
@@ -208,10 +220,7 @@ export function localTrailsPlugin(): Plugin {
               // suppress it when the Cat/Heli toggle is off.
               if (isBackcountryGrooming && !p.resort_id) {
                 const coordsMap = getAreaCoords();
-                const coords = f.geometry?.coordinates;
-                const samplePt = Array.isArray(coords) && typeof coords[0] === 'number'
-                  ? coords
-                  : (Array.isArray(coords) && Array.isArray(coords[0]) && typeof coords[0][0] === 'number' ? coords[0] : null);
+                const samplePt = getSamplePoint(f.geometry);
 
                 if (!samplePt || !coordsMap) {
                   return false; // Cannot geolocate — drop it

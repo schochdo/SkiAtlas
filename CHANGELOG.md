@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-30
 
+### `fix: restore freeride terrain areas and re-export complete trail datasets for all 75 resorts`
+- **What was wrong before**:
+  1. Freeride areas, bowls, chutes, and glades at destinations like Crested Butte (e.g. *Spellbound Bowl*, *Phoenix Bowl*, *Headwall*, *Rambo Glades*, *The Peak*) disappeared. In `trailsPlugin.ts`, the backcountry proximity filter checked `typeof coords[0][0] === 'number'`, which only worked for LineStrings. For Polygons (`coords[0][0]` is `[lng, lat]`), it evaluated to `false`, returning `samplePt = null` and dropping all backcountry-groomed polygons.
+  2. 32 flagship resorts (including Crested Butte, Breckenridge, Park City, Copper Mountain, etc.) had no pre-baked files in `public/data/trails/` because `export_resort_trails.cjs` was written when `GLOBAL_SKI_ATLAS` was in `App.tsx` and had not been re-run since the titan resort expansion. Furthermore, the exporter strictly joined `resort_trails`, which dropped unassociated terrain polygons.
+- **Solution**:
+  - Implemented a recursive `getSamplePoint` unwinder in `src/server/trailsPlugin.ts` that safely extracts coordinates across Point, LineString, Polygon, and MultiPolygon geometries.
+  - Rewrote `data_pipeline/export_resort_trails.cjs` to source all 75 resorts from `src/data/resorts.ts` and capture all pistes, lifts, and terrain polygons using spatial resort bounding queries.
+  - Re-exported complete pre-baked GeoJSON for all 75 resorts to `public/data/trails/` (restoring Crested Butte's 122 terrain polygons and 232 runs) and regenerated `manifest.json`.
+
+---
+
 ### `fix: use Node 22 for CI/CD and gracefully import node:sqlite in trails plugin`
 - **Problem**: GitHub Actions build failed on Node 20 because `node:sqlite` was only introduced in Node 22.5+.
 - **Solution**: Upgraded `.github/workflows/deploy.yml` runner to Node 22 and converted `node:sqlite` in `trailsPlugin.ts` to dynamic safe import.
