@@ -4,7 +4,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-30
+
+### `chore: add start script to package.json`
+- Added `"start": "vite --port=3000 --host=0.0.0.0"` script alias to `package.json` for running the dev server with standard `npm start`.
+
+---
+
 ## 2026-10-26
+
+### `fix: simplify camera control descriptions in legend`
+- Streamlined gesture / navigation guide descriptions in `CartographicLegend.tsx`:
+  - Trackpad: "Pinch to zoom · Right-drag to orbit · Shift+scroll to tilt"
+  - Touch: "Pinch to zoom · Two fingers to rotate & tilt"
+  - Keyboard: "Arrows to pan · A/D to orbit · W/S to tilt"
+
+---
 
 ### `feat: add Open-Meteo credit to Summit Meteorology card`
 - Added a small "Weather data: Open-Meteo" text credit at the bottom of the Summit Meteorology section in `MountainProfile.tsx`. Plain text, 9px, muted color — no link (linking to the forecast URL was tried previously and didn't work well). Open-Meteo is also already listed in the map attribution badge (`AttributionBadge.tsx`).
