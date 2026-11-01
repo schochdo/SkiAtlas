@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `feat: high-resolution Natural Earth 10m boundaries and localized border line labels`
+- **What was wrong before**:
+  - Country boundary lines looked low-resolution, blocky, and jagged when zoomed in.
+  - Huge country centroid labels ("FRANCE", "SWITZERLAND", "GERMANY", "UNITED STATES") were rendered in the center of countries when zoomed out.
+  - **Root Cause #1 (Coarse 110m Dataset)**: The previous boundary vector dataset was generated from Natural Earth 110m (1:110,000,000 thumbnail scale). When zooming into mountain regions such as the Alps, Rockies, or Pyrenees, the boundaries appeared as crude, multi-kilometer jagged line segments.
+  - **Root Cause #2 (Distracting Macro Country Centroids)**: The centroid labels in `GEOGRAPHIC_REFERENCE_GEOJSON` (`kind: 'country'`) floated over the middle of countries at zooms 1.2 to 5.5, creating unwanted screen clutter. Users only need to know country boundaries when zoomed in near the borders.
+- **Solution**:
+  - **Upgraded to Natural Earth 10m High-Resolution Land Boundaries**:
+    - Rebuilt [`public/data/world_boundaries.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/world_boundaries.geojson) (1,094 features, 1.83 MB) using Natural Earth's maximum-precision 10m dataset (`ne_10m_admin_0_boundary_lines_land`) combined with 50m state/province lines.
+    - Captures true geographic detail along alpine ridges, mountain crests, and river valleys with smooth curvature.
+  - **Removed Macro Country Centroids**:
+    - Completely removed sovereign nation centroid labels (`kind: 'country'`) from [`src/data/geographicReference.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/data/geographicReference.ts).
+    - Preserved useful gateway hubs (Geneva, Zurich, Denver, Calgary) and alpine valley ski centers (Chamonix, Aspen, Zermatt) at their appropriate zoom ranges.
+  - **Localized Border Line Labels**:
+    - Added `world-country-border-labels` symbol layer in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) along the international border lines (`minzoom: 5.5, maxzoom: 13.0`).
+    - Drapes clean, line-aligned labels directly along the border on both sides (e.g. `FRANCE / GERMANY`, `FRANCE / SWITZERLAND`, `SWITZERLAND / ITALY`, `AUSTRIA / GERMANY`, `CANADA / UNITED STATES`).
+    - Luminous halo and uppercase tracking ensure perfect legibility over satellite orthophotos.
+
 ### `fix: eliminate double labels by isolating reference layers to satellite basemap and restoring vector SDF glyphs`
 - **What was wrong before**:
   - Country labels appeared doubled on OpenStreetMap (`osm`) and Alpine Topo (`topo`) basemaps.

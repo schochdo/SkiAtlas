@@ -1631,7 +1631,7 @@ export default function App() {
         data: getStaticDataUrl('data/world_boundaries.geojson'),
       });
 
-      // Country International Borders
+      // Country International Borders (High-resolution 10m Natural Earth vectors)
       map.addLayer({
         id: 'world-country-borders',
         type: 'line',
@@ -1644,23 +1644,29 @@ export default function App() {
         },
         paint: {
           'line-color': '#FAF8F3',
-          'line-opacity': 0.45,
+          'line-opacity': [
+            'interpolate', ['linear'], ['zoom'],
+            1, 0.40,
+            6, 0.60,
+            10, 0.80,
+          ],
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
             1, 1.0,
-            4, 1.5,
-            8, 2.0,
+            5, 1.4,
+            8, 1.8,
+            12, 2.2,
           ],
         },
       });
 
-      // State / Province Administrative Borders
+      // State / Province Administrative Borders (Clean 50m vectors)
       map.addLayer({
         id: 'world-state-borders',
         type: 'line',
         source: 'world-boundaries-source',
         filter: ['==', ['get', 'kind'], 'state_border'],
-        minzoom: 3.0,
+        minzoom: 3.5,
         layout: {
           visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
           'line-cap': 'round',
@@ -1668,61 +1674,69 @@ export default function App() {
         },
         paint: {
           'line-color': '#FAF8F3',
-          'line-opacity': 0.30,
+          'line-opacity': 0.35,
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
-            3, 0.8,
-            6, 1.2,
-            10, 1.6,
+            3.5, 0.8,
+            7, 1.2,
+            11, 1.5,
           ],
           'line-dasharray': [2, 2],
         },
       });
 
-      // Geographic Reference: Crisp Vector SDF Labels (Only on Satellite 3D, aligns with map rotation)
+      // High-Definition International Border Line Labels (France / Germany, France / Switzerland, etc. when zoomed in)
+      map.addLayer({
+        id: 'world-country-border-labels',
+        type: 'symbol',
+        source: 'world-boundaries-source',
+        filter: [
+          'all',
+          ['==', ['get', 'kind'], 'country_border'],
+          ['has', 'border_label'],
+          ['!=', ['get', 'border_label'], ''],
+        ],
+        minzoom: 5.5,
+        maxzoom: 13.0,
+        layout: {
+          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
+          'symbol-placement': 'line',
+          'symbol-spacing': 450,
+          'text-field': ['get', 'border_label'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            5.5, 9.5,
+            8.0, 11.5,
+            11.0, 13.0,
+          ],
+          'text-letter-spacing': 0.14,
+          'text-transform': 'uppercase',
+          'text-keep-upright': true,
+          'text-rotation-alignment': 'map',
+          'text-pitch-alignment': 'map',
+          'text-max-angle': 36,
+          'text-padding': 12,
+        },
+        paint: {
+          'text-color': '#FAF8F3',
+          'text-halo-color': '#1C1B18',
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Geographic Reference: Gateway Metros & Alpine Valley Hubs (Only on Satellite 3D)
       map.addSource('geo-reference-source', {
         type: 'geojson',
         data: GEOGRAPHIC_REFERENCE_GEOJSON as any,
       });
 
       map.addLayer({
-        id: 'geo-reference-countries',
-        type: 'symbol',
-        source: 'geo-reference-source',
-        filter: ['==', ['get', 'kind'], 'country'],
-        minzoom: 1.2,
-        maxzoom: 5.5,
-        layout: {
-          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
-          'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            1.5, 12,
-            3.5, 14.5,
-            5.0, 17,
-          ],
-          'text-transform': 'uppercase',
-          'text-letter-spacing': 0.22,
-          'text-rotation-alignment': 'map',
-          'text-pitch-alignment': 'map',
-          'text-keep-upright': true,
-          'text-allow-overlap': false,
-        },
-        paint: {
-          'text-color': '#FAF8F3',
-          'text-halo-color': '#1C1B18',
-          'text-halo-width': 2.2,
-          'text-halo-blur': 0.5,
-        },
-      });
-
-      map.addLayer({
         id: 'geo-reference-cities',
         type: 'symbol',
         source: 'geo-reference-source',
-        filter: ['!=', ['get', 'kind'], 'country'],
-        minzoom: 3.8,
+        minzoom: 4.0,
         maxzoom: 13.5,
         layout: {
           visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
@@ -1730,9 +1744,9 @@ export default function App() {
           'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            4, 12,
-            7, 14,
-            10, 16.5,
+            4, 11,
+            7, 13,
+            10, 15,
           ],
           'text-offset': [0, 0.4],
           'text-anchor': 'top',
@@ -3038,17 +3052,15 @@ export default function App() {
     if (map.getLayer('world-country-borders')) {
       map.setLayoutProperty('world-country-borders', 'visibility', refVisibility);
       map.setPaintProperty('world-country-borders', 'line-color', isDark ? '#FAF8F3' : '#1C1B18');
-      map.setPaintProperty('world-country-borders', 'line-opacity', isDark ? 0.45 : 0.35);
     }
     if (map.getLayer('world-state-borders')) {
       map.setLayoutProperty('world-state-borders', 'visibility', refVisibility);
       map.setPaintProperty('world-state-borders', 'line-color', isDark ? '#FAF8F3' : '#1C1B18');
-      map.setPaintProperty('world-state-borders', 'line-opacity', isDark ? 0.30 : 0.22);
     }
-    if (map.getLayer('geo-reference-countries')) {
-      map.setLayoutProperty('geo-reference-countries', 'visibility', refVisibility);
-      map.setPaintProperty('geo-reference-countries', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
-      map.setPaintProperty('geo-reference-countries', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    if (map.getLayer('world-country-border-labels')) {
+      map.setLayoutProperty('world-country-border-labels', 'visibility', refVisibility);
+      map.setPaintProperty('world-country-border-labels', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('world-country-border-labels', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
     if (map.getLayer('geo-reference-cities')) {
       map.setLayoutProperty('geo-reference-cities', 'visibility', refVisibility);

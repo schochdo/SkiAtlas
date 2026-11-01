@@ -9,7 +9,7 @@ export interface GeoReferenceFeature {
   };
   properties: {
     name: string;
-    kind: 'country' | 'gateway' | 'alpine_hub';
+    kind: 'gateway' | 'alpine_hub';
     country?: string;
     minzoom: number;
     maxzoom: number;
@@ -24,47 +24,7 @@ export const GEOGRAPHIC_REFERENCE_GEOJSON: {
   type: 'FeatureCollection',
   features: [
     // =========================================================================
-    // 1. SOVEREIGN NATIONS (CENTROIDS) — Visible at macro scale (z 1.2 - 5.5)
-    // =========================================================================
-    // Major Ski Nations (Americas)
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [-98.5795, 39.8283] }, properties: { name: 'United States', kind: 'country', minzoom: 1.2, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [-106.3468, 56.1304] }, properties: { name: 'Canada', kind: 'country', minzoom: 1.2, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [-71.5430, -35.6751] }, properties: { name: 'Chile', kind: 'country', minzoom: 1.5, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [-63.6167, -38.4161] }, properties: { name: 'Argentina', kind: 'country', minzoom: 1.5, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [-102.5528, 23.6345] }, properties: { name: 'Mexico', kind: 'country', minzoom: 2.0, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [-51.9253, -14.2350] }, properties: { name: 'Brazil', kind: 'country', minzoom: 2.0, maxzoom: 5.5, importance: 2 } },
-
-    // Major Ski Nations (Europe & Alps)
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [8.2275, 46.8182] }, properties: { name: 'Switzerland', kind: 'country', minzoom: 1.8, maxzoom: 6.0, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [14.5501, 47.5162] }, properties: { name: 'Austria', kind: 'country', minzoom: 1.8, maxzoom: 6.0, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [2.2137, 46.2276] }, properties: { name: 'France', kind: 'country', minzoom: 1.5, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [12.5674, 41.8719] }, properties: { name: 'Italy', kind: 'country', minzoom: 1.5, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [10.4515, 51.1657] }, properties: { name: 'Germany', kind: 'country', minzoom: 1.8, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [-3.7492, 40.4637] }, properties: { name: 'Spain', kind: 'country', minzoom: 1.8, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [8.4689, 60.4720] }, properties: { name: 'Norway', kind: 'country', minzoom: 1.5, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [18.6435, 60.1282] }, properties: { name: 'Sweden', kind: 'country', minzoom: 1.5, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [25.7482, 61.9241] }, properties: { name: 'Finland', kind: 'country', minzoom: 1.8, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [-3.4360, 55.3781] }, properties: { name: 'United Kingdom', kind: 'country', minzoom: 1.8, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [19.1451, 51.9194] }, properties: { name: 'Poland', kind: 'country', minzoom: 2.0, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [15.4730, 49.8175] }, properties: { name: 'Czechia', kind: 'country', minzoom: 2.2, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [19.6990, 48.6690] }, properties: { name: 'Slovakia', kind: 'country', minzoom: 2.2, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [14.9955, 46.1512] }, properties: { name: 'Slovenia', kind: 'country', minzoom: 2.4, maxzoom: 6.0, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [21.8243, 39.0742] }, properties: { name: 'Greece', kind: 'country', minzoom: 2.2, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [25.4858, 42.7339] }, properties: { name: 'Bulgaria', kind: 'country', minzoom: 2.2, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [24.9668, 45.9432] }, properties: { name: 'Romania', kind: 'country', minzoom: 2.2, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [35.2433, 38.9637] }, properties: { name: 'Turkey', kind: 'country', minzoom: 2.0, maxzoom: 5.5, importance: 2 } },
-
-    // Asia & Pacific
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [138.2529, 36.2048] }, properties: { name: 'Japan', kind: 'country', minzoom: 1.5, maxzoom: 5.5, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [104.1954, 35.8617] }, properties: { name: 'China', kind: 'country', minzoom: 1.2, maxzoom: 5.0, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [127.7669, 35.9078] }, properties: { name: 'South Korea', kind: 'country', minzoom: 2.0, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [78.9629, 20.5937] }, properties: { name: 'India', kind: 'country', minzoom: 1.5, maxzoom: 5.0, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [84.1240, 28.3949] }, properties: { name: 'Nepal', kind: 'country', minzoom: 2.2, maxzoom: 5.5, importance: 2 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [133.7751, -25.2744] }, properties: { name: 'Australia', kind: 'country', minzoom: 1.2, maxzoom: 5.0, importance: 1 } },
-    { type: 'Feature', geometry: { type: 'Point', coordinates: [174.8860, -40.9006] }, properties: { name: 'New Zealand', kind: 'country', minzoom: 1.8, maxzoom: 5.5, importance: 1 } },
-
-    // =========================================================================
-    // 2. ALPINE GATEWAY METROS & MAJOR AIRPORTS — Visible at regional scale (z 3.8 - 9.0)
+    // 1. ALPINE GATEWAY METROS & MAJOR AIRPORTS — Visible at regional scale (z 3.8 - 9.0)
     // =========================================================================
     // North America (US Rockies & West)
     { type: 'Feature', geometry: { type: 'Point', coordinates: [-104.9903, 39.7392] }, properties: { name: 'Denver', country: 'USA', kind: 'gateway', minzoom: 3.8, maxzoom: 10.0, importance: 1 } },
