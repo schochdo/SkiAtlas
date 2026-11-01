@@ -11,7 +11,7 @@ export const createMapStyle = (
 ): StyleSpecification => ({
   version: 8,
   projection: { type: earthProjection },
-  glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+  glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
   sources: {
     // 1. Esri World Imagery (Standard) — Seamless global orthoimagery with continuous color balancing and edge blending
     'satellite-tiles': {

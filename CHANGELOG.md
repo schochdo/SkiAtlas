@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: eliminate double labels by isolating reference layers to satellite basemap and restoring vector SDF glyphs`
+- **What was wrong before**:
+  - Country labels appeared doubled on OpenStreetMap (`osm`) and Alpine Topo (`topo`) basemaps.
+  - One country label was huge, pixelated/blurry ("bad resolution"), and did not rotate when orbiting or rotating the map, floating rigidly over the basemap.
+  - **Root Cause #1 (Duplicate Reference Labels on OSM/Topo)**: OpenStreetMap and Alpine Topo basemaps already have native political borders, country labels, state labels, and city names baked into their raster map tiles. Because `geo-reference-countries`, `geo-reference-cities`, `world-country-borders`, and `world-state-borders` were active whenever `showCountryOutlines` was true regardless of basemap mode, they drew a second layer of countries and borders on top of OSM, producing duplicate labels.
+  - **Root Cause #2 (Fontstack Glyphs 404 & Canvas Fallback)**: All 11 symbol layers in `src/App.tsx` requested `'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular']`. The OpenMapTiles glyph server (`fonts.openmaptiles.org`) does not support comma-separated fontstack URLs (which returned 400/HTML error), and MapLibre's default demotiles endpoint 404'd on `Open Sans Regular`. Failing to load binary PBF Signed Distance Field (SDF) glyphs, MapLibre GL fell back to its internal 2D HTML5 Canvas bitmap font renderer. Canvas fallback text renders at fixed bitmap resolution, resulting in blurry, pixelated typography that scaled poorly across zoom levels.
+  - **Root Cause #3 (Viewport Billboarding Prevented Rotation)**: `geo-reference-countries` and `geo-reference-cities` were configured with `'text-rotation-alignment': 'viewport'` and `'text-pitch-alignment': 'viewport'`. When the user rotated or tilted the map, the baked-in OSM basemap rotated naturally, but the vector overlay labels stayed rigidly horizontal to the viewport.
+- **Solution**:
+  - **Basemap Isolation for Reference Overlays**:
+    - Restricted `world-country-borders`, `world-state-borders`, `geo-reference-countries`, and `geo-reference-cities` visibility strictly to Satellite 3D (`showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none'`).
+    - OSM and Alpine Topo display only their native cartographic labels with zero duplication or layer collision.
+  - **Single-Font Vector SDF Fontstack**:
+    - Switched glyphs in [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts) to `https://fonts.openmaptiles.org/{fontstack}/{range}.pbf`.
+    - Standardized all 11 symbol layers across [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) to `'text-font': ['Open Sans Regular']`, ensuring HTTP 200 binary PBF glyph delivery. Text is rendered natively via WebGL SDF shaders for razor-sharp subpixel clarity across all zoom levels and Retina screens.
+  - **Map-Aligned Rotation & Perspective Drape**:
+    - Updated `geo-reference-countries` and `geo-reference-cities` layout to `'text-rotation-alignment': 'map'`, `'text-pitch-alignment': 'map'`, and `'text-keep-upright': true`.
+    - Country and city labels on Satellite 3D now rotate, pitch, and drape seamlessly with the 3D globe and terrain during camera orbits while never flipping upside down.
+
 ### `fix: eliminate duplicate blurry raster country labels and introduce crisp vector boundary lines`
 - **What was wrong before**:
   - Two country labels were appearing simultaneously on the map canvas. One was huge and pixelated/blurry ("bad resolution"), while the other was crisp vector text.

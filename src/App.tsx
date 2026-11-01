@@ -1467,7 +1467,7 @@ export default function App() {
             ['get', 'name'],
           ],
           'text-size': ['interpolate', ['linear'], ['zoom'], 12.0, 9.5, 14, 11, 16, 12.5],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-letter-spacing': 0.05,
           'text-keep-upright': true,
           'text-pitch-alignment': 'viewport',
@@ -1510,7 +1510,7 @@ export default function App() {
             ['get', 'name']
           ],
           'text-size': 11,
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-keep-upright': true,
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'viewport',
@@ -1556,7 +1556,7 @@ export default function App() {
             14, 11,
             16, 12.5,
           ],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-offset': [0, -0.75],
           'text-keep-upright': true,
           'text-rotation-alignment': 'map',
@@ -1638,13 +1638,13 @@ export default function App() {
         source: 'world-boundaries-source',
         filter: ['==', ['get', 'kind'], 'country_border'],
         layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
+          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
           'line-cap': 'round',
           'line-join': 'round',
         },
         paint: {
-          'line-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
-          'line-opacity': basemapMode === 'satellite' ? 0.45 : 0.35,
+          'line-color': '#FAF8F3',
+          'line-opacity': 0.45,
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
             1, 1.0,
@@ -1662,13 +1662,13 @@ export default function App() {
         filter: ['==', ['get', 'kind'], 'state_border'],
         minzoom: 3.0,
         layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
+          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
           'line-cap': 'round',
           'line-join': 'round',
         },
         paint: {
-          'line-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
-          'line-opacity': basemapMode === 'satellite' ? 0.30 : 0.22,
+          'line-color': '#FAF8F3',
+          'line-opacity': 0.30,
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
             3, 0.8,
@@ -1679,7 +1679,7 @@ export default function App() {
         },
       });
 
-      // Geographic Reference: Rotation-Invariant Viewport Billboarding (Always upright during 3D orbits)
+      // Geographic Reference: Crisp Vector SDF Labels (Only on Satellite 3D, aligns with map rotation)
       map.addSource('geo-reference-source', {
         type: 'geojson',
         data: GEOGRAPHIC_REFERENCE_GEOJSON as any,
@@ -1693,9 +1693,9 @@ export default function App() {
         minzoom: 1.2,
         maxzoom: 5.5,
         layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
+          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             1.5, 12,
@@ -1704,14 +1704,14 @@ export default function App() {
           ],
           'text-transform': 'uppercase',
           'text-letter-spacing': 0.22,
-          'text-rotation-alignment': 'viewport',
-          'text-pitch-alignment': 'viewport',
+          'text-rotation-alignment': 'map',
+          'text-pitch-alignment': 'map',
           'text-keep-upright': true,
           'text-allow-overlap': false,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-color': '#FAF8F3',
+          'text-halo-color': '#1C1B18',
           'text-halo-width': 2.2,
           'text-halo-blur': 0.5,
         },
@@ -1725,9 +1725,9 @@ export default function App() {
         minzoom: 3.8,
         maxzoom: 13.5,
         layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
+          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             4, 12,
@@ -1736,14 +1736,14 @@ export default function App() {
           ],
           'text-offset': [0, 0.4],
           'text-anchor': 'top',
-          'text-rotation-alignment': 'viewport',
-          'text-pitch-alignment': 'viewport',
+          'text-rotation-alignment': 'map',
+          'text-pitch-alignment': 'map',
           'text-keep-upright': true,
           'text-allow-overlap': false,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-color': '#FAF8F3',
+          'text-halo-color': '#1C1B18',
           'text-halo-width': 2.0,
           'text-halo-blur': 0.5,
         },
@@ -1821,7 +1821,7 @@ export default function App() {
         filter: ['!=', ['get', 'category'], 'heli_cat'],
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             6, 12,
@@ -1899,7 +1899,7 @@ export default function App() {
         filter: ['==', ['get', 'category'], 'heli_cat'],
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             5, 11.5,
@@ -1974,7 +1974,7 @@ export default function App() {
         source: 'selected-resort-source',
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             4, 12,
@@ -2048,7 +2048,7 @@ export default function App() {
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-size': 11,
         },
         paint: {
@@ -2129,7 +2129,7 @@ export default function App() {
         maxzoom: 12,
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             6.5, 11,
@@ -2191,7 +2191,7 @@ export default function App() {
           'visibility': showPeaks ? 'visible' : 'none',
           'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000],
           'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             10.0, 9.0,
@@ -3032,7 +3032,8 @@ export default function App() {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
     const isDark = basemapMode === 'satellite';
-    const refVisibility = showCountryOutlines ? 'visible' : 'none';
+    // Reference labels and borders are strictly isolated to Satellite 3D since OSM & Topo basemaps already have native labels
+    const refVisibility = showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none';
 
     if (map.getLayer('world-country-borders')) {
       map.setLayoutProperty('world-country-borders', 'visibility', refVisibility);
