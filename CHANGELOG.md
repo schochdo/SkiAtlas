@@ -6,6 +6,29 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: prevent kinked border text and decrease label frequency when zoomed in`
+- **What was wrong before**:
+  - Country border labels appeared bent and kinked around sharp boundary turns (e.g., along streams and winding valleys like the Wiesbach near Liège, where `GER` was oriented vertically and `MANY` horizontally across a sharp corner).
+  - Multiple duplicate pairs of border labels appeared too frequently across a small zoomed-in view (e.g., two `GERMANY` / `BELGIUM` pairs within a ~400px window).
+  - **Root Cause #1 (Excessive Angle Tolerance `text-max-angle: 60`)**: Setting `text-max-angle: 60` allowed MapLibre to bend words around sharp 60° turns, fracturing country names into kinked, unreadable fragments.
+  - **Root Cause #2 (Dense Zoom Spacing `symbol-spacing: 200–250px`)**: At zoom levels $\ge 13$, candidate anchors were spaced every 200–250 pixels. On desktop and Retina displays, this produced repeated duplicate labels side-by-side in a single viewport.
+  - **Root Cause #3 (Tight Collision Padding `text-padding: 4px`)**: Insufficient collision padding allowed neighboring labels to crowd together.
+- **Solution**:
+  - **Strict Curvature Rejection (`text-max-angle: 25`)**:
+    - Reduced `text-max-angle` from 60° to 25° across both border label layers in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+    - MapLibre strictly rejects any placement candidate where the boundary bends sharply, placing labels exclusively on straight or gently curving segments where text remains flat, smooth, and easily readable.
+  - **Calibrated High-Zoom Frequency (`symbol-spacing: 750–1400px`)**:
+    - Adjusted zoom-interpolated spacing:
+      - `z4.5`: `1400px`
+      - `z7.0`: `1200px`
+      - `z10.0`: `1000px`
+      - `z13.0`: `850px`
+      - `z16.0`: `750px`
+    - Guarantees at most 1 label pair is visible in any standard zoomed-in viewport, completely eliminating duplicate clusters.
+  - **Collision Buffer & Edge Clipping Guard**:
+    - Increased `text-padding` to `20px` to maintain generous breathing room.
+    - Added `symbol-avoid-edges: true` to prevent labels from being clipped or deformed near screen and tile edges.
+
 ### `fix: stop international borders at coastline and eliminate maritime water boundaries`
 - **What was wrong before**:
   - Country boundaries continued out into the water (e.g. extending 12 to 20 nautical miles out into the Bay of Biscay from the Pyrenees, into the Mediterranean from Menton, and into the Pacific through the Strait of Juan de Fuca and Atlantic through Passamaquoddy Bay).
