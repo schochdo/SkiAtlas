@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `chore: address October security advisories, pin secure Node LTS runtime, and audit dependencies`
+- **What changed**:
+  - **Pinned Node.js Runtime**: Created `.nvmrc` and `.node-version` pinning Node.js to `22.23.4` (the patched LTS release addressing the eMudhra certificate compromise, TLS hostname verification flaws, and Brotli decompression vulnerabilities disclosed on October 19–21).
+  - **Engine Constraint**: Declared `"engines": { "node": ">=22.23.4" }` in [`package.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/package.json).
+  - **CI Workflow Hardening**: Updated [`.github/workflows/deploy.yml`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/.github/workflows/deploy.yml) to read `node-version-file: '.nvmrc'` for automated GitHub Pages builds.
+  - **Pruned Unused Server Dependencies**: Removed unused server packages (`express`, `@types/express`) strictly aligning with client-only architecture rules and immediately resolving the high-severity `body-parser` trailing bytes DoS advisory (`GHSA-27r3-jxmh-p828`).
+  - **Audit Clearance**: Verified zero known vulnerabilities across all dependencies (`npm audit` reports 0 vulnerabilities). Confirmed repository contains no PHP runtimes or Docker images.
+
+---
+
+## 2026-10-31
+
 ### `refactor: drop legacy vector country boundaries layer in favor of authoritative Esri reference overlay`
 - **What was wrong before**:
   - When toggling Country Outlines, the application was still loading and rendering the 5.4MB legacy GeoJSON boundary layers (`country-boundaries-casing`, `country-boundaries-line`, `country-macro-labels`, `country-border-labels`) from `data/country_boundaries.geojson`.
