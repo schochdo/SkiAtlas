@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: resolve map initialization crash by passing showHillshade to createMapStyle and aligning fontstacks`
+- **What was wrong before**:
+  - The map failed to load entirely on initial render with an uncaught `ReferenceError: showHillshade is not defined` inside `createMapStyle()`. In `src/utils/mapStyles.ts`, the `hillshade-relief` layer referenced `showHillshade`, but `showHillshade` had not been declared in the function arguments.
+  - Additionally, newly introduced symbol layers (`geo-reference-countries` and `geo-reference-cities`) requested font stacks (`Open Sans Bold, Arial Unicode MS Bold` and `Open Sans SemiBold`) not present on `demotiles.maplibre.org`, causing font loading 404 warnings.
+- **Solution**:
+  - In [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts), added `showHillshade: boolean = true` parameter to `createMapStyle()`.
+  - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), passed `showHillshade` into `createMapStyle(...)` during map instantiation.
+  - Standardized fontstack declarations across all vector label layers to `['Open Sans Regular', 'Arial Unicode MS Regular']`, which is confirmed available and served with HTTP 200 from the demotiles glyphs endpoint.
+  - Verified clean map boot and WebGL rendering with headless browser automation.
+
+---
+
+## 2026-10-31
+
 ### `feat: add Clean Canvas basemap and 360° rotation-invariant viewport vector reference labels`
 - **What was wrong before**:
   - Raster tiles (such as OpenStreetMap and Esri reference overlays) have labels baked into 2D raster tiles oriented strictly North-up (0°). When navigating or orbiting in 3D terrain mode (e.g., viewing a mountain range looking South or East), the ground-baked text rotates with the surface, ending up upside-down or sideways.

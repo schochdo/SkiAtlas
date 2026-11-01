@@ -710,7 +710,7 @@ export default function App() {
       container: mapContainerRef.current,
       attributionControl: false,
       renderWorldCopies: false,
-      style: createMapStyle(earthProjection, basemapMode, terrainOverlay, terrainOverlayOpacity, showCountryOutlines),
+      style: createMapStyle(earthProjection, basemapMode, terrainOverlay, terrainOverlayOpacity, showCountryOutlines, showHillshade),
       center: [12, 28], // Global scope flat map (Mercator)
       zoom: 1.8,
       minZoom: 1.2,
@@ -1551,7 +1551,7 @@ export default function App() {
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             1.5, 9,
@@ -1583,7 +1583,7 @@ export default function App() {
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans SemiBold', 'Arial Unicode MS Regular'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             4, 9.5,
@@ -1674,7 +1674,7 @@ export default function App() {
         maxzoom: 12,
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             6, 12,
@@ -1830,7 +1830,7 @@ export default function App() {
         maxzoom: 12,
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             6.5, 11,
@@ -1889,7 +1889,7 @@ export default function App() {
           'visibility': showPeaks ? 'visible' : 'none',
           'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000],
           'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             10.0, 9.0,

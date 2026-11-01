@@ -6,7 +6,8 @@ export const createMapStyle = (
   basemapMode: BasemapMode,
   terrainOverlay: TerrainOverlayMode = 'none',
   terrainOverlayOpacity: number = 0.65,
-  showCountryOutlines: boolean = false
+  showCountryOutlines: boolean = false,
+  showHillshade: boolean = true
 ): StyleSpecification => ({
   version: 8,
   projection: { type: earthProjection },
