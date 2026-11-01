@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: resolve dynamic trail loading across global ski areas and fix abort race condition`
+- **What was wrong before**:
+  - Zooming into Wolf Creek Ski Area (and other ski areas from `global_ski_areas.json`) showed no trails.
+  - **Root Cause #1 (Abort & Stamp Lock)**: In `fetchOverpassBbox`, `lastFetchedBboxKeyRef` was stamped *before* the fetch succeeded. If a user was zooming with the mouse wheel, successive `moveend` events aborted the in-flight request, but the bbox key remained stamped, permanently blocking any future fetch for that area.
+  - **Root Cause #2 (High Zoom Gate)**: `handleMapMoveEnd` strictly gated trail fetching to $z \ge 10.5$. Users surveying a mountain at zoom 9 or 10 never triggered the spatial query.
+  - **Root Cause #3 (Resort ID Query Bypass)**: `fetchResortStaticTrails` only looked for static files in `public/data/trails/` and never queried the local SQLite database via `/api/trails?resort=${id}`.
+- **Solution**:
+  - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx):
+    - Lowered the zoom trigger threshold from $z \ge 10.5$ to $z \ge 9.2$ so trails stream in seamlessly as the user approaches any mountain.
+    - Updated `fetchOverpassBbox` to use `fetchedBboxKeysSetRef` that only records keys *after* a fetch successfully returns features, preventing aborted wheel zooms from locking out regions.
+    - Updated `fetchResortStaticTrails` to query `/api/trails?resort=${resortId}` first against the local SQLite database before checking static fallback files.
+    - Exported 171 trails and lifts for Wolf Creek to `public/data/trails/wolf-creek.json` and `public/data/trails/0509d7d69847b7f5da4850cc299a909099d5382f.json` and updated `manifest.json`.
+
+---
+
+## 2026-10-31
+
 ### `fix: drop Clean Canvas, double Esri reference label scale for readability, and add Brian Head trails & fallback`
 - **What was wrong before**:
   - The experimental Clean Canvas layer had an unstyled/sparse appearance, risked requiring API keys, and added unnecessary clutter to the basemap options.

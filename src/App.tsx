@@ -592,10 +592,24 @@ export default function App() {
   }, []);
 
   const loadedResortTrailsRef = useRef<Set<string>>(new Set());
+  const fetchedBboxKeysSetRef = useRef<Set<string>>(new Set());
 
   const fetchResortStaticTrails = useCallback(async (resortId: string) => {
     if (loadedResortTrailsRef.current.has(resortId)) return;
     try {
+      // 1. Try local SQLite API first (instant query from trails.db)
+      const apiRes = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/trails?resort=${resortId}`);
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        if (data.features && data.features.length) {
+          ingestTrailFeatures(data.features);
+          loadedResortTrailsRef.current.add(resortId);
+          return;
+        }
+      }
+    } catch (_) {}
+    try {
+      // 2. Try static pre-exported file in public/data/trails/
       const res = await fetch(getStaticDataUrl(`data/trails/${resortId}.json`));
       if (res.ok) {
         const data = await res.json();
@@ -610,14 +624,13 @@ export default function App() {
   const fetchOverpassBbox = useCallback(async (south: number, west: number, north: number, east: number) => {
     if (north - south > 0.35 || east - west > 0.45) return;
     const bboxKey = `${south.toFixed(2)},${west.toFixed(2)},${north.toFixed(2)},${east.toFixed(2)}`;
-    if (lastFetchedBboxKeyRef.current === bboxKey) return;
+    if (fetchedBboxKeysSetRef.current.has(bboxKey)) return;
 
     if (activeOverpassAbortRef.current) {
       activeOverpassAbortRef.current.abort();
     }
     const controller = new AbortController();
     activeOverpassAbortRef.current = controller;
-    lastFetchedBboxKeyRef.current = bboxKey;
 
     let apiSuccess = false;
     try {
@@ -629,6 +642,7 @@ export default function App() {
         const data = await res.json();
         if (data.features && data.features.length) {
           ingestTrailFeatures(data.features);
+          fetchedBboxKeysSetRef.current.add(bboxKey);
           apiSuccess = true;
         }
       }
@@ -673,6 +687,7 @@ export default function App() {
               }));
             if (feats.length) {
               ingestTrailFeatures(feats);
+              fetchedBboxKeysSetRef.current.add(bboxKey);
             }
           }
         }
@@ -785,6 +800,7 @@ export default function App() {
     map.setPadding({ left: initialLeftPad, right: initialRightPad, top: 44, bottom: initialIsMobile ? 80 : 0 });
 
     mapRef.current = map;
+    (window as any)._skiMap = map;
     (window as any).__skiAtlasMap = map;
 
     // Enable native linear drag-to-rotate around center without center ground clamping
@@ -1168,7 +1184,7 @@ export default function App() {
           setMapPitch(maxPitchAtZoom);
         }
       }
-      if (z >= 10.5 && fetchOverpassBboxRef.current) {
+      if (z >= 9.2 && fetchOverpassBboxRef.current) {
         try {
           const center = map.getCenter();
           const b = map.getBounds();
