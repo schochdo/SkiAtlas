@@ -242,3 +242,35 @@ export function getCategoryBadge(category?: SkiActivityCategory) {
       };
   }
 }
+
+/* =========================================================================
+   GEOSPATIAL & NAME DEDUPLICATION HELPERS
+   Prevents overlapping / duplicate labels between curated atlas & global sources
+   ========================================================================= */
+
+export const DUP_STOP_WORDS = new Set([
+  'ski', 'skis', 'resort', 'resorts', 'mountain', 'mountains', 'mt', 'mtn', 'area', 'areas',
+  'cat', 'heli', 'heliskiing', 'heliski', 'lodge', 'backcountry', 'powder', 'domain',
+  'domaine', 'paradise', 'center', 'centre', 'park', 'the', 'and', 'am', 'le', 'la',
+  'les', 'du', 'des', 'de', 'val', 'vallee', 'vallee', 'valley', 'basin', 'bowl', 'peak',
+  'summit', 'onsen', 'village', 'lake', 'pass', 'ridge', 'creek', 'hill', 'springs',
+  'alps', 'alpen', 'snow', 'nordic', 'cross', 'country', 'trail', 'trails', 'touring',
+  'grand', 'club', 'station', 'operation', 'operations', 'adventures', 'tours'
+]);
+
+export function cleanNameForMatching(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/['`’]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+export function getSignificantTokens(str: string): string[] {
+  return cleanNameForMatching(str)
+    .split(/\s+/)
+    .filter((w) => w.length >= 3 && !DUP_STOP_WORDS.has(w));
+}
+

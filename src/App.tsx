@@ -75,6 +75,8 @@ import {
   getResortStats,
   getResortWebsite,
   getCategoryBadge,
+  cleanNameForMatching,
+  getSignificantTokens,
 } from './utils/classification';
 import {
   getNeutralWeather,
@@ -1778,7 +1780,10 @@ export default function App() {
           'text-letter-spacing': 0.02,
           'text-max-width': 18,
           'symbol-sort-key': 1,
-          'text-optional': false,
+          'text-padding': 8,
+          'text-optional': true,
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
         },
         paint: {
           'text-color': '#1C1B18',
@@ -1850,7 +1855,12 @@ export default function App() {
           ],
           'text-offset': [0, 1.4],
           'text-anchor': 'top',
-          'text-max-width': 12,
+          'text-max-width': 14,
+          'symbol-sort-key': 1,
+          'text-padding': 8,
+          'text-optional': true,
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
         },
         paint: {
           'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
@@ -1920,8 +1930,9 @@ export default function App() {
           ],
           'text-offset': [0, 1.4],
           'text-anchor': 'top',
+          'symbol-sort-key': 0,
           'text-allow-overlap': true,
-          'text-ignore-placement': true,
+          'text-ignore-placement': false,
         },
         paint: {
           'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
@@ -2076,7 +2087,10 @@ export default function App() {
           'text-anchor': 'top',
           'symbol-sort-key': 2,
           'text-max-width': 16,
+          'text-padding': 8,
           'text-optional': true,
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
         },
         paint: {
           'text-color': '#1C1B18',
@@ -2617,20 +2631,32 @@ export default function App() {
       ],
     ];
 
+    // Exclude selected resort from base label layers to prevent duplicate text rendering
+    const notSelected: any = selectedResort?.id
+      ? ['!=', ['coalesce', ['get', 'id'], ''], selectedResort.id]
+      : true;
+
     // Curated downhill & nordic layers (yield to trail vectors above z12)
-    ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels'].forEach((layerId) => {
+    ['resorts-outer-ring', 'resorts-inner-dot'].forEach((layerId) => {
       if (map.getLayer(layerId)) {
         map.setFilter(layerId, ['all', ['!=', ['get', 'category'], 'heli_cat'], filterExpr] as any);
       }
     });
+    if (map.getLayer('resorts-labels')) {
+      map.setFilter('resorts-labels', ['all', ['!=', ['get', 'category'], 'heli_cat'], notSelected, filterExpr] as any);
+    }
 
     // Curated heli/cat operations layers (stay visible across all zooms)
-    ['resorts-heli-cat-ring', 'resorts-heli-cat-dot', 'resorts-heli-cat-labels'].forEach((layerId) => {
+    ['resorts-heli-cat-ring', 'resorts-heli-cat-dot'].forEach((layerId) => {
       if (map.getLayer(layerId)) {
         map.setLayoutProperty(layerId, 'visibility', showHeliCat ? 'visible' : 'none');
         map.setFilter(layerId, ['all', ['==', ['get', 'category'], 'heli_cat'], filterExpr] as any);
       }
     });
+    if (map.getLayer('resorts-heli-cat-labels')) {
+      map.setLayoutProperty('resorts-heli-cat-labels', 'visibility', showHeliCat ? 'visible' : 'none');
+      map.setFilter('resorts-heli-cat-labels', ['all', ['==', ['get', 'category'], 'heli_cat'], notSelected, filterExpr] as any);
+    }
 
     // Unclustered global points & labels (must retain ['!', ['has', 'point_count']])
     const unclusteredFilter: any = ['all', ['!', ['has', 'point_count']], filterExpr];
@@ -2641,9 +2667,9 @@ export default function App() {
       map.setFilter('global-unclustered-point', unclusteredFilter);
     }
     if (map.getLayer('global-unclustered-label')) {
-      map.setFilter('global-unclustered-label', unclusteredFilter);
+      map.setFilter('global-unclustered-label', ['all', ['!', ['has', 'point_count']], notSelected, filterExpr] as any);
     }
-  }, [showDownhill, showNordic, showHeliCat, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, mapLoaded]);
+  }, [showDownhill, showNordic, showHeliCat, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedResort, mapLoaded]);
 
   /* =========================================================================
      DYNAMIC MAP GEOJSON SOURCES FILTER SYNC
@@ -3333,6 +3359,8 @@ export default function App() {
         // Curated resort definitions for duplicate suppression
         const curatedList = [...GLOBAL_SKI_ATLAS, ...HELI_CAT_OPERATIONS].map((r) => ({
           name: r.name.toLowerCase().trim(),
+          cleanName: cleanNameForMatching(r.name),
+          tokens: getSignificantTokens(r.name),
           lat: r.lat,
           lng: r.lng,
         }));
@@ -3393,16 +3421,42 @@ export default function App() {
           const pLat = pt[1];
 
           let isDuplicate = false;
+          const gClean = cleanNameForMatching(pName);
+          const gTokens = getSignificantTokens(pName);
+
           for (const cr of curatedList) {
-            const dLat = Math.abs(pLat - cr.lat);
-            const dLng = Math.abs(pLng - cr.lng);
-            const dist = Math.hypot(dLat, dLng);
-            const nameMatch = pNameLower.includes(cr.name) || cr.name.includes(pNameLower);
-            // Genuine duplicate check: require name match within vicinity (0.12 deg) or practically identical coordinate pin (< 0.008 deg / ~800m)
-            // Prevents adjacent mountains (e.g. Park City & Deer Valley, Alta & Solitude, Stowe & Smugglers' Notch) from falsely suppressing each other
-            if ((nameMatch && dist < 0.12) || dist < 0.008) {
+            const dist = Math.hypot(pLat - cr.lat, pLng - cr.lng);
+
+            // 1. Extreme proximity: coordinate pin within ~800m
+            if (dist < 0.008) {
               isDuplicate = true;
               break;
+            }
+
+            // 2. Vicinity check (< 0.14 deg ~15 km)
+            if (dist < 0.14) {
+              const cClean = cr.cleanName;
+              const cTokens = cr.tokens;
+
+              // Whole substring match after punctuation stripping
+              const subMatch =
+                (cClean.length >= 4 && gClean.includes(cClean)) ||
+                (gClean.length >= 4 && cClean.includes(gClean));
+
+              if (subMatch) {
+                isDuplicate = true;
+                break;
+              }
+
+              // Token matching (require >= 2 common tokens or 1 distinctive token within 5km)
+              const commonTokens = cTokens.filter((t) => gTokens.includes(t));
+              if (
+                (commonTokens.length >= 2 && dist < 0.12) ||
+                (commonTokens.length >= 1 && (dist < 0.05 || commonTokens.some((t) => t.length >= 5)))
+              ) {
+                isDuplicate = true;
+                break;
+              }
             }
           }
           if (isDuplicate) continue;

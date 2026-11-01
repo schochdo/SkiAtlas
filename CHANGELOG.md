@@ -6,6 +6,25 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: resolve overlapping labels via cross-source deduplication and layer collision padding`
+- **What was wrong before**:
+  - In heli-skiing areas (e.g. Mica, Island Lake, Silverton, Haines, Golden, Revelstoke), multiple labels overlapped or rendered directly on top of each other.
+  - While most noticeable on heli-skiing tenures, the exact same underlying issue existed across downhill and nordic areas (e.g. Zermatt, Val d'Isère, Val Thorens, Alpe d'Huez, Saalbach, Northstar, Kicking Horse, Saas-Fee, Hakuba Happo-One).
+  - **Root Cause #1 (Cross-source duplicate ghost entries)**: In `loadGlobalSkiAreas`, string duplicate checking only tested `name.includes()`. In OpenStreetMap/OpenSkiMap, names have varying punctuation, parenthetical suffixes, and spelling variants (e.g., "Mica Creek" vs "Mica Heliskiing", "Island Lake Cat Skiing" at slightly offset coordinates, "Tignes - Val d'Isère" vs "Val d’Isère / Tignes", "Alpe d'Huez Grand Domaine" vs "Alpe d’Huez", "Skicircus Saalbach..." vs "Saalbach Hinterglemm"). These bypassed duplicate suppression and placed a duplicate global marker right next to the curated flagship.
+  - **Root Cause #2 (Selected resort double-rendering)**: When a resort was selected, `selected-resort-label` drew the resort's nameplate with `'text-allow-overlap': true` and `'text-ignore-placement': true`. However, the underlying base layer (`resorts-labels`, `resorts-heli-cat-labels`, or `global-unclustered-label`) did not exclude the selected resort. Both layers rendered text at the exact same location with different halos and sizes, causing a blurry double-text artifact.
+  - **Root Cause #3 (Missing symbol collision padding)**: `resorts-heli-cat-labels`, `resorts-labels`, and `global-unclustered-label` lacked `'text-padding': 8`, causing nearby distinct operations (e.g. Alaska Heliskiing Haines vs SEABA Heli-Skiing, 800m apart) to crash into each other at medium zooms instead of colliding cleanly.
+- **Solution**:
+  - **Systematic Cross-Source Deduplication & Normalization**:
+    - Added `cleanNameForMatching` and `getSignificantTokens` with a curated stop-word dictionary in [`src/utils/classification.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/classification.ts).
+    - In `loadGlobalSkiAreas` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), pre-computed cleaned token sets for curated downhill, nordic, and heli/cat flagships.
+    - Suppressed duplicate global features matching coordinate pins within 800m, substring matches within 15km, or matching significant brand tokens within 12km (while safely preserving distinct adjacent resorts like Alta vs Snowbird, Park City vs Deer Valley, and Stowe vs Smugglers' Notch).
+  - **Base Layer Exclusion for Active Selected Resort**:
+    - In the GPU filtering effect in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), added `notSelected` filter (`['!=', ['coalesce', ['get', 'id'], ''], selectedResort.id]`) to `resorts-labels`, `resorts-heli-cat-labels`, and `global-unclustered-label`.
+    - Added `selectedResort` to the dependency array. When any resort is selected, only the high-emphasis `selected-resort-label` renders its text.
+  - **Collision Padding & Symbol Hierarchy**:
+    - Added `'text-padding': 8`, `'text-optional': true`, `'text-allow-overlap': false`, and `'text-ignore-placement': false` across `resorts-labels`, `resorts-heli-cat-labels`, and `global-unclustered-label`.
+    - Set explicit `symbol-sort-key`: 0 for selected resort, 1 for curated flagships, and 2 for global unclustered ski areas.
+
 ### `fix: add permanent selected resort pin and integrate heli/cat operations into map sources`
 - **What was wrong before**:
   - Clicking on Mica Heliskiing (or any heli/cat operation in the directory) flew the camera to the lodge coordinates, but no point or label was shown on the map canvas.
