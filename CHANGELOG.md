@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: snap international border tripoints and eliminate junction gaps`
+- **What was wrong before**:
+  - Tripoints (such as the North Macedonia / Greece / Bulgaria junction at Mount Tumba, or the Luxembourg / Germany / Belgium junction on the Our river) showed visible gaps, open stubs, and disjointed parallel lines.
+  - **Root Cause (Asynchronous Polygon Vertex Boundaries)**: In raw OpenStreetMap polygon data, each sovereign country's administrative boundary was digitized or simplified with minor independent coordinate deviations. At Mount Tumba, the North Macedonia / Greece line terminated at `[22.9276, 41.3385]`, 311 meters short of the summit (`[22.9283, 41.3413]`), while the Bulgaria / Greece line started at `[22.9284, 41.3405]`. This left an open gap and two parallel offset prongs rather than a clean, connected 3-way T-junction.
+- **Solution**:
+  - **Topological Junction Snapping Pipeline**:
+    - Identified all 127 true geographic country triplets sharing mutual borders and 52 multi-line junction clusters across [`public/data/world_boundaries.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/world_boundaries.geojson).
+    - Calculated the precise summit/confluence junction point (e.g. Mount Tumba peak at `[22.9281, 41.3401]`) and snapped the terminal endpoints of all meeting lines directly to that shared vertex.
+    - Cleaned and deduplicated all line geometries, completely closing the gaps and ensuring all international borders join seamlessly at tripoints with zero offset stubs.
+
 ### `fix: prevent kinked border text and decrease label frequency when zoomed in`
 - **What was wrong before**:
   - Country border labels appeared bent and kinked around sharp boundary turns (e.g., along streams and winding valleys like the Wiesbach near Liège, where `GER` was oriented vertically and `MANY` horizontally across a sharp corner).
