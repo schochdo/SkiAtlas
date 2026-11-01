@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `feat: add Clean Canvas basemap and 360° rotation-invariant viewport vector reference labels`
+- **What was wrong before**:
+  - Raster tiles (such as OpenStreetMap and Esri reference overlays) have labels baked into 2D raster tiles oriented strictly North-up (0°). When navigating or orbiting in 3D terrain mode (e.g., viewing a mountain range looking South or East), the ground-baked text rotates with the surface, ending up upside-down or sideways.
+  - Furthermore, standard basemaps like OpenStreetMap already have labels baked into the tiles, so placing an external label layer on top produces duplicate, clashing text.
+- **Solution**:
+  - **Clean Canvas Basemap (`clean`)**: Added CartoDB Light No-Labels (`light_nolabels`) as a 4th basemap option across [`src/types/index.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/types/index.ts), [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts), and [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx). This provides worldwide landcover, shorelines, water bodies, and road networks with zero pre-rendered text from $z=0$ to $z=19$, completely eliminating duplicate text conflicts. Hillshading relief is smoothly blended in over mountainous terrain.
+  - **Rotation-Invariant Viewport Billboarding**: Created [`src/data/geographicReference.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/data/geographicReference.ts) containing curated sovereign nation centroids and key international ski gateways / alpine mountain centers. Added `geo-reference-countries` and `geo-reference-cities` WebGL symbol layers in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) configured with `'text-rotation-alignment': 'viewport'`, `'text-pitch-alignment': 'viewport'`, and `'text-keep-upright': true`. Country and city labels billboard directly to the camera viewport, remaining right-side up and readable at every bearing (0° to 360°) and pitch angle.
+  - **Dynamic Contrast & Auto-Styling**: Configured vector labels and Esri boundary lines in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) to automatically adapt contrast: light text with dark halo casing on dark Satellite 3D, and dark ink typography with light halo casing on Clean Canvas, OSM, and Alpine Topo.
+  - **Preserved Existing Basemaps**: Retained all three existing basemaps (Satellite 3D, OpenStreetMap, Alpine Topo) intact without dropping any data sources or requiring custom tile server infrastructure.
+
+---
+
+## 2026-10-31
+
 ### `refactor: retire redundant major cities layer and implement auto-contrast reference styling by basemap`
 - **What was wrong before**:
   - The UI featured a redundant, static "Major Cities" toggle with ~500 hard-coded point markers that lacked multi-scale settlement hierarchy and duplicated labels already provided by the authoritative Esri reference overlay.

@@ -84,6 +84,7 @@ import {
 } from './services/weather';
 import { GLOBAL_SKI_ATLAS } from './data/resorts';
 import { HELI_CAT_OPERATIONS } from './data/heliCat';
+import { GEOGRAPHIC_REFERENCE_GEOJSON } from './data/geographicReference';
 
 export {
   formatSnow,
@@ -1534,6 +1535,76 @@ export default function App() {
         },
       });
 
+      // Geographic Reference: Rotation-Invariant Viewport Billboarding (Always upright during 3D orbits)
+      map.addSource('geo-reference-source', {
+        type: 'geojson',
+        data: GEOGRAPHIC_REFERENCE_GEOJSON as any,
+      });
+
+      map.addLayer({
+        id: 'geo-reference-countries',
+        type: 'symbol',
+        source: 'geo-reference-source',
+        filter: ['==', ['get', 'kind'], 'country'],
+        minzoom: 1.2,
+        maxzoom: 5.5,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            1.5, 9,
+            3.5, 11,
+            5.0, 13,
+          ],
+          'text-transform': 'uppercase',
+          'text-letter-spacing': 0.22,
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
+          'text-allow-overlap': false,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 1.8,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      map.addLayer({
+        id: 'geo-reference-cities',
+        type: 'symbol',
+        source: 'geo-reference-source',
+        filter: ['!=', ['get', 'kind'], 'country'],
+        minzoom: 3.8,
+        maxzoom: 13.5,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans SemiBold', 'Arial Unicode MS Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            4, 9.5,
+            7, 11,
+            10, 13,
+          ],
+          'text-offset': [0, 0.4],
+          'text-anchor': 'top',
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
+          'text-allow-overlap': false,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 1.6,
+          'text-halo-blur': 0.5,
+        },
+      });
+
       // 2. Curated Seed Resorts Source (Concentric Ring Markers)
       const curatedFeatures = GLOBAL_SKI_ATLAS.map((r) => ({
         type: 'Feature',
@@ -2492,7 +2563,7 @@ export default function App() {
       map.setLayoutProperty(
         'hillshade-relief',
         'visibility',
-        basemapMode === 'osm' && showHillshade ? 'visible' : 'none'
+        (basemapMode === 'osm' || basemapMode === 'clean') && showHillshade ? 'visible' : 'none'
       );
     }
   }, [showHillshade, basemapMode, mapLoaded]);
@@ -2509,19 +2580,31 @@ export default function App() {
     if (map.getLayer('basemap-satellite')) {
       map.setLayoutProperty('basemap-satellite', 'visibility', basemapMode === 'satellite' ? 'visible' : 'none');
     }
+    // Clean Canvas (Zero baked labels)
+    if (map.getLayer('basemap-clean')) {
+      map.setLayoutProperty('basemap-clean', 'visibility', basemapMode === 'clean' ? 'visible' : 'none');
+    }
     // OpenStreetMap
     if (map.getLayer('basemap-osm')) {
       map.setLayoutProperty('basemap-osm', 'visibility', basemapMode === 'osm' ? 'visible' : 'none');
     }
     if (map.getLayer('hillshade-relief')) {
-      map.setLayoutProperty('hillshade-relief', 'visibility', basemapMode === 'osm' && showHillshade ? 'visible' : 'none');
+      map.setLayoutProperty(
+        'hillshade-relief',
+        'visibility',
+        (basemapMode === 'osm' || basemapMode === 'clean') && showHillshade ? 'visible' : 'none'
+      );
     }
     // Alpine Topo
     if (map.getLayer('basemap-topo')) {
       map.setLayoutProperty('basemap-topo', 'visibility', basemapMode === 'topo' ? 'visible' : 'none');
     }
     if (map.getLayer('alpine-painted-hillshade')) {
-      map.setLayoutProperty('alpine-painted-hillshade', 'visibility', basemapMode === 'topo' && showHillshade ? 'visible' : 'none');
+      map.setLayoutProperty(
+        'alpine-painted-hillshade',
+        'visibility',
+        basemapMode === 'topo' && showHillshade ? 'visible' : 'none'
+      );
     }
   }, [basemapMode, showHillshade, mapLoaded]);
 
@@ -2571,11 +2654,23 @@ export default function App() {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
     const isDark = basemapMode === 'satellite';
+    const refVisibility = showCountryOutlines ? 'visible' : 'none';
+
     if (map.getLayer('basemap-boundaries-dark')) {
       map.setLayoutProperty('basemap-boundaries-dark', 'visibility', showCountryOutlines && isDark ? 'visible' : 'none');
     }
     if (map.getLayer('basemap-boundaries-light')) {
       map.setLayoutProperty('basemap-boundaries-light', 'visibility', showCountryOutlines && !isDark ? 'visible' : 'none');
+    }
+    if (map.getLayer('geo-reference-countries')) {
+      map.setLayoutProperty('geo-reference-countries', 'visibility', refVisibility);
+      map.setPaintProperty('geo-reference-countries', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('geo-reference-countries', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    }
+    if (map.getLayer('geo-reference-cities')) {
+      map.setLayoutProperty('geo-reference-cities', 'visibility', refVisibility);
+      map.setPaintProperty('geo-reference-cities', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('geo-reference-cities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
   }, [showCountryOutlines, basemapMode, mapLoaded]);
 
@@ -3764,7 +3859,12 @@ export default function App() {
         }}
         onCloseMenu={() => setMapMenuOpen(false)}
         basemapMode={basemapMode}
-        onSelectBasemap={setBasemapMode}
+        onSelectBasemap={(mode) => {
+          setBasemapMode(mode);
+          if (mode === 'clean') {
+            setShowCountryOutlines(true);
+          }
+        }}
         showPeaks={showPeaks}
         onTogglePeaks={() => setShowPeaks((prev) => !prev)}
         showCountryOutlines={showCountryOutlines}
