@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `refactor: drop legacy vector country boundaries layer in favor of authoritative Esri reference overlay`
+- **What was wrong before**:
+  - When toggling Country Outlines, the application was still loading and rendering the 5.4MB legacy GeoJSON boundary layers (`country-boundaries-casing`, `country-boundaries-line`, `country-macro-labels`, `country-border-labels`) from `data/country_boundaries.geojson`.
+  - These custom vector lines drew heavy, generalized borders and duplicate labels that conflicted with the basemap.
+  - Furthermore, in `createMapStyle`, the authoritative Esri surveyed reference overlay (`basemap-boundaries`) was ordered beneath the opaque raster OSM and Topo basemaps, causing it to be obscured on those views while the coarse vector lines remained visible on top.
+- **Solution**:
+  - **Removed Legacy GeoJSON Layers**: Completely removed `country-boundaries-source`, `country-boundaries-casing`, `country-boundaries-line`, `country-macro-labels`, and `country-border-labels` from [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+  - **Pruned Unneeded Asset Files**: Deleted `public/data/country_boundaries.geojson` and [`src/data/countryBoundaries.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/data/countryBoundaries.ts), eliminating 5.4MB of dead asset payload.
+  - **Repositioned Authoritative Reference Overlay**: In [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts), reordered `basemap-boundaries` above the basemaps and hillshade/slope overlays so Esri's sub-meter surveyed boundary lines and place labels drape directly onto the 3D terrain mesh across all basemap modes (Satellite, OSM, Topo) when Country Outlines is toggled on.
+  - **Direct Toggle Binding**: Passed `showCountryOutlines` directly into `createMapStyle` and simplified the visibility update effect in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) to control `basemap-boundaries` exclusively.
+
+---
+
+## 2026-10-31
+
 ### `fix: eliminate high-altitude camera bouncing by decoupling pan gestures from ground clamping`
 - **What was wrong before**:
   - When panning across mountain ranges (such as over the Colorado Rockies or the Alps) at cruising altitudes (e.g. 30,000 feet, $z \approx 13$), the camera experienced severe vertical bouncing and altitude yo-yoing whenever peaks and valleys passed under the screen center.

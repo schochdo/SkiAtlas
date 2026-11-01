@@ -711,7 +711,7 @@ export default function App() {
       container: mapContainerRef.current,
       attributionControl: false,
       renderWorldCopies: false,
-      style: createMapStyle(earthProjection, basemapMode, terrainOverlay, terrainOverlayOpacity),
+      style: createMapStyle(earthProjection, basemapMode, terrainOverlay, terrainOverlayOpacity, showCountryOutlines),
       center: [12, 28], // Global scope flat map (Mercator)
       zoom: 1.8,
       minZoom: 1.2,
@@ -1533,148 +1533,6 @@ export default function App() {
           'line-color': '#D97706',
           'line-width': 2.8,
           'line-dasharray': [2, 1.5],
-        },
-      });
-
-      // Country Boundaries & Political Outlines (1:10m geodetic vector topology)
-      map.addSource('country-boundaries-source', {
-        type: 'geojson',
-        data: getStaticDataUrl('data/country_boundaries.geojson'),
-      });
-
-      map.addLayer({
-        id: 'country-boundaries-casing',
-        type: 'line',
-        source: 'country-boundaries-source',
-        filter: ['==', ['get', 'type'], 'country-boundary'],
-        layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
-          'line-cap': 'round',
-          'line-join': 'round',
-        },
-        paint: {
-          'line-color': '#FAF8F3',
-          'line-width': [
-            'interpolate', ['linear'], ['zoom'],
-            1, 1.8,
-            4, 2.8,
-            8, 4.0,
-            12, 3.2,
-          ],
-          'line-opacity': [
-            'interpolate', ['linear'], ['zoom'],
-            1, 0.7,
-            11, 0.7,
-            14, 0.4,
-            16, 0.2,
-          ],
-        },
-      });
-
-      map.addLayer({
-        id: 'country-boundaries-line',
-        type: 'line',
-        source: 'country-boundaries-source',
-        filter: ['==', ['get', 'type'], 'country-boundary'],
-        layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
-          'line-cap': 'round',
-          'line-join': 'round',
-        },
-        paint: {
-          'line-color': '#2C4C64',
-          'line-width': [
-            'interpolate', ['linear'], ['zoom'],
-            1, 0.9,
-            4, 1.4,
-            8, 2.0,
-            12, 1.6,
-          ],
-          'line-dasharray': [3, 2],
-          'line-opacity': [
-            'interpolate', ['linear'], ['zoom'],
-            1, 0.85,
-            11, 0.85,
-            14, 0.5,
-            16, 0.25,
-          ],
-        },
-      });
-
-      // Macro Country Labels: single clean label per sovereign nation at continental/macro zoom
-      map.addLayer({
-        id: 'country-macro-labels',
-        type: 'symbol',
-        source: 'country-boundaries-source',
-        filter: ['==', ['get', 'type'], 'macro-country'],
-        maxzoom: 4.8,
-        layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
-          'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            1.5, 9,
-            3.5, 11,
-            4.8, 12,
-          ],
-          'text-transform': 'uppercase',
-          'text-letter-spacing': 0.22,
-          'text-max-width': 8,
-          'text-allow-overlap': false,
-        },
-        paint: {
-          'text-color': '#2C4C64',
-          'text-halo-color': '#FAF8F3',
-          'text-halo-width': 1.6,
-          'text-halo-blur': 0.5,
-          'text-opacity': [
-            'interpolate', ['linear'], ['zoom'],
-            1.5, 0.9,
-            4.0, 0.9,
-            4.8, 0.0,
-          ],
-        },
-      });
-
-      // Frontier Border Labels: parallel to the border on each side respectively when zoomed in
-      map.addLayer({
-        id: 'country-border-labels',
-        type: 'symbol',
-        source: 'country-boundaries-source',
-        filter: ['==', ['get', 'type'], 'border-label'],
-        minzoom: 4.5,
-        maxzoom: 9.5,
-        layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
-          'symbol-placement': 'line',
-          'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            4.5, 8.5,
-            6.5, 9.5,
-            8.5, 11,
-          ],
-          'text-transform': 'uppercase',
-          'text-letter-spacing': 0.18,
-          'symbol-spacing': 350,
-          'text-keep-upright': true,
-          'text-allow-overlap': false,
-          'text-ignore-placement': false,
-        },
-        paint: {
-          'text-color': '#2C4C64',
-          'text-halo-color': '#FAF8F3',
-          'text-halo-width': 1.5,
-          'text-halo-blur': 0.5,
-          'text-opacity': [
-            'interpolate', ['linear'], ['zoom'],
-            4.5, 0.0,
-            5.0, 0.85,
-            9.0, 0.85,
-            9.5, 0.0,
-          ],
         },
       });
 
@@ -2788,12 +2646,9 @@ export default function App() {
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
-    const visibility = showCountryOutlines ? 'visible' : 'none';
-    ['basemap-boundaries', 'country-boundaries-casing', 'country-boundaries-line', 'country-macro-labels', 'country-border-labels'].forEach((id) => {
-      if (map.getLayer(id)) {
-        map.setLayoutProperty(id, 'visibility', visibility);
-      }
-    });
+    if (map.getLayer('basemap-boundaries')) {
+      map.setLayoutProperty('basemap-boundaries', 'visibility', showCountryOutlines ? 'visible' : 'none');
+    }
   }, [showCountryOutlines, mapLoaded]);
 
   useEffect(() => {

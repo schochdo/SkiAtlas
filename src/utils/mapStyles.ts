@@ -5,7 +5,8 @@ export const createMapStyle = (
   earthProjection: EarthProjectionMode,
   basemapMode: BasemapMode,
   terrainOverlay: TerrainOverlayMode = 'none',
-  terrainOverlayOpacity: number = 0.65
+  terrainOverlayOpacity: number = 0.65,
+  showCountryOutlines: boolean = false
 ): StyleSpecification => ({
   version: 8,
   projection: { type: earthProjection },
@@ -86,17 +87,6 @@ export const createMapStyle = (
         'raster-fade-duration': 0,
       },
     },
-    // High-Definition Surveyed Boundaries & Place Names Overlay (Draped directly onto 3D terrain mesh)
-    {
-      id: 'basemap-boundaries',
-      type: 'raster',
-      source: 'boundaries-tiles',
-      layout: { visibility: 'none' },
-      paint: {
-        'raster-opacity': 0.85,
-        'raster-fade-duration': 0,
-      },
-    },
     // Base 2: OpenStreetMap
     {
       id: 'basemap-osm',
@@ -172,6 +162,17 @@ export const createMapStyle = (
       paint: {
         'raster-opacity': terrainOverlayOpacity,
         'raster-fade-duration': 150,
+      },
+    },
+    // High-Definition Surveyed Boundaries & Place Names Reference Overlay (Draped directly onto 3D terrain mesh)
+    {
+      id: 'basemap-boundaries',
+      type: 'raster',
+      source: 'boundaries-tiles',
+      layout: { visibility: showCountryOutlines ? 'visible' : 'none' },
+      paint: {
+        'raster-opacity': 0.85,
+        'raster-fade-duration': 0,
       },
     },
   ],
