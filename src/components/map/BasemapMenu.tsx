@@ -203,7 +203,6 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                   { id: 'satellite', label: 'Satellite 3D' },
                   { id: 'osm', label: 'OpenStreetMap' },
                   { id: 'topo', label: 'Alpine Topo' },
-                  { id: 'clean', label: 'Clean Canvas' },
                 ].map((item) => {
                   const isSelected = basemapMode === item.id;
                   return (

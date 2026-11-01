@@ -95,27 +95,24 @@ export function localTrailsPlugin(): Plugin {
     return areaCoordsMap;
   }
 
-  return {
-    name: 'local-trails-api',
-    configureServer(server) {
-      server.middlewares.use('/api/trails', (req, res) => {
-        try {
-          const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
-          const resort = url.searchParams.get('resort');
-          const bbox = url.searchParams.get('bbox');
+  function handleTrailsRequest(req: any, res: any) {
+    try {
+      const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
+      const resort = url.searchParams.get('resort');
+      const bbox = url.searchParams.get('bbox');
 
-          // 1. Check if pre-exported JSON exists in public/data/trails/
-          if (resort) {
-            const staticPath = path.resolve(process.cwd(), `public/data/trails/${resort}.json`);
-            if (fs.existsSync(staticPath)) {
-              res.setHeader('Content-Type', 'application/json');
-              res.setHeader('Access-Control-Allow-Origin', '*');
-              res.setHeader('Cache-Control', 'public, max-age=3600');
-              const stream = fs.createReadStream(staticPath);
-              stream.pipe(res);
-              return;
-            }
-          }
+      // 1. Check if pre-exported JSON exists in public/data/trails/
+      if (resort) {
+        const staticPath = path.resolve(process.cwd(), `public/data/trails/${resort}.json`);
+        if (fs.existsSync(staticPath)) {
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Cache-Control', 'public, max-age=3600');
+          const stream = fs.createReadStream(staticPath);
+          stream.pipe(res);
+          return;
+        }
+      }
 
           // 2. Query local SQLite database
           const database = getDb();
@@ -269,7 +266,15 @@ export function localTrailsPlugin(): Plugin {
           res.statusCode = 500;
           res.end(JSON.stringify({ error: err?.message || 'Internal server error' }));
         }
-      });
+  }
+
+  return {
+    name: 'local-trails-api',
+    configureServer(server) {
+      server.middlewares.use('/api/trails', handleTrailsRequest);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use('/api/trails', handleTrailsRequest);
     },
   };
 }

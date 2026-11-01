@@ -621,7 +621,8 @@ export default function App() {
 
     let apiSuccess = false;
     try {
-      const res = await fetch(`/api/trails?bbox=${west},${south},${east},${north}`, {
+      const apiUrl = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/trails?bbox=${west},${south},${east},${north}`;
+      const res = await fetch(apiUrl, {
         signal: controller.signal,
       });
       if (res.ok) {
@@ -642,6 +643,40 @@ export default function App() {
           fetchResortStaticTrails(r.id);
         }
       }
+
+      // Live Overpass fallback for arbitrary mountain terrain worldwide when no local backend server is present
+      try {
+        const q = `[out:json][timeout:15];(way["piste:type"](${south},${west},${north},${east});way["aerialway"](${south},${west},${north},${east}););out geom tags;`;
+        const overpassRes = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`, {
+          signal: controller.signal,
+        });
+        if (overpassRes.ok) {
+          const opData = await overpassRes.json();
+          if (opData.elements && opData.elements.length) {
+            const feats = opData.elements
+              .filter((el: any) => el.geometry && el.geometry.length > 1)
+              .map((el: any) => ({
+                type: 'Feature',
+                id: String(el.id),
+                geometry: {
+                  type: 'LineString',
+                  coordinates: el.geometry.map((g: any) => [g.lon, g.lat]),
+                },
+                properties: {
+                  id: String(el.id),
+                  name: el.tags?.name || 'Trail',
+                  kind: el.tags?.aerialway ? 'lift' : 'piste',
+                  'piste:type': el.tags?.['piste:type'] || (el.tags?.aerialway ? undefined : 'downhill'),
+                  'piste:difficulty': el.tags?.['piste:difficulty'] || 'intermediate',
+                  aerialway: el.tags?.aerialway,
+                },
+              }));
+            if (feats.length) {
+              ingestTrailFeatures(feats);
+            }
+          }
+        }
+      } catch (_) {}
     }
   }, [fetchResortStaticTrails, ingestTrailFeatures]);
 
@@ -1554,9 +1589,9 @@ export default function App() {
           'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            1.5, 9,
-            3.5, 11,
-            5.0, 13,
+            1.5, 12,
+            3.5, 14.5,
+            5.0, 17,
           ],
           'text-transform': 'uppercase',
           'text-letter-spacing': 0.22,
@@ -1568,7 +1603,7 @@ export default function App() {
         paint: {
           'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
           'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
-          'text-halo-width': 1.8,
+          'text-halo-width': 2.2,
           'text-halo-blur': 0.5,
         },
       });
@@ -1586,9 +1621,9 @@ export default function App() {
           'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            4, 9.5,
-            7, 11,
-            10, 13,
+            4, 12,
+            7, 14,
+            10, 16.5,
           ],
           'text-offset': [0, 0.4],
           'text-anchor': 'top',
@@ -1600,7 +1635,7 @@ export default function App() {
         paint: {
           'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
           'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
-          'text-halo-width': 1.6,
+          'text-halo-width': 2.0,
           'text-halo-blur': 0.5,
         },
       });
@@ -2563,7 +2598,7 @@ export default function App() {
       map.setLayoutProperty(
         'hillshade-relief',
         'visibility',
-        (basemapMode === 'osm' || basemapMode === 'clean') && showHillshade ? 'visible' : 'none'
+        basemapMode === 'osm' && showHillshade ? 'visible' : 'none'
       );
     }
   }, [showHillshade, basemapMode, mapLoaded]);
@@ -2580,10 +2615,6 @@ export default function App() {
     if (map.getLayer('basemap-satellite')) {
       map.setLayoutProperty('basemap-satellite', 'visibility', basemapMode === 'satellite' ? 'visible' : 'none');
     }
-    // Clean Canvas (Zero baked labels)
-    if (map.getLayer('basemap-clean')) {
-      map.setLayoutProperty('basemap-clean', 'visibility', basemapMode === 'clean' ? 'visible' : 'none');
-    }
     // OpenStreetMap
     if (map.getLayer('basemap-osm')) {
       map.setLayoutProperty('basemap-osm', 'visibility', basemapMode === 'osm' ? 'visible' : 'none');
@@ -2592,7 +2623,7 @@ export default function App() {
       map.setLayoutProperty(
         'hillshade-relief',
         'visibility',
-        (basemapMode === 'osm' || basemapMode === 'clean') && showHillshade ? 'visible' : 'none'
+        basemapMode === 'osm' && showHillshade ? 'visible' : 'none'
       );
     }
     // Alpine Topo
@@ -3859,12 +3890,7 @@ export default function App() {
         }}
         onCloseMenu={() => setMapMenuOpen(false)}
         basemapMode={basemapMode}
-        onSelectBasemap={(mode) => {
-          setBasemapMode(mode);
-          if (mode === 'clean') {
-            setShowCountryOutlines(true);
-          }
-        }}
+        onSelectBasemap={setBasemapMode}
         showPeaks={showPeaks}
         onTogglePeaks={() => setShowPeaks((prev) => !prev)}
         showCountryOutlines={showCountryOutlines}

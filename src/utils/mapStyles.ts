@@ -33,18 +33,6 @@ export const createMapStyle = (
       maxzoom: 19,
       attribution: 'OpenStreetMap',
     },
-    // 2b. CartoDB Light No-Labels (Clean minimalist land, water & roads with ZERO baked text)
-    'clean-tiles': {
-      type: 'raster',
-      tiles: [
-        'https://a.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png',
-        'https://b.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png',
-        'https://c.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png',
-      ],
-      tileSize: 256,
-      maxzoom: 19,
-      attribution: '© CartoDB, OpenStreetMap',
-    },
     // 3. Esri World Topo Map (Clean contours, summits, elevations & passes from z=0 to z=19)
     'topo-tiles': {
       type: 'raster',
@@ -80,18 +68,20 @@ export const createMapStyle = (
       attribution: '© SkiAtlas Terrain Analysis',
     },
     // 9. Esri World Boundaries & Places Reference Overlay (Light text / dark casing — for dark backgrounds / Satellite 3D)
+    // tileSize: 512 renders tiles at 2x scale, doubling text size for high-DPI / Retina screens so labels are legible
     'boundaries-dark-tiles': {
       type: 'raster',
       tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'],
-      tileSize: 256,
+      tileSize: 512,
       maxzoom: 19,
       attribution: '© Esri, HERE, Garmin, OpenStreetMap',
     },
     // 10. Esri World Boundaries & Places Alternate Reference Overlay (Dark text / light halo — for light backgrounds / OSM & Topo)
+    // tileSize: 512 renders tiles at 2x scale, doubling text size for high-DPI / Retina screens so labels are legible
     'boundaries-light-tiles': {
       type: 'raster',
       tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places_Alternate/MapServer/tile/{z}/{y}/{x}'],
-      tileSize: 256,
+      tileSize: 512,
       maxzoom: 19,
       attribution: '© Esri, HERE, Garmin, OpenStreetMap',
     },
@@ -118,17 +108,6 @@ export const createMapStyle = (
         'raster-contrast': 0.06,
         'raster-saturation': 0.05,
         'raster-brightness-min': 0.02,
-        'raster-fade-duration': 0,
-      },
-    },
-    // Base 2b: Clean Canvas (No Labels)
-    {
-      id: 'basemap-clean',
-      type: 'raster',
-      source: 'clean-tiles',
-      layout: { visibility: basemapMode === 'clean' ? 'visible' : 'none' },
-      paint: {
-        'raster-contrast': 0.06,
         'raster-fade-duration': 0,
       },
     },
@@ -161,12 +140,12 @@ export const createMapStyle = (
         'hillshade-accent-color': 'rgba(74, 107, 83, 0.22)',
       },
     },
-    // Subtle hillshade for OSM & Clean Canvas modes (uses unified terrain-dem source)
+    // Subtle hillshade for OSM mode (uses unified terrain-dem source)
     {
       id: 'hillshade-relief',
       type: 'hillshade',
       source: 'terrain-dem',
-      layout: { visibility: (basemapMode === 'osm' || basemapMode === 'clean') && showHillshade ? 'visible' : 'none' },
+      layout: { visibility: basemapMode === 'osm' && showHillshade ? 'visible' : 'none' },
       paint: {
         'hillshade-exaggeration': 0.35,
         'hillshade-shadow-color': 'rgba(51, 65, 85, 0.40)',

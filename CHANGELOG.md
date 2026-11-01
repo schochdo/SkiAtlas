@@ -6,6 +6,25 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: drop Clean Canvas, double Esri reference label scale for readability, and add Brian Head trails & fallback`
+- **What was wrong before**:
+  - The experimental Clean Canvas layer had an unstyled/sparse appearance, risked requiring API keys, and added unnecessary clutter to the basemap options.
+  - The Esri reference overlay tiles (`World_Boundaries_and_Places` and `World_Boundaries_and_Places_Alternate`) were rendered at `tileSize: 256`, which made text labels and borders microscopic and illegible on high-DPI and Retina displays.
+  - Zooming into Brian Head Resort in Southern Utah displayed no ski trails or lifts because Brian Head was not in the curated resort atlas, lacked pre-baked static GeoJSON files in `public/data/trails/`, and `localTrailsPlugin` was not configured on preview servers.
+- **Solution**:
+  - **Removed Clean Canvas**: Completely removed Clean Canvas from [`src/types/index.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/types/index.ts), [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts), and [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx), returning to the 3 robust basemap options (Satellite 3D, OpenStreetMap, Alpine Topo).
+  - **Legible 2x Scaled Reference Labels**: In [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts), set `tileSize: 512` for `boundaries-dark-tiles` and `boundaries-light-tiles`. This doubles the rendered physical size of Esri's surveyed boundary lines and place labels on Retina screens, rendering them crisp, bold, and fully readable.
+  - **Enlarged Viewport Vector Labels**: In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), boosted font size ranges and halo widths for countries (`12px–17px`) and cities/alpine centers (`12px–16.5px`).
+  - **Added Brian Head Resort & Trails**:
+    - Added Brian Head Resort (Southern Utah, summit 10,920', base 9,600', 1,320' vert, 650 acres, 8 lifts, 71 trails) to [`src/data/resorts.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/data/resorts.ts).
+    - Exported 107 trails and lifts from `trails.db` to `public/data/trails/brian-head.json` and `public/data/trails/d17554e2aaa5a02bbc98023dd1f5cf4e17c6107e.json`, and updated `manifest.json`.
+    - Extended [`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts) to mount `/api/trails` in `configurePreviewServer` in addition to `configureServer`.
+    - Added a direct live Overpass API fallback in `fetchOverpassBbox` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) so zooming into any ski area worldwide will automatically load piste and lift geometries even on static hosts.
+
+---
+
+## 2026-10-31
+
 ### `fix: resolve map initialization crash by passing showHillshade to createMapStyle and aligning fontstacks`
 - **What was wrong before**:
   - The map failed to load entirely on initial render with an uncaught `ReferenceError: showHillshade is not defined` inside `createMapStyle()`. In `src/utils/mapStyles.ts`, the `hillshade-relief` layer referenced `showHillshade`, but `showHillshade` had not been declared in the function arguments.
