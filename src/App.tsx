@@ -971,20 +971,6 @@ export default function App() {
     const canvas = map.getCanvas();
     const canvasContainer = map.getCanvasContainer();
 
-    // Dynamic ground clamping based on altitude scale:
-    // When zoomed into mountain terrain (z >= 11.0), lock center to terrain elevation so zooming,
-    // panning, and orbiting operate directly on the mountain surface down to ground level.
-    // At macro/global scale (z < 11.0), unclamp to prevent camera altitude bouncing during cross-country pans.
-    const updateGroundClamping = (currentZoom: number) => {
-      if (isProgrammaticFlightActive) return;
-      const shouldClamp = currentZoom >= 11.0;
-      try {
-        if ((map as any).getCenterClampedToGround?.() !== shouldClamp) {
-          (map as any).setCenterClampedToGround?.(shouldClamp);
-        }
-      } catch (_) {}
-    };
-
     // 1. Intercept mousedown at capture phase on canvasContainer:
     // If a new click begins (left, middle, right), ensure dragRotate is properly calibrated
     // and any orphaned drag is cleared.
@@ -992,7 +978,6 @@ export default function App() {
       if (map.dragRotate && (map.dragRotate.around !== 'center' || map.dragRotate.movement !== 'linear')) {
         map.dragRotate.enable({ around: 'center', movement: 'linear' });
       }
-      updateGroundClamping(map.getZoom());
       resetOrphanedDragHandlers();
     };
 
@@ -1048,7 +1033,6 @@ export default function App() {
       // Do not fight programmatic flights across continents
       if (isProgrammaticFlightActive) return;
       const z = map.getZoom();
-      updateGroundClamping(z);
       // Ensure camera does not dip below terrain surface when pitched steeply at high zoom close to ground
       if (z > 16.0) {
         const maxPitchAtZoom = z <= 17.0 ? 75 : (z <= 19.0 ? 65 : 55);
@@ -1117,7 +1101,6 @@ export default function App() {
         updateBounds();
         setMapBearing(Math.round(map.getBearing()));
         setMapPitch(Math.round(map.getPitch()));
-        updateGroundClamping(map.getZoom());
         const alt = getCamAltitude();
         if (alt !== null) setCameraAltitudeMeters(alt);
         if (selectedTrailRef.current) {
@@ -1143,7 +1126,6 @@ export default function App() {
         } catch (_) {}
       }
       const z = map.getZoom();
-      updateGroundClamping(z);
       // Ensure camera does not dip below terrain surface when pitched steeply at high zoom close to ground
       if (z > 16.0) {
         const maxPitchAtZoom = z <= 17.0 ? 75 : (z <= 19.0 ? 65 : 55);

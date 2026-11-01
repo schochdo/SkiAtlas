@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: eliminate high-altitude camera bouncing by decoupling pan gestures from ground clamping`
+- **What was wrong before**:
+  - When panning across mountain ranges (such as over the Colorado Rockies or the Alps) at cruising altitudes (e.g. 30,000 feet, $z \approx 13$), the camera experienced severe vertical bouncing and altitude yo-yoing whenever peaks and valleys passed under the screen center.
+  - In a previous update, `updateGroundClamping` was added to canvas mousedown, `handleMapZoom`, `handleMapMove`, and `handleMapMoveEnd`, actively enforcing `setCenterClampedToGround(true)` at all zoom levels $z \ge 11.0$ (which represents all altitudes below ~115,000 feet).
+  - In MapLibre GL JS, whenever `_centerClampedToGround` is `true`, `HandlerManager` executes `putCenterBackOnTerrain()` after every pan gesture, and `applyTerrainChange()` recalculates elevation as DEM tiles load. This snapped the camera center elevation directly to whichever 14,000-foot summit or 5,000-foot valley crossed the crosshair, causing the camera altitude to repeatedly jump by thousands of feet while cruising 20k feet above the ground.
+- **Solution**:
+  - **Decoupled Pan & Move Gestures from Ground Clamping**: Completely removed `updateGroundClamping` and its call sites in `onCanvasMouseDown`, `handleMapZoom`, `handleMapMove`, and `handleMapMoveEnd` in `src/App.tsx`.
+  - **Steady Cruising Default**: Maintained `setCenterClampedToGround(false)` as the steady state during panning and flight, allowing the camera to maintain level altitude across mountain ranges without snapping to transient surface topography.
+  - **Programmatic Flight Isolation**: In `safeFlyTo` (`src/utils/camera.ts`), `setCenterClampedToGround(true)` is temporarily engaged only during programmatic resort arrival flights and is reliably re-disabled (`false`) upon arrival in the `moveend` callback.
+  - **Retained Extreme Zoom & Terrain Safety**: Close-up inspection down to $z=20.5$ (100–150 ft above snow) remains supported, and MapLibre's native `_raiseCameraByPitchAndZoom` safety checks prevent subterranean camera clipping.
+
+---
+
+## 2026-10-31
+
 ### `feat: integrate sub-meter surveyed Esri World Boundaries reference overlay and 1:10m geodetic land borders topology`
 - **What was wrong before**:
   - The previous country borders overlay used coarse 1:50m generalized geometry with only 3 decimal places (~100m error). Crucially:
