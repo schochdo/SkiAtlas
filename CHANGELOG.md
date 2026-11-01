@@ -6,7 +6,25 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
-### `feat: comprehensive major world cities reference and zoom-tiered alpine hubs`
+### `fix: persist country border labels across all zoom levels with zoom-responsive spacing`
+- **What was wrong before**:
+  - Country border labels (e.g. `FRANCE` / `GERMANY`, `FRANCE` / `SPAIN`) only appeared in an extremely narrow zoom window around z4.5–z6 and abruptly vanished when zooming in further.
+  - **Root Cause #1 (`maxzoom: 14.0` Cutoff)**: The border label symbol layers (`world-country-border-labels-left` and `world-country-border-labels-right`) had a hard cutoff at `maxzoom: 14.0`.
+  - **Root Cause #2 (Fixed `symbol-spacing: 1200` Screen Pixels)**: While 1200px spacing was originally introduced to prevent repeating labels at continental zoom levels, `symbol-spacing` is measured in screen pixels. As a user zooms in to inspect ski regions, passes, and mountain ridges (z7–z16+), the visible border segment inside the viewport shrinks to a few hundred pixels. Because MapLibre required 1200 screen pixels between label anchors, candidate placement points fell outside the viewport or failed the 45° angle test, causing the labels to vanish completely.
+- **Solution**:
+  - **Unbounded Zoom Visibility**:
+    - Removed `maxzoom: 14.0` from both left and right country border label layers in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), ensuring border labels remain permanently visible at all zoom levels when zooming into border destinations (e.g. Zermatt/Cervinia, Portes du Soleil, Ischgl/Samnaun).
+    - Set `minzoom: 4.5` so border labels only emerge once the map is fairly zoomed in to sub-continental regional framing, avoiding clutter at global scales.
+  - **Zoom-Responsive `symbol-spacing` Interpolation**:
+    - Replaced the fixed 1200px spacing with dynamic camera zoom interpolation:
+      - `z4.5`: 1200px (1–2 label pairs across the wide regional viewport)
+      - `z7.0`: 750px
+      - `z10.0`: 400px
+      - `z13.0`: 250px
+      - `z16.0`: 200px
+    - This guarantees MapLibre always finds valid anchor positions within the active screen viewport without overwhelming the map.
+  - **Relaxed Angle Deviation for Mountain Ridges**:
+    - Increased `'text-max-angle'` from 45° to 60° so that winding alpine ridges along national frontiers do not disqualify label placement.
 - **What was wrong before**:
   - Viewing regional maps showed small ski villages like *Madonna di Campiglio*, *Livigno*, or *Morzine*, but lacked major national capitals and world cities (e.g., Rome, London, Berlin, Madrid, Chicago, Washington D.C., Tokyo).
   - The `geo-reference-cities` layer in `src/App.tsx` lacked zoom and importance tiering, allowing tiny mountain villages to render at regional zoom levels (z4.0) alongside or in place of primary gateway cities.
