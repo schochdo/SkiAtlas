@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: stop international borders at coastline and eliminate maritime water boundaries`
+- **What was wrong before**:
+  - Country boundaries continued out into the water (e.g. extending 12 to 20 nautical miles out into the Bay of Biscay from the Pyrenees, into the Mediterranean from Menton, and into the Pacific through the Strait of Juan de Fuca and Atlantic through Passamaquoddy Bay).
+  - Purely maritime boundaries (e.g. France/United Kingdom across the English Channel, Russia/United States across the Bering Strait, Japan/Russia across the Sea of Okhotsk, Canada/France around Saint Pierre & Miquelon, Australia/Papua New Guinea, Caribbean straits, and Corsica/Sardinia) were being rendered over open ocean water.
+  - **Root Cause**: The raw OpenStreetMap boundary extraction used country administrative relation boundaries (`admin_level=2`). In OpenStreetMap, national sovereignty relations include territorial waters out to 12 nautical miles, causing shared water boundaries between neighboring EEZs and maritime corridors to be treated as international borders.
+- **Solution**:
+  - **Pruned Pure Maritime Pairs**:
+    - Cross-referenced country pairs against the authoritative land-border topology (`ne_10m_admin_0_boundary_lines_land` where `TYPE !== 'Water Indicator'`).
+    - Discarded 104 pure maritime/ocean features (such as France/UK in the Channel, Russia/US in the Bering Sea, Australia/Papua New Guinea, and Caribbean sea boundaries).
+  - **Coastline Land Clipping**:
+    - Built a high-performance spatial-grid land classifier using the global 10m land polygons from `world-atlas`.
+    - Truncated all real land-border LineStrings precisely at the water's edge:
+      - France/Spain now terminates on the Atlantic coast at Hendaye (`[-1.7879, 43.3792]`) and Mediterranean coast at Cerbère (`[3.1747, 42.4352]`), discarding offshore ocean extensions.
+      - France/Italy terminates at the Mediterranean coastline in Menton (`[7.5299, 43.7884]`).
+      - Canada/United States 49th parallel starts on land at the Pacific coast (`[-122.0981, 49.0024]`) and ends on the Atlantic coast in Maine (`[-67.218, 45.1666]`), eliminating the oceanic Juan de Fuca and Gulf of Maine tails.
+      - Denmark/Germany terminates at the North Sea and Baltic shorelines.
+  - Rebuilt [`public/data/world_boundaries.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/world_boundaries.geojson) with 486 clean land-only border segments and preserved state administrative boundaries.
+
 ### `fix: persist country border labels across all zoom levels with zoom-responsive spacing`
 - **What was wrong before**:
   - Country border labels (e.g. `FRANCE` / `GERMANY`, `FRANCE` / `SPAIN`) only appeared in an extremely narrow zoom window around z4.5–z6 and abruptly vanished when zooming in further.
