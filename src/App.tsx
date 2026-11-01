@@ -1685,32 +1685,75 @@ export default function App() {
         },
       });
 
-      // High-Definition International Border Line Labels (France / Germany, France / Switzerland, etc.)
+      // Left-side Border Label (e.g. FRANCE placed on the French side of the line)
       map.addLayer({
-        id: 'world-country-border-labels',
+        id: 'world-country-border-labels-left',
         type: 'symbol',
         source: 'world-boundaries-source',
         filter: [
           'all',
           ['==', ['get', 'kind'], 'country_border'],
-          ['has', 'border_label'],
-          ['!=', ['get', 'border_label'], ''],
+          ['has', 'name_left'],
+          ['!=', ['get', 'name_left'], ''],
         ],
-        minzoom: 3.5,
+        minzoom: 3.8,
         maxzoom: 14.0,
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'symbol-placement': 'line',
-          'symbol-spacing': 280,
-          'text-field': ['get', 'border_label'],
+          'symbol-spacing': 350,
+          'text-field': ['get', 'name_left'],
+          'text-offset': [0, -1.2],
           'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            3.5, 9.0,
+            3.8, 9.5,
             7.0, 11.5,
             11.0, 13.5,
           ],
-          'text-letter-spacing': 0.14,
+          'text-letter-spacing': 0.18,
+          'text-transform': 'uppercase',
+          'text-keep-upright': true,
+          'text-rotation-alignment': 'map',
+          'text-pitch-alignment': 'map',
+          'text-max-angle': 45,
+          'text-padding': 8,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1E293B',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Right-side Border Label (e.g. GERMANY placed on the German side of the line)
+      map.addLayer({
+        id: 'world-country-border-labels-right',
+        type: 'symbol',
+        source: 'world-boundaries-source',
+        filter: [
+          'all',
+          ['==', ['get', 'kind'], 'country_border'],
+          ['has', 'name_right'],
+          ['!=', ['get', 'name_right'], ''],
+        ],
+        minzoom: 3.8,
+        maxzoom: 14.0,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'symbol-placement': 'line',
+          'symbol-spacing': 350,
+          'text-field': ['get', 'name_right'],
+          'text-offset': [0, 1.2],
+          'text-font': ['Open Sans Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            3.8, 9.5,
+            7.0, 11.5,
+            11.0, 13.5,
+          ],
+          'text-letter-spacing': 0.18,
           'text-transform': 'uppercase',
           'text-keep-upright': true,
           'text-rotation-alignment': 'map',
@@ -3058,10 +3101,15 @@ export default function App() {
       map.setPaintProperty('world-state-borders', 'line-color', isDark ? '#FAF8F3' : '#475569');
       map.setPaintProperty('world-state-borders', 'line-opacity', isDark ? 0.35 : 0.25);
     }
-    if (map.getLayer('world-country-border-labels')) {
-      map.setLayoutProperty('world-country-border-labels', 'visibility', refVisibility);
-      map.setPaintProperty('world-country-border-labels', 'text-color', isDark ? '#FAF8F3' : '#1E293B');
-      map.setPaintProperty('world-country-border-labels', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    if (map.getLayer('world-country-border-labels-left')) {
+      map.setLayoutProperty('world-country-border-labels-left', 'visibility', refVisibility);
+      map.setPaintProperty('world-country-border-labels-left', 'text-color', isDark ? '#FAF8F3' : '#1E293B');
+      map.setPaintProperty('world-country-border-labels-left', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    }
+    if (map.getLayer('world-country-border-labels-right')) {
+      map.setLayoutProperty('world-country-border-labels-right', 'visibility', refVisibility);
+      map.setPaintProperty('world-country-border-labels-right', 'text-color', isDark ? '#FAF8F3' : '#1E293B');
+      map.setPaintProperty('world-country-border-labels-right', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
     if (map.getLayer('geo-reference-cities')) {
       map.setLayoutProperty('geo-reference-cities', 'visibility', refVisibility);

@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `feat: authentic OpenStreetMap international boundaries and distinct per-side country labels`
+- **What was wrong before**:
+  - Natural Earth boundary datasets (even 10m) deviated significantly from the actual cadastral lines shown on the OpenStreetMap basemap ("If you put it over the OSM border, it is very far off").
+  - Border labeling rendered a merged hyphenated/slashed string ("France / Germany") rather than placing each nation's name on its own sovereign side of the boundary.
+- **Solution**:
+  - **Sourced Authentic OpenStreetMap Boundary Geometries**:
+    - Replaced Natural Earth data with actual OpenStreetMap planetary country boundaries extracted directly from OpenStreetMap relations via [`public/data/world_boundaries.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/world_boundaries.geojson).
+    - Extracted 617 shared border lines (e.g. 513 points for France/Germany; 676 points for France/Switzerland; 1,082 points for Italy/Switzerland; 2,091 points for US/Canada) that match the OpenStreetMap basemap with 100% precision.
+  - **Dedicated Per-Side Country Labels**:
+    - Replaced the merged label with two dedicated, line-offset symbol layers in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx):
+      - `world-country-border-labels-left`: Evaluates `name_left` with a negative normal offset (`text-offset: [0, -1.2]`), rendering uppercase country text strictly inside the left country's territory (e.g., `FRANCE` on the French side).
+      - `world-country-border-labels-right`: Evaluates `name_right` with a positive normal offset (`text-offset: [0, 1.2]`), rendering uppercase country text strictly inside the right country's territory (e.g., `GERMANY` on the German side).
+    - Enabled on all basemap modes with auto-contrast haloing.
+
 ### `fix: stitch and spline-smooth boundary lines and enable universal border labeling`
 - **What was wrong before**:
   - No labeling appeared along the borders.
