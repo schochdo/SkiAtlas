@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: restore land border labeling at regional zoom and bust stale boundary cache`
+- **What was wrong before**:
+  - At regional sub-continental zoom levels (z4 to z8, such as viewing Greece, Albania, and the Ionian Sea), the land border across the Pindus mountains had zero labels.
+  - In addition, an outdated maritime water boundary line across the Ionian Sea was still being rendered from stale browser cache.
+  - **Root Cause #1 (Excessive `symbol-spacing: 1200–1400px` Exceeded Regional Border Lengths)**: The total screen length of the entire Albania/Greece land border at zoom 8 is ~823 pixels. Setting `symbol-spacing` to 1100–1400px meant MapLibre tested at most a single candidate at $D/2$.
+  - **Root Cause #2 (Overly Strict `text-max-angle: 25`)**: The single test point along the mountain ridge turned by > 25°. MapLibre rejected that single candidate, placing zero labels along the entire land frontier.
+  - **Root Cause #3 (High `minzoom: 4.5`)**: Restricted border labels from showing during regional zoom framing (z3.8 to z4.4).
+- **Solution**:
+  - **Regional Scale Anchor Spacing (`symbol-spacing: 400–750px`)**:
+    - Re-calibrated `symbol-spacing` across zoom levels: `z3.8`: 750px, `z6.0`: 600px, `z8.5`: 500px, `z12.0`: 450px, `z15.0`: 400px.
+    - An 800px regional mountain border now gets 2 to 3 candidate anchor points, ensuring MapLibre always finds a clean straight segment to place the label.
+  - **Natural Mountain Ridge Angle Tolerance (`text-max-angle: 38`)**:
+    - Set `text-max-angle` to 38°, allowing natural 20°–35° alpine ridge curvature while strictly preventing sharp 60°–90° hairpin kinks.
+  - **Early Regional Visibility (`minzoom: 3.8`)**:
+    - Lowered `minzoom` to 3.8 to align with regional framing.
+  - **Asset Version Hash Cache-Busting**:
+    - Added `?v=20261101_land` to `getStaticDataUrl('data/world_boundaries.geojson')` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), ensuring all clients instantly receive the clean, water-free, snapped vector boundaries without browser cache retention.
+
 ### `fix: snap international border tripoints and eliminate junction gaps`
 - **What was wrong before**:
   - Tripoints (such as the North Macedonia / Greece / Bulgaria junction at Mount Tumba, or the Luxembourg / Germany / Belgium junction on the Our river) showed visible gaps, open stubs, and disjointed parallel lines.
