@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: reduce border label frequency to 1-2 per viewport`
+- **What was wrong before**:
+  - Across a typical screen view along an international border (e.g. France/Spain near Maubermé), four sets of country labels were repeating in close proximity.
+  - **Root Cause**: `symbol-spacing` was set to `350px`, causing repeated labels every ~350px across a 1400px+ viewport.
+- **Solution**:
+  - Increased `symbol-spacing` to `1200px` and `text-padding` to `30px` across both `world-country-border-labels-left` and `world-country-border-labels-right`.
+  - Ensures only 1 or 2 sets of labels appear across the visible screen, keeping the cartographic display clean and uncrowded.
+
 ### `feat: authentic OpenStreetMap international boundaries and distinct per-side country labels`
 - **What was wrong before**:
   - Natural Earth boundary datasets (even 10m) deviated significantly from the actual cadastral lines shown on the OpenStreetMap basemap ("If you put it over the OSM border, it is very far off").
