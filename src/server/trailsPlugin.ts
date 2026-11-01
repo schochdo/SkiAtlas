@@ -125,37 +125,41 @@ export function localTrailsPlugin(): Plugin {
           let features: any[] = [];
 
           if (resort) {
-            const stmt = database.prepare(`
-              SELECT t.geojson FROM trails t
-              JOIN resort_trails rt ON t.id = rt.trail_id
-              WHERE rt.resort_id = ?
-            `);
-            const rows = stmt.all(resort) as { geojson: string }[];
-            features = rows.map((r) => {
-              const f = JSON.parse(r.geojson);
-              if (!f.id && f.properties?.id) f.id = f.properties.id;
-              return f;
-            });
+            // Priority 1: Query by resort coordinates (spatial bounding box)
+            // This captures all terrain polygons, freeride bowls, chutes, and steeps
+            // that are often not members of the resort site relation in OSM.
+            const coordsMap = getAreaCoords();
+            const pt = coordsMap?.get(resort);
+            if (pt) {
+              const [lng, lat] = pt;
+              const dLng = 0.065;
+              const dLat = 0.05;
+              const bboxStmt = database.prepare(`
+                SELECT DISTINCT t.geojson FROM trails t
+                WHERE t.min_lng <= ? AND t.max_lng >= ? AND t.min_lat <= ? AND t.max_lat >= ?
+                LIMIT 2500
+              `);
+              const bboxRows = bboxStmt.all(lng + dLng, lng - dLng, lat + dLat, lat - dLat) as { geojson: string }[];
+              features = bboxRows.map((r) => {
+                const f = JSON.parse(r.geojson);
+                if (!f.id && f.properties?.id) f.id = f.properties.id;
+                return f;
+              });
+            }
 
-            // Automatic spatial fallback: If no trails linked directly by ID, query around mountain coordinates
+            // Priority 2: If no coordinates or no features found spatially, fall back to relation query
             if (features.length === 0) {
-              const coordsMap = getAreaCoords();
-              const pt = coordsMap?.get(resort);
-              if (pt) {
-                const [lng, lat] = pt;
-                const dDeg = 0.045; // ~4-5 km radius
-                const bboxStmt = database.prepare(`
-                  SELECT DISTINCT t.geojson FROM trails t
-                  WHERE t.min_lng <= ? AND t.max_lng >= ? AND t.min_lat <= ? AND t.max_lat >= ?
-                  LIMIT 2500
-                `);
-                const bboxRows = bboxStmt.all(lng + dDeg, lng - dDeg, lat + dDeg, lat - dDeg) as { geojson: string }[];
-                features = bboxRows.map((r) => {
-                  const f = JSON.parse(r.geojson);
-                  if (!f.id && f.properties?.id) f.id = f.properties.id;
-                  return f;
-                });
-              }
+              const stmt = database.prepare(`
+                SELECT t.geojson FROM trails t
+                JOIN resort_trails rt ON t.id = rt.trail_id
+                WHERE rt.resort_id = ?
+              `);
+              const rows = stmt.all(resort) as { geojson: string }[];
+              features = rows.map((r) => {
+                const f = JSON.parse(r.geojson);
+                if (!f.id && f.properties?.id) f.id = f.properties.id;
+                return f;
+              });
             }
           } else if (bbox) {
             const parts = bbox.split(',').map(Number);

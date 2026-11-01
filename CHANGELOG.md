@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: restore extreme freeride bowls, chutes, and steeps dropped by relational export overwrite`
+- **What was wrong before**:
+  - Iconic steeps, bowls, chutes, and freeride terrain disappeared across premier destinations including Crested Butte (*Rambo*, *Spellbound Bowl*, *Headwall*, *Body Bag*), Breckenridge (*Imperial Bowl*, *Lake Chutes*, *Beyond Bowl*, *Serenity Bowl*, *Horseshoe Bowl*), and Jackson Hole (*Corbet's Couloir*, *Alta Chute*, *Tower Three Chute*).
+  - **Root Cause #1 (Relational Export Overwrite)**: In commit `d7ea7fc` on Oct 31, an automated script (`data_pipeline/export_all_ski_areas.cjs`) was added to export all 6,592 worldwide ski areas. When processing curated flagship resorts, the script used `JOIN resort_trails rt ON t.id = rt.trail_id`. Because OSM freeride bowls, chutes, and hike-to zones are rarely tagged as members of the resort's relation in OpenStreetMap, they lack entries in `resort_trails`. The script overwrote the curated static files in `public/data/trails/` with relation-only data, silently stripping 254 trails/bowls at Crested Butte, 159 at Breckenridge, and 92 at Jackson Hole.
+  - **Root Cause #2 (Server Static Interception & Stale Fallback)**: In `src/server/trailsPlugin.ts`, `/api/trails?resort=...` prioritized streaming the static JSON file in `public/data/trails/${resort}.json`. Furthermore, its fallback SQLite query also executed `JOIN resort_trails` and only queried spatial bounds if `features.length === 0`, preventing the full dataset in `trails.db` from ever being returned.
+- **Solution**:
+  - **Full Spatial Bounding Re-Export for All 76 Flagship Resorts**:
+    - Ran [`data_pipeline/export_resort_trails.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/data_pipeline/export_resort_trails.cjs) with full spatial bounding box queries (`dLng = 0.065, dLat = 0.05`), re-exporting all 76 curated flagship resorts. Restored Crested Butte to 372 features (122 terrain polygons), Breckenridge to 401 features (17 terrain polygons), and Jackson Hole to 249 features.
+  - **Hardened Universal Export Pipeline**:
+    - Updated [`data_pipeline/export_all_ski_areas.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/data_pipeline/export_all_ski_areas.cjs) so that curated flagship resorts always query spatial mountain extent, ensuring future bulk exports never overwrite curated files with stripped relational data.
+  - **Spatial Priority in Local Trails API**:
+    - Updated [`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts) to resolve resort coordinates first and query spatial mountain extent against `trails.db`, ensuring all steeps, chutes, and terrain polygons are returned regardless of relation tagging.
+
 ### `fix: correct border label sovereign side placement and prevent collision suppression`
 - **What was wrong before**:
   - Near Schengen and along the Franco-German border, `FRANCE` was displayed on the North-East side of the line inside Germany.

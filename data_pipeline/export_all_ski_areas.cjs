@@ -112,13 +112,13 @@ for (const r of atlasResorts) {
   const chosenArea = candidates[0]?.feat || null;
   const hexId = chosenArea?.properties?.id;
 
-  let rawRows = [];
-  if (hexId) {
-    rawRows = idStmt.all(hexId);
-  }
+  // Flagship curated resorts must ALWAYS query spatial bounds to capture
+  // all freeride bowls, chutes, glades, and unassociated steeps (not just relation members)
+  let rawRows = bboxStmt.all(r.lng + 0.065, r.lng - 0.065, r.lat + 0.05, r.lat - 0.05);
   if (!rawRows || rawRows.length === 0) {
-    // Spatial fallback: 0.065 lng, 0.05 lat around resort coords
-    rawRows = bboxStmt.all(r.lng + 0.065, r.lng - 0.065, r.lat + 0.05, r.lat - 0.05);
+    if (hexId) {
+      rawRows = idStmt.all(hexId);
+    }
   }
 
   const features = filterTrails(rawRows);
