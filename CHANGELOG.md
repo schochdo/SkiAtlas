@@ -4,6 +4,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-10-31
+
+### `feat: integrate sub-meter surveyed Esri World Boundaries reference overlay and 1:10m geodetic land borders topology`
+- **What was wrong before**:
+  - The previous country borders overlay used coarse 1:50m generalized geometry with only 3 decimal places (~100m error). Crucially:
+    1. Small-scale atlas geometry severely deviated from actual surveyed borders on the base map (e.g. the 49th parallel US-Canada border was 790m south into Montana/Washington; the Swiss-French border had only 29 vertices across 572 km, cutting straight chords across mountains and ski areas 1.5–2 km off from the real border).
+    2. Coastlines and islands had crude border lines drawn along beaches and water, clashing visibly with the base map's natural shorelines.
+    3. On Satellite basemap, the vector lines were stark, jagged, and lacked matching geodetic registration with high-resolution imagery.
+- **Solution**:
+  - **Esri World Boundaries & Places Reference Overlay**: Added the official `boundaries-tiles` reference layer (`Reference/World_Boundaries_and_Places/MapServer`) to `createMapStyle` and synced it to `showCountryOutlines`. Built by Esri using Garmin, HERE, and national geodetic survey data, this layer provides sub-meter precision boundaries and place names that drape directly onto the 3D terrain mesh and align 1:1 with satellite photography and topographical relief from $z=0$ to $z=19$.
+  - **1:10m Geodetic Vector Topology**: Extracted high-resolution 1:10m international land borders via `topojson.mesh(world, world.objects.countries, (a, b) => a !== b)` with 4 decimal places ($0.0001^\circ \approx 10\text{ meters}$ precision), increasing vertex count by an order of magnitude (165,621 vertices).
+  - **Land-Only Border Demarcation**: Applied strict `a !== b` topological filtering to eliminate artificial border lines along ocean coastlines, preserving natural water bodies and island outlines without coastal clutter.
+  - **Dynamic Alpine Line Opacity**: Implemented smooth zoom-dependent opacity scaling for vector boundary casing and dashed core lines ($z > 11$ gracefully attenuating down to $0.20–0.25$ at $z=16$) so international boundaries remain clear at regional zooms without obstructing ski pistes, lifts, and mountain topography up close.
+
+---
+
 ## 2026-10-30
 
 ### `fix: enable close-to-ground zooming down to snow level and dynamically anchor ground clamping in alpine terrain`

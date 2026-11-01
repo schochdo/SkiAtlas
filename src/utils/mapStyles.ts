@@ -65,6 +65,14 @@ export const createMapStyle = (
       maxzoom: 15,
       attribution: '© SkiAtlas Terrain Analysis',
     },
+    // 9. Esri World Boundaries & Places Reference Overlay (Sub-meter geodetic surveyed international borders, state lines & place names)
+    'boundaries-tiles': {
+      type: 'raster',
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: '© Esri, HERE, Garmin, OpenStreetMap',
+    },
   },
   layers: [
     // Base 1: Satellite 3D
@@ -75,6 +83,17 @@ export const createMapStyle = (
       layout: { visibility: basemapMode === 'satellite' ? 'visible' : 'none' },
       paint: {
         'raster-contrast': 0.08,
+        'raster-fade-duration': 0,
+      },
+    },
+    // High-Definition Surveyed Boundaries & Place Names Overlay (Draped directly onto 3D terrain mesh)
+    {
+      id: 'basemap-boundaries',
+      type: 'raster',
+      source: 'boundaries-tiles',
+      layout: { visibility: 'none' },
+      paint: {
+        'raster-opacity': 0.85,
         'raster-fade-duration': 0,
       },
     },

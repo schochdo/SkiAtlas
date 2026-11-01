@@ -84,7 +84,6 @@ import {
 } from './services/weather';
 import { GLOBAL_SKI_ATLAS } from './data/resorts';
 import { HELI_CAT_OPERATIONS } from './data/heliCat';
-import { COUNTRY_BOUNDARIES_GEOJSON } from './data/countryBoundaries';
 import { MAJOR_CITIES_GEOJSON } from './data/majorCities';
 
 export {
@@ -1555,10 +1554,10 @@ export default function App() {
         },
       });
 
-      // Country Boundaries & Political Outlines
+      // Country Boundaries & Political Outlines (1:10m geodetic vector topology)
       map.addSource('country-boundaries-source', {
         type: 'geojson',
-        data: COUNTRY_BOUNDARIES_GEOJSON as any,
+        data: getStaticDataUrl('data/country_boundaries.geojson'),
       });
 
       map.addLayer({
@@ -1578,8 +1577,15 @@ export default function App() {
             1, 1.8,
             4, 2.8,
             8, 4.0,
+            12, 3.2,
           ],
-          'line-opacity': 0.7,
+          'line-opacity': [
+            'interpolate', ['linear'], ['zoom'],
+            1, 0.7,
+            11, 0.7,
+            14, 0.4,
+            16, 0.2,
+          ],
         },
       });
 
@@ -1600,9 +1606,16 @@ export default function App() {
             1, 0.9,
             4, 1.4,
             8, 2.0,
+            12, 1.6,
           ],
           'line-dasharray': [3, 2],
-          'line-opacity': 0.85,
+          'line-opacity': [
+            'interpolate', ['linear'], ['zoom'],
+            1, 0.85,
+            11, 0.85,
+            14, 0.5,
+            16, 0.25,
+          ],
         },
       });
 
@@ -2794,7 +2807,7 @@ export default function App() {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
     const visibility = showCountryOutlines ? 'visible' : 'none';
-    ['country-boundaries-casing', 'country-boundaries-line', 'country-macro-labels', 'country-border-labels'].forEach((id) => {
+    ['basemap-boundaries', 'country-boundaries-casing', 'country-boundaries-line', 'country-macro-labels', 'country-border-labels'].forEach((id) => {
       if (map.getLayer(id)) {
         map.setLayoutProperty(id, 'visibility', visibility);
       }
