@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: stitch and spline-smooth boundary lines and enable universal border labeling`
+- **What was wrong before**:
+  - No labeling appeared along the borders.
+  - Boundary lines appeared "extremely rough" and jagged.
+  - **Root Cause #1 (Fragmented Line Segments Prevented Labeling)**: Natural Earth's raw dataset breaks international borders into dozens of tiny isolated fragments (e.g. France/Switzerland was 29 separate pieces; France/Germany was 19 pieces, many having only 2 to 4 points). In MapLibre GL, `symbol-placement: 'line'` evaluates each line segment individually. Because the 2-to-4 point segments were only a few hundred meters long, MapLibre silently dropped the label on every single segment as too short to fit. Additionally, `text-max-angle: 36` rejected winding mountain borders, and `minzoom: 5.5` hid labels when viewing alpine regions (which typically sit at zoom 4.0 to 5.0).
+  - **Root Cause #2 (Fragment Overlaps Caused Rough Lines)**: Rendering dozens of fragmented 2-to-8 point line segments with `line-cap: 'round'` produced visible overlapping round-cap blobs and jagged kinks along the border.
+  - **Root Cause #3 (Satellite-Only Restriction)**: Layer visibility was hardcoded to `basemapMode === 'satellite'`, so on the default OpenStreetMap and Alpine Topo basemaps, vector borders and labels were hidden (`visibility: 'none'`), leaving only low-resolution raster basemap tiles.
+- **Solution**:
+  - **Topological Segment Stitcher & Chaikin Spline Smoothing**:
+    - Stitched contiguous boundary segments into single, unified LineStrings per international border (e.g. France/Switzerland consolidated into 1 continuous line of 482 points; France/Germany into 1 continuous line of 290 points; Italy/Switzerland into 1 line of 584 points).
+    - Applied Chaikin spline smoothing to eliminate sharp polygonal vertices, creating smooth, organic cartographic curves.
+  - **Uninterrupted Border Line Labels**:
+    - With continuous 300+ point LineStrings spanning hundreds of kilometers, MapLibre GL seamlessly renders border labels (`symbol-spacing: 280`, `text-max-angle: 45`, `minzoom: 3.5`, `maxzoom: 14.0`).
+    - Drapes labels like `FRANCE / GERMANY`, `FRANCE / SWITZERLAND`, `ITALY / SWITZERLAND`, and `CANADA / UNITED STATES` directly along the line with subpixel anti-aliasing.
+  - **Universal Basemap Support & Active by Default**:
+    - Enabled `showCountryOutlines` by default (`true`).
+    - Added dynamic auto-contrast colors: luminous `#FAF8F3` over Satellite 3D, and deep slate `#334155` / `#1E293B` over OpenStreetMap and Alpine Topo.
+
 ### `feat: high-resolution Natural Earth 10m boundaries and localized border line labels`
 - **What was wrong before**:
   - Country boundary lines looked low-resolution, blocky, and jagged when zoomed in.

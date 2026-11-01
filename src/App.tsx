@@ -262,7 +262,7 @@ export default function App() {
   const [terrainExaggeration, setTerrainExaggeration] = useState<number>(0.70);
   const [showHillshade, setShowHillshade] = useState(true);
   const [showPeaks, setShowPeaks] = useState<boolean>(true);
-  const [showCountryOutlines, setShowCountryOutlines] = useState<boolean>(false);
+  const [showCountryOutlines, setShowCountryOutlines] = useState<boolean>(true);
   const [attributionOpen, setAttributionOpen] = useState(false);
 
   const handleTerrainExaggerationChange = (val: number) => {
@@ -1631,31 +1631,31 @@ export default function App() {
         data: getStaticDataUrl('data/world_boundaries.geojson'),
       });
 
-      // Country International Borders (High-resolution 10m Natural Earth vectors)
+      // Country International Borders (High-resolution 10m Natural Earth vectors, stitched & smoothed)
       map.addLayer({
         id: 'world-country-borders',
         type: 'line',
         source: 'world-boundaries-source',
         filter: ['==', ['get', 'kind'], 'country_border'],
         layout: {
-          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
+          visibility: showCountryOutlines ? 'visible' : 'none',
           'line-cap': 'round',
           'line-join': 'round',
         },
         paint: {
-          'line-color': '#FAF8F3',
+          'line-color': basemapMode === 'satellite' ? '#FAF8F3' : '#334155',
           'line-opacity': [
             'interpolate', ['linear'], ['zoom'],
             1, 0.40,
-            6, 0.60,
-            10, 0.80,
+            6, 0.65,
+            10, 0.85,
           ],
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
-            1, 1.0,
-            5, 1.4,
-            8, 1.8,
-            12, 2.2,
+            1, 1.2,
+            5, 1.8,
+            8, 2.4,
+            12, 3.0,
           ],
         },
       });
@@ -1668,12 +1668,12 @@ export default function App() {
         filter: ['==', ['get', 'kind'], 'state_border'],
         minzoom: 3.5,
         layout: {
-          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
+          visibility: showCountryOutlines ? 'visible' : 'none',
           'line-cap': 'round',
           'line-join': 'round',
         },
         paint: {
-          'line-color': '#FAF8F3',
+          'line-color': basemapMode === 'satellite' ? '#FAF8F3' : '#475569',
           'line-opacity': 0.35,
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
@@ -1685,7 +1685,7 @@ export default function App() {
         },
       });
 
-      // High-Definition International Border Line Labels (France / Germany, France / Switzerland, etc. when zoomed in)
+      // High-Definition International Border Line Labels (France / Germany, France / Switzerland, etc.)
       map.addLayer({
         id: 'world-country-border-labels',
         type: 'symbol',
@@ -1696,37 +1696,37 @@ export default function App() {
           ['has', 'border_label'],
           ['!=', ['get', 'border_label'], ''],
         ],
-        minzoom: 5.5,
-        maxzoom: 13.0,
+        minzoom: 3.5,
+        maxzoom: 14.0,
         layout: {
-          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
+          visibility: showCountryOutlines ? 'visible' : 'none',
           'symbol-placement': 'line',
-          'symbol-spacing': 450,
+          'symbol-spacing': 280,
           'text-field': ['get', 'border_label'],
           'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            5.5, 9.5,
-            8.0, 11.5,
-            11.0, 13.0,
+            3.5, 9.0,
+            7.0, 11.5,
+            11.0, 13.5,
           ],
           'text-letter-spacing': 0.14,
           'text-transform': 'uppercase',
           'text-keep-upright': true,
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'map',
-          'text-max-angle': 36,
-          'text-padding': 12,
+          'text-max-angle': 45,
+          'text-padding': 8,
         },
         paint: {
-          'text-color': '#FAF8F3',
-          'text-halo-color': '#1C1B18',
+          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1E293B',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
           'text-halo-width': 2.4,
           'text-halo-blur': 0.5,
         },
       });
 
-      // Geographic Reference: Gateway Metros & Alpine Valley Hubs (Only on Satellite 3D)
+      // Geographic Reference: Gateway Metros & Alpine Valley Hubs
       map.addSource('geo-reference-source', {
         type: 'geojson',
         data: GEOGRAPHIC_REFERENCE_GEOJSON as any,
@@ -1739,7 +1739,7 @@ export default function App() {
         minzoom: 4.0,
         maxzoom: 13.5,
         layout: {
-          visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none',
+          visibility: showCountryOutlines ? 'visible' : 'none',
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Regular'],
           'text-size': [
@@ -1756,8 +1756,8 @@ export default function App() {
           'text-allow-overlap': false,
         },
         paint: {
-          'text-color': '#FAF8F3',
-          'text-halo-color': '#1C1B18',
+          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1E293B',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
           'text-halo-width': 2.0,
           'text-halo-blur': 0.5,
         },
@@ -3046,25 +3046,26 @@ export default function App() {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
     const isDark = basemapMode === 'satellite';
-    // Reference labels and borders are strictly isolated to Satellite 3D since OSM & Topo basemaps already have native labels
-    const refVisibility = showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none';
+    const refVisibility = showCountryOutlines ? 'visible' : 'none';
 
     if (map.getLayer('world-country-borders')) {
       map.setLayoutProperty('world-country-borders', 'visibility', refVisibility);
-      map.setPaintProperty('world-country-borders', 'line-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('world-country-borders', 'line-color', isDark ? '#FAF8F3' : '#334155');
+      map.setPaintProperty('world-country-borders', 'line-opacity', isDark ? 0.65 : 0.45);
     }
     if (map.getLayer('world-state-borders')) {
       map.setLayoutProperty('world-state-borders', 'visibility', refVisibility);
-      map.setPaintProperty('world-state-borders', 'line-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('world-state-borders', 'line-color', isDark ? '#FAF8F3' : '#475569');
+      map.setPaintProperty('world-state-borders', 'line-opacity', isDark ? 0.35 : 0.25);
     }
     if (map.getLayer('world-country-border-labels')) {
       map.setLayoutProperty('world-country-border-labels', 'visibility', refVisibility);
-      map.setPaintProperty('world-country-border-labels', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('world-country-border-labels', 'text-color', isDark ? '#FAF8F3' : '#1E293B');
       map.setPaintProperty('world-country-border-labels', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
     if (map.getLayer('geo-reference-cities')) {
       map.setLayoutProperty('geo-reference-cities', 'visibility', refVisibility);
-      map.setPaintProperty('geo-reference-cities', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('geo-reference-cities', 'text-color', isDark ? '#FAF8F3' : '#1E293B');
       map.setPaintProperty('geo-reference-cities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
     if (map.getLayer('selected-resort-label')) {
