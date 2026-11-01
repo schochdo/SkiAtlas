@@ -66,10 +66,18 @@ export const createMapStyle = (
       maxzoom: 15,
       attribution: '© SkiAtlas Terrain Analysis',
     },
-    // 9. Esri World Boundaries & Places Reference Overlay (Sub-meter geodetic surveyed international borders, state lines & place names)
-    'boundaries-tiles': {
+    // 9. Esri World Boundaries & Places Reference Overlay (Light text / dark casing — for dark backgrounds / Satellite 3D)
+    'boundaries-dark-tiles': {
       type: 'raster',
       tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: '© Esri, HERE, Garmin, OpenStreetMap',
+    },
+    // 10. Esri World Boundaries & Places Alternate Reference Overlay (Dark text / light halo — for light backgrounds / OSM & Topo)
+    'boundaries-light-tiles': {
+      type: 'raster',
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places_Alternate/MapServer/tile/{z}/{y}/{x}'],
       tileSize: 256,
       maxzoom: 19,
       attribution: '© Esri, HERE, Garmin, OpenStreetMap',
@@ -164,12 +172,23 @@ export const createMapStyle = (
         'raster-fade-duration': 150,
       },
     },
-    // High-Definition Surveyed Boundaries & Place Names Reference Overlay (Draped directly onto 3D terrain mesh)
+    // High-Definition Reference Overlay for Dark Basemap (Satellite 3D): Light text with dark casing
     {
-      id: 'basemap-boundaries',
+      id: 'basemap-boundaries-dark',
       type: 'raster',
-      source: 'boundaries-tiles',
-      layout: { visibility: showCountryOutlines ? 'visible' : 'none' },
+      source: 'boundaries-dark-tiles',
+      layout: { visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none' },
+      paint: {
+        'raster-opacity': 0.85,
+        'raster-fade-duration': 0,
+      },
+    },
+    // High-Definition Reference Overlay for Light Basemaps (OSM & Alpine Topo): Dark text with clean light halo
+    {
+      id: 'basemap-boundaries-light',
+      type: 'raster',
+      source: 'boundaries-light-tiles',
+      layout: { visibility: showCountryOutlines && basemapMode !== 'satellite' ? 'visible' : 'none' },
       paint: {
         'raster-opacity': 0.85,
         'raster-fade-duration': 0,

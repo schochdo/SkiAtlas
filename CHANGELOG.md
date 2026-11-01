@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `refactor: retire redundant major cities layer and implement auto-contrast reference styling by basemap`
+- **What was wrong before**:
+  - The UI featured a redundant, static "Major Cities" toggle with ~500 hard-coded point markers that lacked multi-scale settlement hierarchy and duplicated labels already provided by the authoritative Esri reference overlay.
+  - The reference overlay used a single style (`World_Boundaries_and_Places` with light text / dark casing) across all basemaps. While this looked crisp over dark Satellite 3D imagery, light text with dark halos lacked contrast and readability over light basemaps (OpenStreetMap and Alpine Topo).
+- **Solution**:
+  - **Retired Redundant Major Cities**: Removed `major-cities-source`, `major-cities-glow`, `major-cities-point`, and `major-cities-labels` from [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), and deleted [`src/data/majorCities.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/data/majorCities.ts), saving 79 KB from the production JavaScript bundle.
+  - **Consolidated Menu Reference Control**: In [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx), consolidated the reference controls into a single **"Borders & Places"** toggle, retiring the separate city pins and eliminating label conflicts.
+  - **Auto-Contrast Reference Styling by Basemap**: In [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts) and [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx):
+    - When on Satellite 3D (`basemapMode === 'satellite'`), the overlay uses `World_Boundaries_and_Places` (`basemap-boundaries-dark`) with light typography and dark halos.
+    - When on OSM or Alpine Topo (`basemapMode !== 'satellite'`), the overlay automatically switches to `World_Boundaries_and_Places_Alternate` (`basemap-boundaries-light`) with crisp dark typography and subtle light halos.
+    - Connected both layers to the reactive basemap and visibility state for instant, seamless transitions.
+
+---
+
+## 2026-10-31
+
 ### `chore: address October security advisories, pin secure Node LTS runtime, and audit dependencies`
 - **What changed**:
   - **Pinned Node.js Runtime**: Created `.nvmrc` and `.node-version` pinning Node.js to `22.23.4` (the patched LTS release addressing the eMudhra certificate compromise, TLS hostname verification flaws, and Brotli decompression vulnerabilities disclosed on October 19–21).

@@ -84,7 +84,6 @@ import {
 } from './services/weather';
 import { GLOBAL_SKI_ATLAS } from './data/resorts';
 import { HELI_CAT_OPERATIONS } from './data/heliCat';
-import { MAJOR_CITIES_GEOJSON } from './data/majorCities';
 
 export {
   formatSnow,
@@ -261,7 +260,6 @@ export default function App() {
   const [showHillshade, setShowHillshade] = useState(true);
   const [showPeaks, setShowPeaks] = useState<boolean>(true);
   const [showCountryOutlines, setShowCountryOutlines] = useState<boolean>(false);
-  const [showMajorCities, setShowMajorCities] = useState<boolean>(false);
   const [attributionOpen, setAttributionOpen] = useState(false);
 
   const handleTerrainExaggerationChange = (val: number) => {
@@ -1536,80 +1534,6 @@ export default function App() {
         },
       });
 
-      // Major Cities Points and Labels
-      map.addSource('major-cities-source', {
-        type: 'geojson',
-        data: MAJOR_CITIES_GEOJSON as any,
-      });
-
-      map.addLayer({
-        id: 'major-cities-glow',
-        type: 'circle',
-        source: 'major-cities-source',
-        layout: {
-          visibility: showMajorCities ? 'visible' : 'none',
-        },
-        paint: {
-          'circle-radius': [
-            'interpolate', ['linear'], ['zoom'],
-            2, 4,
-            6, 5.5,
-            10, 7,
-          ],
-          'circle-color': '#FAF8F3',
-          'circle-opacity': 0.85,
-        },
-      });
-
-      map.addLayer({
-        id: 'major-cities-point',
-        type: 'circle',
-        source: 'major-cities-source',
-        layout: {
-          visibility: showMajorCities ? 'visible' : 'none',
-        },
-        paint: {
-          'circle-radius': [
-            'interpolate', ['linear'], ['zoom'],
-            2, 2.2,
-            6, 3.2,
-            10, 4.2,
-          ],
-          'circle-color': '#1C1B18',
-          'circle-stroke-width': 1.2,
-          'circle-stroke-color': '#FAF8F3',
-        },
-      });
-
-      map.addLayer({
-        id: 'major-cities-labels',
-        type: 'symbol',
-        source: 'major-cities-source',
-        layout: {
-          visibility: showMajorCities ? 'visible' : 'none',
-          'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            2, 9,
-            5, 10.5,
-            8, 12.5,
-            12, 14,
-          ],
-          'text-offset': [0, 0.75],
-          'text-anchor': 'top',
-          'text-padding': 6,
-          'text-allow-overlap': false,
-          'text-ignore-placement': false,
-        },
-        paint: {
-          'text-color': '#1C1B18',
-          'text-halo-color': '#FAF8F3',
-          'text-halo-width': 1.5,
-          'text-halo-blur': 0.5,
-        },
-      });
-
       // 2. Curated Seed Resorts Source (Concentric Ring Markers)
       const curatedFeatures = GLOBAL_SKI_ATLAS.map((r) => ({
         type: 'Feature',
@@ -2640,27 +2564,20 @@ export default function App() {
   }, [showPeaks, unitsMetric, mapLoaded]);
 
   /* =========================================================================
-     GEOGRAPHIC REFERENCE: COUNTRY OUTLINES & MAJOR CITIES
+     GEOGRAPHIC REFERENCE: BORDERS & PLACES (AUTO-CONTRAST BY BASEMAP)
      ========================================================================= */
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
-    if (map.getLayer('basemap-boundaries')) {
-      map.setLayoutProperty('basemap-boundaries', 'visibility', showCountryOutlines ? 'visible' : 'none');
+    const isDark = basemapMode === 'satellite';
+    if (map.getLayer('basemap-boundaries-dark')) {
+      map.setLayoutProperty('basemap-boundaries-dark', 'visibility', showCountryOutlines && isDark ? 'visible' : 'none');
     }
-  }, [showCountryOutlines, mapLoaded]);
-
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-    const visibility = showMajorCities ? 'visible' : 'none';
-    ['major-cities-glow', 'major-cities-point', 'major-cities-labels'].forEach((id) => {
-      if (map.getLayer(id)) {
-        map.setLayoutProperty(id, 'visibility', visibility);
-      }
-    });
-  }, [showMajorCities, mapLoaded]);
+    if (map.getLayer('basemap-boundaries-light')) {
+      map.setLayoutProperty('basemap-boundaries-light', 'visibility', showCountryOutlines && !isDark ? 'visible' : 'none');
+    }
+  }, [showCountryOutlines, basemapMode, mapLoaded]);
 
   /* =========================================================================
      60 FPS KEYBOARD CAMERA FLIGHT ENGINE (WASD + QE + ARROW KEYS)
@@ -3852,8 +3769,6 @@ export default function App() {
         onTogglePeaks={() => setShowPeaks((prev) => !prev)}
         showCountryOutlines={showCountryOutlines}
         onToggleCountryOutlines={() => setShowCountryOutlines((prev) => !prev)}
-        showMajorCities={showMajorCities}
-        onToggleMajorCities={() => setShowMajorCities((prev) => !prev)}
         terrainExaggeration={terrainExaggeration}
         onChangeTerrainExaggeration={handleTerrainExaggerationChange}
         terrainOverlay={terrainOverlay}
