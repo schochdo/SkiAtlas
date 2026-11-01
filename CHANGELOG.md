@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: correct border label sovereign side placement and prevent collision suppression`
+- **What was wrong before**:
+  - Near Schengen and along the Franco-German border, `FRANCE` was displayed on the North-East side of the line inside Germany.
+  - Additionally, the companion label (`GERMANY`) was completely absent along that segment.
+  - **Root Cause #1 (Reversed Sovereign Assignments)**: The France/Germany border line ran from Schengen (`[6.3677, 49.4694]`) to Basel (`[7.589, 47.5899]`). Walking South-East along this line, the left side (negative offset) points North-East into Germany, while the right side (positive offset) points South-West into France. The previous dataset assigned `name_left: France` and `name_right: Germany`, inverting their sovereign placement and throwing `FRANCE` into Germany.
+  - **Root Cause #2 (MapLibre Line Direction Reversal)**: For lines digitized East-to-West, MapLibre's `text-keep-upright: true` reversed the rendering vector 180° to keep text upright, inverting the normal offset.
+  - **Root Cause #3 (Excessive Padding Suppressing Companion Label)**: Setting `text-padding: 30px` created a 60px collision zone between the left and right label layers. Because the two symbol layers shared the exact same geometry and distance intervals, the left layer claimed the placement slot and MapLibre's collision engine silently suppressed the right layer (`GERMANY`).
+  - **Root Cause #4 (Missing Moselle River Boundary)**: The Germany-Luxembourg border along the Moselle river was broken into fragmented snippets due to the German-Luxembourg joint river condominium in OSM.
+- **Solution**:
+  - **Point-in-Polygon Side Verification & Direction Normalization**:
+    - Pre-normalized all 617 international boundary LineStrings in [`public/data/world_boundaries.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/world_boundaries.geojson) to travel West-to-East ($dx \ge 0$), guaranteeing MapLibre never flips rendering directions.
+    - Verified all border sides using point-in-polygon tests against authentic OSM national polygons: Germany is verified as `name_left` (negative offset, North-East) and France as `name_right` (positive offset, South-West).
+  - **Unified Continuous Luxembourg/Germany Boundary**:
+    - Extracted the continuous 191-point authentic OSM boundary running from the Schengen tripoint (`[6.3677, 49.4694]`) to the Belgium tripoint (`[6.1294, 50.1213]`) with `name_left: Luxembourg` and `name_right: Germany`.
+  - **Zero-Collision Label Offset & Tight Padding**:
+    - Set `text-offset` to `[0, -1.3]` (left) and `[0, 1.3]` (right) and tightened `text-padding` to `4px` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+    - Preserved `symbol-spacing: 1200` to maintain clean 1–2 label frequency across the viewport while ensuring both border nations render reliably without mutual collision suppression.
+
 ### `fix: reduce border label frequency to 1-2 per viewport`
 - **What was wrong before**:
   - Across a typical screen view along an international border (e.g. France/Spain near Maubermé), four sets of country labels were repeating in close proximity.

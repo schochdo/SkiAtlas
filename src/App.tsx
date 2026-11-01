@@ -1703,7 +1703,7 @@ export default function App() {
           'symbol-placement': 'line',
           'symbol-spacing': 1200,
           'text-field': ['get', 'name_left'],
-          'text-offset': [0, -1.2],
+          'text-offset': [0, -1.3],
           'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
@@ -1717,7 +1717,7 @@ export default function App() {
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'map',
           'text-max-angle': 45,
-          'text-padding': 30,
+          'text-padding': 4,
         },
         paint: {
           'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1E293B',
@@ -1745,7 +1745,7 @@ export default function App() {
           'symbol-placement': 'line',
           'symbol-spacing': 1200,
           'text-field': ['get', 'name_right'],
-          'text-offset': [0, 1.2],
+          'text-offset': [0, 1.3],
           'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
@@ -1759,7 +1759,7 @@ export default function App() {
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'map',
           'text-max-angle': 45,
-          'text-padding': 30,
+          'text-padding': 4,
         },
         paint: {
           'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1E293B',
