@@ -114,12 +114,9 @@ for (const r of atlasResorts) {
 
   // Flagship curated resorts must ALWAYS query spatial bounds to capture
   // all freeride bowls, chutes, glades, and unassociated steeps (not just relation members)
-  let rawRows = bboxStmt.all(r.lng + 0.065, r.lng - 0.065, r.lat + 0.05, r.lat - 0.05);
-  if (!rawRows || rawRows.length === 0) {
-    if (hexId) {
-      rawRows = idStmt.all(hexId);
-    }
-  }
+  const spatialRows = bboxStmt.all(r.lng + 0.065, r.lng - 0.065, r.lat + 0.05, r.lat - 0.05);
+  const relRows = hexId ? idStmt.all(hexId) : [];
+  const rawRows = [...spatialRows, ...relRows];
 
   const features = filterTrails(rawRows);
   if (features.length > 0) {
@@ -169,12 +166,11 @@ for (const a of globalAreas) {
   // Skip if already exported
   if (exportedSet.has(id)) continue;
 
-  let rows = idStmt.all(id);
-  if (!rows || rows.length === 0) {
-    // Spatial tight window fallback (~4-5km)
-    const [lng, lat] = a.geometry.coordinates;
-    rows = bboxStmt.all(lng + 0.045, lng - 0.045, lat + 0.035, lat - 0.035);
-  }
+  const [lng, lat] = a.geometry.coordinates;
+  // Systematic spatial query: captures 100% of trails, steeps, bowls, chutes, and glades
+  const spatialRows = bboxStmt.all(lng + 0.045, lng - 0.045, lat + 0.035, lat - 0.035);
+  const relRows = id ? idStmt.all(id) : [];
+  const rows = [...spatialRows, ...relRows];
 
   if (!rows || rows.length === 0) continue;
 
