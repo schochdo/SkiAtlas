@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `feat: comprehensive major world cities reference and zoom-tiered alpine hubs`
+- **What was wrong before**:
+  - Viewing regional maps showed small ski villages like *Madonna di Campiglio*, *Livigno*, or *Morzine*, but lacked major national capitals and world cities (e.g., Rome, London, Berlin, Madrid, Chicago, Washington D.C., Tokyo).
+  - The `geo-reference-cities` layer in `src/App.tsx` lacked zoom and importance tiering, allowing tiny mountain villages to render at regional zoom levels (z4.0) alongside or in place of primary gateway cities.
+- **Solution**:
+  - **Comprehensive Global Metros & Capitals Dataset**:
+    - Expanded [`src/data/geographicReference.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/data/geographicReference.ts) with 154 carefully curated reference cities and capitals across all continents (Rome, Paris, London, Berlin, Madrid, Vienna, Bern, Washington D.C., Chicago, Tokyo, Sydney, etc.).
+  - **3-Tier Geographic Hierarchy**:
+    - **Tier 1 (Major World Cities & Capitals)**: `kind: 'major_city'`, `minzoom: 3.5`, `importance: 1` — prominent regional orientation.
+    - **Tier 2 (Regional Gateways & Airport Hubs)**: `kind: 'gateway'`, `minzoom: 5.0`, `importance: 2` — ski travel corridors (e.g., Denver, Salt Lake City, Geneva, Innsbruck, Munich).
+    - **Tier 3 (Alpine Mountain Hubs & Ski Towns)**: `kind: 'alpine_hub'`, `minzoom: 7.0`, `importance: 3` — mountain valleys (e.g., Madonna di Campiglio, Chamonix, Zermatt, Aspen).
+  - **Dedicated Map Layers & Collision Sorting**:
+    - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), split the rendering into `geo-reference-cities` (z3.5+) and `geo-reference-alpine-hubs` (z7.0+).
+    - Applied `'symbol-sort-key': ['get', 'importance']` so major cities always take precedence in MapLibre collision detection and are never displaced by small towns.
+    - Synchronized both layers in the basemap theme observer for sharp auto-contrast on both 3D Satellite and vector topographic maps.
+
 ### `feat: systematic worldwide spatial trail export across all 6,592 ski areas`
 - **What was wrong before**:
   - The missing steeps and terrain zones problem was not isolated to a few flagship resorts; it affected thousands of ski areas worldwide.
