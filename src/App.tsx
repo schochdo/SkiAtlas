@@ -745,7 +745,7 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    const allResorts = [...GLOBAL_SKI_ATLAS];
+    const allResorts = [...GLOBAL_SKI_ATLAS, ...HELI_CAT_OPERATIONS];
     const BATCH = 5;
 
     async function prefetchAll() {
@@ -1694,15 +1694,15 @@ export default function App() {
       });
 
       // 2. Curated Seed Resorts Source (Concentric Ring Markers)
-      const curatedFeatures = GLOBAL_SKI_ATLAS.map((r) => ({
+      const curatedFeatures = [...GLOBAL_SKI_ATLAS, ...HELI_CAT_OPERATIONS].map((r) => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [r.lng, r.lat] },
         properties: {
           id: r.id,
           name: r.name,
           category: r.category || 'downhill',
-          primary_pass: r.pass_networks[0] || 'Independent',
-          pass_color: PASS_COLORS[r.pass_networks[0] || 'Independent'],
+          primary_pass: r.pass_networks?.[0] || 'Independent',
+          pass_color: r.category === 'heli_cat' ? '#C85A32' : (PASS_COLORS[r.pass_networks?.[0] || 'Independent'] || '#8A847C'),
           vertical_ft: r.vertical_drop_ft || 0,
           vertical_drop_ft: r.vertical_drop_ft || 0,
           skiable_acres: r.skiable_acres || 0,
@@ -1714,12 +1714,13 @@ export default function App() {
         data: { type: 'FeatureCollection', features: curatedFeatures as any },
       });
 
-      // Curated Outer Ring (fades out at z12 when trail lines take over)
+      // Curated Outer Ring (fades out at z12 when trail lines take over for lift-served resorts)
       map.addLayer({
         id: 'resorts-outer-ring',
         type: 'circle',
         source: 'resorts-source',
         maxzoom: 12,
+        filter: ['!=', ['get', 'category'], 'heli_cat'],
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
@@ -1734,12 +1735,13 @@ export default function App() {
         },
       });
 
-      // Curated Inner Ring (fades out at z12 when trail lines take over)
+      // Curated Inner Ring (fades out at z12 when trail lines take over for lift-served resorts)
       map.addLayer({
         id: 'resorts-inner-dot',
         type: 'circle',
         source: 'resorts-source',
         maxzoom: 12,
+        filter: ['!=', ['get', 'category'], 'heli_cat'],
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
@@ -1753,13 +1755,14 @@ export default function App() {
         },
       });
 
-      // Curated Single Label (minzoom 5.5, maxzoom 12 — yields to trail detail above z12)
+      // Curated Single Label (minzoom 5.5, maxzoom 12 — yields to trail detail above z12 for lift-served resorts)
       map.addLayer({
         id: 'resorts-labels',
         type: 'symbol',
         source: 'resorts-source',
         minzoom: 5.5,
         maxzoom: 12,
+        filter: ['!=', ['get', 'category'], 'heli_cat'],
         layout: {
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
@@ -1780,6 +1783,149 @@ export default function App() {
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
+          'text-halo-width': 2.8,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Heli & Cat Ski Outer Ring (remains visible across high zoom since heli/cat tenures have no lift pistes)
+      map.addLayer({
+        id: 'resorts-heli-cat-ring',
+        type: 'circle',
+        source: 'resorts-source',
+        filter: ['==', ['get', 'category'], 'heli_cat'],
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            2, 6,
+            6, 8,
+            10, 11,
+            14, 15,
+            18, 20,
+          ],
+          'circle-color': '#C85A32',
+          'circle-opacity': 0.25,
+          'circle-stroke-width': 1.6,
+          'circle-stroke-color': '#C85A32',
+        },
+      });
+
+      // Heli & Cat Ski Inner Dot
+      map.addLayer({
+        id: 'resorts-heli-cat-dot',
+        type: 'circle',
+        source: 'resorts-source',
+        filter: ['==', ['get', 'category'], 'heli_cat'],
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            2, 3,
+            6, 4,
+            10, 6,
+            14, 7,
+            18, 9,
+          ],
+          'circle-color': '#C85A32',
+          'circle-stroke-width': 1.4,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      // Heli & Cat Ski Name Label
+      map.addLayer({
+        id: 'resorts-heli-cat-labels',
+        type: 'symbol',
+        source: 'resorts-source',
+        minzoom: 5.0,
+        filter: ['==', ['get', 'category'], 'heli_cat'],
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 11.5,
+            9, 13.5,
+            13, 15,
+            16, 17,
+          ],
+          'text-offset': [0, 1.4],
+          'text-anchor': 'top',
+          'text-max-width': 12,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.5,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Dedicated Selected Active Resort Pin & Target Ring (Always visible at all zoom levels)
+      map.addSource('selected-resort-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+
+      map.addLayer({
+        id: 'selected-resort-pulse',
+        type: 'circle',
+        source: 'selected-resort-source',
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            4, 14,
+            8, 18,
+            12, 24,
+            16, 30,
+          ],
+          'circle-color': ['coalesce', ['get', 'pass_color'], '#C85A32'],
+          'circle-opacity': 0.2,
+          'circle-stroke-width': 2.5,
+          'circle-stroke-color': ['coalesce', ['get', 'pass_color'], '#C85A32'],
+          'circle-stroke-opacity': 0.9,
+        },
+      });
+
+      map.addLayer({
+        id: 'selected-resort-dot',
+        type: 'circle',
+        source: 'selected-resort-source',
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            4, 5,
+            8, 6.5,
+            12, 8,
+            16, 10,
+          ],
+          'circle-color': ['coalesce', ['get', 'pass_color'], '#C85A32'],
+          'circle-stroke-width': 2.2,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      map.addLayer({
+        id: 'selected-resort-label',
+        type: 'symbol',
+        source: 'selected-resort-source',
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            4, 12,
+            8, 13.5,
+            12, 15,
+            16, 17,
+          ],
+          'text-offset': [0, 1.4],
+          'text-anchor': 'top',
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
           'text-halo-width': 2.8,
           'text-halo-blur': 0.5,
         },
@@ -2012,6 +2158,12 @@ export default function App() {
       map.on('click', 'resorts-outer-ring', onResortClick);
       map.on('click', 'resorts-inner-dot', onResortClick);
       map.on('click', 'resorts-labels', onResortClick);
+      map.on('click', 'resorts-heli-cat-ring', onResortClick);
+      map.on('click', 'resorts-heli-cat-dot', onResortClick);
+      map.on('click', 'resorts-heli-cat-labels', onResortClick);
+      map.on('click', 'selected-resort-pulse', onResortClick);
+      map.on('click', 'selected-resort-dot', onResortClick);
+      map.on('click', 'selected-resort-label', onResortClick);
 
       // Click on global ski area
       const onGlobalClick = (e: any) => {
@@ -2049,6 +2201,12 @@ export default function App() {
           'resorts-outer-ring',
           'resorts-inner-dot',
           'resorts-labels',
+          'resorts-heli-cat-ring',
+          'resorts-heli-cat-dot',
+          'resorts-heli-cat-labels',
+          'selected-resort-pulse',
+          'selected-resort-dot',
+          'selected-resort-label',
           'global-unclustered-outer-ring',
           'global-unclustered-point',
           'global-unclustered-label',
@@ -2186,6 +2344,12 @@ export default function App() {
         'resorts-outer-ring',
         'resorts-inner-dot',
         'resorts-labels',
+        'resorts-heli-cat-ring',
+        'resorts-heli-cat-dot',
+        'resorts-heli-cat-labels',
+        'selected-resort-pulse',
+        'selected-resort-dot',
+        'selected-resort-label',
         'global-clusters',
         'global-unclustered-outer-ring',
         'global-unclustered-point',
@@ -2453,10 +2617,18 @@ export default function App() {
       ],
     ];
 
-    // Curated layers
+    // Curated downhill & nordic layers (yield to trail vectors above z12)
     ['resorts-outer-ring', 'resorts-inner-dot', 'resorts-labels'].forEach((layerId) => {
       if (map.getLayer(layerId)) {
-        map.setFilter(layerId, filterExpr as any);
+        map.setFilter(layerId, ['all', ['!=', ['get', 'category'], 'heli_cat'], filterExpr] as any);
+      }
+    });
+
+    // Curated heli/cat operations layers (stay visible across all zooms)
+    ['resorts-heli-cat-ring', 'resorts-heli-cat-dot', 'resorts-heli-cat-labels'].forEach((layerId) => {
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, 'visibility', showHeliCat ? 'visible' : 'none');
+        map.setFilter(layerId, ['all', ['==', ['get', 'category'], 'heli_cat'], filterExpr] as any);
       }
     });
 
@@ -2530,7 +2702,8 @@ export default function App() {
       if (showNordic) allowedCats.add('nordic');
       if (showHeliCat) allowedCats.add('heli_cat');
 
-      const filteredCurated = GLOBAL_SKI_ATLAS.filter((r) => {
+      const allCurated = [...GLOBAL_SKI_ATLAS, ...HELI_CAT_OPERATIONS];
+      const filteredCurated = allCurated.filter((r) => {
         const cat = r.category || 'downhill';
         if (!allowedCats.has(cat)) return false;
         const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
@@ -2560,8 +2733,8 @@ export default function App() {
           id: r.id,
           name: r.name,
           category: r.category || 'downhill',
-          primary_pass: r.pass_networks[0] || 'Independent',
-          pass_color: PASS_COLORS[r.pass_networks[0] || 'Independent'],
+          primary_pass: r.pass_networks?.[0] || 'Independent',
+          pass_color: r.category === 'heli_cat' ? '#C85A32' : (PASS_COLORS[r.pass_networks?.[0] || 'Independent'] || '#8A847C'),
           vertical_ft: r.vertical_drop_ft || 0,
           vertical_drop_ft: r.vertical_drop_ft || 0,
           skiable_acres: r.skiable_acres || 0,
@@ -2573,6 +2746,47 @@ export default function App() {
       curatedSrc.setData({ type: 'FeatureCollection', features: filteredCurated as any });
     }
   }, [showDownhill, showNordic, showHeliCat, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedPasses, searchQuery, mapLoaded, resorts]);
+
+  /* =========================================================================
+     SELECTED RESORT PIN & TARGET RING
+     Guarantees the selected resort/lodge location is always distinctly highlighted
+     at every zoom level without disappearing.
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    const src = map.getSource('selected-resort-source') as GeoJSONSource;
+    if (!src) return;
+
+    if (selectedResort && selectedResort.lng != null && selectedResort.lat != null) {
+      const pass = selectedResort.pass_networks?.[0] || 'Independent';
+      const passColor = selectedResort.category === 'heli_cat' ? '#C85A32' : (PASS_COLORS[pass] || '#8A847C');
+      src.setData({
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [selectedResort.lng, selectedResort.lat],
+            },
+            properties: {
+              id: selectedResort.id,
+              name: selectedResort.name,
+              category: selectedResort.category,
+              pass_color: passColor,
+            },
+          },
+        ],
+      });
+    } else {
+      src.setData({
+        type: 'FeatureCollection',
+        features: [],
+      });
+    }
+  }, [selectedResort, mapLoaded]);
 
   /* =========================================================================
      EARTH PROJECTION TOGGLE (3D Spherical Globe vs 2D Planar Mercator)
@@ -2755,6 +2969,14 @@ export default function App() {
       map.setLayoutProperty('geo-reference-cities', 'visibility', refVisibility);
       map.setPaintProperty('geo-reference-cities', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
       map.setPaintProperty('geo-reference-cities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    }
+    if (map.getLayer('selected-resort-label')) {
+      map.setPaintProperty('selected-resort-label', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('selected-resort-label', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    }
+    if (map.getLayer('resorts-heli-cat-labels')) {
+      map.setPaintProperty('resorts-heli-cat-labels', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('resorts-heli-cat-labels', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
   }, [showCountryOutlines, basemapMode, mapLoaded]);
 
@@ -3109,7 +3331,7 @@ export default function App() {
         if (cancelled || !data || !data.features) return;
 
         // Curated resort definitions for duplicate suppression
-        const curatedList = GLOBAL_SKI_ATLAS.map((r) => ({
+        const curatedList = [...GLOBAL_SKI_ATLAS, ...HELI_CAT_OPERATIONS].map((r) => ({
           name: r.name.toLowerCase().trim(),
           lat: r.lat,
           lng: r.lng,
@@ -3499,6 +3721,7 @@ export default function App() {
     const topPad = 60;
 
     const isNordic = resort.category === 'nordic';
+    const isHeliCat = resort.category === 'heli_cat';
     // Bearing: use resort's calibrated default_bearing (fall-line looking up from valley to peak)
     const bearing = isNordic ? 0 : (resort.default_bearing ?? (resort.lat < 0 ? 0 : 180));
 
@@ -3508,6 +3731,10 @@ export default function App() {
     if (isNordic) {
       const km = Math.max(resort.trail_km || 20, 5);
       zoom = Math.max(11.0, Math.min(14.0, 13.8 - Math.log2(km / 10) * 0.65));
+    } else if (isHeliCat) {
+      // Heli/Cat operations have vast tenures centered on a remote lodge
+      // Zoom 12.2 frames the lodge clearing/lake and surrounding alpine peaks perfectly
+      zoom = 12.2;
     } else {
       const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
       const acres = Math.max(resort.skiable_acres || 500, 200);
@@ -3517,9 +3744,9 @@ export default function App() {
     // Midpoint calculation:
     // Curated flagships in GLOBAL_SKI_ATLAS have base lodge / village coordinates.
     // Advancing along default_bearing centers the physical mountain between base and summit.
-    // Global ski areas are already centered on the mountain polygon centroid, so do not double-advance.
+    // Global ski areas & heli/cat operations are already centered on the lodge or mountain polygon centroid.
     let targetCenter: [number, number] = [resort.lng, resort.lat];
-    if (!isNordic) {
+    if (!isNordic && !isHeliCat) {
       const isCuratedBase = GLOBAL_SKI_ATLAS.some((g) => g.id === resort.id);
       if (isCuratedBase) {
         const vert = Math.max(resort.vertical_drop_ft || 1500, 500);
@@ -3532,7 +3759,7 @@ export default function App() {
     }
 
     // 46° pitch gives an authentic alpine skier perspective: standing at base looking up into the peaks
-    const pitch = isNordic ? 28 : 46;
+    const pitch = isNordic ? 28 : (isHeliCat ? 42 : 46);
 
     // Compute dynamic duration based on flight distance across the globe so transcontinental jumps don't stall
     const curCenter = mapRef.current.getCenter();
@@ -3591,19 +3818,22 @@ export default function App() {
     const topPad = 60;
 
     const isNordic = p.category === 'nordic';
+    const isHeliCat = p.category === 'heli_cat';
     const bearing = isNordic ? 0 : (Number(p.default_bearing) || (coords[1] < 0 ? 0 : 180));
 
     let gZoom: number;
     if (isNordic) {
       const km = Math.max(p.trail_km || 20, 5);
       gZoom = Math.max(11.0, Math.min(14.0, 13.8 - Math.log2(km / 10) * 0.65));
+    } else if (isHeliCat) {
+      gZoom = 12.2;
     } else {
       const gVert = Math.max(p.vertical_ft || 1500, 500);
       const gAcres = Math.max(p.skiable_acres || 500, 200);
       gZoom = Math.max(10.8, Math.min(14.5, 13.6 - Math.log2(gVert / 1000) * 0.45 - Math.log2(gAcres / 1000) * 0.35));
     }
 
-    const pitch = isNordic ? 28 : 46;
+    const pitch = isNordic ? 28 : (isHeliCat ? 42 : 46);
 
     safeFlyTo(mapRef.current, {
       center: [coords[0], coords[1]],

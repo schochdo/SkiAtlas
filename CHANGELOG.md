@@ -6,7 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
-### `feat: systematic universal trail export and offline-first static loading architecture`
+### `fix: add permanent selected resort pin and integrate heli/cat operations into map sources`
+- **What was wrong before**:
+  - Clicking on Mica Heliskiing (or any heli/cat operation in the directory) flew the camera to the lodge coordinates, but no point or label was shown on the map canvas.
+  - **Root Cause #1 (Missing from map source)**: `HELI_CAT_OPERATIONS` was present in directory state, but omitted from `resorts-source` (`curatedFeatures` and `filteredCurated`), which only mapped `GLOBAL_SKI_ATLAS`.
+  - **Root Cause #2 (Disappearing markers at zoom 12)**: Standard curated layers had `maxzoom: 12` to yield to trail vectors. Since heli/cat operations have no lift pistes, they disappeared completely when zoomed in.
+  - **Root Cause #3 (Acreage zoom pull-back)**: Zoom calculation scaled inversely with skiable acreage ($13.6 - \log_2(\text{acres}) \cdot 0.35$). Mica's 300,000-acre tenure pulled the camera back to $z \approx 9.36$ in the middle of vast wilderness with no visible pin or marker.
+- **Solution**:
+  - **Dedicated Selected Active Resort Pin & Target Ring**:
+    - Added `selected-resort-source` with `selected-resort-pulse`, `selected-resort-dot`, and `selected-resort-label` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+    - When any mountain or lodge is selected, its exact location is prominently rendered with a pulsing target ring, solid white-bordered pip, and bold nameplate with collision avoidance disabled (`text-allow-overlap: true`).
+    - Stays permanently visible across all zoom levels ($z=0$ to $z=24$).
+  - **Integrated Heli/Cat Operations into Map Sources**:
+    - Included `HELI_CAT_OPERATIONS` alongside `GLOBAL_SKI_ATLAS` in `curatedFeatures`, `filteredCurated`, and prefetch batches in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+    - Added dedicated heli/cat layers (`resorts-heli-cat-ring`, `resorts-heli-cat-dot`, `resorts-heli-cat-labels`) that remain visible up to high zoom ($z=18$).
+  - **Optimized Heli/Cat Camera Framing**:
+    - In `handleSelectResort` and `handleSelectGlobalResort`, set heli/cat operations to fly to $z=12.2$ at 42° pitch centered directly on the lodge coordinates, framing the valley and surrounding peaks cleanly.
 - **What was wrong before**:
   - Zooming into Wolf Creek Ski Area, Mt. Bachelor, or any of the 6,500+ global ski areas outside the original 76 curated flagship resorts showed no trails on static hosts (like GitHub Pages).
   - In `fetchOverpassBbox`, spatial resort matching was hardcoded to only loop over `GLOBAL_SKI_ATLAS` (76 resorts), ignoring all 6,592 global ski areas in `global_ski_areas.json`.
