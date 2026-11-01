@@ -593,21 +593,28 @@ export default function App() {
 
   const loadedResortTrailsRef = useRef<Set<string>>(new Set());
   const fetchedBboxKeysSetRef = useRef<Set<string>>(new Set());
+  const hasLocalServerRef = useRef(true);
 
   const fetchResortStaticTrails = useCallback(async (resortId: string) => {
     if (loadedResortTrailsRef.current.has(resortId)) return;
-    try {
-      // 1. Try local SQLite API first (instant query from trails.db)
-      const apiRes = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/trails?resort=${resortId}`);
-      if (apiRes.ok) {
-        const data = await apiRes.json();
-        if (data.features && data.features.length) {
-          ingestTrailFeatures(data.features);
-          loadedResortTrailsRef.current.add(resortId);
-          return;
+    if (hasLocalServerRef.current) {
+      try {
+        // 1. Try local SQLite API first (instant query from trails.db)
+        const apiRes = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/trails?resort=${resortId}`);
+        if (apiRes.ok) {
+          const data = await apiRes.json();
+          if (data.features && data.features.length) {
+            ingestTrailFeatures(data.features);
+            loadedResortTrailsRef.current.add(resortId);
+            return;
+          }
+        } else if (apiRes.status === 404) {
+          hasLocalServerRef.current = false;
         }
+      } catch (_) {
+        hasLocalServerRef.current = false;
       }
-    } catch (_) {}
+    }
     try {
       // 2. Try static pre-exported file in public/data/trails/
       const res = await fetch(getStaticDataUrl(`data/trails/${resortId}.json`));
@@ -633,35 +640,65 @@ export default function App() {
     activeOverpassAbortRef.current = controller;
 
     let apiSuccess = false;
-    try {
-      const apiUrl = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/trails?bbox=${west},${south},${east},${north}`;
-      const res = await fetch(apiUrl, {
-        signal: controller.signal,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.features && data.features.length) {
-          ingestTrailFeatures(data.features);
-          fetchedBboxKeysSetRef.current.add(bboxKey);
-          apiSuccess = true;
+    if (hasLocalServerRef.current) {
+      try {
+        const apiUrl = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/api/trails?bbox=${west},${south},${east},${north}`;
+        const res = await fetch(apiUrl, {
+          signal: controller.signal,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.features && data.features.length) {
+            ingestTrailFeatures(data.features);
+            fetchedBboxKeysSetRef.current.add(bboxKey);
+            apiSuccess = true;
+          }
+        } else if (res.status === 404) {
+          hasLocalServerRef.current = false;
         }
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
+        hasLocalServerRef.current = false;
       }
-    } catch (err: any) {
-      if (err.name === 'AbortError') return;
     }
 
-    // Static fallback: find any curated resorts in this bounding box area (±0.04° margin)
+    // Static local loading: find ANY ski area in this bounding box area (±0.04° margin)
     if (!apiSuccess) {
+      let matchedAny = false;
+
+      // 1. Curated flagships
       for (const r of GLOBAL_SKI_ATLAS) {
         if (r.lat >= south - 0.04 && r.lat <= north + 0.04 && r.lng >= west - 0.04 && r.lng <= east + 0.04) {
           fetchResortStaticTrails(r.id);
+          matchedAny = true;
         }
       }
 
-      // Live Overpass fallback for arbitrary mountain terrain worldwide when no local backend server is present
+      // 2. All 6,592 global ski areas worldwide
+      if (allGlobalFeaturesRef.current && allGlobalFeaturesRef.current.length > 0) {
+        for (const f of allGlobalFeaturesRef.current) {
+          const pt = f.geometry?.coordinates;
+          if (pt && pt[1] >= south - 0.04 && pt[1] <= north + 0.04 && pt[0] >= west - 0.04 && pt[0] <= east + 0.04) {
+            if (f.properties?.id) {
+              fetchResortStaticTrails(f.properties.id);
+              matchedAny = true;
+            }
+          }
+        }
+      }
+
+      if (matchedAny) {
+        fetchedBboxKeysSetRef.current.add(bboxKey);
+        return;
+      }
+
+      // 3. Fallback for wild backcountry terrain outside any known ski area
       try {
-        const q = `[out:json][timeout:15];(way["piste:type"](${south},${west},${north},${east});way["aerialway"](${south},${west},${north},${east}););out geom tags;`;
-        const overpassRes = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`, {
+        const q = `[out:json][timeout:12];(way["piste:type"](${south},${west},${north},${east});way["aerialway"](${south},${west},${north},${east}););out geom tags;`;
+        const overpassRes = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `data=${encodeURIComponent(q)}`,
           signal: controller.signal,
         });
         if (overpassRes.ok) {

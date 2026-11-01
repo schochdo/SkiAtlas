@@ -6,7 +6,25 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
-### `fix: resolve dynamic trail loading across global ski areas and fix abort race condition`
+### `feat: systematic universal trail export and offline-first static loading architecture`
+- **What was wrong before**:
+  - Zooming into Wolf Creek Ski Area, Mt. Bachelor, or any of the 6,500+ global ski areas outside the original 76 curated flagship resorts showed no trails on static hosts (like GitHub Pages).
+  - In `fetchOverpassBbox`, spatial resort matching was hardcoded to only loop over `GLOBAL_SKI_ATLAS` (76 resorts), ignoring all 6,592 global ski areas in `global_ski_areas.json`.
+  - On static hosts with no SQLite backend, requests to `/api/trails` returned 404. The subsequent Overpass fallback GET request returned HTTP 406 Not Acceptable because public Overpass servers block direct browser GET queries without custom formatting.
+  - Adding single static JSON files (`brian-head.json`, `wolf-creek.json`) was an unsustainable "whack-a-mole" approach.
+- **Solution**:
+  - **Systematic Universal Trail Pre-Export**:
+    - Created and executed [`data_pipeline/export_all_ski_areas.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/data_pipeline/export_all_ski_areas.cjs).
+    - Iterated across all 6,592 worldwide ski areas in `public/data/global_ski_areas.json` and all curated resorts in `src/data/resorts.ts`.
+    - Queried `data_pipeline/trails.db` for every resort by ID and spatial summit/base extent, exporting 5,802 discrete static GeoJSON trail datasets to `public/data/trails/{id}.json` (190,136 total trail and lift features worldwide).
+    - Generated unified `public/data/trails/manifest.json`.
+  - **Universal Static Spatial Matching in Map Viewport**:
+    - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), updated `fetchOverpassBbox` so that when static loading is used, it searches across all 6,592 ski areas in `allGlobalFeaturesRef.current` (not just the 76 curated flagships).
+    - As the user zooms or pans into ANY mountain worldwide (Wolf Creek, Mt. Bachelor, Solitude, Niseko, Zermatt, etc.), SkiAtlas identifies all ski areas in frame and loads their pre-baked static trail GeoJSON directly from CDN/storage in ~15ms with 0 backend dependencies.
+  - **Static Host Optimization & Circuit Breaker**:
+    - Added `hasLocalServerRef` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) to remember if `/api/trails` is available. On static hosts (GitHub Pages), the first 404 sets `hasLocalServerRef.current = false`, completely eliminating all subsequent 404 API calls and routing directly to static trail files.
+  - **Resilient Overpass POST Fallback**:
+    - Converted the arbitrary backcountry terrain fallback from GET to HTTP POST (`method: 'POST'`, `Content-Type: application/x-www-form-urlencoded`), eliminating the 406 Not Acceptable error for unmapped wilderness terrain.
 - **What was wrong before**:
   - Zooming into Wolf Creek Ski Area (and other ski areas from `global_ski_areas.json`) showed no trails.
   - **Root Cause #1 (Abort & Stamp Lock)**: In `fetchOverpassBbox`, `lastFetchedBboxKeyRef` was stamped *before* the fetch succeeded. If a user was zooming with the mouse wheel, successive `moveend` events aborted the in-flight request, but the bbox key remained stamped, permanently blocking any future fetch for that area.
