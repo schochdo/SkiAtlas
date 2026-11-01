@@ -1625,6 +1625,60 @@ export default function App() {
         },
       });
 
+      // World Country & Administrative Boundary Lines (Crisp vector lines, zero raster blur)
+      map.addSource('world-boundaries-source', {
+        type: 'geojson',
+        data: getStaticDataUrl('data/world_boundaries.geojson'),
+      });
+
+      // Country International Borders
+      map.addLayer({
+        id: 'world-country-borders',
+        type: 'line',
+        source: 'world-boundaries-source',
+        filter: ['==', ['get', 'kind'], 'country_border'],
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'line-cap': 'round',
+          'line-join': 'round',
+        },
+        paint: {
+          'line-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
+          'line-opacity': basemapMode === 'satellite' ? 0.45 : 0.35,
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            1, 1.0,
+            4, 1.5,
+            8, 2.0,
+          ],
+        },
+      });
+
+      // State / Province Administrative Borders
+      map.addLayer({
+        id: 'world-state-borders',
+        type: 'line',
+        source: 'world-boundaries-source',
+        filter: ['==', ['get', 'kind'], 'state_border'],
+        minzoom: 3.0,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'line-cap': 'round',
+          'line-join': 'round',
+        },
+        paint: {
+          'line-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
+          'line-opacity': basemapMode === 'satellite' ? 0.30 : 0.22,
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            3, 0.8,
+            6, 1.2,
+            10, 1.6,
+          ],
+          'line-dasharray': [2, 2],
+        },
+      });
+
       // Geographic Reference: Rotation-Invariant Viewport Billboarding (Always upright during 3D orbits)
       map.addSource('geo-reference-source', {
         type: 'geojson',
@@ -2980,11 +3034,15 @@ export default function App() {
     const isDark = basemapMode === 'satellite';
     const refVisibility = showCountryOutlines ? 'visible' : 'none';
 
-    if (map.getLayer('basemap-boundaries-dark')) {
-      map.setLayoutProperty('basemap-boundaries-dark', 'visibility', showCountryOutlines && isDark ? 'visible' : 'none');
+    if (map.getLayer('world-country-borders')) {
+      map.setLayoutProperty('world-country-borders', 'visibility', refVisibility);
+      map.setPaintProperty('world-country-borders', 'line-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('world-country-borders', 'line-opacity', isDark ? 0.45 : 0.35);
     }
-    if (map.getLayer('basemap-boundaries-light')) {
-      map.setLayoutProperty('basemap-boundaries-light', 'visibility', showCountryOutlines && !isDark ? 'visible' : 'none');
+    if (map.getLayer('world-state-borders')) {
+      map.setLayoutProperty('world-state-borders', 'visibility', refVisibility);
+      map.setPaintProperty('world-state-borders', 'line-color', isDark ? '#FAF8F3' : '#1C1B18');
+      map.setPaintProperty('world-state-borders', 'line-opacity', isDark ? 0.30 : 0.22);
     }
     if (map.getLayer('geo-reference-countries')) {
       map.setLayoutProperty('geo-reference-countries', 'visibility', refVisibility);

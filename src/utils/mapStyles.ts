@@ -67,24 +67,6 @@ export const createMapStyle = (
       maxzoom: 15,
       attribution: '© SkiAtlas Terrain Analysis',
     },
-    // 9. Esri World Boundaries & Places Reference Overlay (Light text / dark casing — for dark backgrounds / Satellite 3D)
-    // tileSize: 512 renders tiles at 2x scale, doubling text size for high-DPI / Retina screens so labels are legible
-    'boundaries-dark-tiles': {
-      type: 'raster',
-      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'],
-      tileSize: 512,
-      maxzoom: 19,
-      attribution: '© Esri, HERE, Garmin, OpenStreetMap',
-    },
-    // 10. Esri World Boundaries & Places Alternate Reference Overlay (Dark text / light halo — for light backgrounds / OSM & Topo)
-    // tileSize: 512 renders tiles at 2x scale, doubling text size for high-DPI / Retina screens so labels are legible
-    'boundaries-light-tiles': {
-      type: 'raster',
-      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places_Alternate/MapServer/tile/{z}/{y}/{x}'],
-      tileSize: 512,
-      maxzoom: 19,
-      attribution: '© Esri, HERE, Garmin, OpenStreetMap',
-    },
   },
   layers: [
     // Base 1: Satellite 3D
@@ -173,28 +155,6 @@ export const createMapStyle = (
       paint: {
         'raster-opacity': terrainOverlayOpacity,
         'raster-fade-duration': 150,
-      },
-    },
-    // High-Definition Reference Overlay for Dark Basemap (Satellite 3D): Light text with dark casing
-    {
-      id: 'basemap-boundaries-dark',
-      type: 'raster',
-      source: 'boundaries-dark-tiles',
-      layout: { visibility: showCountryOutlines && basemapMode === 'satellite' ? 'visible' : 'none' },
-      paint: {
-        'raster-opacity': 0.85,
-        'raster-fade-duration': 0,
-      },
-    },
-    // High-Definition Reference Overlay for Light Basemaps (OSM & Alpine Topo): Dark text with clean light halo
-    {
-      id: 'basemap-boundaries-light',
-      type: 'raster',
-      source: 'boundaries-light-tiles',
-      layout: { visibility: showCountryOutlines && basemapMode !== 'satellite' ? 'visible' : 'none' },
-      paint: {
-        'raster-opacity': 0.85,
-        'raster-fade-duration': 0,
       },
     },
   ],

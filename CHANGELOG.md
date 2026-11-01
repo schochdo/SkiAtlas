@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: eliminate duplicate blurry raster country labels and introduce crisp vector boundary lines`
+- **What was wrong before**:
+  - Two country labels were appearing simultaneously on the map canvas. One was huge and pixelated/blurry ("bad resolution"), while the other was crisp vector text.
+  - **Root Cause**: In commit `1636ef0`, `tileSize: 512` was applied to Esri's `World_Boundaries_and_Places` raster tiles (`boundaries-dark-tiles` and `boundaries-light-tiles`). Because Esri's raster tiles have native 256x256 pixel dimensions, setting `tileSize: 512` caused MapLibre to scale each raster tile by 200%, blowing up the baked-in bitmap text to double size with heavy blur and pixelation. Meanwhile, SkiAtlas's dedicated `geo-reference-countries` symbol layer was also rendering sharp, native vector labels over the same countries, producing double country labels.
+- **Solution**:
+  - **Retired Stretched Esri Raster Overlays**:
+    - Completely removed `boundaries-dark-tiles`, `boundaries-light-tiles`, `basemap-boundaries-dark`, and `basemap-boundaries-light` from [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts).
+    - Eliminated the low-resolution raster text duplication entirely.
+  - **Introduced Lightweight Global Vector Boundaries**:
+    - Created optimized [`public/data/world_boundaries.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/world_boundaries.geojson) (126 KB) containing 440 international country borders and state/province administrative lines from Natural Earth.
+    - Added `world-country-borders` and `world-state-borders` vector line layers in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+    - Boundary lines render natively as GPU-accelerated vector strokes with zero raster blur, dynamic zoom-scaled stroke widths, and auto-contrast colors by basemap (luminous `#FAF8F3` over Satellite 3D, crisp `#1C1B18` over OSM and Alpine Topo).
+  - **Single Authoritative Vector Country & City Labels**:
+    - `geo-reference-countries` and `geo-reference-cities` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) now serve as the sole, authoritative reference labels, delivering crisp, high-resolution vector typography with rotation-invariant view-aligned billboarding.
+
 ### `fix: resolve overlapping labels via cross-source deduplication and layer collision padding`
 - **What was wrong before**:
   - In heli-skiing areas (e.g. Mica, Island Lake, Silverton, Haines, Golden, Revelstoke), multiple labels overlapped or rendered directly on top of each other.
