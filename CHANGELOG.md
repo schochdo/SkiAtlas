@@ -6,6 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-01
 
+### `fix: purge 1,073 closed, abandoned, and historic ski areas from atlas dataset`
+- **What was changed**:
+  - Purged all 1,073 permanently closed, abandoned, defunct, and lost ski areas (such as Bluebird Backcountry, Marble Mountain, Climax, Ciao Ontake) from [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json), ensuring only the 5,519 actively operating ski areas worldwide are served to users.
+  - Reduced the `global_ski_areas.json` bundle payload from 6.3 MB down to 5.2 MB (saving > 1 MB of unnecessary JSON over the wire).
+  - Hardened runtime closure filtering in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) and backend pipeline in [`data_pipeline/export_all_ski_areas.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/data_pipeline/export_all_ski_areas.cjs) to explicitly discard any feature marked `historic`, `abandoned`, `disused`, `defunct`, or `is_closed`.
+
 ### `fix: purge cross-domain scam drop-catchers, dead NXDOMAIN links, and canonicalize resort homepages`
 - **What was changed**:
   - Executed a full-network redirect trace across all 3,605 ski resort URLs to detect cross-domain redirects, expired domain hijacks, and DNS resolution failures.

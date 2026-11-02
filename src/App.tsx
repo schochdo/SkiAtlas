@@ -3561,18 +3561,20 @@ export default function App() {
           const pName = cleanResortName(rawName);
           const pNameLower = pName.toLowerCase();
 
-          // Quality filter: Exclude permanently closed, defunct, abandoned, or placeholder ski areas
+          // Quality filter: Exclude permanently closed, defunct, abandoned, or historic ski areas
           if (
             p.status === 'abandoned' ||
             p.status === 'closed' ||
             p.status === 'disused' ||
             p.status === 'defunct' ||
+            p.status === 'historic' ||
             p.is_closed === true ||
-            (p.archetype && (p.archetype.includes('Defunct') || p.archetype.includes('Lost Ski Area'))) ||
-            (p.infrastructure && (p.infrastructure.toLowerCase().includes('defunct') || p.infrastructure.toLowerCase().includes('abandoned'))) ||
+            (p.archetype && (p.archetype.includes('Defunct') || p.archetype.includes('Lost Ski Area') || p.archetype.includes('Historic'))) ||
+            (p.infrastructure && (p.infrastructure.toLowerCase().includes('defunct') || p.infrastructure.toLowerCase().includes('abandoned') || p.infrastructure.toLowerCase().includes('historic'))) ||
             pNameLower.includes('(closed)') ||
             pNameLower.includes('(abandoned)') ||
             pNameLower.includes('(defunct)') ||
+            pNameLower.includes('(historic)') ||
             pNameLower.includes('(fermé)') ||
             pNameLower === 'a venir' ||
             pNameLower === 'à venir' ||

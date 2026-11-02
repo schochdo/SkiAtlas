@@ -161,6 +161,16 @@ let globalExported = 0;
 for (const a of globalAreas) {
   const p = a.properties;
   if (!p || !p.id) continue;
+  if (
+    p.status === 'abandoned' ||
+    p.status === 'closed' ||
+    p.status === 'disused' ||
+    p.status === 'defunct' ||
+    p.status === 'historic' ||
+    p.is_closed === true ||
+    (p.archetype && (p.archetype.includes('Defunct') || p.archetype.includes('Lost Ski Area') || p.archetype.includes('Historic'))) ||
+    (p.infrastructure && (p.infrastructure.toLowerCase().includes('defunct') || p.infrastructure.toLowerCase().includes('abandoned') || p.infrastructure.toLowerCase().includes('historic')))
+  ) continue;
   const id = p.id;
 
   // Skip if already exported
