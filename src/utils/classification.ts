@@ -200,6 +200,20 @@ export function getResortWebsite(resort: SkiResort | null | undefined): string |
     const withProto = direct.startsWith('http://') || direct.startsWith('https://') ? direct : `https://${direct}`;
     try {
       const parsed = new URL(withProto);
+      const host = parsed.hostname.toLowerCase();
+      // Route hijacked domain to verified official website
+      if (host === 'westsportcenter.com.ua' || host === 'www.westsportcenter.com.ua') {
+        return 'https://westsportcenter.in.ua/';
+      }
+      // Safety filter against scam / casino affiliate sites and malicious redirects
+      if (
+        host.includes('parik24') ||
+        host.includes('1xbet') ||
+        host.includes('vulkan777') ||
+        host.endsWith('.casino')
+      ) {
+        return null;
+      }
       if (parsed.hostname && parsed.hostname.includes('.') && parsed.hostname.length >= 4) {
         return withProto;
       }
@@ -208,6 +222,79 @@ export function getResortWebsite(resort: SkiResort | null | undefined): string |
     }
   }
   return null;
+}
+
+/**
+ * Sanitizes bloated resort names (e.g. raw OpenStreetMap imports containing
+ * comma-separated multi-language translations or excessive administrative titles)
+ * into concise editorial cartographic names.
+ */
+export function cleanResortName(name: string, _country?: string): string {
+  if (!name) return '';
+  const trimmed = name.trim();
+  if (trimmed.length < 35 && !trimmed.includes(',')) return trimmed;
+
+  // Specific known long administrative titles
+  if (trimmed.includes('Western Rehabilitation') || trimmed.includes('Західний реабілітаційно')) {
+    return 'Western Rehabilitation & Sports Center';
+  }
+  if (trimmed.includes('Dvorišta Nordic Ski Centar') || trimmed.includes('Дворишта центар нордијског')) {
+    return 'Dvorišta Nordic Ski Center (Pale)';
+  }
+  if (trimmed.includes('Xiaohaituo') || trimmed.includes('国家高山滑雪中心')) {
+    return 'National Alpine Skiing Centre (Xiaohaituo)';
+  }
+
+  // Handle comma-separated multi-language duplicates: e.g. "Local Name, English Name, Transliteration"
+  if (trimmed.includes(',')) {
+    // Avoid breaking parenthesized lists: e.g. "Waakirchen (Village A, Village B)"
+    if (trimmed.includes('(') && trimmed.includes(')')) {
+      const pStart = trimmed.indexOf('(');
+      const pEnd = trimmed.lastIndexOf(')');
+      const cPos = trimmed.indexOf(',');
+      if (pStart < cPos && cPos < pEnd) {
+        return trimmed;
+      }
+    }
+
+    const parts = trimmed.split(',').map((p) => p.trim()).filter(Boolean);
+    if (parts.length > 1) {
+      // If trailing parts are merely subsets of the first part, use the first part
+      const p0 = parts[0];
+      if (parts.slice(1).every((p) => p0.toLowerCase().includes(p.toLowerCase()))) {
+        return p0;
+      }
+
+      // If one part is non-Latin and another is Latin/English, prefer the Latin/English name
+      const hasLatin = (s: string) => /[a-zA-Z]/.test(s);
+      const latinParts = parts.filter(hasLatin);
+      const nonLatinParts = parts.filter((s) => !hasLatin(s));
+
+      if (latinParts.length > 0 && nonLatinParts.length > 0) {
+        const priority = latinParts.find((p) =>
+          /\b(ski|resort|mountain|snow|park|center|centre|area|slopes)\b/i.test(p)
+        );
+        return priority || latinParts[0];
+      }
+
+      // If multiple Latin parts are duplicates or variations
+      const unique: string[] = [];
+      const seen = new Set<string>();
+      for (const p of parts) {
+        const low = p.toLowerCase();
+        if (!seen.has(low)) {
+          seen.add(low);
+          unique.push(p);
+        }
+      }
+      if (unique.length === 1) return unique[0];
+      if (unique.length > 1 && parts.slice(1).every((u) => unique[0].toLowerCase().includes(u.toLowerCase()))) {
+        return unique[0];
+      }
+    }
+  }
+
+  return trimmed;
 }
 
 export function getCategoryBadge(category?: SkiActivityCategory) {

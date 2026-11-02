@@ -77,6 +77,7 @@ import {
   getCategoryBadge,
   cleanNameForMatching,
   getSignificantTokens,
+  cleanResortName,
 } from './utils/classification';
 import {
   getNeutralWeather,
@@ -3556,7 +3557,8 @@ export default function App() {
           const p = f.properties;
           if (!p || !p.name) continue;
 
-          const pName = p.name.trim();
+          const rawName = p.name ? String(p.name).trim() : '';
+          const pName = cleanResortName(rawName);
           const pNameLower = pName.toLowerCase();
 
           // Quality filter: Exclude permanently closed, defunct, abandoned, or placeholder ski areas
@@ -3645,8 +3647,17 @@ export default function App() {
           // Website protocol hygiene
           let cleanSite = p.website ? String(p.website).trim() : '';
           if (cleanSite) {
-            if (cleanSite.startsWith('hhttps://')) cleanSite = cleanSite.replace('hhttps://', 'https://');
-            else if (!cleanSite.startsWith('http://') && !cleanSite.startsWith('https://')) {
+            if (cleanSite.includes('westsportcenter.com.ua')) {
+              cleanSite = 'https://westsportcenter.in.ua/';
+            } else if (
+              cleanSite.includes('parik24') ||
+              cleanSite.includes('1xbet') ||
+              cleanSite.includes('vulkan777')
+            ) {
+              cleanSite = '';
+            } else if (cleanSite.startsWith('hhttps://')) {
+              cleanSite = cleanSite.replace('hhttps://', 'https://');
+            } else if (!cleanSite.startsWith('http://') && !cleanSite.startsWith('https://')) {
               if (cleanSite.includes('.') && !cleanSite.includes(' ')) {
                 cleanSite = `https://${cleanSite}`;
               } else {
@@ -3680,7 +3691,7 @@ export default function App() {
             properties: {
               ...p,
               id: p.id,
-              name: p.name,
+              name: pName,
               country,
               region,
               lng: pt[0],
@@ -3693,7 +3704,7 @@ export default function App() {
               summit_elev_ft: p.summit_elev_ft || classified.cleanedSummitFt || 0,
               base_elev_ft: p.base_elev_ft || classified.cleanedBaseFt || 0,
               skiable_acres: rAcres,
-              website: cleanSite || p.website || '',
+              website: cleanSite,
               trail_km: p.trail_km || null,
               trail_mi: p.trail_mi || null,
               pass_networks: passNets,

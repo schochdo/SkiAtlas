@@ -4,7 +4,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
-## 2026-10-31
+## 2026-11-01
+
+### `fix: clean bloated multilingual resort names and replace hijacked casino domain with verified official website`
+- **What was wrong before**:
+  - The Western Rehabilitation and Sports Center in Lviv Oblast, Ukraine displayed a 278-character concatenated name combining full Ukrainian, Belarusian, and English bureaucratic committee titles in a single string.
+  - The linked official website (`https://westsportcenter.com.ua/`) had expired from its original owner and was acquired by an online gambling/casino operator (Parik24) to redirect visitors to a scam online casino.
+  - Several other global ski areas suffered from raw OpenStreetMap tag imports concatenating multiple localized translations and transliterations into comma-separated walls of text.
+- **Root Cause**:
+  - Raw OpenStreetMap `name` tags frequently concatenate multilingual titles (`[Local], [English], [Transliteration]`) when local mappers paste all languages into `name` rather than `name:en`, `name:uk`, etc.
+  - The Ukrainian Paralympic Committee Western Rehabilitation & Sports Center migrated their official web presence to the authentic governmental domain `https://westsportcenter.in.ua/`, while the legacy `.com.ua` domain lapsed and was captured by a domain drop-catcher.
+- **Solution**:
+  - **Verified Website Routing**:
+    - Replaced the hijacked `westsportcenter.com.ua` domain in [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json) and backend data pipelines with the verified official WordPress site [`https://westsportcenter.in.ua/`](https://westsportcenter.in.ua/).
+    - Updated [`getResortWebsite()`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/classification.ts) and [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) with domain redirect guards routing legacy references directly to the authentic domain and rejecting casino/scam redirect patterns (`parik24`, `1xbet`, `vulkan777`, `.casino`).
+  - **Editorial Cartographic Name Sanitization**:
+    - Shortened the target resort name to `"Western Rehabilitation & Sports Center"`.
+    - Implemented [`cleanResortName()`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/classification.ts) to automatically clean comma-separated multilingual repeats, prioritizing concise English/Latin names for international cartographic clarity while preserving parenthetical village qualifiers.
+    - Curated clean names for 35 excessively bloated resort titles worldwide (e.g. `National Alpine Skiing Centre (Xiaohaituo)`, `Olympic Center Jahorina`, `Mount Hermon Ski Resort`, `Valgrande-Pajares`, `Kotelnica Białczańska`).
 
 ### `fix: restore dual-sided border labeling by eliminating collision suppression`
 - **What was wrong before**:

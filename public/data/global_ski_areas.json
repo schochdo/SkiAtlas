@@ -15321,7 +15321,7 @@
       },
       "properties": {
         "id": "0dc3f6208150d91a7154b9965a8787076b81bf45",
-        "name": "Спортивный комплекс \"Юкки\" ГАУ ЛО \"Спортивно-тренировочный центр Ленинградской области\", Yukki Park",
+        "name": "Yukki Park",
         "country": "Russia",
         "region": "Leningrad",
         "lng": 30.31341,
@@ -16217,7 +16217,7 @@
       },
       "properties": {
         "id": "0ebf81b058d47e730773ab8385529520bd35da87",
-        "name": "牧の入高原スノーパーク, Makinoiri Kogen Snow Park, Makinoiri kōgen sunō pāku",
+        "name": "Makinoiri Kogen Snow Park",
         "country": "Japan",
         "region": "Nagano Prefecture",
         "lng": 138.39728,
@@ -16800,7 +16800,7 @@
       },
       "properties": {
         "id": "0f8835a2f4fdcb5d19a63c665a77e9e99f8aa42a",
-        "name": "Ośrodek Narciarski Kotelnica Białczańska, Kotelnica Białczańska Ski Resort",
+        "name": "Kotelnica Białczańska",
         "country": "Poland",
         "region": "Lesser Poland Voivodeship",
         "lng": 20.09174,
@@ -17496,7 +17496,7 @@
       },
       "properties": {
         "id": "105851a0c81df3002dc883895dd1f4d49c2c4e24",
-        "name": "Rein in Taufers - Riva di Tures, Rein in Taufers, Riva di Tures",
+        "name": "Rein in Taufers (Riva di Tures)",
         "country": "Italy",
         "region": "Bolzano/Bozen",
         "lng": 12.06127,
@@ -24744,7 +24744,7 @@
       },
       "properties": {
         "id": "16e55806d5b38b09939ec81dc1f89ee2cf6c6f15",
-        "name": "Sella Nevea - Kanin, Sella Nevea - Canin, Kanin - Sella Nevea",
+        "name": "Kanin - Sella Nevea",
         "country": "Slovenia",
         "region": "Gorizia",
         "lng": 13.48571,
@@ -36883,7 +36883,7 @@
       },
       "properties": {
         "id": "22774c1f5dcaca3bf6d95084bf60c8a7d4a9e57c",
-        "name": "Тогуз-Булак лыжа базасы, Toguz Bulak Ski resort, Горнолыжный курорт Тогуз Булак",
+        "name": "Toguz Bulak Ski Resort",
         "country": "Kyrgyzstan",
         "region": "Chuy",
         "lng": 74.86771,
@@ -37309,7 +37309,7 @@
       },
       "properties": {
         "id": "22c7f6afb1016220ea03e7606e64b615f7baea2e",
-        "name": "Dvorišta Nordic Ski Centar (Smučarski klub Romanija, Pale), Дворишта центар нордијског скијања (Смучарски клуб Романија Пале), Дворишта центар нордијског скијања (Смучарскиклуб Романија Пале)",
+        "name": "Dvorišta Nordic Ski Center (Pale)",
         "country": "Bosnia and Herzegovina",
         "region": "Republic of Srpska",
         "lng": 18.53472,
@@ -42868,7 +42868,7 @@
       },
       "properties": {
         "id": "2826e74d5f33a0bd943b7353dcda7e1419c36ace",
-        "name": "Brigels-Waltensburg-Andiast, Brigels-Waltenburg-Andiast, Breil-Vuorz-Andiast",
+        "name": "Brigels-Waltensburg-Andiast",
         "country": "Switzerland",
         "region": "Graubunden",
         "lng": 9.07681,
@@ -44963,7 +44963,7 @@
       },
       "properties": {
         "id": "29f4f90cf65f355ffd3042ececd70bfe515a6d88",
-        "name": "ハイパーボウル東鉢, Hyper Bowl Tohachi, ハイパーボウル東鉢), Haipābouru tōhachi",
+        "name": "Hyper Bowl Tohachi",
         "country": "Japan",
         "region": "Hyogo Prefecture",
         "lng": 134.56255,
@@ -48534,7 +48534,7 @@
       },
       "properties": {
         "id": "2dc87c2690006a5733905468ea5f180961a02e97",
-        "name": "Waakirchen (Häuserdörfl, Reichersbeuern, Sachsenkam, Piesenkam, Schaftlach, Gmund Am Tegernsee)",
+        "name": "Waakirchen (Tegernsee)",
         "country": "Germany",
         "region": "Bavaria",
         "lng": 11.66647,
@@ -48886,7 +48886,7 @@
       },
       "properties": {
         "id": "2e2d926b2bea4002705a71f4a4a1f0ab42061521",
-        "name": "みどりの大地とロマンの森公園スキー場, Midori-no-daichi to Roman-no-mori Koen Ski Area",
+        "name": "Roman-no-mori Koen Ski Area",
         "country": "Japan",
         "region": "Aomori Prefecture",
         "lng": 141.20399,
@@ -49784,7 +49784,7 @@
       },
       "properties": {
         "id": "2f41aba195e72ab9da0842b028cb36cbd3cb70ba",
-        "name": "Iron Mountain (Silver Basin/Ski Sundown/Iron Mountain/Carson Ski Area)",
+        "name": "Iron Mountain (Silver Basin)",
         "country": "United States",
         "region": "California",
         "lng": -120.2118,
@@ -52201,7 +52201,7 @@
       },
       "properties": {
         "id": "31a4a4a3f24088796b768c7f7f71495e6915c67a",
-        "name": "Ergan Dağı Kış Sporları Turizm Merkezi, Ergan Mountain Winter Sports and Eco-Tourism Center",
+        "name": "Ergan Mountain Ski Resort",
         "country": "Turkey",
         "region": "Erzincan",
         "lng": 39.49669,
@@ -63767,7 +63767,7 @@
       },
       "properties": {
         "id": "3d906e9e3cf61468cda79bf77bc9126ef4ef2321",
-        "name": "Ski centar \"Ravna Planina\", Pale, Ski Center \"Ravna Planina\" Pale, Ски центар Равна Планина, Пале",
+        "name": "Ski Centar Ravna Planina",
         "country": "Bosnia and Herzegovina",
         "region": "Republic of Srpska",
         "lng": 18.58865,
@@ -71985,7 +71985,7 @@
       },
       "properties": {
         "id": "45d0f9aea9eb43a1fa74bbeb6b57c613b09a8f82",
-        "name": "Estación Invernal y de Montaña Valgrande-Pajares, Estación Invernal y de Montaña Valgrande-Payares",
+        "name": "Valgrande-Pajares",
         "country": "Spain",
         "region": "Asturias",
         "lng": -5.77896,
@@ -79748,7 +79748,7 @@
       },
       "properties": {
         "id": "4d4393d1d399c221a96a31f0cae8790c42e2876b",
-        "name": "Goldbar Park (including Goldstick Park, Riverside Golf Course and Capilano Park)",
+        "name": "Goldbar Park Nordic Center",
         "country": "Canada",
         "region": "Alberta",
         "lng": -113.40611,
@@ -83560,7 +83560,7 @@
       },
       "properties": {
         "id": "516bab490035b2ec5b8cf843a4c2929e4028642d",
-        "name": "Jahorina olimpijski centar, Olympic Center Jahorina, Јахорина олимпијски центар",
+        "name": "Olympic Center Jahorina",
         "country": "Bosnia and Herzegovina",
         "region": "Republic of Srpska",
         "lng": 18.56954,
@@ -84447,7 +84447,7 @@
       },
       "properties": {
         "id": "525c3d6dae6550a31a8fc5d3e576493153863b4e",
-        "name": "Brixen Plose - Plose di Bressanone, Brixen Plose, Plose di Bressanone",
+        "name": "Plose (Brixen / Bressanone)",
         "country": "Italy",
         "region": "Bolzano/Bozen",
         "lng": 11.70879,
@@ -95557,7 +95557,7 @@
       },
       "properties": {
         "id": "5cd429fafd053bed25d19d724222d750192c0383",
-        "name": "わかさ氷ノ山スキー場, Wakasa Hyonosen Ski Resort, Wakasa hyōnosen sukī-ba",
+        "name": "Wakasa Hyonosen Ski Resort",
         "country": "Japan",
         "region": "Tottori Prefecture",
         "lng": 134.4913,
@@ -96456,7 +96456,7 @@
       },
       "properties": {
         "id": "5dfe0fa63ea9921825d063c02d305bc304ea77ec",
-        "name": "Ounasvaaran laskettelukeskus (Totto), Ounasvaara Ski Resort (Totto)",
+        "name": "Ounasvaara Ski Resort",
         "country": "Finland",
         "region": "Lapland",
         "lng": 25.80391,
@@ -115054,7 +115054,7 @@
       },
       "properties": {
         "id": "7062505d889fc3adf50b98302376999bb79e8202",
-        "name": "黒伏高原スノーパーク　ジャングル・ジャングル, Kurobushi Kogen Snow Park Jangle Jungle",
+        "name": "Kurobushi Kogen Jangle Jungle",
         "country": "Japan",
         "region": "Yamagata Prefecture",
         "lng": 140.54373,
@@ -124749,7 +124749,7 @@
       },
       "properties": {
         "id": "78edd54a1bb0849f2c4fb730b61a69ad825adf04",
-        "name": "伊ノ沢市民スキー場, Inosawa Citizen Ski Area, いのさわしみんすきーじょう, Inosawa Shimin Sukījō",
+        "name": "Inosawa Citizen Ski Area",
         "country": "Japan",
         "region": "Hokkaido Prefecture",
         "lng": 142.33204,
@@ -135047,7 +135047,7 @@
       },
       "properties": {
         "id": "8353a9b6ab06bad4f5336d2aeed9e2b5c2b3ceda",
-        "name": "אתר סקי הר החרמון, Mount Hermon ski resort, Centro de esquí Monte Hermón",
+        "name": "Mount Hermon Ski Resort",
         "country": "Israel",
         "region": "Northern",
         "lng": 35.77861,
@@ -137612,7 +137612,7 @@
       },
       "properties": {
         "id": "85fd0fe2d9edd9a2e6d04f399ff4026146bf701d",
-        "name": "中里スノーウッドスキー場, Nakazato Snow Wood Ski Area, Nakazato sunōuddosukī-ba",
+        "name": "Nakazato Snow Wood Ski Area",
         "country": "Japan",
         "region": "Niigata Prefecture",
         "lng": 138.85257,
@@ -155987,7 +155987,7 @@
       },
       "properties": {
         "id": "98e5c55b3329d1a0c0bd3006cac5367426cb1a80",
-        "name": "鳥海高原矢島スキー場, Yashima Ski Area, ちょうかいこうげんやしまスキーじょう, Chokai Kogen Yashima Sukijo",
+        "name": "Chokai Kogen Yashima Ski Area",
         "country": "Japan",
         "region": "Akita Prefecture",
         "lng": 140.08531,
@@ -172708,7 +172708,7 @@
       },
       "properties": {
         "id": "aae10673fabe89997871c3061812999b6ac71d27",
-        "name": "정선 알파인 경기장, Lyžařské středisko Čongson, Jeongseon Alpine Centre",
+        "name": "Jeongseon Alpine Centre",
         "country": "South Korea",
         "region": "Kangwon-Do",
         "lng": 128.6055,
@@ -179025,7 +179025,7 @@
       },
       "properties": {
         "id": "b11b1b2ad9b580f0ad05d6cf30e6a8479d6232bb",
-        "name": "Şahdağ Xizək Kompleksi, قريه شاهداغ الثلجية, Shahdag Mountain Resort, Горнолыжный курорт Шахдаг",
+        "name": "Shahdag Mountain Resort",
         "country": "Azerbaijan",
         "region": "Qusar",
         "lng": 48.14063,
@@ -180900,7 +180900,7 @@
       },
       "properties": {
         "id": "b35028f46ceda7ee4aba7ef1326d513d4c3392ab",
-        "name": "مجموعه گردشگری سیبلند فیروزکوه, Seebland Firoozkooh Tourism Complex",
+        "name": "Seebland Firoozkooh Ski Resort",
         "country": "Iran",
         "region": "Tehran",
         "lng": 52.56996,
@@ -185415,7 +185415,7 @@
       },
       "properties": {
         "id": "b7fe850803c3f0cdcc6ce4d863957eb79886b7f7",
-        "name": "北志賀小丸山スキー場, Kitashiga Komaruyama Ski Resort, Kitashiga Komaruyama sukī-ba",
+        "name": "Kitashiga Komaruyama Ski Resort",
         "country": "Japan",
         "region": "Nagano Prefecture",
         "lng": 138.45508,
@@ -190123,7 +190123,7 @@
       },
       "properties": {
         "id": "bd0ac8f338378806c6de96186d4326eb055d6371",
-        "name": "国家高山滑雪中心, Nationales Ski-Alpin-Zentrum Xiaohaituo, National Alpine Skiing Centre, centro nazionale di sci alpino Xiaohaituo, Национальный горнолыжный центр",
+        "name": "National Alpine Skiing Centre (Xiaohaituo)",
         "country": "China",
         "region": "Beijing",
         "lng": 115.79942,
@@ -195752,7 +195752,7 @@
       },
       "properties": {
         "id": "c3378a01cd82df18649a526852ed52c918a9290f",
-        "name": "Чепеларе, Tschepelare, Chepelare, Tchepelare, Čepelare, Cepelare",
+        "name": "Chepelare (Mechi Chal)",
         "country": "Bulgaria",
         "region": "Smolyan",
         "lng": 24.67107,
@@ -202427,7 +202427,7 @@
       },
       "properties": {
         "id": "c9dcc23c153a04d5c9cf23500167b7c9573dad08",
-        "name": "Західний реабілітаційно-спортивний центр Національного комітету спорту інвалідів України, Заходні рэабілітацыйна-спартыўны цэнтр Нацыянальнага камітэта спорту інвалідаў Украіны, Western Rehabilitation and Sport Center of the National Sports Committee for the Disabled of Ukraine",
+        "name": "Western Rehabilitation & Sports Center",
         "country": "Ukraine",
         "region": "Lviv",
         "lng": 22.93236,
@@ -202448,7 +202448,7 @@
         "primary_pass": "Independent",
         "pass_color": "#8A847C",
         "summary": "Alpine downhill ski area in Lviv, Ukraine, offering scenic mountain slopes and winter recreation.",
-        "website": "https://westsportcenter.com.ua/",
+        "website": "https://westsportcenter.in.ua/",
         "lift_count": 1,
         "run_count": 20,
         "avg_snowfall_in": 101,
@@ -207895,7 +207895,7 @@
       },
       "properties": {
         "id": "d009f4498b88c3ea079c54300818cd774cc57b5c",
-        "name": "Χιονοδρομικό Κέντρο Πηλίου Αγριόλευκες, Pelion Agriolefkes Ski Centre",
+        "name": "Pelion Agriolefkes Ski Centre",
         "country": "Greece",
         "region": "Thessaly",
         "lng": 23.08603,
@@ -220253,7 +220253,7 @@
       },
       "properties": {
         "id": "dcb15d6d8592e307e3cf6da3bc1dd4e759d75d90",
-        "name": "Seiser Alm - Mont de Sëuc - Alpe di Siusi, Seiser Alm, Alpe di Siusi, Mont de Sëuc",
+        "name": "Seiser Alm / Alpe di Siusi",
         "country": "Italy",
         "region": "Bolzano/Bozen",
         "lng": 11.64331,
@@ -249819,7 +249819,7 @@
       },
       "properties": {
         "id": "f9abc18ec02f94f73f00efc3302a605382f3405e",
-        "name": "峰山高原リゾート WHITE PEAKスキー場, Mineyama Kogen Resort WHITE PEAK Ski Area",
+        "name": "Mineyama Kogen Resort White Peak",
         "country": "Japan",
         "region": "Hyogo Prefecture",
         "lng": 134.66407,
