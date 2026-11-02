@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-10-31
 
+### `fix: restore dual-sided border labeling by eliminating collision suppression`
+- **What was wrong before**:
+  - International border labels were only visible on one side of the border (e.g. only `ALBANIA` or only `FRANCE`, with the companion sovereign nation completely absent).
+  - **Root Cause (Collision Overlap Between Companion Layers)**:
+    - Both `world-country-border-labels-left` and `world-country-border-labels-right` are placed along the exact same boundary LineString at identical distance intervals.
+    - Setting `text-padding: 16px` created a 32px vertical collision footprint around each label. Because the labels were offset by $\pm 1.3\text{em}$ (~$\pm 15\text{px}$ from line center, or 30px total separation), their collision bounding boxes overlapped by 12px.
+    - Because the left-side layer evaluates first in MapLibre's rendering queue, MapLibre's collision index detected a collision with the right-side label and silently suppressed the right-side label across every international border.
+- **Solution**:
+  - **Collision-Free Label Separation (`text-padding: 2px`, `text-offset: ±1.4em`)**:
+    - Tightened `text-padding` from 16px to 2px across both label layers in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+    - Expanded perpendicular `text-offset` to `[0, -1.4]` (left) and `[0, 1.4]` (right), establishing a clear 20px buffer between the companion collision boxes.
+    - Guarantees that MapLibre's collision engine never suppresses either side, rendering both sovereign nations concurrently along the boundary line.
+
 ### `fix: restore land border labeling at regional zoom and bust stale boundary cache`
 - **What was wrong before**:
   - At regional sub-continental zoom levels (z4 to z8, such as viewing Greece, Albania, and the Ionian Sea), the land border across the Pindus mountains had zero labels.
