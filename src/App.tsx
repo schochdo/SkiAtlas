@@ -3656,6 +3656,17 @@ export default function App() {
               cleanSite.includes('1xbet') ||
               cleanSite.includes('vulkan777') ||
               cleanSite.includes('sultan-casino') ||
+              cleanSite.includes('winwins.pl') ||
+              cleanSite.includes('shortshortawards') ||
+              cleanSite.includes('inmobiliariacasitas') ||
+              cleanSite.includes('sseseislands') ||
+              cleanSite.includes('buktijpmantra62') ||
+              cleanSite.includes('b288-onlen') ||
+              cleanSite.includes('autok.io') ||
+              cleanSite.includes('truthlect') ||
+              cleanSite.includes('jetskisrentalfortlauderdale') ||
+              cleanSite.includes('domaincatcher') ||
+              cleanSite.includes('nicsell') ||
               cleanSite.includes('vetlab-ufa') ||
               cleanSite.includes('s-vidnoe') ||
               cleanSite.includes('kocianka.com') ||

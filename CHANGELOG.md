@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-01
 
+### `fix: purge cross-domain scam drop-catchers, dead NXDOMAIN links, and canonicalize resort homepages`
+- **What was changed**:
+  - Executed a full-network redirect trace across all 3,605 ski resort URLs to detect cross-domain redirects, expired domain hijacks, and DNS resolution failures.
+  - Cleared 15 newly discovered expired domains that had redirected to offshore slot casinos, gambling sites, hair removal clinics, domain auctioneers, and YouTube videos (including `Bluebird Backcountry` -> Thai PG Slot casino, `Monte Fumaiolo` -> Indonesian slot site, `Oukaimden` -> slot demo, `Henryk Ski` -> WinWin Casino, `Adventure Mountain` -> Indonesian betting, `Cuyamaca Peak` -> Indonesian gambling, `Kelowna Mountain` & `Skilift Beuerberg` -> Nicsell domain auctions, `Panoramalifte Hopfen` -> DomainCatcher).
+  - Cleared 76 dead `NXDOMAIN` URLs where the registration has completely lapsed from DNS, eliminating dead-end browser errors and shutting down future drop-catcher attack surfaces.
+  - Updated 254 legitimate cross-domain redirects to their active canonical destination homepages directly (e.g. `cardrona-treblecone.com`, `frutt.ch`, `gurgl.com`, `aramon.com/formigal-panticosa`, `rosakhutor.ru`, `baqueira.es`), ensuring users land immediately on the verified resort homepage.
+  - Expanded client-side domain security filters in [`getResortWebsite()`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/classification.ts) and [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) with all discovered malicious redirect targets.
+
 ### `feat: suppress non-Latin scripts when English exists and sweep global URLs for scams/drop-catchers`
 - **What was changed**:
   - Systematically sanitized all resort names across [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json) and runtime pipelines ([`cleanResortName()`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/classification.ts)): suppressed Cyrillic, Chinese, Japanese, Korean, Georgian, Greek, Arabic, and Hebrew portions whenever an English/Latin version is provided (903 resorts cleaned).

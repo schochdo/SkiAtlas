@@ -214,6 +214,17 @@ export function getResortWebsite(resort: SkiResort | null | undefined): string |
         host.includes('1xbet') ||
         host.includes('vulkan777') ||
         host.includes('sultan-casino') ||
+        host.includes('winwins.pl') ||
+        host.includes('shortshortawards') ||
+        host.includes('inmobiliariacasitas') ||
+        host.includes('sseseislands') ||
+        host.includes('buktijpmantra62') ||
+        host.includes('b288-onlen') ||
+        host.includes('autok.io') ||
+        host.includes('truthlect') ||
+        host.includes('jetskisrentalfortlauderdale') ||
+        host.includes('domaincatcher') ||
+        host.includes('nicsell') ||
         host.includes('vetlab-ufa') ||
         host.includes('s-vidnoe') ||
         host.includes('kocianka.com') ||
