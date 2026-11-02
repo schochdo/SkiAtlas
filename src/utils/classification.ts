@@ -201,15 +201,32 @@ export function getResortWebsite(resort: SkiResort | null | undefined): string |
     try {
       const parsed = new URL(withProto);
       const host = parsed.hostname.toLowerCase();
-      // Route hijacked domain to verified official website
+      // Route hijacked domains to verified official websites
       if (host === 'westsportcenter.com.ua' || host === 'www.westsportcenter.com.ua') {
         return 'https://westsportcenter.in.ua/';
       }
-      // Safety filter against scam / casino affiliate sites and malicious redirects
+      if (host.includes('sayama-ski.jp')) {
+        return 'https://www.seibu-leisure.co.jp/ski_web/';
+      }
+      // Safety filter against scam / casino affiliate sites, parked drop-catchers, and malicious redirects
       if (
         host.includes('parik24') ||
         host.includes('1xbet') ||
         host.includes('vulkan777') ||
+        host.includes('sultan-casino') ||
+        host.includes('vetlab-ufa') ||
+        host.includes('s-vidnoe') ||
+        host.includes('kocianka.com') ||
+        host.includes('clearwaterskihill.com') ||
+        host.includes('nevelandia.it') ||
+        host.includes('skigora.ru') ||
+        host.includes('ermitage-resort.com') ||
+        host.includes('skizentrum-ludwigsstadt.de') ||
+        host.includes('natanay.ru') ||
+        host.includes('listvennaya.com') ||
+        host.includes('hoteldivniy.com') ||
+        host.includes('hugedomains') ||
+        host.includes('sedoparking') ||
         host.endsWith('.casino')
       ) {
         return null;
@@ -224,17 +241,22 @@ export function getResortWebsite(resort: SkiResort | null | undefined): string |
   return null;
 }
 
+const NON_LATIN_SCRIPT_RE = /[\u0400-\u04FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF\u10A0-\u10FF\u0370-\u03FF\u0600-\u06FF\u0590-\u05FF\u0530-\u058F]/;
+const LATIN_WORD_RE = /[a-zA-Z]{2,}/;
+
 /**
- * Sanitizes bloated resort names (e.g. raw OpenStreetMap imports containing
- * comma-separated multi-language translations or excessive administrative titles)
- * into concise editorial cartographic names.
+ * Sanitizes resort names by suppressing non-Latin scripts (Cyrillic, CJK, Georgian, etc.)
+ * IF an English/Latin version is present. If there is no English/Latin translation,
+ * the original native name is preserved. Also collapses multi-language comma repeats.
  */
 export function cleanResortName(name: string, _country?: string): string {
   if (!name) return '';
   const trimmed = name.trim();
-  if (trimmed.length < 35 && !trimmed.includes(',')) return trimmed;
 
-  // Specific known long administrative titles
+  // Known flagship overrides
+  if (trimmed.includes('Буковель')) {
+    return 'Bukovel';
+  }
   if (trimmed.includes('Western Rehabilitation') || trimmed.includes('Західний реабілітаційно')) {
     return 'Western Rehabilitation & Sports Center';
   }
@@ -245,7 +267,81 @@ export function cleanResortName(name: string, _country?: string): string {
     return 'National Alpine Skiing Centre (Xiaohaituo)';
   }
 
-  // Handle comma-separated multi-language duplicates: e.g. "Local Name, English Name, Transliteration"
+  // If name has non-Latin script AND a valid Latin/English component (>= 2 letters):
+  // Suppress the non-Latin script part in favor of the English/Latin version!
+  if (NON_LATIN_SCRIPT_RE.test(trimmed) && LATIN_WORD_RE.test(trimmed)) {
+    // 1. Space-separated simple names without punctuation e.g. "Dahongzhai 大鸿寨滑雪场"
+    if (!/[,()/\-–—]/.test(trimmed)) {
+      const tokens = trimmed.split(/\s+/);
+      const latinTokens = tokens.filter((t) => !NON_LATIN_SCRIPT_RE.test(t) && LATIN_WORD_RE.test(t));
+      if (latinTokens.length > 0) {
+        return latinTokens.join(' ');
+      }
+    }
+
+    // 2. Comma-separated: e.g. "Local Name, English Name, Romanized"
+    if (trimmed.includes(',')) {
+      const parts = trimmed.split(',').map((p) => p.trim()).filter(Boolean);
+      const pureLatinParts = parts.filter((p) => LATIN_WORD_RE.test(p) && !NON_LATIN_SCRIPT_RE.test(p));
+      if (pureLatinParts.length > 0) {
+        const priority = pureLatinParts.find((p) =>
+          /\b(ski|resort|mountain|snow|park|center|centre|area|slopes|kogen)\b/i.test(p)
+        );
+        return priority || pureLatinParts[0];
+      }
+      const mixedLatinParts = parts.filter((p) => LATIN_WORD_RE.test(p));
+      if (mixedLatinParts.length > 0) {
+        const cleaned = mixedLatinParts[0].replace(new RegExp(NON_LATIN_SCRIPT_RE, 'g'), '').replace(/^[ -/,()"]+|[ -/,()"]+$/g, '');
+        if (LATIN_WORD_RE.test(cleaned)) {
+          return cleaned;
+        }
+      }
+    }
+
+    // 3. Parentheses: e.g. "NonLatin (Latin)" or "Latin (NonLatin)"
+    if (trimmed.includes('(') && trimmed.includes(')')) {
+      const m = trimmed.match(/^(.*?)\s*\((.*?)\)\s*$/);
+      if (m) {
+        const outside = m[1].trim();
+        const inside = m[2].trim();
+        if (NON_LATIN_SCRIPT_RE.test(outside) && !NON_LATIN_SCRIPT_RE.test(inside) && LATIN_WORD_RE.test(inside)) {
+          return inside;
+        }
+        if (!NON_LATIN_SCRIPT_RE.test(outside) && LATIN_WORD_RE.test(outside) && NON_LATIN_SCRIPT_RE.test(inside)) {
+          return outside;
+        }
+        if (LATIN_WORD_RE.test(outside) && !NON_LATIN_SCRIPT_RE.test(outside)) {
+          return outside;
+        }
+        if (LATIN_WORD_RE.test(inside) && !NON_LATIN_SCRIPT_RE.test(inside)) {
+          return inside;
+        }
+      }
+    }
+
+    // 4. Delimiters: " - ", " – ", " — ", " / "
+    for (const sep of [' - ', ' – ', ' — ', ' / ']) {
+      if (trimmed.includes(sep)) {
+        const parts = trimmed.split(sep).map((p) => p.trim()).filter(Boolean);
+        const pureLatin = parts.find((p) => LATIN_WORD_RE.test(p) && !NON_LATIN_SCRIPT_RE.test(p));
+        if (pureLatin) {
+          return pureLatin;
+        }
+      }
+    }
+
+    // 5. Fallback: strip non-Latin characters
+    const stripped = trimmed
+      .replace(new RegExp(NON_LATIN_SCRIPT_RE, 'g'), '')
+      .replace(/^[ -/,()"]+|[ -/,()"]+$/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (LATIN_WORD_RE.test(stripped) && stripped.length >= 3) {
+      return stripped;
+    }
+  }
+
+  // Handle comma-separated multi-language duplicates when all are Latin
   if (trimmed.includes(',')) {
     // Avoid breaking parenthesized lists: e.g. "Waakirchen (Village A, Village B)"
     if (trimmed.includes('(') && trimmed.includes(')')) {
@@ -263,18 +359,6 @@ export function cleanResortName(name: string, _country?: string): string {
       const p0 = parts[0];
       if (parts.slice(1).every((p) => p0.toLowerCase().includes(p.toLowerCase()))) {
         return p0;
-      }
-
-      // If one part is non-Latin and another is Latin/English, prefer the Latin/English name
-      const hasLatin = (s: string) => /[a-zA-Z]/.test(s);
-      const latinParts = parts.filter(hasLatin);
-      const nonLatinParts = parts.filter((s) => !hasLatin(s));
-
-      if (latinParts.length > 0 && nonLatinParts.length > 0) {
-        const priority = latinParts.find((p) =>
-          /\b(ski|resort|mountain|snow|park|center|centre|area|slopes)\b/i.test(p)
-        );
-        return priority || latinParts[0];
       }
 
       // If multiple Latin parts are duplicates or variations

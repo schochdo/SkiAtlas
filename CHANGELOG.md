@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-01
 
+### `feat: suppress non-Latin scripts when English exists and sweep global URLs for scams/drop-catchers`
+- **What was changed**:
+  - Systematically sanitized all resort names across [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json) and runtime pipelines ([`cleanResortName()`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/classification.ts)): suppressed Cyrillic, Chinese, Japanese, Korean, Georgian, Greek, Arabic, and Hebrew portions whenever an English/Latin version is provided (903 resorts cleaned).
+  - Preserved authentic native script names untouched for all ski areas lacking an English/Latin translation (273 resorts).
+  - Executed a full concurrent HTTP network sweep across all 3,616 resort URLs in the global dataset, detecting expired drop-catcher domains, casino landers, and parked landing pages.
+  - Sanitized 12 flagged URLs: updated Sayama Ski Resort to its authentic Seibu official domain (`https://www.seibu-leisure.co.jp/ski_web/`) and cleared compromised/parked domains (such as `aktyz.kg` redirecting to an online casino, `skigora.ru`, `natanay.ru`, `skizentrum-ludwigsstadt.de`, `vetlab-ufa.ru`, `kocianka.com`).
+  - Added real-time URL sanitization guards in [`getResortWebsite()`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/classification.ts) and [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) against known malicious drop-catcher and casino redirect networks.
+
 ### `fix: clean bloated multilingual resort names and replace hijacked casino domain with verified official website`
 - **What was wrong before**:
   - The Western Rehabilitation and Sports Center in Lviv Oblast, Ukraine displayed a 278-character concatenated name combining full Ukrainian, Belarusian, and English bureaucratic committee titles in a single string.

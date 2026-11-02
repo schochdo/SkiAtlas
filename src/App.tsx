@@ -3649,10 +3649,27 @@ export default function App() {
           if (cleanSite) {
             if (cleanSite.includes('westsportcenter.com.ua')) {
               cleanSite = 'https://westsportcenter.in.ua/';
+            } else if (cleanSite.includes('sayama-ski.jp')) {
+              cleanSite = 'https://www.seibu-leisure.co.jp/ski_web/';
             } else if (
               cleanSite.includes('parik24') ||
               cleanSite.includes('1xbet') ||
-              cleanSite.includes('vulkan777')
+              cleanSite.includes('vulkan777') ||
+              cleanSite.includes('sultan-casino') ||
+              cleanSite.includes('vetlab-ufa') ||
+              cleanSite.includes('s-vidnoe') ||
+              cleanSite.includes('kocianka.com') ||
+              cleanSite.includes('clearwaterskihill.com') ||
+              cleanSite.includes('nevelandia.it') ||
+              cleanSite.includes('skigora.ru') ||
+              cleanSite.includes('ermitage-resort.com') ||
+              cleanSite.includes('skizentrum-ludwigsstadt.de') ||
+              cleanSite.includes('natanay.ru') ||
+              cleanSite.includes('listvennaya.com') ||
+              cleanSite.includes('hoteldivniy.com') ||
+              cleanSite.includes('hugedomains') ||
+              cleanSite.includes('sedoparking') ||
+              cleanSite.endsWith('.casino')
             ) {
               cleanSite = '';
             } else if (cleanSite.startsWith('hhttps://')) {
