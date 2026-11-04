@@ -4,6 +4,31 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-11-03
+
+### `fix: replace hijacked casino domain for Wallowa Lake Tramway`
+- **What was wrong before**:
+  - `wallowalaketramway.com` had expired and been captured by an online casino redirect operator — same pattern as 15 other drop-catcher hijacks cleared in the previous session.
+  - The real Wallowa Lake Tramway / Eagle Cap Wilderness tram operates at `wallowalaketram.com`.
+- **Solution**:
+  - Replaced `https://wallowalaketramway.com/activities/` with `https://wallowalaketram.com/` in [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json).
+
+### `fix: recalibrate border label spacing for dynamic density across zoom range`
+- **What was wrong before**:
+  - At ~60,000 ft camera altitude, 3 label repetitions (`FRANCE`, `FRANCE`, `FRANCE`) were visible in a single viewport — overly dense.
+  - At ~70,000 ft altitude, 0 labels appeared — complete dropout.
+  - `symbol-avoid-edges: true` was culling candidates near screen edges, often the only valid candidate in view at higher altitudes.
+  - `text-max-angle: 38°` was rejecting too many anchor candidates on sinuous Alpine ridges, starving the label engine especially at lower zoom where pixel angles are more pronounced.
+  - `minzoom: 3.8` was cutting off labels before they faded in naturally.
+- **Solution** (in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) layers `world-country-border-labels-left` / `right`):
+  - **`symbol-avoid-edges: false`** — allows labels to anchor near viewport edges, ensuring at least one label is always found even when the border runs diagonally across the screen.
+  - **`symbol-spacing` now increases with zoom** (450px at z3.5 → 1200px at z14.5) instead of decreasing — counterintuitive but correct: at higher zoom the border is longer on screen so spacing must grow to avoid 3+ repetitions per window; at lower zoom the border is shorter so smaller spacing is needed to find even one anchor.
+  - **`text-max-angle: 45°`** (up from 38°) — allows labels on naturally curvy mountain ridges without excessive rejection.
+  - **`minzoom: 3.2`** with **`text-opacity` fade-in** from 0 at z3.2 to 0.75 at z3.8 — labels appear seamlessly rather than popping in abruptly.
+  - **`symbol-sort-key: 0.5`** added to both layers — gives border labels a consistent priority slot in MapLibre's collision queue.
+
+---
+
 ## 2026-11-01
 
 ### `fix: purge 1,073 closed, abandoned, and historic ski areas from atlas dataset`
