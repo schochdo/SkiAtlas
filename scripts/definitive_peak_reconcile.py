@@ -81,9 +81,10 @@ KNOWN_CORRECTIONS = {
     'peak-763': [10.551868, 47.548626],    # Breitenberg (Pfronten, Allgäu Alps)
     'peak-792': [10.295680, 47.299925],    # Mädelegabel (Allgäu Alps)
     'peak-778': [10.292500, 47.297500],    # Hochfrottspitze (Allgäu Alps)
+    'peak-1308': [9.796389, 46.833889],    # Weissfluhgipfel (Davos/Parsenn summit, was mislabeled and 50km off)
 }
 
-# 2. Redundant sub-peaks, subsidiary horns, and alias twins within same massifs
+# 2. Redundant sub-peaks, subsidiary horns, passes, and non-peak features
 REMOVE_IDS = {
     'peak-1501', # Eisenhower Peak (Castle Mountain subsidiary tower in Banff)
     'peak-560',  # Großer Bruder (Großer Weitschartenkopf subsidiary in Berchtesgaden)
@@ -107,7 +108,11 @@ REMOVE_IDS = {
     'peak-817',  # Wilder Mann (Steinschartenkopf ridge spur)
     'peak-1138', # El Prau Del Fontan (Peña Ubiña ridge sub-peak)
     'peak-2839', # Condor Pusthaña (Kollpani ridge sub-peak)
-    'peak-792',  # Mädelegabel (Hochfrottspitze ridge sub-peak)
+    'peak-319',  # Karakoram Pass (mountain pass, not a peak)
+    'peak-2568', # High Hut Lookout (hiking shelter hut)
+    'peak-2718', # Snowbowl Hut Overlook (hiking shelter hut)
+    'peak-2576', # Ingalls Peak, South Ridge (climbing route ridge)
+    'peak-1502', # Elk Thurston Ridge (hiking trail ridge)
 }
 
 def main():
@@ -124,6 +129,17 @@ def main():
             feat['geometry']['coordinates'] = list(KNOWN_CORRECTIONS[pid])
             pname = feat['properties'].get('name', '')
             print(f"  Fixed corrupted coordinate for {pname} ({pid}) -> {KNOWN_CORRECTIONS[pid]}")
+        if pid == 'peak-1308':
+            feat['properties']['name'] = 'Weissfluhgipfel'
+            feat['properties']['elevation_ft'] = 9327
+            feat['properties']['elevation_m'] = 2843
+            feat['properties']['elevation_formatted_ft'] = "9,327'"
+            feat['properties']['elevation_formatted_m'] = "2,843 m"
+            feat['properties']['label_ft'] = "▲ Weissfluhgipfel · 9,327'"
+            feat['properties']['label_m'] = "▲ Weissfluhgipfel · 2,843 m"
+            feat['properties']['label_stacked_ft'] = "▲ Weissfluhgipfel\n9,327'"
+            feat['properties']['label_stacked_m'] = "▲ Weissfluhgipfel\n2,843 m"
+            print("  Corrected peak-1308 name from 'Parsenn' to 'Weissfluhgipfel'")
 
     # Step 2: Deduplicate
     features = [f for f in features if f['id'] not in REMOVE_IDS]

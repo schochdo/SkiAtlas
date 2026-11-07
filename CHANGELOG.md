@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: replace misplaced Parsenn ski area with Weissfluhgipfel and purge non-peak passes/huts`
+- **What was wrong before**:
+  - `Parsenn · 9,331'` appeared as a mountain peak marker on a grassy slope 50 km south of Davos in Val Bregaglia (`[9.49206, 46.490874]`).
+  - **Root Cause**: Parsenn is a ski domain / arena name, not an actual mountain summit. The elevation ($9,331\text{ ft} / 2,844\text{ m}$) was copied from the true summit above Davos (**Weissfluhgipfel**, $2,843\text{ m} / 9,327\text{ ft}$), but erroneous coordinates placed it 50 km away on a hillside.
+  - Additionally, several non-peak features had leaked into the summits dataset: `Karakoram Pass` (a mountain pass), `High Hut Lookout` and `Snowbowl Hut Overlook` (hiking huts), and trail routes like `Ingalls Peak, South Ridge` and `Elk Thurston Ridge`.
+- **Solution**:
+  - Corrected `peak-1308`: renamed from `Parsenn` to canonical **Weissfluhgipfel** ($9,327\text{ ft} / 2,843\text{ m}$) and relocated to the true surveyed summit with the observatory above Davos (`[9.796389, 46.833889]`).
+  - Purged non-peak features: `Karakoram Pass` (`peak-319`), `High Hut Lookout` (`peak-2568`), `Snowbowl Hut Overlook` (`peak-2718`), `Ingalls Peak, South Ridge` (`peak-2576`), and `Elk Thurston Ridge` (`peak-1502`).
+  - Bumped dataset cache buster in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) to `?v=20261106_dem_clean_summits`.
+
 ### `fix: use correct key query parameter for CARTO Voyager tiles`
 - **What was wrong before**:
   - The Clean OSM (Voyager) basemap displayed an `API KEY REQUIRED` watermark tile.

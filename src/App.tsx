@@ -2396,7 +2396,7 @@ export default function App() {
       map.addSource('major-peaks-source', {
         type: 'geojson',
         promoteId: 'id',
-        data: getStaticDataUrl('data/major_peaks.geojson?v=20261106_dem_apex_reconciled'),
+        data: getStaticDataUrl('data/major_peaks.geojson?v=20261106_dem_clean_summits'),
       });
 
       // Markers (Tier 3 -> Tier 2 -> Tier 1 so Tier 1 apex dots render on top)
