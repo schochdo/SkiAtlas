@@ -1462,6 +1462,7 @@ export default function App() {
               ['==', ['coalesce', ['get', 'name'], ''], ''],
               ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]],
               ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]],
+              ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]],
             ],
             '',
             ['get', 'name'],
@@ -1505,6 +1506,7 @@ export default function App() {
               ['==', ['coalesce', ['get', 'name'], ''], ''],
               ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]],
               ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]],
+              ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]],
             ],
             '',
             ['get', 'name']
@@ -1537,6 +1539,7 @@ export default function App() {
           ['!=', ['coalesce', ['get', 'name'], ''], ''],
           ['!', ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
           ['!', ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+          ['!', ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]]],
           ['!', ['in', 'proposed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
           ['!', ['in', 'planned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
           ['!', ['in', 'abandoned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
@@ -1547,7 +1550,19 @@ export default function App() {
           'symbol-placement': 'line',
           'symbol-spacing': 700,
           'text-padding': 14,
-          'text-field': ['get', 'name'],
+          'text-field': [
+            'case',
+            [
+              'any',
+              ['!', ['has', 'name']],
+              ['==', ['coalesce', ['get', 'name'], ''], ''],
+              ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]],
+              ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]],
+              ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]],
+            ],
+            '',
+            ['get', 'name'],
+          ],
           'text-size': [
             'interpolate',
             ['linear'],
@@ -2867,7 +2882,7 @@ export default function App() {
       polyPisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isPolyGeom, nonSkiExclusion, ['any', ...allowedConditions]];
     }
 
-    // Suppress text labels for Unnamed, Unknown, or empty trail names while keeping lines visible
+    // Suppress text labels for Unnamed, Unknown, Untitled, or empty trail names while keeping lines visible
     const labelFilter: any = [
       'all',
       pisteFilter,
@@ -2875,6 +2890,7 @@ export default function App() {
       ['!=', ['coalesce', ['get', 'name'], ''], ''],
       ['!', ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
       ['!', ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]]],
     ];
 
     const polyLabelFilter: any = [
@@ -2884,6 +2900,7 @@ export default function App() {
       ['!=', ['coalesce', ['get', 'name'], ''], ''],
       ['!', ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
       ['!', ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]]],
     ];
 
     ['live-pistes-casing', 'live-pistes-lines', 'live-pistes-hit-target'].forEach((id) => {
@@ -2913,18 +2930,38 @@ export default function App() {
     // Aerialway Lifts & Cable-Aligned Labels are tied directly to Downhill ski infrastructure.
     // Also apply is_heli_cat exclusion to lifts so cat-ski area lifts hide correctly.
     const liftVisible = showDownhill || showHeliCat;
-    const liftFilter: any = heliCatExclusion
-      ? ['all', ['==', ['get', 'kind'], 'lift'], heliCatExclusion]
-      : null;
+    const baseLiftConditions: any[] = [
+      ['==', ['get', 'kind'], 'lift'],
+      ['==', ['coalesce', ['get', 'status'], 'operating'], 'operating'],
+    ];
+    if (heliCatExclusion) {
+      baseLiftConditions.push(heliCatExclusion);
+    }
+    const liftFilter: any = ['all', ...baseLiftConditions];
+
+    const liftLabelFilter: any = [
+      'all',
+      ...baseLiftConditions,
+      ['has', 'name'],
+      ['!=', ['coalesce', ['get', 'name'], ''], ''],
+      ['!', ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'proposed', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'planned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'abandoned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+      ['!', ['in', 'disused', ['downcase', ['coalesce', ['get', 'name'], '']]]],
+    ];
+
     ['live-pistes-lifts', 'live-pistes-lifts-hit-target'].forEach((id) => {
       if (map.getLayer(id)) {
         map.setLayoutProperty(id, 'visibility', liftVisible ? 'visible' : 'none');
-        if (liftVisible && liftFilter) map.setFilter(id, liftFilter);
+        if (liftVisible) map.setFilter(id, liftFilter);
       }
     });
     if (map.getLayer('live-pistes-lifts-labels')) {
       map.setLayoutProperty('live-pistes-lifts-labels', 'visibility', liftVisible ? 'visible' : 'none');
-      if (liftVisible && liftFilter) map.setFilter('live-pistes-lifts-labels', liftFilter);
+      if (liftVisible) map.setFilter('live-pistes-lifts-labels', liftLabelFilter);
     }
   }, [showDownhill, showNordic, showHeliCat, mapLoaded]);
 

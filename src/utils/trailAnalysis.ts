@@ -54,7 +54,8 @@ export function analyzeTrailFeature(
   const rawName = p.name || p['piste:name'] || '';
   const isLift = p.kind === 'lift' || !!p.aerialway;
   const defaultName = isLift ? 'Mountain Aerialway' : 'Ski Trail';
-  const name = rawName.trim() || defaultName;
+  const isGeneric = !rawName.trim() || /^(untitled|unnamed|unknown)/i.test(rawName.trim());
+  const name = isGeneric ? defaultName : rawName.trim();
 
   let coords: [number, number, number?][] = [];
 

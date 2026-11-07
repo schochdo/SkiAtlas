@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: suppress labels for untitled trails, lifts, and polygon freeride areas`
+- **What was wrong before**:
+  - Unnamed or placeholder infrastructure labeled as "Untitled Lift", "Untitled", or similar placeholder strings appeared on the map, cluttering ski area terrain.
+  - While existing layer filters suppressed strings matching "unnamed" and "unknown", "untitled" was not included in the blacklist, allowing placeholder labels to render.
+  - Additionally, when resort filter toggles updated in `useEffect`, `map.setFilter('live-pistes-lifts-labels', liftFilter)` applied the generic geometry filter without the label exclusion rules, bypassing name suppression.
+- **Solution**:
+  - Added `['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]]` to the exclusion lists across all three live trail/lift symbol layers:
+    - `live-pistes-labels` (trail lines)
+    - `live-pistes-polygons-labels` (glades, bowls, and freeride zones)
+    - `live-pistes-lifts-labels` (aerialway cable alignment)
+  - Updated both initial layer creation and reactive filter management in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) with dedicated `liftLabelFilter` so untitled/unnamed lifts remain suppressed across all filter states.
+  - Updated [`src/utils/trailAnalysis.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/trailAnalysis.ts) so selecting an untitled lift or trail in 3D inspection cleanly defaults to "Mountain Aerialway" or "Ski Trail" instead of displaying raw placeholder text.
+
 ### `fix: use top-level step expression for zoom-based peak text-field evaluation`
 - **What was wrong before**:
   - After unifying peak labels into a single layer, all peak labels failed to render on the map.
