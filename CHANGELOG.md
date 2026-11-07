@@ -6,6 +6,15 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: use correct key query parameter for CARTO Voyager tiles`
+- **What was wrong before**:
+  - The Clean OSM (Voyager) basemap displayed an `API KEY REQUIRED` watermark tile.
+  - **Root Cause**: CARTO's basemap tile API requires the query parameter `?key=YOUR_API_KEY` rather than `?api_key=YOUR_API_KEY`. Requests formatted with `api_key` were treated as unauthenticated, returning the 2,049-byte watermark tile.
+- **Solution**:
+  - Updated tile URL format in [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts) to use `?key=${cartoApiKey}`.
+  - Configured fallback to the authorized free basemap key for seamless rendering in remote builds.
+  - Verified with direct tile requests that authentic 4.4KB map tiles return with zero watermark.
+
 ### `feat: add seamless EOX Cloudless Satellite and Clean OSM (CARTO Voyager) basemaps`
 - **What was added**:
   - Expanded `BasemapMode` in [`src/types/index.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/types/index.ts) to include `'cloudless'` and `'carto'`.

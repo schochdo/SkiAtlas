@@ -9,7 +9,7 @@ export const createMapStyle = (
   showCountryOutlines: boolean = false,
   showHillshade: boolean = true
 ): StyleSpecification => {
-  const cartoApiKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CARTO_API_KEY) || '';
+  const cartoApiKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CARTO_API_KEY) || 'cb1_27pq_1_05391dca080d5ca53cb5c122';
 
   return {
     version: 8,
@@ -51,9 +51,9 @@ export const createMapStyle = (
         type: 'raster',
         tiles: cartoApiKey
           ? [
-              `https://a.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png?api_key=${cartoApiKey}`,
-              `https://b.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png?api_key=${cartoApiKey}`,
-              `https://c.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png?api_key=${cartoApiKey}`,
+              `https://a.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png?key=${cartoApiKey}`,
+              `https://b.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png?key=${cartoApiKey}`,
+              `https://c.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png?key=${cartoApiKey}`,
             ]
           : [
               'https://a.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
