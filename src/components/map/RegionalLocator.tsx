@@ -21,7 +21,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   locatorOpen,
   onToggleLocator,
   onCloseLocator,
-  selectedResort: _selectedResort,
+  selectedResort,
   mapCenter,
   mapZoom,
   viewportBounds,
@@ -30,22 +30,90 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   onResetToGlobal,
 }) => {
   const [locatorZoomPreset, setLocatorZoomPreset] = useState<'regional' | 'continental' | 'global'>(() =>
-    mapZoom >= 8.5 ? 'regional' : mapZoom < 3.5 ? 'global' : 'continental'
+    selectedResort || mapZoom >= 6.0 ? 'regional' : mapZoom < 3.0 ? 'global' : 'continental'
   );
   const locatorMenuRef = useRef<HTMLDivElement | null>(null);
   const locatorContainerRef = useRef<HTMLDivElement | null>(null);
   const locatorMapRef = useRef<maplibregl.Map | null>(null);
+  const savedZoomRef = useRef<number | null>(null);
+  const lastResortIdRef = useRef<string | null>(selectedResort?.id ?? null);
 
-  // Automatically switch zoom preset based on main map zoom level (unpinned from selected resort)
-  useEffect(() => {
-    if (mapZoom < 3.5) {
-      setLocatorZoomPreset('global');
-    } else if (mapZoom >= 8.5) {
-      setLocatorZoomPreset('regional');
-    } else {
-      setLocatorZoomPreset(prev => prev === 'global' ? 'continental' : prev);
+  // Helper to determine optimal overview map zoom presets
+  const getOverviewTargetZoom = useCallback((
+    preset: 'regional' | 'continental' | 'global'
+  ): number => {
+    return preset === 'regional' ? 5.5 : preset === 'continental' ? 3.0 : 1.1;
+  }, []);
+
+  // Helper to determine optimal overview map center based on live camera center
+  const getOverviewTargetCenter = useCallback((
+    center: [number, number],
+    preset: 'regional' | 'continental' | 'global'
+  ): [number, number] => {
+    const [targetLng, targetLat] = center;
+    const currentLocatorZoom = locatorMapRef.current
+      ? locatorMapRef.current.getZoom()
+      : (savedZoomRef.current ?? getOverviewTargetZoom(preset));
+
+    // When zoomed in to regional/local scale (either by preset or user zooming),
+    // strictly track the camera center directly so the camera indicator remains centered.
+    if (currentLocatorZoom >= 4.0 || preset === 'regional') {
+      return [targetLng, targetLat];
     }
-  }, [mapZoom]);
+
+    if (preset === 'continental') {
+      if (mapZoom >= 4) {
+        const balancedLat = Math.max(-45, Math.min(55, targetLat));
+        return [targetLng, balancedLat];
+      }
+      // When at global scope with nothing selected, continental preset targets primary ski continents
+      if (targetLng >= -170 && targetLng <= -50) return [-98, 40]; // North America
+      if (targetLng >= 120 && targetLng <= 150) return [138, 38]; // Japan
+      return [12, 48]; // Europe
+    }
+
+    // World / global view:
+    if (mapZoom >= 4) {
+      const balancedLat = Math.max(-25, Math.min(48, targetLat));
+      return [targetLng, balancedLat];
+    }
+    return [12, 28];
+  }, [mapZoom, getOverviewTargetZoom]);
+
+  // Reset locator map on selecting a new ski area
+  useEffect(() => {
+    const currentId = selectedResort?.id ?? null;
+    if (currentId && currentId !== lastResortIdRef.current) {
+      lastResortIdRef.current = currentId;
+      setLocatorZoomPreset('regional');
+      const targetZoom = getOverviewTargetZoom('regional');
+      savedZoomRef.current = targetZoom;
+      if (locatorMapRef.current) {
+        locatorMapRef.current.easeTo({
+          center: [selectedResort!.lng, selectedResort!.lat],
+          zoom: targetZoom,
+          duration: 400,
+        });
+      }
+    } else {
+      lastResortIdRef.current = currentId;
+    }
+  }, [selectedResort, getOverviewTargetZoom]);
+
+  // Reset to global overview when user explicitly resets to global world view
+  useEffect(() => {
+    if (mapZoom < 2.5 && !selectedResort) {
+      setLocatorZoomPreset('global');
+      savedZoomRef.current = 1.1;
+      if (locatorMapRef.current && locatorMapRef.current.getZoom() > 2.0) {
+        locatorMapRef.current.easeTo({
+          center: [12, 28],
+          zoom: 1.1,
+          duration: 400,
+        });
+      }
+    }
+  }, [mapZoom, selectedResort]);
 
   // Geographic context for Regional Locator dynamically derived from live camera position
   const activeRegionContext = useMemo(() => {
@@ -175,46 +243,6 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     };
   }, [locatorOpen, onCloseLocator]);
 
-  // Helper to determine optimal overview map center based on live camera center
-  const getOverviewTargetCenter = useCallback((
-    center: [number, number],
-    preset: 'regional' | 'continental' | 'global'
-  ): [number, number] => {
-    const [targetLng, targetLat] = center;
-
-    if (preset === 'regional') {
-      return [targetLng, targetLat];
-    }
-
-    if (preset === 'continental') {
-      if (mapZoom >= 4) {
-        const balancedLat = Math.max(-45, Math.min(55, targetLat));
-        return [targetLng, balancedLat];
-      }
-      // When at global scope with nothing selected, continental preset targets primary ski continents
-      if (targetLng >= -170 && targetLng <= -50) return [-98, 40]; // North America
-      if (targetLng >= 120 && targetLng <= 150) return [138, 38]; // Japan
-      return [12, 48]; // Europe
-    }
-
-    // World / global view:
-    // Center horizontally on targetLng, balanced latitude
-    if (mapZoom >= 4) {
-      const balancedLat = Math.max(-25, Math.min(48, targetLat));
-      return [targetLng, balancedLat];
-    }
-
-    // Otherwise at global scope
-    return [12, 28];
-  }, [mapZoom]);
-
-  // Helper to determine optimal overview map zoom
-  const getOverviewTargetZoom = useCallback((
-    preset: 'regional' | 'continental' | 'global'
-  ): number => {
-    return preset === 'regional' ? 5.5 : preset === 'continental' ? 3.0 : 1.1;
-  }, []);
-
   // Initialize and manage secondary 2D MapLibre instance for Regional Locator
   useEffect(() => {
     if (!locatorOpen) {
@@ -228,7 +256,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     if (!locatorContainerRef.current) return;
 
     const initialCenter = getOverviewTargetCenter(mapCenter, locatorZoomPreset);
-    const initialZoom = getOverviewTargetZoom(locatorZoomPreset);
+    const initialZoom = savedZoomRef.current ?? getOverviewTargetZoom(locatorZoomPreset);
 
     const lmap = new maplibregl.Map({
       container: locatorContainerRef.current,
@@ -315,15 +343,29 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       });
 
       locatorMapRef.current = lmap;
-      // Immediately set center and zoom upon load completion
+      // Immediately restore center and zoom upon load completion
       const targetCenter = getOverviewTargetCenter(mapCenter, locatorZoomPreset);
-      const targetZoom = getOverviewTargetZoom(locatorZoomPreset);
+      const targetZoom = savedZoomRef.current ?? getOverviewTargetZoom(locatorZoomPreset);
       lmap.jumpTo({ center: targetCenter, zoom: targetZoom });
 
       setTimeout(() => {
         lmap.resize();
       }, 50);
     });
+
+    // Update preset pills when user zooms directly on locator map
+    const onZoomEnd = () => {
+      const z = lmap.getZoom();
+      savedZoomRef.current = z;
+      if (z >= 4.5) {
+        setLocatorZoomPreset('regional');
+      } else if (z >= 2.0) {
+        setLocatorZoomPreset('continental');
+      } else {
+        setLocatorZoomPreset('global');
+      }
+    };
+    lmap.on('zoomend', onZoomEnd);
 
     lmap.on('click', (e) => {
       onFlyTo([e.lngLat.lng, e.lngLat.lat]);
@@ -353,25 +395,25 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     }
   }, [viewportBounds, mapCenter, locatorOpen, getViewportGeoJson, getCameraCenterGeoJson]);
 
-  // Sync center and zoom in locator map with live camera
+  // Sync camera center indicator and map framing (strictly preserves current zoom level!)
   useEffect(() => {
     const lmap = locatorMapRef.current;
     if (!lmap || !locatorOpen) return;
 
     const targetCenter = getOverviewTargetCenter(mapCenter, locatorZoomPreset);
-    const targetZoom = getOverviewTargetZoom(locatorZoomPreset);
 
+    // Only update center to track live camera; NEVER overwrite zoom during live camera pan or flight
     lmap.jumpTo({
       center: targetCenter,
-      zoom: targetZoom,
     });
-  }, [mapCenter, locatorZoomPreset, locatorOpen, getOverviewTargetCenter, getOverviewTargetZoom]);
+  }, [mapCenter, locatorZoomPreset, locatorOpen, getOverviewTargetCenter]);
 
   const handleSetLocatorPreset = (preset: 'regional' | 'continental' | 'global') => {
     setLocatorZoomPreset(preset);
+    const targetZoom = getOverviewTargetZoom(preset);
+    savedZoomRef.current = targetZoom;
     if (!locatorMapRef.current) return;
     const targetCenter = getOverviewTargetCenter(mapCenter, preset);
-    const targetZoom = getOverviewTargetZoom(preset);
     locatorMapRef.current.easeTo({
       center: targetCenter,
       zoom: targetZoom,
@@ -382,13 +424,17 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   const handleLocatorZoomIn = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!locatorMapRef.current) return;
-    locatorMapRef.current.zoomIn({ duration: 200 });
+    const nextZoom = Math.min(locatorMapRef.current.getZoom() + 1, 14);
+    savedZoomRef.current = nextZoom;
+    locatorMapRef.current.zoomTo(nextZoom, { duration: 200 });
   };
 
   const handleLocatorZoomOut = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!locatorMapRef.current) return;
-    locatorMapRef.current.zoomOut({ duration: 200 });
+    const nextZoom = Math.max(locatorMapRef.current.getZoom() - 1, 0.5);
+    savedZoomRef.current = nextZoom;
+    locatorMapRef.current.zoomTo(nextZoom, { duration: 200 });
   };
 
   return (
@@ -534,7 +580,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
             </span>
             <button
               onClick={(e) => {
-                setLocatorZoomPreset('global');
+                handleSetLocatorPreset('global');
                 onResetToGlobal(e);
               }}
               className="flex items-center gap-1 font-semibold text-[#5C5852] hover:text-[#1C1B18] cursor-pointer"

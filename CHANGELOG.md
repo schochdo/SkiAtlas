@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: preserve regional locator inset map zoom settings during camera pan and flight`
+- **What was wrong before**:
+  - The mini inset map (`RegionalLocator`) forcibly reset its zoom level whenever the main map camera was panned, flown, or clicked.
+  - **Root Cause**:
+    1. An aggressive `useEffect([mapZoom])` automatically switched `locatorZoomPreset` whenever main map zoom crossed 3.5 or 8.5.
+    2. The live camera sync effect called `lmap.jumpTo({ center: targetCenter, zoom: targetZoom })` on every single frame of camera motion, constantly overwriting any manual zoom level (e.g. from `+`/`-` or scroll) back to a preset constant.
+    3. Clicking anywhere on the mini map or flying triggered camera coordinate updates that in turn wiped out the locator map's zoom.
+- **Solution**:
+  - Uncoupled live camera panning from zoom reset in [`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx):
+    - Changed the camera sync effect to only update center (`lmap.jumpTo({ center: targetCenter })`), leaving the inset map's current zoom completely untouched during live camera panning and flight.
+    - Added `savedZoomRef` and `zoomend` listener to persist user-adjusted zoom levels across map interactions and modal re-openings.
+    - Configured intentional reset triggers:
+      - Selecting a new ski area (`selectedResort.id` changes) resets to regional zoom (5.5) centered on the resort.
+      - Explicitly clicking `Region`, `Continent`, or `World` preset buttons resets to the corresponding calibrated scale.
+      - Resetting to global extent (`mapZoom < 2.5` and no resort selected, or clicking `Reset Global`) resets to global zoom (1.1).
+
+
 ### `feat: add direct mountain peak search flight and pan-zoom without directory pollution`
 - **What was wrong before**:
   - The search input placeholder stated *"Search alpine resorts, peaks, countries..."*, but typing mountain peak names (e.g., Matterhorn, Grand Teton, Denali, Mount Rainier, Mont Blanc) returned 0 results because the search filter only operated against the ski resort catalog.
