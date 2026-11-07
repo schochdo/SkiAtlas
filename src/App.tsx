@@ -1492,11 +1492,11 @@ export default function App() {
           'line-color': 'transparent',
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
-            10, 28,
-            12, 38,
-            14, 52,
-            16, 68,
-            18, 80,
+            10, 32,
+            12, 46,
+            14, 64,
+            16, 80,
+            18, 96,
           ],
           'line-opacity': 0,
         },
@@ -1551,11 +1551,11 @@ export default function App() {
           'line-color': 'transparent',
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
-            10, 28,
-            12, 38,
-            14, 52,
-            16, 68,
-            18, 80,
+            10, 32,
+            12, 46,
+            14, 64,
+            16, 80,
+            18, 96,
           ],
           'line-opacity': 0,
         },
@@ -1585,9 +1585,15 @@ export default function App() {
             '',
             ['get', 'name'],
           ],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 12.0, 9.5, 14, 11, 16, 12.5],
-          'text-font': ['Open Sans Regular'],
-          'text-letter-spacing': 0.05,
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            12.0, 11,
+            14.0, 13,
+            16.0, 15,
+            18.0, 17,
+          ],
+          'text-font': ['Open Sans Semibold'],
+          'text-letter-spacing': 0.04,
           'text-keep-upright': true,
           'text-pitch-alignment': 'viewport',
           'text-rotation-alignment': 'viewport',
@@ -1596,7 +1602,8 @@ export default function App() {
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2.2,
+          'text-halo-width': 2.6,
+          'text-halo-blur': 0.5,
         },
       });
 
@@ -1631,11 +1638,12 @@ export default function App() {
           ],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            12.5, 10,
-            14.5, 12,
-            17.0, 14,
+            12.5, 11.5,
+            14.0, 13.0,
+            16.0, 15.0,
+            18.0, 17.0,
           ],
-          'text-font': ['Open Sans Semibold'],
+          'text-font': ['Open Sans Bold'],
           'text-keep-upright': true,
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'viewport',
@@ -1644,7 +1652,7 @@ export default function App() {
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2.6,
+          'text-halo-width': 2.8,
           'text-halo-blur': 0.5,
         },
       });
@@ -1691,11 +1699,12 @@ export default function App() {
             'interpolate',
             ['linear'],
             ['zoom'],
-            12.5, 10,
-            14.5, 12,
-            17.0, 13.5,
+            12.5, 11.0,
+            14.0, 12.5,
+            16.0, 14.2,
+            18.0, 16.0,
           ],
-          'text-font': ['Open Sans Semibold'],
+          'text-font': ['Open Sans Bold'],
           'text-letter-spacing': 0.03,
           'text-keep-upright': true,
           'text-rotation-alignment': 'map',
@@ -1705,7 +1714,7 @@ export default function App() {
         paint: {
           'text-color': '#7F1D1D',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2.6,
+          'text-halo-width': 2.8,
           'text-halo-blur': 0.5,
         },
       });
@@ -2713,12 +2722,6 @@ export default function App() {
       peakLayers.forEach((layerId) => {
         if (map.getLayer(layerId)) {
           map.on('click', layerId, onPeakClick);
-          map.on('mouseenter', layerId, () => {
-            map.getCanvas().style.cursor = 'pointer';
-          });
-          map.on('mouseleave', layerId, () => {
-            map.getCanvas().style.cursor = '';
-          });
         }
       });
 
@@ -2761,12 +2764,12 @@ export default function App() {
         ].filter((id) => map.getLayer(id));
 
         if (trailLayers.length > 0) {
-          // Generous touch & click target buffer (40px on touch/mobile/iPad, 28px on desktop)
+          // Generous touch & click target buffer (52px on touch/mobile/iPad, 38px on desktop)
           // Eliminates the need for pixel-level precision when inspecting ski runs and chairlifts
           const isTouch =
             typeof window !== 'undefined' &&
             (window.innerWidth < 768 || 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0));
-          const hitRadius = isTouch ? 40 : 28;
+          const hitRadius = isTouch ? 52 : 38;
           const clickBbox: [maplibregl.PointLike, maplibregl.PointLike] = [
             [e.point.x - hitRadius, e.point.y - hitRadius],
             [e.point.x + hitRadius, e.point.y + hitRadius],
@@ -2893,37 +2896,56 @@ export default function App() {
         handleDeselectTrailRef.current();
       });
 
-      // Pointer cursor
-      [
-        'resorts-outer-ring',
-        'resorts-inner-dot',
-        'resorts-labels',
-        'resorts-heli-cat-ring',
-        'resorts-heli-cat-dot',
-        'resorts-heli-cat-labels',
-        'selected-resort-pulse',
-        'selected-resort-dot',
-        'selected-resort-label',
-        'global-clusters',
-        'global-unclustered-outer-ring',
-        'global-unclustered-point',
-        'global-unclustered-label',
-        'live-pistes-hit-target',
-        'live-pistes-lifts-hit-target',
-        'live-pistes-lines',
-        'live-pistes-lifts',
-        'live-pistes-labels',
-        'live-pistes-lifts-labels',
-        'live-pistes-polygons-labels',
-      ].forEach((layerId) => {
-        if (map.getLayer(layerId)) {
-          map.on('mouseenter', layerId, () => {
-            map.getCanvas().style.cursor = 'pointer';
-          });
-          map.on('mouseleave', layerId, () => {
-            map.getCanvas().style.cursor = '';
-          });
-        }
+      // Unified High-Precision Interactive Pointer Cursor
+      // Uses a generous 20px bounding box around the cursor to smoothly and reliably
+      // indicate clickable ski trails, chairlifts, labels, and peaks without edge jitter.
+      let lastCursorThrottle = 0;
+      const onMapMouseMove = (e: maplibregl.MapMouseEvent) => {
+        const now = performance.now();
+        if (now - lastCursorThrottle < 40) return;
+        lastCursorThrottle = now;
+
+        const cRadius = 20;
+        const cursorBbox: [maplibregl.PointLike, maplibregl.PointLike] = [
+          [e.point.x - cRadius, e.point.y - cRadius],
+          [e.point.x + cRadius, e.point.y + cRadius],
+        ];
+
+        const interactiveHoverLayers = [
+          'resorts-outer-ring',
+          'resorts-inner-dot',
+          'resorts-labels',
+          'resorts-heli-cat-ring',
+          'resorts-heli-cat-dot',
+          'resorts-heli-cat-labels',
+          'selected-resort-pulse',
+          'selected-resort-dot',
+          'selected-resort-label',
+          'global-clusters',
+          'global-unclustered-outer-ring',
+          'global-unclustered-point',
+          'global-unclustered-label',
+          'major-peaks-marker-tier1',
+          'major-peaks-marker-tier2',
+          'major-peaks-marker-tier3',
+          'major-peaks-label',
+          'live-pistes-hit-target',
+          'live-pistes-lifts-hit-target',
+          'live-pistes-lines',
+          'live-pistes-casing',
+          'live-pistes-lifts',
+          'live-pistes-labels',
+          'live-pistes-lifts-labels',
+          'live-pistes-polygons-labels',
+        ].filter((id) => map.getLayer(id));
+
+        const feats = map.queryRenderedFeatures(cursorBbox, { layers: interactiveHoverLayers });
+        map.getCanvas().style.cursor = feats && feats.length > 0 ? 'pointer' : '';
+      };
+
+      map.on('mousemove', onMapMouseMove);
+      map.on('mouseout', () => {
+        map.getCanvas().style.cursor = '';
       });
 
       setMapLoaded(true);

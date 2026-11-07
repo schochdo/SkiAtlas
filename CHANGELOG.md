@@ -6,6 +6,29 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: bump ski trail text sizes and expand pointer hover zone and click buffers`
+- **What was wrong before**:
+  - Ski trail and lift name labels on the map were slightly too small to read comfortably at mid-to-high zoom ($z \ge 12.5 - 16$).
+  - The interactive area where the mouse cursor switched to the clickable pointer look (`cursor: pointer`) was razor thin, requiring pixel-precise hovering directly on line geometry before indicating that a segment was inspectable.
+  - **Root Cause**:
+    - Pointer cursor styling was hooked to individual layer `mouseenter` / `mouseleave` events in MapLibre, which only evaluate a single 1×1 pixel under the mouse cursor. Moving between line segments, transparent hit targets, casings, and text constantly fired competing `mouseleave` events, flickering the cursor back to default.
+    - Hit-target lines and click buffers were too narrow for effortless selection.
+- **Solution**:
+  - **Larger, Bolder Trail & Lift Text**:
+    - Bumped `live-pistes-labels` text size: 11.5px at $z=12.5$, 13px at $z=14$, 15px at $z=16$, and 17px at $z=18$.
+    - Upgraded typography to `Open Sans Bold` with an expanded 2.8px contrast halo (`#FAF8F3`).
+    - Bumped `live-pistes-lifts-labels` text size: 11px at $z=12.5$, 12.5px at $z=14$, 14.2px at $z=16$, and 16px at $z=18$.
+    - Bumped `live-pistes-polygons-labels` text size: 11px at $z=12$, 13px at $z=14$, 15px at $z=16$, and 17px at $z=18$.
+  - **Unified Generous Pointer Hover Detection**:
+    - Replaced disjointed per-layer `mouseenter`/`mouseleave` listeners with a unified, 40ms throttled `mousemove` cursor detector.
+    - Evaluates an active 20px radius bounding box (40×40px target window) around the cursor against all interactive trail, lift, label, resort, and peak layers.
+    - Smoothly and reliably transforms the cursor to `pointer` whenever the mouse is near any ski trail, chairlift, or label without flicker.
+  - **Expanded Click Targets**:
+    - Widened `live-pistes-hit-target` and `live-pistes-lifts-hit-target` widths up to 96px at $z=18$ (64px at $z=14$, 80px at $z=16$).
+    - Expanded click inspection buffer `hitRadius` to 38px on desktop and 52px on mobile/touch screens.
+
+
+
 ### `fix: resolve ski trail fade-out and click targeting on 3D alpine terrain`
 - **What was wrong before**:
   - When zooming into steep alpine resorts like Crystal Mountain in Washington ($z \ge 12.5 - 16$), ski trails appeared faint/faded and became unclickable right around the zoom level where trail labels became readable.
