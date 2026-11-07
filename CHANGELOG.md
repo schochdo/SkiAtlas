@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `feat: integrate resort filters as tabbed drawer under top-right hamburger menu`
+- **What was changed**:
+  - Consolidated the top navbar by removing the standalone `[ Display & Filters ]` button and merging all filter controls into the top-right hamburger menu as a tabbed drawer.
+  - Added an editorial segmented tab bar inside the hamburger menu drawer:
+    - **Tab 1 (`Map`)**: Controls cartographic base layers (Satellite, Cloudless, Topo, Clean OSM Voyager, OSM), 3D terrain vertical exaggeration slider (0x to 2.5x), mountain summits toggle, country borders, and slope angle/hillshade overlays.
+    - **Tab 2 (`Filters`)**: Displays resort search filters, including earth projection (3D Globe vs Flat Map), units of measure (Imperial vs Metric), category toggles (Downhill, Nordic, Heli/Cat), pass networks (Ikon, Epic, Indy, Mountain Collective, Independent), and min vertical drop, skiable area, and Nordic network sliders.
+  - Added an active filter indicator:
+    - The hamburger trigger button displays a subtle vermilion notification dot whenever any filter is active.
+    - The `Filters` tab shows a badge with the active filter count and a 1-click `Reset Filters` action.
+- **Why this approach was chosen**:
+  - Streamlines the interface adhering to Anti-SaaS and Edward Tufte cartographic standards: eliminates visual clutter from the top header so the `SNOW GLOBE` crest and wordmark remain clean.
+  - Groups all map configuration and data slicing under a single intuitive hover/click hamburger drawer that persists user interactions cleanly without closing prematurely.
+
 ### `fix: lock mobile viewport and prevent iOS auto-zoom on iPhone 16 Pro`
 - **What was wrong before**:
   - On iOS (specifically iPhone 16 Pro in Safari), the application would start normally, but upon tapping search inputs or performing multi-touch pinch gestures, the browser would auto-zoom the entire web document (`window.visualViewport.scale > 1.0`).

@@ -13,7 +13,6 @@ maplibregl.setWorkerUrl(workerUrl);
 import {
   TopNavBar,
 } from './components/header/TopNavBar';
-import { FilterModal } from './components/header/FilterModal';
 import { LeftDock } from './components/sidebar/LeftDock';
 import { DirectoryList } from './components/sidebar/DirectoryList';
 import { MobileSheet } from './components/sidebar/MobileSheet';
@@ -138,7 +137,6 @@ export default function App() {
   const [panelView, setPanelView] = useState<'directory' | 'profile'>('directory');
   const [mobileSheetState, setMobileSheetState] = useState<'peek' | 'half' | 'full'>('peek');
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
-  const [filtersMenuOpen, setFiltersMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -4748,60 +4746,9 @@ export default function App() {
       {/* EDITORIAL TOP BAR */}
       <TopNavBar
         onResetToGlobal={handleResetToGlobalExtent}
-        filtersMenuOpen={filtersMenuOpen}
-        onToggleFilters={() => setFiltersMenuOpen((prev) => !prev)}
-        onCloseFilters={() => setFiltersMenuOpen(false)}
-        activeFiltersCount={activeFiltersCount}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
-      >
-        <FilterModal
-          isOpen={filtersMenuOpen}
-          onClose={() => setFiltersMenuOpen(false)}
-          activeFiltersCount={activeFiltersCount}
-          onResetFilters={handleResetFilters}
-          earthProjection={earthProjection}
-          onSelectProjection={(mode) => {
-            setEarthProjection(mode);
-            if (mode === 'globe' && mapRef.current && mapRef.current.getZoom() < 5) {
-              safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
-              setMapPitch(0);
-            }
-          }}
-          unitsMetric={unitsMetric}
-          onSetUnitsMetric={handleSetUnitsMetric}
-          filteredCount={filteredResorts.length}
-          showDownhill={showDownhill}
-          onToggleDownhill={() => setShowDownhill(!showDownhill)}
-          showNordic={showNordic}
-          onToggleNordic={() => setShowNordic(!showNordic)}
-          showHeliCat={showHeliCat}
-          onToggleHeliCat={() => setShowHeliCat(!showHeliCat)}
-          categoryFilterCounts={categoryFilterCounts}
-          selectedPasses={selectedPasses}
-          onTogglePass={(pass) => {
-            setSelectedPasses((prev) =>
-              prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass]
-            );
-          }}
-          onSetAllPasses={() =>
-            setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'])
-          }
-          onClearPasses={() => setSelectedPasses([])}
-          minVerticalM={minVerticalM}
-          onChangeMinVerticalM={setMinVerticalM}
-          minVerticalFt={minVerticalFt}
-          onChangeMinVerticalFt={setMinVerticalFt}
-          minAreaHa={minAreaHa}
-          onChangeMinAreaHa={setMinAreaHa}
-          minAreaAcres={minAreaAcres}
-          onChangeMinAreaAcres={setMinAreaAcres}
-          minNordicKm={minNordicKm}
-          onChangeMinNordicKm={setMinNordicKm}
-          minNordicMi={minNordicMi}
-          onChangeMinNordicMi={setMinNordicMi}
-        />
-      </TopNavBar>
+      />
 
       {/* DESKTOP DIRECTORY DOCK */}
       <LeftDock isOpen={leftDockOpen} onToggle={() => setLeftDockOpen(!leftDockOpen)}>
@@ -4924,7 +4871,7 @@ export default function App() {
         />
       </div>
 
-      {/* FLOATING TOP-RIGHT CARTO CONTROLS: BASEMAP POPOVER */}
+      {/* FLOATING TOP-RIGHT CARTO CONTROLS & RESORT FILTERS */}
       <BasemapMenu
         mapMenuOpen={mapMenuOpen}
         onToggleMenu={() => {
@@ -4944,6 +4891,48 @@ export default function App() {
         onSelectTerrainOverlay={setTerrainOverlay}
         terrainOverlayOpacity={terrainOverlayOpacity}
         onChangeTerrainOverlayOpacity={setTerrainOverlayOpacity}
+        activeFiltersCount={activeFiltersCount}
+        onResetFilters={handleResetFilters}
+        earthProjection={earthProjection}
+        onSelectProjection={(mode) => {
+          setEarthProjection(mode);
+          if (mode === 'globe' && mapRef.current && mapRef.current.getZoom() < 5) {
+            safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
+            setMapPitch(0);
+          }
+        }}
+        unitsMetric={unitsMetric}
+        onSetUnitsMetric={handleSetUnitsMetric}
+        filteredCount={filteredResorts.length}
+        showDownhill={showDownhill}
+        onToggleDownhill={() => setShowDownhill(!showDownhill)}
+        showNordic={showNordic}
+        onToggleNordic={() => setShowNordic(!showNordic)}
+        showHeliCat={showHeliCat}
+        onToggleHeliCat={() => setShowHeliCat(!showHeliCat)}
+        categoryFilterCounts={categoryFilterCounts}
+        selectedPasses={selectedPasses}
+        onTogglePass={(pass) => {
+          setSelectedPasses((prev) =>
+            prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass]
+          );
+        }}
+        onSetAllPasses={() =>
+          setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'])
+        }
+        onClearPasses={() => setSelectedPasses([])}
+        minVerticalM={minVerticalM}
+        onChangeMinVerticalM={setMinVerticalM}
+        minVerticalFt={minVerticalFt}
+        onChangeMinVerticalFt={setMinVerticalFt}
+        minAreaHa={minAreaHa}
+        onChangeMinAreaHa={setMinAreaHa}
+        minAreaAcres={minAreaAcres}
+        onChangeMinAreaAcres={setMinAreaAcres}
+        minNordicKm={minNordicKm}
+        onChangeMinNordicKm={setMinNordicKm}
+        minNordicMi={minNordicMi}
+        onChangeMinNordicMi={setMinNordicMi}
       />
 
       {/* CARTOGRAPHIC MAP FURNITURE: ALTERNATING BAR SCALE & LEGEND */}

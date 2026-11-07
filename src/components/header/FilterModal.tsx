@@ -1,11 +1,9 @@
 import React from 'react';
-import { Sliders, X, Globe, Layers } from 'lucide-react';
+import { Globe, Layers } from 'lucide-react';
 import type { EarthProjectionMode, PassNetwork } from '../../types';
 import { PASS_COLORS, PASS_DISPLAY_NAMES, PASS_SHORT_LABELS } from '../../utils/classification';
 
-interface FilterModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+export interface FilterPanelProps {
   activeFiltersCount: number;
   onResetFilters: () => void;
   earthProjection: EarthProjectionMode;
@@ -38,9 +36,7 @@ interface FilterModalProps {
   onChangeMinNordicMi: (v: number) => void;
 }
 
-export const FilterModal: React.FC<FilterModalProps> = ({
-  isOpen,
-  onClose,
+export const FilterPanel: React.FC<FilterPanelProps> = ({
   activeFiltersCount,
   onResetFilters,
   earthProjection,
@@ -72,39 +68,27 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   minNordicMi,
   onChangeMinNordicMi,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-x-3 top-13 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:mt-2 sm:w-92 max-h-[calc(100vh-70px)] sm:max-h-[calc(100vh-64px)] overflow-y-auto bg-[#FAF8F3] border border-[#D6D0C2] rounded-lg shadow-xl p-3.5 z-50 text-[#1C1B18] space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-2.5 border-b border-[#D6D0C2]">
-        <div className="flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-[#5C5852]" />
-          <span className="font-bold text-sm text-[#1C1B18] tracking-tight">Display & Filters</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {activeFiltersCount > 0 && (
-            <button
-              onClick={onResetFilters}
-              className="text-[#B84A39] hover:underline cursor-pointer text-xs font-bold"
-            >
-              Reset
-            </button>
-          )}
+    <div className="space-y-3.5 text-[#1C1B18]">
+      {/* Subheader: Active count and Reset action */}
+      <div className="flex items-center justify-between pb-1.5 border-b border-[#D6D0C2]">
+        <span className="text-xs text-[#736E67] font-semibold tabular-nums">
+          {filteredCount.toLocaleString()} matching ski areas
+        </span>
+        {activeFiltersCount > 0 && (
           <button
-            onClick={onClose}
-            className="p-1 hover:bg-[#EFECE4] text-[#8A847C] hover:text-[#1C1B18] rounded-md transition-colors cursor-pointer"
-            title="Close panel"
+            onClick={onResetFilters}
+            className="text-[#B84A39] hover:underline cursor-pointer text-xs font-bold"
           >
-            <X className="w-4 h-4" />
+            Reset Filters
           </button>
-        </div>
+        )}
       </div>
 
       {/* Display Settings Section */}
       <div className="space-y-2.5">
-        <div className="text-[11px] font-bold text-[#5C5852] uppercase tracking-wider">
-          Display
+        <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
+          Display Settings
         </div>
 
         {/* Projection Segmented */}
@@ -173,13 +157,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
       {/* Resort Filters Section */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-[#5C5852] uppercase tracking-wider">
-            Resort Filters
-          </span>
-          <span className="text-xs text-[#736E67] font-semibold tabular-nums">
-            {filteredCount.toLocaleString()} matching
-          </span>
+        <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
+          Resort Filters
         </div>
 
         {/* Categories */}
@@ -439,3 +418,6 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     </div>
   );
 };
+
+// Backward-compatible alias
+export const FilterModal = FilterPanel;

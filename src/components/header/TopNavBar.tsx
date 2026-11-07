@@ -1,63 +1,17 @@
-import React, { useRef, useEffect } from 'react';
-import { Sliders, Maximize, Minimize } from 'lucide-react';
+import React from 'react';
+import { Maximize, Minimize } from 'lucide-react';
 
 interface TopNavBarProps {
   onResetToGlobal: () => void;
-  filtersMenuOpen: boolean;
-  onToggleFilters: () => void;
-  onCloseFilters?: () => void;
-  activeFiltersCount: number;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
-  children?: React.ReactNode;
 }
 
 export const TopNavBar: React.FC<TopNavBarProps> = ({
   onResetToGlobal,
-  filtersMenuOpen,
-  onToggleFilters,
-  onCloseFilters,
-  activeFiltersCount,
   isFullscreen,
   onToggleFullscreen,
-  children,
 }) => {
-  const filtersRef = useRef<HTMLDivElement | null>(null);
-
-  // Close Display & Filters panel when user clicks outside or presses Escape
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (filtersRef.current && !filtersRef.current.contains(event.target as Node)) {
-        if (onCloseFilters) {
-          onCloseFilters();
-        } else {
-          onToggleFilters();
-        }
-      }
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (onCloseFilters) {
-          onCloseFilters();
-        } else {
-          onToggleFilters();
-        }
-      }
-    };
-
-    if (filtersMenuOpen) {
-      document.addEventListener('pointerdown', handleClickOutside);
-      document.addEventListener('mousedown', handleClickOutside);
-      window.addEventListener('keydown', handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener('pointerdown', handleClickOutside);
-      document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [filtersMenuOpen, onCloseFilters, onToggleFilters]);
   return (
     <header className="absolute top-0 inset-x-0 z-40 h-11 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
       <div className="flex items-center min-w-0">
@@ -102,32 +56,6 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-medium">
-        {/* Display & Filters Popover Trigger & Floating Panel */}
-        <div ref={filtersRef} className="relative">
-          <button
-            onClick={onToggleFilters}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
-              filtersMenuOpen || activeFiltersCount > 0
-                ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
-                : 'bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]'
-            }`}
-            title="Display Settings & Resort Filters"
-            aria-label="Display Settings & Resort Filters"
-            aria-expanded={filtersMenuOpen}
-          >
-            <Sliders className="w-3.5 h-3.5 text-[#5C5852]" />
-            <span className="hidden sm:inline">Display & Filters</span>
-            <span className="sm:hidden">Filters</span>
-            {activeFiltersCount > 0 && (
-              <span className="bg-[#1C1B18] text-[#FAF8F3] text-[9.5px] px-1.5 py-0.2 rounded-full font-bold tabular-nums">
-                {activeFiltersCount}
-              </span>
-            )}
-          </button>
-
-          {children}
-        </div>
-
         <button
           onClick={onToggleFullscreen}
           className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer flex items-center justify-center"
