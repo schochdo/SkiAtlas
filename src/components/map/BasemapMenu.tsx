@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Menu, X, Layers, Sliders } from 'lucide-react';
+import { Menu, X, Layers, Sliders, Mountain, Globe } from 'lucide-react';
 import type { BasemapMode, TerrainOverlayMode, EarthProjectionMode, PassNetwork } from '../../types';
 import { FilterPanel } from '../header/FilterModal';
 

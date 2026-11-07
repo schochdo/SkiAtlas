@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: restore Mountain and Globe icon imports in BasemapMenu to prevent blank screen crash on hover`
+- **What was wrong before**:
+  - Hovering or clicking on the hamburger menu caused the entire web application to instantly unmount and render a blank white screen.
+  - **Root Cause**: When adding the segmented tabs in `BasemapMenu.tsx`, the `import { Menu, X, Layers, Mountain, Globe } from 'lucide-react'` line was updated to include `Sliders`, but `Mountain` and `Globe` were inadvertently dropped from the import statement. When hovering triggered `mapMenuOpen = true`, evaluating the summits (`<Mountain />`) and borders (`<Globe />`) buttons raised an uncaught `ReferenceError: Mountain is not defined`, crashing the React render tree.
+- **Solution**:
+  - Restored `Mountain` and `Globe` to the `lucide-react` import statement in `BasemapMenu.tsx`.
+  - Ran `npx tsc --noEmit` to verify type and symbol resolution (0 errors) and validated the production bundle build.
+
 ### `feat: integrate resort filters as tabbed drawer under top-right hamburger menu`
 - **What was changed**:
   - Consolidated the top navbar by removing the standalone `[ Display & Filters ]` button and merging all filter controls into the top-right hamburger menu as a tabbed drawer.
