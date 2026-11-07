@@ -77,8 +77,8 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       const balancedLat = Math.max(-25, Math.min(48, targetLat));
       return [targetLng, balancedLat];
     }
-    return [12, 28];
-  }, [mapZoom, getOverviewTargetZoom]);
+    return [targetLng, targetLat];
+  }, [mapCenter, mapZoom, getOverviewTargetZoom]);
 
   // Reset locator map on selecting a new ski area
   useEffect(() => {
@@ -107,13 +107,13 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       savedZoomRef.current = 1.1;
       if (locatorMapRef.current && locatorMapRef.current.getZoom() > 2.0) {
         locatorMapRef.current.easeTo({
-          center: [12, 28],
+          center: mapCenter,
           zoom: 1.1,
           duration: 400,
         });
       }
     }
-  }, [mapZoom, selectedResort]);
+  }, [mapZoom, selectedResort, mapCenter]);
 
   // Geographic context for Regional Locator dynamically derived from live camera position
   const activeRegionContext = useMemo(() => {

@@ -64,7 +64,14 @@ export type {
   TrailInspectionData,
 };
 import { formatSnow, formatVert, formatAcres, formatDistance, formatCoords } from './utils/formatters';
-import { safeFlyTo, safeEaseTo, isProgrammaticFlightActive, setIsProgrammaticFlightActive } from './utils/camera';
+import {
+  safeFlyTo,
+  safeEaseTo,
+  isProgrammaticFlightActive,
+  setIsProgrammaticFlightActive,
+  computeGlobeFitZoom,
+  DEFAULT_NORTH_AMERICA_CENTER,
+} from './utils/camera';
 import { extractPointCoordinates, haversineDistanceKm } from './utils/geometry';
 import {
   PASS_COLORS,
@@ -150,8 +157,8 @@ export default function App() {
   const mapRef = useRef<MapLibreMap | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const [earthProjection, setEarthProjection] = useState<EarthProjectionMode>('mercator');
-  const [basemapMode, setBasemapMode] = useState<BasemapMode>('osm');
+  const [earthProjection, setEarthProjection] = useState<EarthProjectionMode>('globe');
+  const [basemapMode, setBasemapMode] = useState<BasemapMode>('satellite');
   const [terrainOverlay, setTerrainOverlay] = useState<TerrainOverlayMode>('none');
   const [terrainOverlayOpacity, setTerrainOverlayOpacity] = useState<number>(0.65);
   const [unitsMetric, setUnitsMetric] = useState(false);
@@ -349,8 +356,8 @@ export default function App() {
   const locatorMenuRef = useRef<HTMLDivElement | null>(null);
   const locatorContainerRef = useRef<HTMLDivElement | null>(null);
   const locatorMapRef = useRef<maplibregl.Map | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([12, 28]);
-  const [mapZoom, setMapZoom] = useState<number>(1.8);
+  const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_NORTH_AMERICA_CENTER);
+  const [mapZoom, setMapZoom] = useState<number>(2.2);
 
   // Global Points Ref & Features
   const [showGlobalPoints, setShowGlobalPoints] = useState(true);
@@ -867,6 +874,17 @@ export default function App() {
     const initialIsMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     const initialLeftPad = initialIsMobile ? 0 : (leftDockOpen ? 404 : 20);
     const initialRightPad = 0;
+    const initialTopPad = 44;
+    const initialBottomPad = initialIsMobile ? 80 : 0;
+
+    const initialZoom = computeGlobeFitZoom(
+      typeof window !== 'undefined' ? window.innerWidth : 1440,
+      typeof window !== 'undefined' ? window.innerHeight : 900,
+      initialIsMobile,
+      leftDockOpen,
+      DEFAULT_NORTH_AMERICA_CENTER[1],
+      0.84
+    );
 
     registerTerrainAnalysisProtocols();
 
@@ -875,9 +893,9 @@ export default function App() {
       attributionControl: false,
       renderWorldCopies: false,
       style: createMapStyle(earthProjection, basemapMode, terrainOverlay, terrainOverlayOpacity, showCountryOutlines, showHillshade),
-      center: [12, 28], // Global scope flat map (Mercator)
-      zoom: 1.8,
-      minZoom: 1.2,
+      center: DEFAULT_NORTH_AMERICA_CENTER, // North America alpine focus
+      zoom: initialZoom,
+      minZoom: 1.0,
       maxZoom: 20.5, // Allow zooming in close to ground level (down to ~100-150ft elevation)
       pitch: 0,
       bearing: 0,
@@ -912,7 +930,7 @@ export default function App() {
     try { map.boxZoom.disable(); } catch (_) {}
 
     // Apply viewport padding synchronously before first render so globe never slides on start
-    map.setPadding({ left: initialLeftPad, right: initialRightPad, top: 44, bottom: initialIsMobile ? 80 : 0 });
+    map.setPadding({ left: initialLeftPad, right: initialRightPad, top: initialTopPad, bottom: initialBottomPad });
 
     mapRef.current = map;
     (window as any)._skiMap = map;
@@ -4628,9 +4646,19 @@ export default function App() {
       }
     } catch (_) {}
     if (mapRef.current) {
+      const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
+      const winW = typeof window !== 'undefined' ? window.innerWidth : 1440;
+      const winH = typeof window !== 'undefined' ? window.innerHeight : 900;
+      const targetZoom = earthProjection === 'globe'
+        ? computeGlobeFitZoom(winW, winH, isMob, leftDockOpen, DEFAULT_NORTH_AMERICA_CENTER[1], 0.84)
+        : 1.8;
+      const targetCenter: [number, number] = earthProjection === 'globe'
+        ? DEFAULT_NORTH_AMERICA_CENTER
+        : [12, 28];
+
       safeFlyTo(mapRef.current, {
-        center: [12, 28],
-        zoom: 1.8,
+        center: targetCenter,
+        zoom: targetZoom,
         pitch: 0,
         bearing: 0,
         duration: 1400,
@@ -4639,7 +4667,7 @@ export default function App() {
       setMapPitch(0);
       setMapBearing(0);
     }
-  }, [handleDeselectTrail]);
+  }, [handleDeselectTrail, earthProjection, leftDockOpen]);
 
   const handleDeselectResort = () => {
     handleDeselectTrail();

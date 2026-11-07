@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `feat: default to 3D globe and satellite basemap focused on North America with viewport framing`
+- **What was changed**:
+  - Configured the application to initialize on launch with the **3D Globe** projection (`earthProjection: 'globe'`) and **Satellite 3D** basemap (`basemapMode: 'satellite'`) with real-time 3D terrain elevation active.
+  - Centered the initial globe view directly on North America (`[-98, 40]`), framing Western alpine destinations, the American Rockies, Sierra, Cascades, Canadian Rockies, and New England across the facing hemisphere of the planet.
+  - Implemented `computeGlobeFitZoom(windowWidth, windowHeight, isMobile, dockOpen, centerLat, targetRatio)` in `src/utils/camera.ts` using MapLibre's exact vertical perspective camera projection and sphere geometry formulas ($D = 2R$, $R = \frac{\text{worldSize}}{2\pi \cos(\text{lat})}$). Dynamically sizes the globe sphere to occupy ~84% of the visible unpadded canvas without overlapping the left directory dock (404px), the top navbar (44px), or map instruments.
+  - Synchronously initialized viewport padding (`left: 404, top: 44, right: 0, bottom: 0` on desktop) before initial render to prevent globe slide or jump on mount.
+  - Updated `handleResetToGlobalExtent` and `RegionalLocator` so 1-click extent reset flies smoothly back to the North America globe framing at the calibrated viewport zoom.
+- **Why this approach was chosen**:
+  - Provides an immediate high-impact, editorial cartographic greeting showcasing the full planet and alpine terrain textures without any UI chrome overlap or edge clipping.
+
 ### `fix: restore Mountain and Globe icon imports in BasemapMenu to prevent blank screen crash on hover`
 - **What was wrong before**:
   - Hovering or clicking on the hamburger menu caused the entire web application to instantly unmount and render a blank white screen.
