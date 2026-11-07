@@ -6,7 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
-### `fix: unify peak labels into single symbol layer for deterministic elevation precedence and switch OSM basemap to CARTO Voyager No-Labels`
+### `fix: revert osm-tiles to standard OpenStreetMap to avoid CARTO API key requirement`
+- **What was changed**:
+  - Reverted `osm-tiles` in [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts) back to standard public OpenStreetMap tiles (`https://{a/b/c}.tile.openstreetmap.org/{z}/{x}/{y}.png`).
+  - **Reason**: CARTO now requires an API key for direct tile endpoint requests (`basemaps.cartocdn.com`), which displays an `API KEY REQUIRED` watermark tile if an unauthenticated key is used. Standard OSM requires zero API keys or authentication.
+
+### `fix: unify peak labels into single symbol layer for deterministic elevation precedence`
 - **What was wrong before**:
   - In dense mountain clusters (e.g. Grand Teton 13,770' in Wyoming), Grand Teton's summit marker was shown but its text label was suppressed, while adjacent lower peaks (Mount Owen 12,927', Middle Teton 12,805', Teewinot 12,326') were labeled instead.
   - **Root Cause (Multi-Layer Symbol Collision Inversion)**: Although `major-peaks-label-tier1` was added after `tier2` and `tier3`, MapLibre GL JS isolates distinct style layers into separate symbol buckets in worker memory. Features were sorted by `sortKey` only within each layer's independent bucket. Across different layers and tile boundary traversals, separate buckets caused collision priority inversions where a lower peak in one layer could claim screen space before an adjacent peak in another layer was placed.
