@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `feat: establish distinct typography and color hierarchy for peaks, resorts, and towns`
+- **What was wrong before**:
+  - Mountain peaks, ski resorts, and towns all used the identical font (`Open Sans Regular`) and nearly identical dark gray typography (`#1C1B18`) with light cream halos (`#FAF8F3`).
+  - It was visually difficult to distinguish between natural terrain features (mountain summits), recreational venues (ski areas), and populated civil places (cities and towns).
+  - Several resort layers (`resorts-heli-cat-labels`, `selected-resort-label`, `global-unclustered-label`) were missing explicit viewport billboarding alignment, allowing pitch or rotation tilt to create visual inconsistencies.
+- **Solution**:
+  - **Typographic & Color Separation Across Categories**:
+    - **Mountain Peaks (`major-peaks-label`)**: Styled in `Open Sans Bold Italic` with alpine terracotta rust (`#852E1C`) on light basemaps and sunlit summit amber (`#FDE68A`) on satellite imagery, positioned above summit marker dots with tight 0.04 tracking.
+    - **Ski Resorts (`resorts-labels`, `resorts-heli-cat-labels`, `selected-resort-label`, `global-unclustered-label`)**: Elevated to authoritative `Open Sans Bold` in midnight navy (`#0F172A`) with thick protective halos on light basemaps, and snow white (`#FFFFFF`) with midnight halos on satellite, cementing ski areas as the primary subject.
+    - **Cities & Towns (`geo-reference-*`)**: Distinct civil typography using `Open Sans Semibold` uppercase with wide letter spacing (0.12) for Megacities (Tier 1), and neutral slate/charcoal `Open Sans Regular` for Major Cities, Regional Hubs, and Alpine base villages (Tiers 2–4).
+  - **Universal Viewport Billboarding**:
+    - Configured `'text-rotation-alignment': 'viewport'`, `'text-pitch-alignment': 'viewport'`, and `'text-keep-upright': true` across all ski resort and peak layers in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), ensuring all labels remain upright during 3D terrain pitch and camera orbit.
+  - **Dynamic Basemap Switching**:
+    - Added reactive paint property updates in the basemap switch `useEffect` for `major-peaks-label`, `resorts-labels`, `resorts-heli-cat-labels`, `global-unclustered-label`, and `selected-resort-label` to preserve contrast across satellite, outdoor terrain, and OSM modes.
+
 ### `feat: upright city label orientation and 4-tier cartographic population hierarchy`
 - **What was wrong before**:
   - City labels were configured with `'text-rotation-alignment': 'map'` and `'text-pitch-alignment': 'map'`. When rotating the map or pitching in 3D terrain, city names rotated along with the map ground plane, causing labels to render sideways or completely upside-down relative to the viewer.

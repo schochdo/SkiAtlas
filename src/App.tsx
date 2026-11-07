@@ -1823,15 +1823,16 @@ export default function App() {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'symbol-sort-key': 1,
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular'],
+          'text-font': ['Open Sans Semibold'],
+          'text-transform': 'uppercase',
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            3.0, 9.5,
-            6.0, 11.5,
-            9.0, 13.5,
-            12.0, 15.5,
+            3.0, 9.0,
+            6.0, 11.0,
+            9.0, 13.0,
+            12.0, 15.0,
           ],
-          'text-letter-spacing': 0.04,
+          'text-letter-spacing': 0.12,
           'text-offset': [0, 0.3],
           'text-anchor': 'top',
           'text-rotation-alignment': 'viewport',
@@ -1840,8 +1841,8 @@ export default function App() {
           'text-allow-overlap': false,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#0F172A',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-color': basemapMode === 'satellite' ? '#F8FAFC' : '#334155',
+          'text-halo-color': basemapMode === 'satellite' ? '#0F172A' : '#FAF8F3',
           'text-halo-width': 2.4,
           'text-halo-blur': 0.5,
         },
@@ -1867,7 +1868,7 @@ export default function App() {
             10.0, 12.0,
             13.0, 13.5,
           ],
-          'text-letter-spacing': 0.02,
+          'text-letter-spacing': 0.03,
           'text-offset': [0, 0.3],
           'text-anchor': 'top',
           'text-rotation-alignment': 'viewport',
@@ -1876,7 +1877,7 @@ export default function App() {
           'text-allow-overlap': false,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1E293B',
+          'text-color': basemapMode === 'satellite' ? '#E2E8F0' : '#475569',
           'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
           'text-halo-width': 2.2,
           'text-halo-blur': 0.5,
@@ -1898,10 +1899,11 @@ export default function App() {
           'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            7.0, 9.0,
-            9.5, 10.5,
-            12.0, 12.0,
+            7.0, 8.5,
+            9.5, 10.0,
+            12.0, 11.5,
           ],
+          'text-letter-spacing': 0.01,
           'text-offset': [0, 0.3],
           'text-anchor': 'top',
           'text-rotation-alignment': 'viewport',
@@ -1910,7 +1912,7 @@ export default function App() {
           'text-allow-overlap': false,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#F1F5F9' : '#334155',
+          'text-color': basemapMode === 'satellite' ? '#CBD5E1' : '#64748B',
           'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
           'text-halo-width': 2.0,
           'text-halo-blur': 0.5,
@@ -1933,8 +1935,8 @@ export default function App() {
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             6.8, 9.5,
-            9.5, 11.5,
-            13.0, 13.5,
+            9.5, 11.0,
+            13.0, 13.0,
           ],
           'text-offset': [0, 0.3],
           'text-anchor': 'top',
@@ -1944,8 +1946,8 @@ export default function App() {
           'text-allow-overlap': false,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#475569',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-color': basemapMode === 'satellite' ? '#F5F5F4' : '#292524',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1917' : '#FAF8F3',
           'text-halo-width': 2.2,
           'text-halo-blur': 0.5,
         },
@@ -2023,7 +2025,7 @@ export default function App() {
         filter: ['!=', ['get', 'category'], 'heli_cat'],
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular'],
+          'text-font': ['Open Sans Bold'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             6, 12,
@@ -2037,13 +2039,16 @@ export default function App() {
           'text-max-width': 18,
           'symbol-sort-key': 1,
           'text-padding': 8,
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
           'text-optional': true,
           'text-allow-overlap': false,
           'text-ignore-placement': false,
         },
         paint: {
-          'text-color': '#1C1B18',
-          'text-halo-color': '#FAF8F3',
+          'text-color': basemapMode === 'satellite' ? '#FFFFFF' : '#0F172A',
+          'text-halo-color': basemapMode === 'satellite' ? '#0F172A' : '#FAF8F3',
           'text-halo-width': 2.8,
           'text-halo-blur': 0.5,
         },
@@ -2101,7 +2106,7 @@ export default function App() {
         filter: ['==', ['get', 'category'], 'heli_cat'],
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular'],
+          'text-font': ['Open Sans Bold'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             5, 11.5,
@@ -2114,14 +2119,17 @@ export default function App() {
           'text-max-width': 14,
           'symbol-sort-key': 1,
           'text-padding': 8,
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
           'text-optional': true,
           'text-allow-overlap': false,
           'text-ignore-placement': false,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
-          'text-halo-width': 2.5,
+          'text-color': basemapMode === 'satellite' ? '#FFFFFF' : '#0F172A',
+          'text-halo-color': basemapMode === 'satellite' ? '#0F172A' : '#FAF8F3',
+          'text-halo-width': 2.8,
           'text-halo-blur': 0.5,
         },
       });
@@ -2176,7 +2184,7 @@ export default function App() {
         source: 'selected-resort-source',
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular'],
+          'text-font': ['Open Sans Bold'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             4, 12,
@@ -2187,12 +2195,15 @@ export default function App() {
           'text-offset': [0, 1.4],
           'text-anchor': 'top',
           'symbol-sort-key': 0,
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
           'text-allow-overlap': true,
           'text-ignore-placement': false,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1C1B18',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-color': basemapMode === 'satellite' ? '#FFFFFF' : '#0F172A',
+          'text-halo-color': basemapMode === 'satellite' ? '#0F172A' : '#FAF8F3',
           'text-halo-width': 2.8,
           'text-halo-blur': 0.5,
         },
@@ -2331,7 +2342,7 @@ export default function App() {
         maxzoom: 12,
         layout: {
           'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular'],
+          'text-font': ['Open Sans Bold'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             6.5, 11,
@@ -2344,14 +2355,17 @@ export default function App() {
           'symbol-sort-key': 2,
           'text-max-width': 16,
           'text-padding': 8,
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
           'text-optional': true,
           'text-allow-overlap': false,
           'text-ignore-placement': false,
         },
         paint: {
-          'text-color': '#1C1B18',
-          'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2.4,
+          'text-color': basemapMode === 'satellite' ? '#FFFFFF' : '#0F172A',
+          'text-halo-color': basemapMode === 'satellite' ? '#0F172A' : '#FAF8F3',
+          'text-halo-width': 2.6,
           'text-halo-blur': 0.5,
         },
       });
@@ -2393,7 +2407,7 @@ export default function App() {
           'visibility': showPeaks ? 'visible' : 'none',
           'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000],
           'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
-          'text-font': ['Open Sans Regular'],
+          'text-font': ['Open Sans Bold Italic'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             10.0, 9.0,
@@ -2403,7 +2417,7 @@ export default function App() {
           'text-max-width': 26,
           'text-offset': [0, -1.2],
           'text-anchor': 'bottom',
-          'text-letter-spacing': 0.03,
+          'text-letter-spacing': 0.04,
           'text-keep-upright': true,
           'text-pitch-alignment': 'viewport',
           'text-rotation-alignment': 'viewport',
@@ -2411,9 +2425,9 @@ export default function App() {
           'text-optional': true,
         },
         paint: {
-          'text-color': '#1C1B18',
-          'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2.2,
+          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.4,
           'text-halo-blur': 0.5,
         },
       });
@@ -3258,31 +3272,43 @@ export default function App() {
     }
     if (map.getLayer('geo-reference-megacities')) {
       map.setLayoutProperty('geo-reference-megacities', 'visibility', refVisibility);
-      map.setPaintProperty('geo-reference-megacities', 'text-color', isDark ? '#FAF8F3' : '#0F172A');
-      map.setPaintProperty('geo-reference-megacities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+      map.setPaintProperty('geo-reference-megacities', 'text-color', isDark ? '#F8FAFC' : '#334155');
+      map.setPaintProperty('geo-reference-megacities', 'text-halo-color', isDark ? '#0F172A' : '#FAF8F3');
     }
     if (map.getLayer('geo-reference-major-cities')) {
       map.setLayoutProperty('geo-reference-major-cities', 'visibility', refVisibility);
-      map.setPaintProperty('geo-reference-major-cities', 'text-color', isDark ? '#FAF8F3' : '#1E293B');
+      map.setPaintProperty('geo-reference-major-cities', 'text-color', isDark ? '#E2E8F0' : '#475569');
       map.setPaintProperty('geo-reference-major-cities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
     if (map.getLayer('geo-reference-regional-cities')) {
       map.setLayoutProperty('geo-reference-regional-cities', 'visibility', refVisibility);
-      map.setPaintProperty('geo-reference-regional-cities', 'text-color', isDark ? '#F1F5F9' : '#334155');
+      map.setPaintProperty('geo-reference-regional-cities', 'text-color', isDark ? '#CBD5E1' : '#64748B');
       map.setPaintProperty('geo-reference-regional-cities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
     if (map.getLayer('geo-reference-alpine-hubs')) {
       map.setLayoutProperty('geo-reference-alpine-hubs', 'visibility', refVisibility);
-      map.setPaintProperty('geo-reference-alpine-hubs', 'text-color', isDark ? '#FAF8F3' : '#475569');
-      map.setPaintProperty('geo-reference-alpine-hubs', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+      map.setPaintProperty('geo-reference-alpine-hubs', 'text-color', isDark ? '#F5F5F4' : '#292524');
+      map.setPaintProperty('geo-reference-alpine-hubs', 'text-halo-color', isDark ? '#1C1917' : '#FAF8F3');
     }
-    if (map.getLayer('selected-resort-label')) {
-      map.setPaintProperty('selected-resort-label', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
-      map.setPaintProperty('selected-resort-label', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    if (map.getLayer('resorts-labels')) {
+      map.setPaintProperty('resorts-labels', 'text-color', isDark ? '#FFFFFF' : '#0F172A');
+      map.setPaintProperty('resorts-labels', 'text-halo-color', isDark ? '#0F172A' : '#FAF8F3');
     }
     if (map.getLayer('resorts-heli-cat-labels')) {
-      map.setPaintProperty('resorts-heli-cat-labels', 'text-color', isDark ? '#FAF8F3' : '#1C1B18');
-      map.setPaintProperty('resorts-heli-cat-labels', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+      map.setPaintProperty('resorts-heli-cat-labels', 'text-color', isDark ? '#FFFFFF' : '#0F172A');
+      map.setPaintProperty('resorts-heli-cat-labels', 'text-halo-color', isDark ? '#0F172A' : '#FAF8F3');
+    }
+    if (map.getLayer('global-unclustered-label')) {
+      map.setPaintProperty('global-unclustered-label', 'text-color', isDark ? '#FFFFFF' : '#0F172A');
+      map.setPaintProperty('global-unclustered-label', 'text-halo-color', isDark ? '#0F172A' : '#FAF8F3');
+    }
+    if (map.getLayer('selected-resort-label')) {
+      map.setPaintProperty('selected-resort-label', 'text-color', isDark ? '#FFFFFF' : '#0F172A');
+      map.setPaintProperty('selected-resort-label', 'text-halo-color', isDark ? '#0F172A' : '#FAF8F3');
+    }
+    if (map.getLayer('major-peaks-label')) {
+      map.setPaintProperty('major-peaks-label', 'text-color', isDark ? '#FDE68A' : '#852E1C');
+      map.setPaintProperty('major-peaks-label', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
   }, [showCountryOutlines, basemapMode, mapLoaded]);
 
