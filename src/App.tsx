@@ -1005,8 +1005,22 @@ export default function App() {
     let isGestureActive = false;
     let gestureWatchdogTimeout: any = null;
 
+    // Prevent iOS Safari page-level scaling while allowing MapLibre touchZoomRotate
+    const onDocGesture = (e: Event) => {
+      if (e.cancelable) e.preventDefault();
+    };
+    document.addEventListener('gesturestart', onDocGesture, { passive: false });
+    document.addEventListener('gesturechange', onDocGesture, { passive: false });
+
+    const isIosDevice = typeof navigator !== 'undefined' && (
+      /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+
     const onGestureStart = (e: any) => {
       e.preventDefault();
+      // On iOS devices, MapLibre's built-in touchZoomRotate handles touch pinch/rotate natively
+      if (isIosDevice) return;
       gestureStartBearing = map.getBearing();
       gestureStartZoom = map.getZoom();
       isGestureActive = true;
@@ -1014,7 +1028,7 @@ export default function App() {
 
     const onGestureChange = (e: any) => {
       e.preventDefault();
-      if (!isGestureActive) return;
+      if (!isGestureActive || isIosDevice) return;
 
       if (gestureWatchdogTimeout) clearTimeout(gestureWatchdogTimeout);
       gestureWatchdogTimeout = setTimeout(() => {
@@ -1043,8 +1057,10 @@ export default function App() {
       e.preventDefault();
       if (gestureWatchdogTimeout) clearTimeout(gestureWatchdogTimeout);
       isGestureActive = false;
-      setMapBearing(Math.round(map.getBearing()));
-      resetOrphanedDragHandlers();
+      if (!isIosDevice) {
+        setMapBearing(Math.round(map.getBearing()));
+        resetOrphanedDragHandlers();
+      }
     };
 
     // Trackpad & Mouse Wheel Controller (Pinch Zoom, Shift-Tilt, Option-Rotate)
@@ -2952,6 +2968,8 @@ export default function App() {
     });
 
     return () => {
+      document.removeEventListener('gesturestart', onDocGesture as any);
+      document.removeEventListener('gesturechange', onDocGesture as any);
       canvas.removeEventListener('contextmenu', onContextMenu);
       canvasContainer.removeEventListener('contextmenu', onContextMenu);
       container.removeEventListener('gesturestart', onGestureStart as any);

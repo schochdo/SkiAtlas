@@ -26,10 +26,29 @@
   color-scheme: light;
 }
 
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  touch-action: pan-x pan-y;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: #F7F4ED;
   color: #1C1B18;
+}
+
+/* Ensure minimum 16px font size on mobile forms to strictly eliminate iOS Safari auto-zoom trap */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Archival Paper Scrollbar */

@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: lock mobile viewport and prevent iOS auto-zoom on iPhone 16 Pro`
+- **What was wrong before**:
+  - On iOS (specifically iPhone 16 Pro in Safari), the application would start normally, but upon tapping search inputs or performing multi-touch pinch gestures, the browser would auto-zoom the entire web document (`window.visualViewport.scale > 1.0`).
+  - Once the document zoomed, fixed UI elements (such as resort cards, sheet handles, filter controls) and MapLibre canvas coordinates desynchronized from the visual touch layer, causing all interactive elements to become unclickable or unresponsive.
+  - **Root Cause**:
+    1. `index.html` lacked viewport scale locking (`maximum-scale=1.0, user-scalable=no, viewport-fit=cover`). iOS Safari defaulted to page-level zooming on double-taps and touch pinches.
+    2. Search `<input>` in `DirectoryList.tsx` had a font-size of `text-sm` (14px). iOS Safari enforces an automatic document zoom on focus for any form input whose computed `font-size` is strictly under 16px.
+    3. Document-level Safari gesture bubbling: Safari dispatched proprietary `gesturestart` and `gesturechange` events up the DOM tree, triggering page magnification.
+    4. Mobile viewport units used static `vh` rather than dynamic `dvh` and lacked iOS home indicator safe area inset padding (`env(safe-area-inset-bottom)`), causing interactions at the screen bottom to collide with iOS system gestures.
+- **Solution**:
+  - **Viewport Constraints**: Updated `<meta name="viewport">` in `index.html` with `maximum-scale=1.0, user-scalable=no, viewport-fit=cover`, along with `apple-mobile-web-app-capable`.
+  - **Strict 16px Mobile Form Rule**: Set `DirectoryList` input to `text-base md:text-sm` and added a global CSS rule in `index.css` enforcing `font-size: 16px !important` on mobile form inputs to strictly prevent iOS Safari focus auto-zoom.
+  - **Document Gesture Guard**: Added `preventDefault()` on document `gesturestart` and `gesturechange` events to block page-level viewport scaling while preserving MapLibre's native touch-based `touchZoomRotate` handler on the WebGL canvas.
+  - **Dynamic Viewport Height & Safe Area Insets**: Locked `html, body, #root` to `height: 100dvh` with `overscroll-behavior: none` and updated `MobileSheet.tsx` to use `50dvh` / `88dvh` and `env(safe-area-inset-bottom, 0px)` so peek cards and buttons remain unobstructed by the iOS home indicator bar.
+
 ### `fix: bump ski trail text sizes and expand pointer hover zone and click buffers`
 - **What was wrong before**:
   - Ski trail and lift name labels on the map were slightly too small to read comfortably at mid-to-high zoom ($z \ge 12.5 - 16$).
