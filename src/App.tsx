@@ -1805,10 +1805,119 @@ export default function App() {
         },
       });
 
-      // Geographic Reference: Comprehensive World Cities & Alpine Valley Hubs (4-Tier Cartographic Hierarchy)
+      // Geographic Reference Places: 4-Tier Population & Alpine Horizon Hierarchy
+      // Evaluated top-to-bottom in reverse addition order: Tier 1 Megacities first -> Tier 4 Alpine Hubs last
       map.addSource('geo-reference-source', {
         type: 'geojson',
         data: getStaticDataUrl('data/geo_reference.geojson?v=20261106_hierarchy'),
+      });
+
+      // Tier 4: Alpine Valley Hubs & Mountain Towns (Iconic ski resort bases, z6.8+)
+      map.addLayer({
+        id: 'geo-reference-alpine-hubs',
+        type: 'symbol',
+        source: 'geo-reference-source',
+        filter: ['==', ['get', 'tier'], 4],
+        minzoom: 6.8,
+        maxzoom: 13.5,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'symbol-sort-key': ['-', 20000000, ['coalesce', ['get', 'pop'], 0]],
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            6.8, 9.5,
+            9.5, 11.0,
+            13.0, 13.0,
+          ],
+          'text-offset': [0, 0.3],
+          'text-anchor': 'top',
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
+          'text-allow-overlap': false,
+          'text-padding': 4,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#F5F5F4' : '#292524',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1917' : '#FAF8F3',
+          'text-halo-width': 2.6,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Tier 3: Regional Cities & Gateways (Pop 50k - 250k, z7.0+)
+      map.addLayer({
+        id: 'geo-reference-regional-cities',
+        type: 'symbol',
+        source: 'geo-reference-source',
+        filter: ['==', ['get', 'tier'], 3],
+        minzoom: 7.0,
+        maxzoom: 13.5,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'symbol-sort-key': ['-', 20000000, ['coalesce', ['get', 'pop'], 0]],
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            7.0, 8.5,
+            9.5, 10.0,
+            12.0, 11.5,
+          ],
+          'text-letter-spacing': 0.01,
+          'text-offset': [0, 0.3],
+          'text-anchor': 'top',
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
+          'text-allow-overlap': false,
+          'text-padding': 4,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#CBD5E1' : '#64748B',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.0,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Tier 2: Major Cities & Regional Capitals (Pop 250k - 1M, z5.0+)
+      map.addLayer({
+        id: 'geo-reference-major-cities',
+        type: 'symbol',
+        source: 'geo-reference-source',
+        filter: ['==', ['get', 'tier'], 2],
+        minzoom: 5.0,
+        maxzoom: 13.5,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'symbol-sort-key': ['-', 20000000, ['coalesce', ['get', 'pop'], 0]],
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            5.0, 9.0,
+            7.5, 10.5,
+            10.0, 12.0,
+            13.0, 13.5,
+          ],
+          'text-letter-spacing': 0.03,
+          'text-offset': [0, 0.3],
+          'text-anchor': 'top',
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
+          'text-allow-overlap': false,
+          'text-padding': 4,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#E2E8F0' : '#475569',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.2,
+          'text-halo-blur': 0.5,
+        },
       });
 
       // Tier 1: Megacities & World Metros (Pop 1M+ or national capitals, z3.0+)
@@ -1821,7 +1930,7 @@ export default function App() {
         maxzoom: 13.5,
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
-          'symbol-sort-key': 1,
+          'symbol-sort-key': ['-', 20000000, ['coalesce', ['get', 'pop'], 0]],
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Semibold'],
           'text-transform': 'uppercase',
@@ -1839,116 +1948,12 @@ export default function App() {
           'text-pitch-alignment': 'viewport',
           'text-keep-upright': true,
           'text-allow-overlap': false,
+          'text-padding': 4,
         },
         paint: {
           'text-color': basemapMode === 'satellite' ? '#F8FAFC' : '#334155',
           'text-halo-color': basemapMode === 'satellite' ? '#0F172A' : '#FAF8F3',
           'text-halo-width': 2.4,
-          'text-halo-blur': 0.5,
-        },
-      });
-
-      // Tier 2: Major Cities & Regional Capitals (Pop 250k - 1M, z5.0+)
-      map.addLayer({
-        id: 'geo-reference-major-cities',
-        type: 'symbol',
-        source: 'geo-reference-source',
-        filter: ['==', ['get', 'tier'], 2],
-        minzoom: 5.0,
-        maxzoom: 13.5,
-        layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
-          'symbol-sort-key': 2,
-          'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            5.0, 9.0,
-            7.5, 10.5,
-            10.0, 12.0,
-            13.0, 13.5,
-          ],
-          'text-letter-spacing': 0.03,
-          'text-offset': [0, 0.3],
-          'text-anchor': 'top',
-          'text-rotation-alignment': 'viewport',
-          'text-pitch-alignment': 'viewport',
-          'text-keep-upright': true,
-          'text-allow-overlap': false,
-        },
-        paint: {
-          'text-color': basemapMode === 'satellite' ? '#E2E8F0' : '#475569',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
-          'text-halo-width': 2.2,
-          'text-halo-blur': 0.5,
-        },
-      });
-
-      // Tier 3: Regional Cities & Gateways (Pop 50k - 250k, z7.0+)
-      map.addLayer({
-        id: 'geo-reference-regional-cities',
-        type: 'symbol',
-        source: 'geo-reference-source',
-        filter: ['==', ['get', 'tier'], 3],
-        minzoom: 7.0,
-        maxzoom: 13.5,
-        layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
-          'symbol-sort-key': 3,
-          'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            7.0, 8.5,
-            9.5, 10.0,
-            12.0, 11.5,
-          ],
-          'text-letter-spacing': 0.01,
-          'text-offset': [0, 0.3],
-          'text-anchor': 'top',
-          'text-rotation-alignment': 'viewport',
-          'text-pitch-alignment': 'viewport',
-          'text-keep-upright': true,
-          'text-allow-overlap': false,
-        },
-        paint: {
-          'text-color': basemapMode === 'satellite' ? '#CBD5E1' : '#64748B',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
-          'text-halo-width': 2.0,
-          'text-halo-blur': 0.5,
-        },
-      });
-
-      // Tier 4: Alpine Valley Hubs & Mountain Towns (Iconic ski resort bases, z6.8+)
-      map.addLayer({
-        id: 'geo-reference-alpine-hubs',
-        type: 'symbol',
-        source: 'geo-reference-source',
-        filter: ['==', ['get', 'tier'], 4],
-        minzoom: 6.8,
-        maxzoom: 13.5,
-        layout: {
-          visibility: showCountryOutlines ? 'visible' : 'none',
-          'symbol-sort-key': 4,
-          'text-field': ['get', 'name'],
-          'text-font': ['Open Sans Regular'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            6.8, 9.5,
-            9.5, 11.0,
-            13.0, 13.0,
-          ],
-          'text-offset': [0, 0.3],
-          'text-anchor': 'top',
-          'text-rotation-alignment': 'viewport',
-          'text-pitch-alignment': 'viewport',
-          'text-keep-upright': true,
-          'text-allow-overlap': false,
-        },
-        paint: {
-          'text-color': basemapMode === 'satellite' ? '#F5F5F4' : '#292524',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1917' : '#FAF8F3',
-          'text-halo-width': 2.2,
           'text-halo-blur': 0.5,
         },
       });
@@ -2371,130 +2376,15 @@ export default function App() {
       });
 
       // 4. Global Major Mountain Summits (Peakfinder Horizon Mode - 3-Tier Cartographic Hierarchy)
+      // MapLibre evaluates collisions in reverse layer addition order: Tier 1 (Apex Giants) is added last so it places FIRST.
+      // Every layer uses dynamic elevation-based sort key (50000 - elevation_ft) so higher peaks strictly take precedence.
       map.addSource('major-peaks-source', {
         type: 'geojson',
         promoteId: 'id',
-        data: getStaticDataUrl('data/major_peaks.geojson?v=20261106_hierarchy'),
+        data: getStaticDataUrl('data/major_peaks.geojson?v=20261106_precedence'),
       });
 
-      // Tier 1 Peaks: Ultra & Iconic Apex Giants (minzoom: 6.0)
-      map.addLayer({
-        id: 'major-peaks-marker-tier1',
-        type: 'circle',
-        source: 'major-peaks-source',
-        minzoom: 6.0,
-        filter: ['==', ['coalesce', ['get', 'tier'], 3], 1],
-        layout: {
-          visibility: showPeaks ? 'visible' : 'none',
-        },
-        paint: {
-          'circle-radius': [
-            'interpolate', ['linear'], ['zoom'],
-            6.0, 2.0,
-            9.0, 3.0,
-            14.0, 4.2,
-          ],
-          'circle-color': '#B84A39',
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#FAF8F3',
-        },
-      });
-
-      map.addLayer({
-        id: 'major-peaks-label-tier1',
-        type: 'symbol',
-        source: 'major-peaks-source',
-        minzoom: 6.0,
-        filter: ['==', ['coalesce', ['get', 'tier'], 3], 1],
-        layout: {
-          'visibility': showPeaks ? 'visible' : 'none',
-          'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000],
-          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
-          'text-font': ['Open Sans Bold Italic'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            6.0, 9.0,
-            9.0, 10.5,
-            12.0, 12.0,
-            15.0, 14.0,
-          ],
-          'text-max-width': 26,
-          'text-offset': [0, -1.2],
-          'text-anchor': 'bottom',
-          'text-letter-spacing': 0.04,
-          'text-keep-upright': true,
-          'text-pitch-alignment': 'viewport',
-          'text-rotation-alignment': 'viewport',
-          'text-padding': 14,
-          'text-optional': true,
-        },
-        paint: {
-          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
-          'text-halo-width': 2.4,
-          'text-halo-blur': 0.5,
-        },
-      });
-
-      // Tier 2 Peaks: Major Regional Summits (minzoom: 8.0)
-      map.addLayer({
-        id: 'major-peaks-marker-tier2',
-        type: 'circle',
-        source: 'major-peaks-source',
-        minzoom: 8.0,
-        filter: ['==', ['coalesce', ['get', 'tier'], 3], 2],
-        layout: {
-          visibility: showPeaks ? 'visible' : 'none',
-        },
-        paint: {
-          'circle-radius': [
-            'interpolate', ['linear'], ['zoom'],
-            8.0, 2.0,
-            11.0, 2.8,
-            14.0, 4.0,
-          ],
-          'circle-color': '#B84A39',
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#FAF8F3',
-        },
-      });
-
-      map.addLayer({
-        id: 'major-peaks-label-tier2',
-        type: 'symbol',
-        source: 'major-peaks-source',
-        minzoom: 8.0,
-        filter: ['==', ['coalesce', ['get', 'tier'], 3], 2],
-        layout: {
-          'visibility': showPeaks ? 'visible' : 'none',
-          'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000],
-          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
-          'text-font': ['Open Sans Bold Italic'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            8.0, 9.0,
-            11.0, 10.5,
-            14.0, 12.0,
-          ],
-          'text-max-width': 26,
-          'text-offset': [0, -1.2],
-          'text-anchor': 'bottom',
-          'text-letter-spacing': 0.04,
-          'text-keep-upright': true,
-          'text-pitch-alignment': 'viewport',
-          'text-rotation-alignment': 'viewport',
-          'text-padding': 12,
-          'text-optional': true,
-        },
-        paint: {
-          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
-          'text-halo-width': 2.4,
-          'text-halo-blur': 0.5,
-        },
-      });
-
-      // Tier 3 Peaks: Local Alpine Summits & Valley Ridges (minzoom: 10.0)
+      // Markers (Tier 3 -> Tier 2 -> Tier 1 so Tier 1 apex dots render on top)
       map.addLayer({
         id: 'major-peaks-marker-tier3',
         type: 'circle',
@@ -2518,6 +2408,56 @@ export default function App() {
       });
 
       map.addLayer({
+        id: 'major-peaks-marker-tier2',
+        type: 'circle',
+        source: 'major-peaks-source',
+        minzoom: 8.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 2],
+        layout: {
+          visibility: showPeaks ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            8.0, 2.0,
+            11.0, 2.8,
+            14.0, 4.0,
+          ],
+          'circle-color': '#B84A39',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      map.addLayer({
+        id: 'major-peaks-marker-tier1',
+        type: 'circle',
+        source: 'major-peaks-source',
+        minzoom: 6.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 1],
+        layout: {
+          visibility: showPeaks ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            6.0, 2.0,
+            9.0, 3.0,
+            14.0, 4.2,
+          ],
+          'circle-color': '#B84A39',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      // Labels: Tier 3 -> Tier 2 -> Tier 1
+      // MapLibre placement engine iterates in reverse layer order (topmost layer placed first).
+      // Placing Tier 1 FIRST guarantees apex giants (e.g. Mount Whitney, Denali, Rainier, Elbert, Mont Blanc)
+      // always claim their collision box first and are never suppressed by nearby subordinate summits.
+
+      // Tier 3 Peaks: Local Alpine Summits & Valley Ridges (minzoom: 10.0)
+      map.addLayer({
         id: 'major-peaks-label-tier3',
         type: 'symbol',
         source: 'major-peaks-source',
@@ -2525,7 +2465,7 @@ export default function App() {
         filter: ['==', ['coalesce', ['get', 'tier'], 3], 3],
         layout: {
           'visibility': showPeaks ? 'visible' : 'none',
-          'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000],
+          'symbol-sort-key': ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]],
           'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
           'text-font': ['Open Sans Bold Italic'],
           'text-size': [
@@ -2541,7 +2481,80 @@ export default function App() {
           'text-keep-upright': true,
           'text-pitch-alignment': 'viewport',
           'text-rotation-alignment': 'viewport',
-          'text-padding': 10,
+          'text-padding': 4,
+          'text-optional': true,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Tier 2 Peaks: Major Regional Summits (minzoom: 8.0)
+      map.addLayer({
+        id: 'major-peaks-label-tier2',
+        type: 'symbol',
+        source: 'major-peaks-source',
+        minzoom: 8.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 2],
+        layout: {
+          'visibility': showPeaks ? 'visible' : 'none',
+          'symbol-sort-key': ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]],
+          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
+          'text-font': ['Open Sans Bold Italic'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            8.0, 9.0,
+            11.0, 10.5,
+            14.0, 12.0,
+          ],
+          'text-max-width': 26,
+          'text-offset': [0, -1.2],
+          'text-anchor': 'bottom',
+          'text-letter-spacing': 0.04,
+          'text-keep-upright': true,
+          'text-pitch-alignment': 'viewport',
+          'text-rotation-alignment': 'viewport',
+          'text-padding': 4,
+          'text-optional': true,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Tier 1 Peaks: Ultra & Iconic Apex Giants (minzoom: 6.0) — HIGHEST PRECEDENCE
+      map.addLayer({
+        id: 'major-peaks-label-tier1',
+        type: 'symbol',
+        source: 'major-peaks-source',
+        minzoom: 6.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 1],
+        layout: {
+          'visibility': showPeaks ? 'visible' : 'none',
+          'symbol-sort-key': ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]],
+          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
+          'text-font': ['Open Sans Bold Italic'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            6.0, 9.0,
+            9.0, 10.5,
+            12.0, 12.0,
+            15.0, 14.0,
+          ],
+          'text-max-width': 26,
+          'text-offset': [0, -1.2],
+          'text-anchor': 'bottom',
+          'text-letter-spacing': 0.04,
+          'text-keep-upright': true,
+          'text-pitch-alignment': 'viewport',
+          'text-rotation-alignment': 'viewport',
+          'text-padding': 4,
           'text-optional': true,
         },
         paint: {

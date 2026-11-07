@@ -104,7 +104,7 @@ def main():
 
         if is_t1:
             p['tier'] = 1
-            p['sort_key'] = 1000 + max(0, 40000 - elev)
+            p['sort_key'] = 50000 - elev
             t1_count += 1
         else:
             is_t2 = False
@@ -121,11 +121,11 @@ def main():
 
             if is_t2:
                 p['tier'] = 2
-                p['sort_key'] = 10000 + max(0, 40000 - elev)
+                p['sort_key'] = 50000 - elev
                 t2_count += 1
             else:
                 p['tier'] = 3
-                p['sort_key'] = 20000 + max(0, 40000 - elev)
+                p['sort_key'] = 50000 - elev
                 t3_count += 1
 
     print(f"Classification complete:")

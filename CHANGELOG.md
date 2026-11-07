@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: enforce strict elevation precedence for dense peak labels and invert layer placement order`
+- **What was wrong before**:
+  - In clusters of high-density alpine peaks (e.g. Mount Whitney in the High Sierra, 14,495'), Mount Whitney's summit marker was visible but its label was completely hidden due to collision suppression by adjacent lower summits (Mount Muir 14,012', Mount Russell 14,085', Mount Irvine 13,914').
+  - **Root Cause #1 (Reverse Layer Placement Traversal in MapLibre)**: MapLibre GL JS evaluates symbol layer collision in reverse layer addition order (`for (i = order.length - 1; i >= 0; i--)`). Because `major-peaks-label-tier3` was added after `tier2` which was added after `tier1`, Tier 3 and Tier 2 labels were placed first and claimed the collision index before Tier 1 was even evaluated. Mount Muir and Mount Russell claimed the collision boxes around the Sierra crest, causing Mount Whitney (the state apex and highest peak in the contiguous US) to be collision-dropped.
+  - **Root Cause #2 (Layer Order in City Labels)**: Similarly, alpine hubs (Tier 4) were added after megacities (Tier 1), causing small towns to be placed ahead of major metropolitan centers.
+  - **Root Cause #3 (Excessive Text Padding)**: `text-padding: 14` on Tier 1 created an unnecessarily large invisible exclusion bubble, preventing adjacent distinct summits along a crest from displaying their labels even when ample screen space existed.
+- **Solution**:
+  - **Inverted Layer Addition Order ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+    - Reordered peak layers so all circle markers are added first (`tier3` -> `tier2` -> `tier1`), followed by labels in reverse order (`tier3` -> `tier2` -> `tier1`).
+    - Because MapLibre processes from highest index downwards, `major-peaks-label-tier1` is now placed FIRST in the collision index, ensuring apex giants (Mount Whitney, Denali, Mount Rainier, Mount Elbert, Mont Blanc, Matterhorn) always claim their label positions before any subordinate summit is evaluated.
+    - Similarly inverted city reference layers (`tier4` -> `tier3` -> `tier2` -> `tier1`) so megacities claim placement priority over small towns.
+  - **Strict Elevation-Based Sort Key ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), [`scripts/classify_major_peaks.py`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/classify_major_peaks.py))**:
+    - Configured `symbol-sort-key: ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]]` across all peak label layers.
+    - In MapLibre, symbols sort ascending by sort key (lowest key placed first). Subtracting elevation from 50,000 ensures that within every tier, every foot of elevation grants strict placement precedence: Mount Whitney (35,505) beats Russell (35,915), which beats Muir (35,988), which beats Irvine (36,086).
+    - Reduced `text-padding` to `4px`, preventing unnatural exclusion gaps along alpine crests while eliminating text overlaps.
+    - Updated `scripts/classify_major_peaks.py` and regenerated [`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson) with cache buster `v=20261106_precedence`.
+
 ### `chore: extend GitHub Pages deploy polling timeout to 20 minutes to prevent transient timeout failures`
 - **What was wrong before**:
   - The GitHub Actions `Deploy to GitHub Pages / deploy` job failed at `10m 5s` on an earlier push (`ace326a`), sending a failure notification email.
