@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `chore: extend GitHub Pages deploy polling timeout to 20 minutes to prevent transient timeout failures`
+- **What was wrong before**:
+  - The GitHub Actions `Deploy to GitHub Pages / deploy` job failed at `10m 5s` on an earlier push (`ace326a`), sending a failure notification email.
+  - **Root Cause**: `actions/deploy-pages@v4` defaults to a `600000ms` (10-minute) status polling timeout. When GitHub's backend Pages deployment cluster takes slightly longer to unpack and synchronize artifacts containing large map datasets, the polling loop times out and marks the run failed even though the build succeeded.
+- **Solution**:
+  - Added `timeout: 1200000` (20 minutes) to `actions/deploy-pages@v4` in [`.github/workflows/deploy.yml`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/.github/workflows/deploy.yml) to provide ample buffer against transient GitHub CDN queue delays.
+  - Verified via GitHub REST API that subsequent deployment runs for commits `408fe6c` and `ee90673` succeeded completely.
+
 ### `feat: 3-tier mountain peak hierarchy with high-altitude regional visibility for major summits`
 - **What was wrong before**:
   - All 2,492 mountain peaks in `major_peaks.geojson` shared a flat `minzoom: 10.0` cutoff.
