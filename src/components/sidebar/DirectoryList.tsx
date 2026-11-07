@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, X } from 'lucide-react';
-import type { SkiResort, SortBy, SortOrder, DirectoryScope } from '../../types';
+import type { SkiResort, SortBy, SortOrder, DirectoryScope, MajorPeak } from '../../types';
 import { ResortCard } from './ResortCard';
 
 interface DirectoryListProps {
@@ -20,6 +20,8 @@ interface DirectoryListProps {
   selectedResort: SkiResort | null;
   selectedResortId: string | null;
   unitsMetric: boolean;
+  matchingPeaks?: MajorPeak[];
+  onSelectPeak?: (peak: MajorPeak) => void;
   onSelectResort: (id: string) => void;
   onDeselectResort: () => void;
   onViewProfile: () => void;
@@ -42,6 +44,8 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
   selectedResort,
   selectedResortId,
   unitsMetric,
+  matchingPeaks = [],
+  onSelectPeak,
   onSelectResort,
   onDeselectResort,
   onViewProfile,
@@ -58,6 +62,16 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
             placeholder="Search alpine resorts, peaks, countries..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (displayedResorts.length > 0) {
+                  onSelectResort(displayedResorts[0].id);
+                } else if (matchingPeaks && matchingPeaks.length > 0 && onSelectPeak) {
+                  onSelectPeak(matchingPeaks[0]);
+                }
+              }
+            }}
             className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-md pl-9.5 pr-8 py-2 text-sm text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#8A847C] focus:bg-[#FAF8F3] transition-colors"
           />
           {searchQuery && (
@@ -69,6 +83,33 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
             </button>
           )}
         </div>
+
+        {/* Mountain Summits Quick-Fly Matches */}
+        {matchingPeaks.length > 0 && onSelectPeak && (
+          <div className="p-2 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md text-xs space-y-1">
+            <div className="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-[#736E67]">
+              <span>Mountain Summits</span>
+              <span className="text-[9px] font-normal text-[#8A847C] lowercase">Enter or click to fly</span>
+            </div>
+            <div className="space-y-0.5">
+              {matchingPeaks.map((peak) => (
+                <button
+                  key={peak.id}
+                  onClick={() => onSelectPeak(peak)}
+                  className="w-full text-left px-2 py-1 rounded hover:bg-[#FAF8F3] hover:text-[#1C1B18] text-[#3D3A36] flex items-center justify-between cursor-pointer transition-colors"
+                >
+                  <span className="font-semibold truncate flex items-center gap-1.5">
+                    <span className="text-[#B84A39] text-xs">▲</span>
+                    <span>{peak.name}</span>
+                  </span>
+                  <span className="text-[11px] text-[#8A847C] tabular-nums font-mono shrink-0 ml-2">
+                    {unitsMetric ? `${peak.elevation_m.toLocaleString()} m` : `${peak.elevation_ft.toLocaleString()}'`}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Sort Controls Row */}
         <div className="flex items-center justify-between gap-2 pt-0.5">
@@ -156,11 +197,11 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
       {/* Directory Cards List */}
       <div className="flex-1 min-h-0 overflow-y-auto bg-[#F7F4ED] p-2.5 space-y-2">
         {displayedResorts.length === 0 ? (
-          <div className="p-4 text-center text-xs text-[#8A847C] space-y-2">
+          <div className="p-4 text-center text-xs text-[#8A847C] space-y-2.5">
             <div>
               {directoryScope === 'in_frame'
                 ? '0 ski areas in current map view frame.'
-                : 'No ski areas match current filters.'}
+                : `No ski areas match ${searchQuery ? `"${searchQuery}"` : 'current filters'}.`}
             </div>
             {directoryScope === 'in_frame' && filteredResortsCount > 0 && (
               <button
@@ -169,6 +210,24 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
               >
                 View all {filteredResortsCount.toLocaleString()} matching areas →
               </button>
+            )}
+            {matchingPeaks.length > 0 && onSelectPeak && (
+              <div className="pt-2.5 border-t border-[#D6D0C2]">
+                <div className="text-[11px] font-medium text-[#5C5852] mb-1.5">
+                  Found mountain summit:
+                </div>
+                <button
+                  onClick={() => onSelectPeak(matchingPeaks[0])}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] border border-[#D6D0C2] hover:border-[#8A847C] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
+                >
+                  <span className="text-[#B84A39]">▲</span>
+                  <span>{matchingPeaks[0].name}</span>
+                  <span className="text-[10px] text-[#8A847C] font-mono">
+                    ({unitsMetric ? `${matchingPeaks[0].elevation_m.toLocaleString()} m` : `${matchingPeaks[0].elevation_ft.toLocaleString()}'`})
+                  </span>
+                  <span className="ml-1 text-[#8A847C]">→ Pan &amp; Zoom</span>
+                </button>
+              </div>
             )}
           </div>
         ) : (

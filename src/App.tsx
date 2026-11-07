@@ -45,6 +45,7 @@ import type {
   Resort,
   PisteFeature,
   TrailInspectionData,
+  MajorPeak,
 } from './types';
 export type {
   PassNetwork,
@@ -545,6 +546,70 @@ export default function App() {
     if (!selectedResortId) return null;
     return displayedResorts.find((r) => r.id === selectedResortId) || resorts.find((r) => r.id === selectedResortId) || null;
   }, [displayedResorts, resorts, selectedResortId]);
+
+  /* =========================================================================
+     MAJOR MOUNTAIN SUMMITS (PEAKFINDER HORIZON ENGINE & SEARCH FLIGHT)
+     ========================================================================= */
+
+  const [peaks, setPeaks] = useState<MajorPeak[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(getStaticDataUrl('data/major_peaks.geojson?v=20261106_dem_clean_summits'))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data && data.features) {
+          const loaded: MajorPeak[] = data.features.map((f: any) => ({
+            id: f.id || f.properties?.id,
+            name: f.properties?.name || '',
+            elevation_ft: f.properties?.elevation_ft || 0,
+            elevation_m: f.properties?.elevation_m || 0,
+            coordinates: f.geometry?.coordinates as [number, number],
+            continent: f.properties?.continent,
+            tier: f.properties?.tier,
+          }));
+          setPeaks(loaded);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not load major peaks for search:', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const matchingPeaks = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return peaks
+      .filter((p) => p.name.toLowerCase().includes(q))
+      .slice(0, 5);
+  }, [peaks, searchQuery]);
+
+  const handleSelectPeak = useCallback((peak: MajorPeak) => {
+    if (!mapRef.current) return;
+    setShowPeaks(true);
+    handleDeselectTrail();
+    setSelectedResortId(null);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setMobileSheetState('peek');
+    }
+
+    const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
+    const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
+    const bottomPad = isMob ? 220 : 0;
+
+    safeFlyTo(mapRef.current, {
+      center: peak.coordinates,
+      zoom: 12.8,
+      pitch: 56,
+      bearing: -15,
+      padding: { top: 60, bottom: bottomPad, left: leftPad, right: 0 },
+      duration: 2200,
+      essential: true,
+    });
+  }, [leftDockOpen, handleDeselectTrail]);
 
   /* =========================================================================
      TRAILS STREAMING & STATIC PRE-BAKED ENGINE
@@ -2560,6 +2625,43 @@ export default function App() {
         }
       });
 
+      // Click on mountain peak marker / label to pan and zoom
+      const onPeakClick = (e: any) => {
+        if (!e.features || !e.features[0]) return;
+        const coords = (e.features[0].geometry as any).coordinates as [number, number];
+        if (!coords) return;
+        const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
+        const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
+        const bottomPad = isMob ? 220 : 0;
+        safeFlyTo(map, {
+          center: coords,
+          zoom: Math.max(map.getZoom(), 12.8),
+          pitch: 56,
+          bearing: -15,
+          padding: { top: 60, bottom: bottomPad, left: leftPad, right: 0 },
+          duration: 1800,
+          essential: true,
+        });
+      };
+
+      const peakLayers = [
+        'major-peaks-marker-tier1',
+        'major-peaks-marker-tier2',
+        'major-peaks-marker-tier3',
+        'major-peaks-label',
+      ];
+      peakLayers.forEach((layerId) => {
+        if (map.getLayer(layerId)) {
+          map.on('click', layerId, onPeakClick);
+          map.on('mouseenter', layerId, () => {
+            map.getCanvas().style.cursor = 'pointer';
+          });
+          map.on('mouseleave', layerId, () => {
+            map.getCanvas().style.cursor = '';
+          });
+        }
+      });
+
       // Click on empty map canvas deselects active resort or inspects clicked trail / lift
       map.on('click', (e) => {
         const resortLayers = [
@@ -2576,6 +2678,7 @@ export default function App() {
           'global-unclustered-point',
           'global-unclustered-label',
           'global-clusters',
+          ...peakLayers,
         ].filter((id) => map.getLayer(id));
         const resortFeats = map.queryRenderedFeatures(e.point, { layers: resortLayers });
         if (resortFeats && resortFeats.length > 0) {
@@ -4602,6 +4705,8 @@ export default function App() {
             selectedResort={selectedResort}
             selectedResortId={selectedResortId}
             unitsMetric={unitsMetric}
+            matchingPeaks={matchingPeaks}
+            onSelectPeak={handleSelectPeak}
             onSelectResort={handleSelectResort}
             onDeselectResort={handleDeselectResort}
             onViewProfile={() => setPanelView('profile')}
@@ -4645,6 +4750,8 @@ export default function App() {
             selectedResort={selectedResort}
             selectedResortId={selectedResortId}
             unitsMetric={unitsMetric}
+            matchingPeaks={matchingPeaks}
+            onSelectPeak={handleSelectPeak}
             onSelectResort={handleSelectResort}
             onDeselectResort={handleDeselectResort}
             onViewProfile={() => setPanelView('profile')}

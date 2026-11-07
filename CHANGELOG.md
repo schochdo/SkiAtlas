@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `feat: add direct mountain peak search flight and pan-zoom without directory pollution`
+- **What was wrong before**:
+  - The search input placeholder stated *"Search alpine resorts, peaks, countries..."*, but typing mountain peak names (e.g., Matterhorn, Grand Teton, Denali, Mount Rainier, Mont Blanc) returned 0 results because the search filter only operated against the ski resort catalog.
+  - Adding 2,450 mountain peaks directly into the ski area directory card list was unacceptable as it would pollute ski area vertical/acreage rankings and resort filtering.
+- **Solution**:
+  - Implemented a dedicated mountain peak quick-fly subsystem:
+    - Added `MajorPeak` type in [`src/types/index.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/types/index.ts).
+    - Loaded peak metadata asynchronously from the cached `major_peaks.geojson` on mount in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+    - Added `matchingPeaks` computed filtering for queries $\ge 2$ characters.
+    - Added an unobtrusive "Mountain Summits" quick-fly strip right below the search input in [`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx) showing matching peak names and elevation (formatted strictly in metric or imperial according to user preferences).
+    - Added <kbd>Enter</kbd> keyboard handling: pressing Enter prioritizes matching ski areas; if no ski areas match the query, it smoothly flies the camera directly to the apex of the top matching mountain summit (`safeFlyTo` at zoom 12.8, pitch 56°).
+    - Added an empty-state action button when 0 ski areas match: *"Found mountain summit: [▲ Peak · Elevation → Pan & Zoom]"*.
+    - Connected peak click and cursor hover handlers directly to the 3D map so clicking any peak dot or label on the map smoothly swoops and tilts into that summit.
+    - Preserved 100% integrity of the ski resort directory: no peak items are ever injected into the ski area card list.
+
+
 ### `fix: replace misplaced Parsenn ski area with Weissfluhgipfel and purge non-peak passes/huts`
 - **What was wrong before**:
   - `Parsenn · 9,331'` appeared as a mountain peak marker on a grassy slope 50 km south of Davos in Val Bregaglia (`[9.49206, 46.490874]`).
