@@ -6,7 +6,30 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
-### `fix: preserve regional locator inset map zoom settings during camera pan and flight`
+### `fix: resolve ski trail fade-out and click targeting on 3D alpine terrain`
+- **What was wrong before**:
+  - When zooming into steep alpine resorts like Crystal Mountain in Washington ($z \ge 12.5 - 16$), ski trails appeared faint/faded and became unclickable right around the zoom level where trail labels became readable.
+  - **Root Causes**:
+    1. **Insufficient Stroke Width in 3D Terrain Render-To-Texture (RTT)**: MapLibre GL JS drapes line layers onto 3D DEM tiles via a 512x512 offscreen texture. At high zoom ($z \ge 14 - 17$), a 2.2px–3.0px line with 0.85 opacity stretched across hundreds of screen pixels became faint, blurred, and washed out against bright snow and satellite terrain.
+    2. **Freeride Bowl Polygon Fill Overwhelm**: Crystal Mountain features 9 large freeride bowl polygons (Northway Bowl, Silver Basin, Paradise Bowl, etc.) whose fill opacity rose to 0.24 at close zoom, darkening the entire mountain surface and obscuring the runs.
+    3. **Flat `map.project` Sea-Level Collision Error in Click Handler**: The map click handler tested distance to candidate trail lines using `map.project(coords)`. Under tilted 3D terrain on a 2,000 m mountain (e.g., Crystal summit at 7,012 ft / 2,137 m with pitch 55°–60°), sea-level projection is displaced by ~240 screen pixels from the actual 3D visual position. This 240px discrepancy caused the line proximity test (`dist <= hitRadius + 8`) to fail, rejecting true trail clicks and falling back to enclosing freeride polygon areas or failing entirely.
+    4. **Tile Cache Throttling**: `calibrateTileCaches` capped all tile managers to 5 zoom levels and limited cache size, causing `geojson-vt` trail vector tiles to drop out when zooming deep into a ski mountain.
+    5. **Transient Ingestion Eviction**: `ingestTrailFeatures` evicted the oldest keys when the Map exceeded 4,500 features without exempting loaded curated resort trails, allowing transient bounding-box queries to purge static resort trail data.
+- **Solution**:
+  - **3D Ground-Truth Geodesic Proximity**: Replaced sea-level `map.project` screen-space distance with geodesic distance computed directly against `e.lngLat` (which MapLibre accurately raycasts onto the 3D terrain surface). Handled Point geometries from label hits by resolving canonical features from `liveFeaturesMapRef`.
+  - **Prioritized Linear Tracks Over Area Polygons**: Chairlifts and downhill piste runs are strictly prioritized over enclosing freeride bowl polygons upon click.
+  - **High-DPI Line Styling & Opacity**:
+    - Increased `live-pistes-lines` width smoothly up to 5.0px at $z=16$ and 6.8px at $z=18$ with 100% opacity (`#2E7D32`, `#1565C0`, `#1C1B18`, `#B84A39`).
+    - Increased `live-pistes-casing` to 8.0px at $z=16$ and 10.5px at $z=18$ (`#FAF8F3`, 95% opacity) for a solid, high-contrast border on retina displays and 3D terrain.
+    - Updated `live-pistes-lifts` to 5.0px at $z=16$ and 6.2px at $z=18$.
+    - Expanded invisible hit targets (`live-pistes-hit-target` and `live-pistes-lifts-hit-target`) up to 68px at $z=16$ and 80px at $z=18$.
+    - Tuned freeride bowl fill opacity to stay subtle and luminous (decreasing from 0.12 at $z=11$ down to 0.06 at $z=17$) so mountain surface contours and trail tracks remain prominent.
+  - **High-Zoom Vector Source Retention**:
+    - Configured `live-pistes-vector` source with `maxzoom: 22`, `buffer: 128`, `tolerance: 0.375`.
+    - Exempted `live-pistes-vector` and `selected-trail-source` from tile cache throttling in `calibrateTileCaches`.
+    - Added `permanentTrailIdsRef` in `ingestTrailFeatures` to ensure curated resort static trails are never purged during bounding-box queries.
+
+
 - **What was wrong before**:
   - The mini inset map (`RegionalLocator`) forcibly reset its zoom level whenever the main map camera was panned, flown, or clicked.
   - **Root Cause**:

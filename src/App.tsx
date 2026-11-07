@@ -615,7 +615,12 @@ export default function App() {
      TRAILS STREAMING & STATIC PRE-BAKED ENGINE
      ========================================================================= */
 
-  const ingestTrailFeatures = useCallback((features: any[]) => {
+  const loadedResortTrailsRef = useRef<Set<string>>(new Set());
+  const permanentTrailIdsRef = useRef<Set<string>>(new Set());
+  const fetchedBboxKeysSetRef = useRef<Set<string>>(new Set());
+  const hasLocalServerRef = useRef(true);
+
+  const ingestTrailFeatures = useCallback((features: any[], isPermanent: boolean = false) => {
     if (!features || !features.length || !mapRef.current) return;
 
     for (const f of features) {
@@ -637,15 +642,26 @@ export default function App() {
           continue;
         }
       }
+      const fid = String(f.id || p?.id);
       if (!f.id && p?.id) {
         f.id = p.id;
       }
-      liveFeaturesMapRef.current.set(String(f.id || p?.id), f);
+      liveFeaturesMapRef.current.set(fid, f);
+      if (isPermanent) {
+        permanentTrailIdsRef.current.add(fid);
+      }
     }
 
-    if (liveFeaturesMapRef.current.size > 4500) {
+    // Limit transient bbox features while strictly preserving all loaded resort trails
+    if (liveFeaturesMapRef.current.size > 5000) {
       const keys = Array.from(liveFeaturesMapRef.current.keys());
-      const toDelete = keys.slice(0, keys.length - 3500);
+      const toDelete: string[] = [];
+      for (const k of keys) {
+        if (!permanentTrailIdsRef.current.has(k)) {
+          toDelete.push(k);
+          if (liveFeaturesMapRef.current.size - toDelete.length <= 4000) break;
+        }
+      }
       toDelete.forEach((k) => liveFeaturesMapRef.current.delete(k));
     }
 
@@ -658,10 +674,6 @@ export default function App() {
     }
   }, []);
 
-  const loadedResortTrailsRef = useRef<Set<string>>(new Set());
-  const fetchedBboxKeysSetRef = useRef<Set<string>>(new Set());
-  const hasLocalServerRef = useRef(true);
-
   const fetchResortStaticTrails = useCallback(async (resortId: string) => {
     if (loadedResortTrailsRef.current.has(resortId)) return;
     if (hasLocalServerRef.current) {
@@ -671,7 +683,7 @@ export default function App() {
         if (apiRes.ok) {
           const data = await apiRes.json();
           if (data.features && data.features.length) {
-            ingestTrailFeatures(data.features);
+            ingestTrailFeatures(data.features, true);
             loadedResortTrailsRef.current.add(resortId);
             return;
           }
@@ -688,7 +700,7 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data.features && data.features.length) {
-          ingestTrailFeatures(data.features);
+          ingestTrailFeatures(data.features, true);
           loadedResortTrailsRef.current.add(resortId);
         }
       }
@@ -886,6 +898,7 @@ export default function App() {
         if (!tm) return;
         const cacheLimit = initialIsMobile ? 60 : 120;
         for (const id in tm) {
+          if (id === 'live-pistes-vector' || id === 'selected-trail-source') continue;
           const manager = tm[id];
           manager._maxTileCacheSize = cacheLimit;
           manager._maxTileCacheZoomLevels = 5;
@@ -1348,6 +1361,9 @@ export default function App() {
         type: 'geojson',
         promoteId: 'id',
         data: { type: 'FeatureCollection', features: [] },
+        maxzoom: 22,
+        buffer: 128,
+        tolerance: 0.375,
       });
 
       // Translucent difficulty fill for freeride bowls, glades, and alpine areas
@@ -1374,10 +1390,10 @@ export default function App() {
             'interpolate',
             ['linear'],
             ['zoom'],
-            11, 0.08,
-            13, 0.14,
-            15, 0.20,
-            17, 0.24,
+            11, 0.12,
+            13, 0.10,
+            15, 0.08,
+            17, 0.06,
           ],
         },
       });
@@ -1415,11 +1431,18 @@ export default function App() {
         type: 'line',
         source: 'live-pistes-vector',
         filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
-        layout: { visibility: 'none' },
+        layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#FAF8F3',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2.0, 14, 3.6, 17, 4.6],
-          'line-opacity': 0.85,
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            10, 2.4,
+            12, 3.8,
+            14, 5.8,
+            16, 8.0,
+            18, 10.5,
+          ],
+          'line-opacity': 0.95,
         },
       });
 
@@ -1430,7 +1453,7 @@ export default function App() {
         type: 'line',
         source: 'live-pistes-vector',
         filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
-        layout: { visibility: 'none' },
+        layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': [
             'match',
@@ -1444,8 +1467,15 @@ export default function App() {
             'freeride', '#B84A39',     // Double Black / Freeride Vermilion
             '#8A847C',
           ],
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.2, 14, 2.2, 17, 3.0],
-          'line-opacity': 0.95,
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            10, 1.4,
+            12, 2.2,
+            14, 3.6,
+            16, 5.0,
+            18, 6.8,
+          ],
+          'line-opacity': 1.0,
         },
       });
 
@@ -1460,7 +1490,14 @@ export default function App() {
         layout: { visibility: 'none', 'line-cap': 'round' },
         paint: {
           'line-color': 'transparent',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 28, 14, 40, 17, 52],
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            10, 28,
+            12, 38,
+            14, 52,
+            16, 68,
+            18, 80,
+          ],
           'line-opacity': 0,
         },
       });
@@ -1479,10 +1516,19 @@ export default function App() {
           ['!', ['in', 'abandoned', ['downcase', ['coalesce', ['get', 'name'], '']]]],
           ['!', ['in', 'disused', ['downcase', ['coalesce', ['get', 'name'], '']]]],
         ],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#B84A39',
-          'line-width': 2.5,
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            10, 1.8,
+            12, 2.6,
+            14, 3.8,
+            16, 5.0,
+            18, 6.2,
+          ],
           'line-dasharray': [3, 2],
+          'line-opacity': 1.0,
         },
       });
 
@@ -1503,7 +1549,14 @@ export default function App() {
         layout: { visibility: 'none', 'line-cap': 'round' },
         paint: {
           'line-color': 'transparent',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 28, 14, 40, 17, 52],
+          'line-width': [
+            'interpolate', ['linear'], ['zoom'],
+            10, 28,
+            12, 38,
+            14, 52,
+            16, 68,
+            18, 80,
+          ],
           'line-opacity': 0,
         },
       });
@@ -1561,8 +1614,8 @@ export default function App() {
         layout: {
           'visibility': 'none',
           'symbol-placement': 'line',
-          'symbol-spacing': 600,
-          'text-padding': 12,
+          'symbol-spacing': 500,
+          'text-padding': 10,
           'text-field': [
             'case',
             [
@@ -1576,17 +1629,23 @@ export default function App() {
             '',
             ['get', 'name']
           ],
-          'text-size': 11,
-          'text-font': ['Open Sans Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            12.5, 10,
+            14.5, 12,
+            17.0, 14,
+          ],
+          'text-font': ['Open Sans Semibold'],
           'text-keep-upright': true,
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'viewport',
-          'text-max-angle': 38,
+          'text-max-angle': 45,
         },
         paint: {
           'text-color': '#1C1B18',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2,
+          'text-halo-width': 2.6,
+          'text-halo-blur': 0.5,
         },
       });
 
@@ -1613,8 +1672,8 @@ export default function App() {
         layout: {
           'visibility': showDownhill ? 'visible' : 'none',
           'symbol-placement': 'line',
-          'symbol-spacing': 700,
-          'text-padding': 14,
+          'symbol-spacing': 600,
+          'text-padding': 12,
           'text-field': [
             'case',
             [
@@ -1632,22 +1691,21 @@ export default function App() {
             'interpolate',
             ['linear'],
             ['zoom'],
-            12.5, 9.5,
-            14, 11,
-            16, 12.5,
+            12.5, 10,
+            14.5, 12,
+            17.0, 13.5,
           ],
-          'text-font': ['Open Sans Regular'],
-          'text-offset': [0, -0.75],
+          'text-font': ['Open Sans Semibold'],
+          'text-letter-spacing': 0.03,
           'text-keep-upright': true,
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'viewport',
-          'text-letter-spacing': 0.04,
-          'text-max-angle': 35,
+          'text-max-angle': 45,
         },
         paint: {
-          'text-color': '#8F3628',
+          'text-color': '#7F1D1D',
           'text-halo-color': '#FAF8F3',
-          'text-halo-width': 2.5,
+          'text-halo-width': 2.6,
           'text-halo-blur': 0.5,
         },
       });
@@ -1663,10 +1721,11 @@ export default function App() {
         type: 'line',
         source: 'selected-trail-source',
         filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#FAF8F3',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 4.0, 14, 6.0, 17, 8.0],
-          'line-opacity': 0.95,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 10, 4.0, 12, 5.5, 14, 8.0, 16, 11.0, 18, 14.0],
+          'line-opacity': 1.0,
         },
       });
 
@@ -1675,9 +1734,10 @@ export default function App() {
         type: 'line',
         source: 'selected-trail-source',
         filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#D97706',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2.2, 14, 3.6, 17, 5.0],
+          'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2.2, 12, 3.4, 14, 5.0, 16, 7.5, 18, 10.0],
           'line-opacity': 1.0,
         },
       });
@@ -2714,69 +2774,89 @@ export default function App() {
           const trailFeats = map.queryRenderedFeatures(clickBbox, { layers: trailLayers });
 
           if (trailFeats && trailFeats.length > 0) {
-            // Helper to compute exact screen pixel distance from click/tap point to candidate feature
-            const getDistanceToFeaturePx = (feat: any, clickPt: { x: number; y: number }): number => {
+            // Resolve candidate features against liveFeaturesMapRef so features clicked via labels
+            // or tile clips have their full canonical geometry and properties
+            const resolvedFeats = trailFeats.map((f: any) => {
+              const fid = String(f.id || f.properties?.id);
+              const canonical = liveFeaturesMapRef.current.get(fid);
+              return canonical || f;
+            });
+
+            // Ground-truth geodesic distance on the 3D mountain surface (in meters).
+            // Uses e.lngLat directly (which MapLibre raycasts precisely onto the 3D terrain mesh),
+            // completely avoiding 2D screen projection errors caused by sea-level datum assumptions.
+            const clickLng = e.lngLat.lng;
+            const clickLat = e.lngLat.lat;
+            const cosLat = Math.cos((clickLat * Math.PI) / 180);
+
+            const distToFeatureMeters = (feat: any): number => {
               const geom = feat.geometry;
               if (!geom) return Infinity;
 
-              const distToSegmentSq = (p: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }) => {
-                const dx = b.x - a.x;
-                const dy = b.y - a.y;
+              const distToSegMeters = (pLng: number, pLat: number, aLng: number, aLat: number, bLng: number, bLat: number) => {
+                const px = pLng * cosLat * 111320;
+                const py = pLat * 110540;
+                const ax = aLng * cosLat * 111320;
+                const ay = aLat * 110540;
+                const bx = bLng * cosLat * 111320;
+                const by = bLat * 110540;
+                const dx = bx - ax;
+                const dy = by - ay;
                 const lenSq = dx * dx + dy * dy;
-                if (lenSq === 0) return (p.x - a.x) ** 2 + (p.y - a.y) ** 2;
-                const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
-                const projX = a.x + t * dx;
-                const projY = a.y + t * dy;
-                return (p.x - projX) ** 2 + (p.y - projY) ** 2;
+                if (lenSq === 0) return Math.hypot(px - ax, py - ay);
+                const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
+                return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
               };
 
-              let minSq = Infinity;
+              let minM = Infinity;
 
-              const testLine = (coords: any[]) => {
+              const testCoords = (coords: any[]) => {
                 if (!coords || coords.length < 2) return;
-                let prev = map.project([coords[0][0], coords[0][1]]);
-                for (let i = 1; i < coords.length; i++) {
-                  const cur = map.project([coords[i][0], coords[i][1]]);
-                  const dSq = distToSegmentSq(clickPt, prev, cur);
-                  if (dSq < minSq) minSq = dSq;
-                  prev = cur;
+                for (let i = 0; i < coords.length - 1; i++) {
+                  const d = distToSegMeters(clickLng, clickLat, coords[i][0], coords[i][1], coords[i + 1][0], coords[i + 1][1]);
+                  if (d < minM) minM = d;
                 }
               };
 
               if (geom.type === 'LineString') {
-                testLine(geom.coordinates);
+                testCoords(geom.coordinates);
               } else if (geom.type === 'MultiLineString') {
-                for (const line of geom.coordinates || []) {
-                  testLine(line);
-                }
+                for (const line of geom.coordinates || []) testCoords(line);
               } else if (geom.type === 'Polygon') {
-                for (const ring of geom.coordinates || []) {
-                  testLine(ring);
-                }
+                for (const ring of geom.coordinates || []) testCoords(ring);
               } else if (geom.type === 'MultiPolygon') {
                 for (const poly of geom.coordinates || []) {
-                  for (const ring of poly || []) {
-                    testLine(ring);
-                  }
+                  for (const ring of poly || []) testCoords(ring);
                 }
+              } else if (geom.type === 'Point') {
+                const px = (clickLng - geom.coordinates[0]) * cosLat * 111320;
+                const py = (clickLat - geom.coordinates[1]) * 110540;
+                minM = Math.hypot(px, py);
               }
 
-              return Math.sqrt(minSq);
+              return minM;
             };
 
-            // Rank candidate features by proximity to the tap/click point
             let bestLineFeat: any = null;
             let bestLineDist = Infinity;
+            let bestLiftFeat: any = null;
+            let bestLiftDist = Infinity;
             let bestPolyFeat: any = null;
             let bestPolyDist = Infinity;
 
-            for (const f of trailFeats) {
+            for (const f of resolvedFeats) {
               const geom = f.geometry;
               if (!geom) continue;
-              const isLine = geom.type === 'LineString' || geom.type === 'MultiLineString';
-              const dist = getDistanceToFeaturePx(f, e.point);
+              const isLine = geom.type === 'LineString' || geom.type === 'MultiLineString' || geom.type === 'Point';
+              const isLift = f.properties?.kind === 'lift' || !!f.properties?.aerialway;
+              const dist = distToFeatureMeters(f);
 
-              if (isLine) {
+              if (isLift) {
+                if (dist < bestLiftDist) {
+                  bestLiftDist = dist;
+                  bestLiftFeat = f;
+                }
+              } else if (isLine) {
                 if (dist < bestLineDist) {
                   bestLineDist = dist;
                   bestLineFeat = f;
@@ -2789,14 +2869,20 @@ export default function App() {
               }
             }
 
-            // Prioritize linear downhill pistes or lifts if within search radius;
-            // fall back to enclosing freeride bowl / polygon if clicked directly in an open bowl
-            const selectedFeat = (bestLineFeat && bestLineDist <= hitRadius + 8)
-              ? bestLineFeat
-              : (bestLineFeat || bestPolyFeat || trailFeats[0]);
+            // Prioritize linear tracks (lifts or runs) over broad freeride terrain polygons
+            let selectedFeat: any = null;
+            if (bestLiftFeat && bestLineFeat) {
+              selectedFeat = bestLiftDist <= bestLineDist ? bestLiftFeat : bestLineFeat;
+            } else if (bestLiftFeat) {
+              selectedFeat = bestLiftFeat;
+            } else if (bestLineFeat) {
+              selectedFeat = bestLineFeat;
+            } else {
+              selectedFeat = bestPolyFeat || resolvedFeats[0];
+            }
 
             if (selectedFeat) {
-              handleSelectTrailRef.current(selectedFeat, [e.lngLat.lng, e.lngLat.lat], e.point);
+              handleSelectTrailRef.current(selectedFeat, [clickLng, clickLat], e.point);
               return;
             }
           }
