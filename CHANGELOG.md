@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: reconcile coarse arcminute peaks to exact surveyed summits across 480 global peaks`
+- **What was wrong before**:
+  - Several prominent peaks (e.g. Fremont Peak in Wyoming's Wind River Range, 13,747', Keeler Needle, Mauna Loa, Galdhøpiggen, Broad Peak, Lhotse) had their markers and labels floating hundreds of meters to nearly a kilometer away on talus scree fields or side slopes rather than on the true rocky summit.
+  - **Root Cause**: An earlier data ingest rounded geographic coordinates to the nearest arc-minute (`1' = 1/60°`). At 43°N, an arcminute of latitude is 1,852 meters and longitude is ~1,350 meters, introducing physical offsets of up to 1 km. A previous reconciliation script (`reconcile_all_arcminute_peaks.cjs`) failed on Fremont Peak and hundreds of others because it prematurely matched unrelated search candidates in other states (e.g. Arizona) before testing local entities, and assumed Wikidata elevation amounts were always formatted in meters when some entities recorded elevation in feet (`Q3710`).
+  - Furthermore, Baltoro Kangri had transposed/swapped latitude and longitude.
+- **Solution**:
+  - Created [`scripts/reconcile_all_peaks.py`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/reconcile_all_peaks.py) to geodetically reconcile coarse/arcminute peaks using Wikidata SPARQL batch queries and OpenStreetMap (Nominatim).
+  - Enforced strict geodetic verification: candidates must be within $\le 4.0\text{ km}$ of the mountain's known location (physical arcminute error bound), match elevation within $\pm 500\text{ ft}$ (normalizing both meter and foot units), match the peak name/variants, and possess high-precision coordinates.
+  - Fixed swapped coordinates for Baltoro Kangri (`[76.66975, 35.647969]`).
+  - Snapped 480 global summits to exact surveyed benchmarks, including Fremont Peak in Wyoming (`[-109.617, 43.1167]` $\rightarrow$ `[-109.618, 43.1247]`), Keeler Needle, and Mauna Loa.
+  - Re-ran classification and updated [`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson) with cache buster `?v=20261106_snapped_summits`.
+
 ### `fix: enforce strict elevation precedence for dense peak labels and invert layer placement order`
 - **What was wrong before**:
   - In clusters of high-density alpine peaks (e.g. Mount Whitney in the High Sierra, 14,495'), Mount Whitney's summit marker was visible but its label was completely hidden due to collision suppression by adjacent lower summits (Mount Muir 14,012', Mount Russell 14,085', Mount Irvine 13,914').
