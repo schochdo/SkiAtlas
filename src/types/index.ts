@@ -9,7 +9,7 @@ export type SkiActivityCategory = 'downhill' | 'nordic' | 'heli_cat';
 
 export type EarthProjectionMode = 'globe' | 'mercator';
 
-export type BasemapMode = 'satellite' | 'osm' | 'topo';
+export type BasemapMode = 'satellite' | 'cloudless' | 'osm' | 'carto' | 'topo';
 
 export type TerrainOverlayMode = 'none' | 'slope' | 'aspect';
 

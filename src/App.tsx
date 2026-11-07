@@ -2506,8 +2506,8 @@ export default function App() {
           'text-optional': true,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-color': (basemapMode === 'satellite' || basemapMode === 'cloudless') ? '#FDE68A' : '#852E1C',
+          'text-halo-color': (basemapMode === 'satellite' || basemapMode === 'cloudless') ? '#1C1B18' : '#FAF8F3',
           'text-halo-width': 2.4,
           'text-halo-blur': 0.5,
         },
@@ -3264,7 +3264,7 @@ export default function App() {
       map.setLayoutProperty(
         'hillshade-relief',
         'visibility',
-        basemapMode === 'osm' && showHillshade ? 'visible' : 'none'
+        (basemapMode === 'osm' || basemapMode === 'carto') && showHillshade ? 'visible' : 'none'
       );
     }
   }, [showHillshade, basemapMode, mapLoaded]);
@@ -3277,19 +3277,27 @@ export default function App() {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
 
-    // Satellite
+    // Satellite (Standard)
     if (map.getLayer('basemap-satellite')) {
       map.setLayoutProperty('basemap-satellite', 'visibility', basemapMode === 'satellite' ? 'visible' : 'none');
     }
-    // OpenStreetMap
+    // Satellite (Cloudless EOX)
+    if (map.getLayer('basemap-cloudless')) {
+      map.setLayoutProperty('basemap-cloudless', 'visibility', basemapMode === 'cloudless' ? 'visible' : 'none');
+    }
+    // OpenStreetMap Standard
     if (map.getLayer('basemap-osm')) {
       map.setLayoutProperty('basemap-osm', 'visibility', basemapMode === 'osm' ? 'visible' : 'none');
+    }
+    // Clean OSM (CARTO Voyager No-Labels)
+    if (map.getLayer('basemap-carto')) {
+      map.setLayoutProperty('basemap-carto', 'visibility', basemapMode === 'carto' ? 'visible' : 'none');
     }
     if (map.getLayer('hillshade-relief')) {
       map.setLayoutProperty(
         'hillshade-relief',
         'visibility',
-        basemapMode === 'osm' && showHillshade ? 'visible' : 'none'
+        (basemapMode === 'osm' || basemapMode === 'carto') && showHillshade ? 'visible' : 'none'
       );
     }
     // Alpine Topo
@@ -3364,7 +3372,7 @@ export default function App() {
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
-    const isDark = basemapMode === 'satellite';
+    const isDark = basemapMode === 'satellite' || basemapMode === 'cloudless';
     const refVisibility = showCountryOutlines ? 'visible' : 'none';
 
     if (map.getLayer('world-country-borders')) {

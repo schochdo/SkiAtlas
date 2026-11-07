@@ -201,7 +201,9 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
               <div className="space-y-1">
                 {[
                   { id: 'satellite', label: 'Satellite 3D' },
+                  { id: 'cloudless', label: 'Satellite (Cloudless)' },
                   { id: 'osm', label: 'OpenStreetMap' },
+                  { id: 'carto', label: 'Clean OSM (Voyager)' },
                   { id: 'topo', label: 'Alpine Topo' },
                 ].map((item) => {
                   const isSelected = basemapMode === item.id;

@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `feat: add seamless EOX Cloudless Satellite and Clean OSM (CARTO Voyager) basemaps`
+- **What was added**:
+  - Expanded `BasemapMode` in [`src/types/index.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/types/index.ts) to include `'cloudless'` and `'carto'`.
+  - Added two new cartographic base options to [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx) alongside existing Satellite 3D, OpenStreetMap, and Alpine Topo:
+    - **Satellite (Cloudless)**: EOX Sentinel-2 global summer cloud-free mosaic (`https://tiles.maps.eox.at/wmts/...`). Resolves the seasonal patchwork quilt seams and jarring rectangular flight boundaries of standard satellite imagery.
+    - **Clean OSM (Voyager)**: CARTO Voyager No-Labels with subtle terrain relief shading. Eliminates upside-down/inverted text when rotating or flying south in 3D terrain while providing clean, pastel landcover.
+  - Configured Vite environment variable handling in [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts) for `VITE_CARTO_API_KEY`.
+  - Added `.env.local` to store the CARTO key locally with 100% Git isolation.
+  - Updated [`.github/workflows/deploy.yml`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/.github/workflows/deploy.yml) to inject `VITE_CARTO_API_KEY` from GitHub repository secrets during automated deployment.
+
 ### `feat: definitive global peak deduplication and high-point DEM apex snapping engine`
 - **What was wrong before**:
   - The major mountain peaks dataset had accumulated historical inaccuracies from piecemeal, one-off fixes across multiple sessions.
