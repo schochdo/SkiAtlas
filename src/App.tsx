@@ -2451,94 +2451,29 @@ export default function App() {
         },
       });
 
-      // Labels: Tier 3 -> Tier 2 -> Tier 1
-      // MapLibre placement engine iterates in reverse layer order (topmost layer placed first).
-      // Placing Tier 1 FIRST guarantees apex giants (e.g. Mount Whitney, Denali, Rainier, Elbert, Mont Blanc)
-      // always claim their collision box first and are never suppressed by nearby subordinate summits.
-
-      // Tier 3 Peaks: Local Alpine Summits & Valley Ridges (minzoom: 10.0)
+      // Unified Major Mountain Peak Labels (Strict Mathematical Elevation Precedence)
+      // All peaks are placed in a SINGLE symbol layer. MapLibre GL JS sorts bucket features
+      // strictly by `symbol-sort-key` (50000 - elevation_ft). Highest peaks (lowest sort key)
+      // are placed first into the collision grid without cross-layer bucket collision inversion.
+      // Zoom emergence is governed dynamically: Tier 1 at z6.0+, Tier 2 at z8.0+, Tier 3 at z10.0+.
       map.addLayer({
-        id: 'major-peaks-label-tier3',
-        type: 'symbol',
-        source: 'major-peaks-source',
-        minzoom: 10.0,
-        filter: ['==', ['coalesce', ['get', 'tier'], 3], 3],
-        layout: {
-          'visibility': showPeaks ? 'visible' : 'none',
-          'symbol-sort-key': ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]],
-          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
-          'text-font': ['Open Sans Bold Italic'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            10.0, 9.0,
-            12.0, 10.5,
-            14.0, 12.0,
-          ],
-          'text-max-width': 26,
-          'text-offset': [0, -1.2],
-          'text-anchor': 'bottom',
-          'text-letter-spacing': 0.04,
-          'text-keep-upright': true,
-          'text-pitch-alignment': 'viewport',
-          'text-rotation-alignment': 'viewport',
-          'text-padding': 4,
-          'text-optional': true,
-        },
-        paint: {
-          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
-          'text-halo-width': 2.4,
-          'text-halo-blur': 0.5,
-        },
-      });
-
-      // Tier 2 Peaks: Major Regional Summits (minzoom: 8.0)
-      map.addLayer({
-        id: 'major-peaks-label-tier2',
-        type: 'symbol',
-        source: 'major-peaks-source',
-        minzoom: 8.0,
-        filter: ['==', ['coalesce', ['get', 'tier'], 3], 2],
-        layout: {
-          'visibility': showPeaks ? 'visible' : 'none',
-          'symbol-sort-key': ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]],
-          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
-          'text-font': ['Open Sans Bold Italic'],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            8.0, 9.0,
-            11.0, 10.5,
-            14.0, 12.0,
-          ],
-          'text-max-width': 26,
-          'text-offset': [0, -1.2],
-          'text-anchor': 'bottom',
-          'text-letter-spacing': 0.04,
-          'text-keep-upright': true,
-          'text-pitch-alignment': 'viewport',
-          'text-rotation-alignment': 'viewport',
-          'text-padding': 4,
-          'text-optional': true,
-        },
-        paint: {
-          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
-          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
-          'text-halo-width': 2.4,
-          'text-halo-blur': 0.5,
-        },
-      });
-
-      // Tier 1 Peaks: Ultra & Iconic Apex Giants (minzoom: 6.0) — HIGHEST PRECEDENCE
-      map.addLayer({
-        id: 'major-peaks-label-tier1',
+        id: 'major-peaks-label',
         type: 'symbol',
         source: 'major-peaks-source',
         minzoom: 6.0,
-        filter: ['==', ['coalesce', ['get', 'tier'], 3], 1],
         layout: {
           'visibility': showPeaks ? 'visible' : 'none',
           'symbol-sort-key': ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]],
-          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
+          'text-field': [
+            'case',
+            ['==', ['coalesce', ['get', 'tier'], 3], 1],
+            ['get', unitsMetric ? 'label_m' : 'label_ft'],
+            ['all', ['==', ['coalesce', ['get', 'tier'], 3], 2], ['>=', ['zoom'], 8.0]],
+            ['get', unitsMetric ? 'label_m' : 'label_ft'],
+            ['all', ['==', ['coalesce', ['get', 'tier'], 3], 3], ['>=', ['zoom'], 10.0]],
+            ['get', unitsMetric ? 'label_m' : 'label_ft'],
+            ''
+          ],
           'text-font': ['Open Sans Bold Italic'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
@@ -3371,7 +3306,18 @@ export default function App() {
     peakLayers.forEach((layerId) => {
       if (map.getLayer(layerId)) {
         map.setLayoutProperty(layerId, 'visibility', visibility);
-        if (layerId.includes('label')) {
+        if (layerId === 'major-peaks-label') {
+          map.setLayoutProperty(layerId, 'text-field', [
+            'case',
+            ['==', ['coalesce', ['get', 'tier'], 3], 1],
+            ['get', unitsMetric ? 'label_m' : 'label_ft'],
+            ['all', ['==', ['coalesce', ['get', 'tier'], 3], 2], ['>=', ['zoom'], 8.0]],
+            ['get', unitsMetric ? 'label_m' : 'label_ft'],
+            ['all', ['==', ['coalesce', ['get', 'tier'], 3], 3], ['>=', ['zoom'], 10.0]],
+            ['get', unitsMetric ? 'label_m' : 'label_ft'],
+            ''
+          ]);
+        } else if (layerId.includes('label')) {
           map.setLayoutProperty(layerId, 'text-field', ['get', unitsMetric ? 'label_m' : 'label_ft']);
         }
       }
@@ -3444,7 +3390,7 @@ export default function App() {
       map.setPaintProperty('selected-resort-label', 'text-color', isDark ? '#FFFFFF' : '#0F172A');
       map.setPaintProperty('selected-resort-label', 'text-halo-color', isDark ? '#0F172A' : '#FAF8F3');
     }
-    ['major-peaks-label-tier1', 'major-peaks-label-tier2', 'major-peaks-label-tier3', 'major-peaks-label'].forEach((layerId) => {
+    ['major-peaks-label', 'major-peaks-label-tier1', 'major-peaks-label-tier2', 'major-peaks-label-tier3'].forEach((layerId) => {
       if (map.getLayer(layerId)) {
         map.setPaintProperty(layerId, 'text-color', isDark ? '#FDE68A' : '#852E1C');
         map.setPaintProperty(layerId, 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');

@@ -21,17 +21,19 @@ export const createMapStyle = (
       maxzoom: 19,
       attribution: 'Esri Satellite',
     },
-    // 2. OpenStreetMap (Clean vector roads, towns & trails)
+    // 2. OpenStreetMap Cartography via CARTO Voyager (No-Labels)
+    // Clean roads, hydrology, valleys & terrain boundaries without baked-in upside-down raster labels
     'osm-tiles': {
       type: 'raster',
       tiles: [
-        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://a.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+        'https://d.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
       ],
       tileSize: 256,
       maxzoom: 19,
-      attribution: 'OpenStreetMap',
+      attribution: '© OpenStreetMap contributors, © CARTO',
     },
     // 3. Esri World Topo Map (Clean contours, summits, elevations & passes from z=0 to z=19)
     'topo-tiles': {

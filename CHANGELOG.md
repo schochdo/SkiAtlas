@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: unify peak labels into single symbol layer for deterministic elevation precedence and switch OSM basemap to CARTO Voyager No-Labels`
+- **What was wrong before**:
+  - In dense mountain clusters (e.g. Grand Teton 13,770' in Wyoming), Grand Teton's summit marker was shown but its text label was suppressed, while adjacent lower peaks (Mount Owen 12,927', Middle Teton 12,805', Teewinot 12,326') were labeled instead.
+  - **Root Cause (Multi-Layer Symbol Collision Inversion)**: Although `major-peaks-label-tier1` was added after `tier2` and `tier3`, MapLibre GL JS isolates distinct style layers into separate symbol buckets in worker memory. Features were sorted by `sortKey` only within each layer's independent bucket. Across different layers and tile boundary traversals, separate buckets caused collision priority inversions where a lower peak in one layer could claim screen space before an adjacent peak in another layer was placed.
+  - Furthermore, raster OpenStreetMap tiles (`osm-tiles`) had street and town names baked directly into the raster PNG pixels. When the camera rotated or pitched in 3D terrain mode, the baked-in raster text rotated upside down, becoming illegible.
+- **Solution**:
+  - **Unified Single Symbol Layer ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+    - Replaced the three separate label layers (`major-peaks-label-tier1/2/3`) with a single unified `major-peaks-label` symbol layer.
+    - Inside a single symbol layer, MapLibre GL JS sorts all features in worker memory via `features.sort((a, b) => a.sortKey - b.sortKey)`.
+    - Configured `symbol-sort-key: ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]]`. Grand Teton (sort key 36,230) is mathematically guaranteed to be sorted before Mount Owen (37,073), Middle Teton (37,195), and Teewinot (37,674). In any collision, Grand Teton is evaluated first and claims the collision box, suppressing subordinate summits.
+    - Preserved 3-tier zoom emergence dynamically via a `case` expression on `text-field`: Tier 1 (Apex Giants) emerges at z6.0+, Tier 2 (Major Summits) at z8.0+, and Tier 3 (Local Alpine Summits) at z10.0+.
+    - Updated reactive visibility and metric/imperial unit toggle effects in `src/App.tsx` to maintain dynamic zoom-tier filtering.
+  - **CARTO Voyager No-Labels Basemap ([`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts))**:
+    - Switched `osm-tiles` raster source to CARTO Voyager No-Labels (`https://{a/b/c/d}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png`).
+    - Eliminates upside-down raster text during 3D camera rotation while preserving high-contrast OpenStreetMap cartography (roads, hydrology, landcover).
+    - All map typography (peaks, ski resorts, cities, international boundaries) is rendered via vector SDF glyphs with `text-rotation-alignment: 'viewport'`, ensuring all labels remain upright, crisp, and legible at any camera bearing and tilt angle.
+
 ### `fix: reconcile coarse arcminute peaks to exact surveyed summits across 480 global peaks`
 - **What was wrong before**:
   - Several prominent peaks (e.g. Fremont Peak in Wyoming's Wind River Range, 13,747', Keeler Needle, Mauna Loa, Galdhøpiggen, Broad Peak, Lhotse) had their markers and labels floating hundreds of meters to nearly a kilometer away on talus scree fields or side slopes rather than on the true rocky summit.
