@@ -6,6 +6,27 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: deduplicate twin peaks and eliminate offset coarse coordinates`
+- **What was wrong before**:
+  - In certain mountain regions, duplicate summits appeared near each other with one marker on the actual physical peak and a duplicate marker sitting nearby on a lower scree slope or ridge.
+  - **Example**: In the Himalayas near Lake Manasarovar, two markers were rendered for *Gurla Mandhata* (25,243'): one correctly placed on the glaciated 7,694 m summit (`peak-74` at `[81.299167, 30.438333]`), and a duplicate marker (`peak-75` at `[81.2833, 30.2833]`) positioned 17.3 km away on a dry brown ridge.
+  - **Root Cause**: Earlier ingestion merged multiple summit catalogs containing name variants (e.g. `Gurla Mandata` vs `Gurla Mandhata`, `Melungtse` vs `Menlungtse`, `Ortler` vs `Cima Ortles`) and coarse arcminute rounded coordinates (e.g. `30° 17' N, 81° 17' E`). During geodetic reconciliation, the accurate coordinate snapped to the high-resolution DEM summit, while the coarse coordinate exceeded the 4 km snapping threshold and remained as an orphaned twin.
+- **Solution**:
+  - Identified and removed 11 duplicate summit records from [`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson):
+    - `peak-75` (duplicate coarse coordinate of `peak-74` Gurla Mandhata)
+    - `peak-87` (duplicate of `peak-86` Melungtse / Menlungtse)
+    - `peak-140` (duplicate of `peak-123` Leo Pargial / Reo pargil)
+    - `peak-2808` (duplicate coarse coordinate of `peak-2828` Cerro Rincón)
+    - `peak-880` (Italian duplicate `Cima Ortles` of `peak-935` `Ortler`)
+    - `peak-415` (duplicate coarse coordinate of `peak-414` Hasan dag)
+    - `peak-1760` (duplicate with erroneous 10,499' elevation of `peak-1940` Mount Tallac 9,734')
+    - `peak-1264` (duplicate of `peak-992` Garsellakopf)
+    - `peak-41` (Margherita, summit duplicate of `peak-7` Mount Stanley)
+    - `peak-929` (massif duplicate of `peak-1252` Dufourspitze)
+    - `peak-2392` (massif duplicate of `peak-2384` South Sister Volcano)
+  - Standardized `peak-74` name and label properties to canonical `Gurla Mandhata`.
+  - Bumped dataset cache buster in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) to `?v=20261106_deduped_peaks`.
+
 ### `fix: suppress labels for untitled trails, lifts, and polygon freeride areas`
 - **What was wrong before**:
   - Unnamed or placeholder infrastructure labeled as "Untitled Lift", "Untitled", or similar placeholder strings appeared on the map, cluttering ski area terrain.
