@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `feat: 3-tier mountain peak hierarchy with high-altitude regional visibility for major summits`
+- **What was wrong before**:
+  - All 2,492 mountain peaks in `major_peaks.geojson` shared a flat `minzoom: 10.0` cutoff.
+  - When flying at high camera elevations (e.g., 40,000–80,000 ft, zoom 6.0–9.9) viewing prominent volcanic massifs and continental giants (such as Mount Wrangell, Mount Sanford, Mount Blackburn in Alaska, or Denali, Mount Rainier, Mont Blanc, Matterhorn), zero peak markers or labels appeared. The user had to descend down to low altitudes (z10.0+) before labels emerged.
+  - A flat cutoff meant either all 2,492 peaks were enabled (flooding dense areas like Colorado with hundreds of 12ers/13ers) or none appeared until low altitude.
+- **Solution**:
+  - **3-Tier Cartographic Mountain Hierarchy ([`scripts/classify_major_peaks.py`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/classify_major_peaks.py))**:
+    - **Tier 1 (Ultra & Iconic Apex Giants, `minzoom: 6.0`)**: 270 famous world massifs, state/regional apex summits, and volcanic giants (Mount Wrangell, Mount Sanford, Mount Blackburn, Denali, Logan, Saint Elias, Rainier, Shasta, Whitney, Elbert, Mont Blanc, Matterhorn, Everest, Fuji, Kilimanjaro, Cook/Aoraki). These emerge at high camera altitudes (z6.0+) with generous collision padding (14px).
+    - **Tier 2 (Major Regional Summits, `minzoom: 8.0`)**: 577 high-prominence crests and high-elevation alpine peaks (Grand Teton, Sneffels, Maroon Bells, Pikes Peak, Titlis, Breithorn). Emerge at mid-altitude views (z8.0+).
+    - **Tier 3 (Local Alpine Summits & Ski Valley Horizons, `minzoom: 10.0`)**: 1,645 local summits and ridge peaks. Emerge when exploring local ski valleys and in-bounds resort terrain (z10.0+).
+  - **Dedicated Map Layers ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx))**:
+    - Created dedicated layer pairs (`major-peaks-marker-tier1/2/3` and `major-peaks-label-tier1/2/3`) filtering by tier.
+    - Synchronized toggle visibility, metric unit conversion, and basemap contrast switching across all three tiers.
+  - Rebuilt [`public/data/major_peaks.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/major_peaks.geojson) and bumped cache query to `v=20261106_hierarchy`.
+
 ### `fix: restore complete international land borders and eliminate erroneous water gaps`
 - **What was wrong before**:
   - The international borders around Serbia (with Hungary, Romania, Bulgaria, North Macedonia, Kosovo, Montenegro, Bosnia, Croatia) were completely missing.

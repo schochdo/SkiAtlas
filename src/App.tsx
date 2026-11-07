@@ -2370,18 +2370,137 @@ export default function App() {
         },
       });
 
-      // 4. Global Major Mountain Summits (Peakfinder Horizon Mode)
+      // 4. Global Major Mountain Summits (Peakfinder Horizon Mode - 3-Tier Cartographic Hierarchy)
       map.addSource('major-peaks-source', {
         type: 'geojson',
         promoteId: 'id',
-        data: getStaticDataUrl('data/major_peaks.geojson'),
+        data: getStaticDataUrl('data/major_peaks.geojson?v=20261106_hierarchy'),
+      });
+
+      // Tier 1 Peaks: Ultra & Iconic Apex Giants (minzoom: 6.0)
+      map.addLayer({
+        id: 'major-peaks-marker-tier1',
+        type: 'circle',
+        source: 'major-peaks-source',
+        minzoom: 6.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 1],
+        layout: {
+          visibility: showPeaks ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            6.0, 2.0,
+            9.0, 3.0,
+            14.0, 4.2,
+          ],
+          'circle-color': '#B84A39',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
       });
 
       map.addLayer({
-        id: 'major-peaks-marker',
+        id: 'major-peaks-label-tier1',
+        type: 'symbol',
+        source: 'major-peaks-source',
+        minzoom: 6.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 1],
+        layout: {
+          'visibility': showPeaks ? 'visible' : 'none',
+          'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000],
+          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
+          'text-font': ['Open Sans Bold Italic'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            6.0, 9.0,
+            9.0, 10.5,
+            12.0, 12.0,
+            15.0, 14.0,
+          ],
+          'text-max-width': 26,
+          'text-offset': [0, -1.2],
+          'text-anchor': 'bottom',
+          'text-letter-spacing': 0.04,
+          'text-keep-upright': true,
+          'text-pitch-alignment': 'viewport',
+          'text-rotation-alignment': 'viewport',
+          'text-padding': 14,
+          'text-optional': true,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Tier 2 Peaks: Major Regional Summits (minzoom: 8.0)
+      map.addLayer({
+        id: 'major-peaks-marker-tier2',
+        type: 'circle',
+        source: 'major-peaks-source',
+        minzoom: 8.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 2],
+        layout: {
+          visibility: showPeaks ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            8.0, 2.0,
+            11.0, 2.8,
+            14.0, 4.0,
+          ],
+          'circle-color': '#B84A39',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      map.addLayer({
+        id: 'major-peaks-label-tier2',
+        type: 'symbol',
+        source: 'major-peaks-source',
+        minzoom: 8.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 2],
+        layout: {
+          'visibility': showPeaks ? 'visible' : 'none',
+          'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000],
+          'text-field': ['get', unitsMetric ? 'label_m' : 'label_ft'],
+          'text-font': ['Open Sans Bold Italic'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            8.0, 9.0,
+            11.0, 10.5,
+            14.0, 12.0,
+          ],
+          'text-max-width': 26,
+          'text-offset': [0, -1.2],
+          'text-anchor': 'bottom',
+          'text-letter-spacing': 0.04,
+          'text-keep-upright': true,
+          'text-pitch-alignment': 'viewport',
+          'text-rotation-alignment': 'viewport',
+          'text-padding': 12,
+          'text-optional': true,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FDE68A' : '#852E1C',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Tier 3 Peaks: Local Alpine Summits & Valley Ridges (minzoom: 10.0)
+      map.addLayer({
+        id: 'major-peaks-marker-tier3',
         type: 'circle',
         source: 'major-peaks-source',
         minzoom: 10.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 3],
         layout: {
           visibility: showPeaks ? 'visible' : 'none',
         },
@@ -2399,10 +2518,11 @@ export default function App() {
       });
 
       map.addLayer({
-        id: 'major-peaks-label',
+        id: 'major-peaks-label-tier3',
         type: 'symbol',
         source: 'major-peaks-source',
         minzoom: 10.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 3],
         layout: {
           'visibility': showPeaks ? 'visible' : 'none',
           'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 1000],
@@ -2421,7 +2541,7 @@ export default function App() {
           'text-keep-upright': true,
           'text-pitch-alignment': 'viewport',
           'text-rotation-alignment': 'viewport',
-          'text-padding': 12,
+          'text-padding': 10,
           'text-optional': true,
         },
         paint: {
@@ -3231,13 +3351,18 @@ export default function App() {
     const map = mapRef.current;
 
     const visibility = showPeaks ? 'visible' : 'none';
-    if (map.getLayer('major-peaks-marker')) {
-      map.setLayoutProperty('major-peaks-marker', 'visibility', visibility);
-    }
-    if (map.getLayer('major-peaks-label')) {
-      map.setLayoutProperty('major-peaks-label', 'visibility', visibility);
-      map.setLayoutProperty('major-peaks-label', 'text-field', ['get', unitsMetric ? 'label_m' : 'label_ft']);
-    }
+    const peakLayers = [
+      'major-peaks-marker-tier1', 'major-peaks-marker-tier2', 'major-peaks-marker-tier3', 'major-peaks-marker',
+      'major-peaks-label-tier1', 'major-peaks-label-tier2', 'major-peaks-label-tier3', 'major-peaks-label'
+    ];
+    peakLayers.forEach((layerId) => {
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, 'visibility', visibility);
+        if (layerId.includes('label')) {
+          map.setLayoutProperty(layerId, 'text-field', ['get', unitsMetric ? 'label_m' : 'label_ft']);
+        }
+      }
+    });
   }, [showPeaks, unitsMetric, mapLoaded]);
 
   /* =========================================================================
@@ -3306,10 +3431,12 @@ export default function App() {
       map.setPaintProperty('selected-resort-label', 'text-color', isDark ? '#FFFFFF' : '#0F172A');
       map.setPaintProperty('selected-resort-label', 'text-halo-color', isDark ? '#0F172A' : '#FAF8F3');
     }
-    if (map.getLayer('major-peaks-label')) {
-      map.setPaintProperty('major-peaks-label', 'text-color', isDark ? '#FDE68A' : '#852E1C');
-      map.setPaintProperty('major-peaks-label', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
-    }
+    ['major-peaks-label-tier1', 'major-peaks-label-tier2', 'major-peaks-label-tier3', 'major-peaks-label'].forEach((layerId) => {
+      if (map.getLayer(layerId)) {
+        map.setPaintProperty(layerId, 'text-color', isDark ? '#FDE68A' : '#852E1C');
+        map.setPaintProperty(layerId, 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+      }
+    });
   }, [showCountryOutlines, basemapMode, mapLoaded]);
 
   /* =========================================================================
