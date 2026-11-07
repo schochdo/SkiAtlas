@@ -4,6 +4,27 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-11-06
+
+### `feat: upright city label orientation and 4-tier cartographic population hierarchy`
+- **What was wrong before**:
+  - City labels were configured with `'text-rotation-alignment': 'map'` and `'text-pitch-alignment': 'map'`. When rotating the map or pitching in 3D terrain, city names rotated along with the map ground plane, causing labels to render sideways or completely upside-down relative to the viewer.
+  - Many major world cities and regional ski gateways were missing entirely from the hardcoded 180-entry array, making continental and regional navigation difficult.
+  - Cities lacked a standard cartographic population hierarchy; all available cities competed under flat zoom thresholds regardless of whether they were a 10M+ metropolis or a small hub.
+- **Solution**:
+  - **Always Right-Side Up Billboarding (`'viewport'` alignment)**:
+    - Updated all city layers (`geo-reference-megacities`, `geo-reference-major-cities`, `geo-reference-regional-cities`, `geo-reference-alpine-hubs`) in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) with `'text-rotation-alignment': 'viewport'`, `'text-pitch-alignment': 'viewport'`, and `'text-keep-upright': true`.
+    - City labels now billboard directly toward the viewer, remaining strictly horizontal and right-side up regardless of camera azimuth rotation or steep 3D terrain pitch.
+  - **4-Tier Cartographic Population Hierarchy (5,646 world cities & hubs)**:
+    - Built [`data_pipeline/build_geo_reference.py`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/data_pipeline/build_geo_reference.py) to extract and standardize Natural Earth 10m populated places combined with curated ski hubs into [`public/data/geo_reference.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/geo_reference.geojson) (1.4 MB static asset, saving ~25 KB of JavaScript bundle size):
+      - **Tier 1 (Megacities & Global Hubs, 1M+ or national capitals)**: `minzoom: 3.0`, 10–15.5px typography, visible when zoomed out across continents.
+      - **Tier 2 (Major Cities & Regional Capitals, 250k–1M)**: `minzoom: 5.0`, 9–13.5px typography, introducing regional anchors like Salt Lake City, Calgary, Reno, Boise, Innsbruck, and Salzburg.
+      - **Tier 3 (Regional Cities & Gateways, 50k–250k)**: `minzoom: 7.0`, 9–12px typography, surfacing mountain gateway centers like Boulder, Bozeman, Missoula, Bend, Annecy, and Bolzano.
+      - **Tier 4 (Alpine Valley Hubs & Ski Towns)**: `minzoom: 6.8`, 9.5–13.5px distinct typography, preserving iconic ski bases like Chamonix, Zermatt, Aspen, Vail, Jackson, Whistler, Banff, and Niseko.
+    - Added basemap contrast styling in the `useEffect` watcher for clean legibility against both high-resolution satellite imagery and light vector basemaps.
+
+---
+
 ## 2026-11-03
 
 ### `fix: replace hijacked casino domain for Wallowa Lake Tramway`

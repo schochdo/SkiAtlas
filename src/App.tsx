@@ -87,7 +87,6 @@ import {
 } from './services/weather';
 import { GLOBAL_SKI_ATLAS } from './data/resorts';
 import { HELI_CAT_OPERATIONS } from './data/heliCat';
-import { GEOGRAPHIC_REFERENCE_GEOJSON } from './data/geographicReference';
 
 export {
   formatSnow,
@@ -1806,36 +1805,73 @@ export default function App() {
         },
       });
 
-      // Geographic Reference: Major World Metros, Gateways & Alpine Valley Hubs
+      // Geographic Reference: Comprehensive World Cities & Alpine Valley Hubs (4-Tier Cartographic Hierarchy)
       map.addSource('geo-reference-source', {
         type: 'geojson',
-        data: GEOGRAPHIC_REFERENCE_GEOJSON as any,
+        data: getStaticDataUrl('data/geo_reference.geojson?v=20261106_hierarchy'),
       });
 
-      // Tier 1 & 2: Major World Cities, National Capitals & Regional Metros (z3.5+)
+      // Tier 1: Megacities & World Metros (Pop 1M+ or national capitals, z3.0+)
       map.addLayer({
-        id: 'geo-reference-cities',
+        id: 'geo-reference-megacities',
         type: 'symbol',
         source: 'geo-reference-source',
-        filter: ['in', ['get', 'kind'], ['literal', ['major_city', 'gateway']]],
-        minzoom: 3.5,
+        filter: ['==', ['get', 'tier'], 1],
+        minzoom: 3.0,
         maxzoom: 13.5,
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
-          'symbol-sort-key': ['get', 'importance'],
+          'symbol-sort-key': 1,
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            3.5, 10,
-            6.0, 12,
-            9.0, 14,
-            12.0, 16,
+            3.0, 9.5,
+            6.0, 11.5,
+            9.0, 13.5,
+            12.0, 15.5,
           ],
-          'text-offset': [0, 0.4],
+          'text-letter-spacing': 0.04,
+          'text-offset': [0, 0.3],
           'text-anchor': 'top',
-          'text-rotation-alignment': 'map',
-          'text-pitch-alignment': 'map',
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
+          'text-allow-overlap': false,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#0F172A',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Tier 2: Major Cities & Regional Capitals (Pop 250k - 1M, z5.0+)
+      map.addLayer({
+        id: 'geo-reference-major-cities',
+        type: 'symbol',
+        source: 'geo-reference-source',
+        filter: ['==', ['get', 'tier'], 2],
+        minzoom: 5.0,
+        maxzoom: 13.5,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'symbol-sort-key': 2,
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            5.0, 9.0,
+            7.5, 10.5,
+            10.0, 12.0,
+            13.0, 13.5,
+          ],
+          'text-letter-spacing': 0.02,
+          'text-offset': [0, 0.3],
+          'text-anchor': 'top',
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
           'text-keep-upright': true,
           'text-allow-overlap': false,
         },
@@ -1847,36 +1883,70 @@ export default function App() {
         },
       });
 
-      // Tier 3: Alpine Valley Hubs & Ski Towns (z7.0+ only, preventing village clutter over major metros)
+      // Tier 3: Regional Cities & Gateways (Pop 50k - 250k, z7.0+)
       map.addLayer({
-        id: 'geo-reference-alpine-hubs',
+        id: 'geo-reference-regional-cities',
         type: 'symbol',
         source: 'geo-reference-source',
-        filter: ['==', ['get', 'kind'], 'alpine_hub'],
+        filter: ['==', ['get', 'tier'], 3],
         minzoom: 7.0,
         maxzoom: 13.5,
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
-          'symbol-sort-key': ['get', 'importance'],
+          'symbol-sort-key': 3,
           'text-field': ['get', 'name'],
           'text-font': ['Open Sans Regular'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            7.0, 10.5,
-            10.0, 12.5,
-            13.0, 14.5,
+            7.0, 9.0,
+            9.5, 10.5,
+            12.0, 12.0,
           ],
-          'text-offset': [0, 0.4],
+          'text-offset': [0, 0.3],
           'text-anchor': 'top',
-          'text-rotation-alignment': 'map',
-          'text-pitch-alignment': 'map',
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
           'text-keep-upright': true,
           'text-allow-overlap': false,
         },
         paint: {
-          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#334155',
+          'text-color': basemapMode === 'satellite' ? '#F1F5F9' : '#334155',
           'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
           'text-halo-width': 2.0,
+          'text-halo-blur': 0.5,
+        },
+      });
+
+      // Tier 4: Alpine Valley Hubs & Mountain Towns (Iconic ski resort bases, z6.8+)
+      map.addLayer({
+        id: 'geo-reference-alpine-hubs',
+        type: 'symbol',
+        source: 'geo-reference-source',
+        filter: ['==', ['get', 'tier'], 4],
+        minzoom: 6.8,
+        maxzoom: 13.5,
+        layout: {
+          visibility: showCountryOutlines ? 'visible' : 'none',
+          'symbol-sort-key': 4,
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Regular'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            6.8, 9.5,
+            9.5, 11.5,
+            13.0, 13.5,
+          ],
+          'text-offset': [0, 0.3],
+          'text-anchor': 'top',
+          'text-rotation-alignment': 'viewport',
+          'text-pitch-alignment': 'viewport',
+          'text-keep-upright': true,
+          'text-allow-overlap': false,
+        },
+        paint: {
+          'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#475569',
+          'text-halo-color': basemapMode === 'satellite' ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.2,
           'text-halo-blur': 0.5,
         },
       });
@@ -3186,14 +3256,24 @@ export default function App() {
       map.setPaintProperty('world-country-border-labels-right', 'text-color', isDark ? '#FAF8F3' : '#1E293B');
       map.setPaintProperty('world-country-border-labels-right', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
-    if (map.getLayer('geo-reference-cities')) {
-      map.setLayoutProperty('geo-reference-cities', 'visibility', refVisibility);
-      map.setPaintProperty('geo-reference-cities', 'text-color', isDark ? '#FAF8F3' : '#1E293B');
-      map.setPaintProperty('geo-reference-cities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    if (map.getLayer('geo-reference-megacities')) {
+      map.setLayoutProperty('geo-reference-megacities', 'visibility', refVisibility);
+      map.setPaintProperty('geo-reference-megacities', 'text-color', isDark ? '#FAF8F3' : '#0F172A');
+      map.setPaintProperty('geo-reference-megacities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    }
+    if (map.getLayer('geo-reference-major-cities')) {
+      map.setLayoutProperty('geo-reference-major-cities', 'visibility', refVisibility);
+      map.setPaintProperty('geo-reference-major-cities', 'text-color', isDark ? '#FAF8F3' : '#1E293B');
+      map.setPaintProperty('geo-reference-major-cities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    }
+    if (map.getLayer('geo-reference-regional-cities')) {
+      map.setLayoutProperty('geo-reference-regional-cities', 'visibility', refVisibility);
+      map.setPaintProperty('geo-reference-regional-cities', 'text-color', isDark ? '#F1F5F9' : '#334155');
+      map.setPaintProperty('geo-reference-regional-cities', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
     if (map.getLayer('geo-reference-alpine-hubs')) {
       map.setLayoutProperty('geo-reference-alpine-hubs', 'visibility', refVisibility);
-      map.setPaintProperty('geo-reference-alpine-hubs', 'text-color', isDark ? '#FAF8F3' : '#334155');
+      map.setPaintProperty('geo-reference-alpine-hubs', 'text-color', isDark ? '#FAF8F3' : '#475569');
       map.setPaintProperty('geo-reference-alpine-hubs', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
     }
     if (map.getLayer('selected-resort-label')) {
