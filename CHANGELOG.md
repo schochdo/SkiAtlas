@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: use top-level step expression for zoom-based peak text-field evaluation`
+- **What was wrong before**:
+  - After unifying peak labels into a single layer, all peak labels failed to render on the map.
+  - **Root Cause**: In the MapLibre GL style specification, a `"zoom"` expression cannot be nested arbitrarily inside `case` or `all` operators within layout properties. Nesting `['>=', ['zoom'], 8.0]` inside `case` produced the validation error: `"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression`, causing MapLibre to reject the entire layer.
+- **Solution**:
+  - Restructured `text-field` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) using a top-level `['step', ['zoom'], ...]` expression:
+    - Below zoom 8.0: Only Tier 1 peaks evaluate to their label (subordinates evaluate to `""`).
+    - Zoom 8.0 to 10.0: Tier 1 and Tier 2 peaks evaluate to their label.
+    - Zoom 10.0+: All peak tiers (1, 2, 3) evaluate to their label.
+  - Verified with `@maplibre/maplibre-gl-style-spec` that the layer specification validates with zero errors and evaluates correctly across all tiers and zoom levels.
+
 ### `fix: revert osm-tiles to standard OpenStreetMap to avoid CARTO API key requirement`
 - **What was changed**:
   - Reverted `osm-tiles` in [`src/utils/mapStyles.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/mapStyles.ts) back to standard public OpenStreetMap tiles (`https://{a/b/c}.tile.openstreetmap.org/{z}/{x}/{y}.png`).

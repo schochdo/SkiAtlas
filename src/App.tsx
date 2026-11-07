@@ -2465,14 +2465,12 @@ export default function App() {
           'visibility': showPeaks ? 'visible' : 'none',
           'symbol-sort-key': ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]],
           'text-field': [
-            'case',
-            ['==', ['coalesce', ['get', 'tier'], 3], 1],
+            'step', ['zoom'],
+            ['case', ['==', ['coalesce', ['get', 'tier'], 3], 1], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
+            8.0,
+            ['case', ['<=', ['coalesce', ['get', 'tier'], 3], 2], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
+            10.0,
             ['get', unitsMetric ? 'label_m' : 'label_ft'],
-            ['all', ['==', ['coalesce', ['get', 'tier'], 3], 2], ['>=', ['zoom'], 8.0]],
-            ['get', unitsMetric ? 'label_m' : 'label_ft'],
-            ['all', ['==', ['coalesce', ['get', 'tier'], 3], 3], ['>=', ['zoom'], 10.0]],
-            ['get', unitsMetric ? 'label_m' : 'label_ft'],
-            ''
           ],
           'text-font': ['Open Sans Bold Italic'],
           'text-size': [
@@ -3308,14 +3306,12 @@ export default function App() {
         map.setLayoutProperty(layerId, 'visibility', visibility);
         if (layerId === 'major-peaks-label') {
           map.setLayoutProperty(layerId, 'text-field', [
-            'case',
-            ['==', ['coalesce', ['get', 'tier'], 3], 1],
+            'step', ['zoom'],
+            ['case', ['==', ['coalesce', ['get', 'tier'], 3], 1], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
+            8.0,
+            ['case', ['<=', ['coalesce', ['get', 'tier'], 3], 2], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
+            10.0,
             ['get', unitsMetric ? 'label_m' : 'label_ft'],
-            ['all', ['==', ['coalesce', ['get', 'tier'], 3], 2], ['>=', ['zoom'], 8.0]],
-            ['get', unitsMetric ? 'label_m' : 'label_ft'],
-            ['all', ['==', ['coalesce', ['get', 'tier'], 3], 3], ['>=', ['zoom'], 10.0]],
-            ['get', unitsMetric ? 'label_m' : 'label_ft'],
-            ''
           ]);
         } else if (layerId.includes('label')) {
           map.setLayoutProperty(layerId, 'text-field', ['get', unitsMetric ? 'label_m' : 'label_ft']);
