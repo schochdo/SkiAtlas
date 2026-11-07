@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: restore complete international land borders and eliminate erroneous water gaps`
+- **What was wrong before**:
+  - The international borders around Serbia (with Hungary, Romania, Bulgaria, North Macedonia, Kosovo, Montenegro, Bosnia, Croatia) were completely missing.
+  - The Norway-Sweden border abruptly stopped at Lake Limingen (~65°N), and northern Finland/Russia borders were truncated.
+  - Borders crossing inland water (such as the Scheldt estuary in Belgium) were broken into disconnected segments with visible gaps.
+  - **Root Cause #1 (Strict Name Whitelist Rejection)**: An earlier script cross-referenced country names against Natural Earth (`ne_10m_admin_0_boundary_lines_land`) via strict string matching. Because Natural Earth used `Republic of Serbia` while OpenStreetMap used `Serbia`, the script misidentified all 8 Serbian borders as "pure maritime water" and deleted them entirely.
+  - **Root Cause #2 (Antimeridian Ray-Casting Polygon Bug)**: An earlier custom ray-casting point-in-polygon implementation failed on the Eurasian land polygon because it wraps the antimeridian (-180° / +180°). Every point in Scandinavia, Finland, and northern Russia above 65°N produced an even number of ray crossings, incorrectly classifying ~800 km of real alpine land borders as "ocean water".
+  - **Root Cause #3 (Interior Water Chopping)**: An earlier script evaluated point-by-point land status across the entire length of borders, severing real land boundaries whenever they crossed an inland lake, river, or estuary.
+- **Solution**:
+  - **Built Dedicated Pipeline ([`scripts/build_world_boundaries.py`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/build_world_boundaries.py))**:
+    - Extracted authentic OpenStreetMap continuous vector line geometries from baseline data.
+    - **Enforced Strict Interior Continuity**: Real international land borders are never severed across inland terrain, lakes, or rivers.
+    - **Targeted Pure Maritime Filtering**: Filtered out only the 44 pure ocean/maritime pairs between non-land-bordering nations (e.g. France/UK, Russia/US, Japan/Russia, China/Taiwan, Caribbean waters).
+    - **True Coastal Terminal Trimming**: Trimmed only actual offshore ocean tails extending into open seas beyond the coastline (Bay of Biscay for France/Spain, Svinesund for Norway/Sweden, Menton for France/Italy, De Panne for Belgium/France, Zwin for Netherlands/Belgium, Flensburg for Denmark/Germany, Point Roberts for US/Canada).
+    - **Topological Junction Snapping**: Snapped 149 true country tripoints and 57 multi-line junction clusters seamlessly with zero offset stubs.
+  - Rebuilt [`public/data/world_boundaries.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/world_boundaries.geojson) (544 country features, 581 state features) and bumped the asset cache query in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+
 ### `feat: establish distinct typography and color hierarchy for peaks, resorts, and towns`
 - **What was wrong before**:
   - Mountain peaks, ski resorts, and towns all used the identical font (`Open Sans Regular`) and nearly identical dark gray typography (`#1C1B18`) with light cream halos (`#FAF8F3`).

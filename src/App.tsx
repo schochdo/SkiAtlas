@@ -1628,7 +1628,7 @@ export default function App() {
       // World Country & Administrative Boundary Lines (Crisp vector lines, zero raster blur)
       map.addSource('world-boundaries-source', {
         type: 'geojson',
-        data: getStaticDataUrl('data/world_boundaries.geojson?v=20261101_land'),
+        data: getStaticDataUrl('data/world_boundaries.geojson?v=20261106_restored_borders'),
       });
 
       // Country International Borders (High-resolution 10m Natural Earth vectors, stitched & smoothed)
