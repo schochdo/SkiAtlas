@@ -4,6 +4,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-11-08
+
+### `docs: document data provenance in DATA_SOURCES.md and add on-demand sources modal`
+- **What was changed**:
+  - **Comprehensive Data Documentation (`DATA_SOURCES.md`)**: Created an authoritative specification of all 7 foundational datasets powering SkiAtlas: 3D Terrain (Mapterhorn DEM), Satellite Orthophotos (Esri & EOX Sentinel-2), Ski Areas & Trails (OpenSkiData & OSM), Historic Fire Lookouts (NHLR & FFLA), Mountain Summits (USGS GNIS & Natural Earth), International Boundaries (Natural Earth 10m Land Mesh), and Alpine Snowfall (Open-Meteo Ensemble). Details providers, URLs, resolutions, calibrations, and verification standards.
+  - **Zero-Clutter In-App Modal (`AttributionBadge.tsx`)**: Upgraded the quiet `20×20px` `ⓘ` button in the lower corner of the map to open an on-demand, editorial "Cartographic Provenance & Sources" modal with domain cards for each dataset. During normal exploration, the screen remains 100% clean and uncluttered.
+
 ## 2026-11-07
 
 ### `fix: ensure exactly one day is labeled 'Today' in 7-day snowfall forecast`
