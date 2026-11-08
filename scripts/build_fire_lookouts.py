@@ -14,6 +14,7 @@ Deduplicates points, validates coordinates, fills missing elevations via DEM API
 and outputs a clean, lean GeoJSON file in public/data/fire_lookouts.geojson.
 """
 
+import html
 import json
 import math
 import os
@@ -25,7 +26,10 @@ import urllib.request
 def clean_name(raw_name):
     if not raw_name:
         return "Fire Lookout"
-    name = raw_name.strip()
+    name = html.unescape(raw_name).strip()
+    name = name.replace('\u014c', 'O').replace('Ō', 'O')
+    name = name.replace('&quot;', '').replace('\"', '')
+
     # Normalize common abbreviations
     name = re.sub(r'\bMTN\b', 'Mountain', name, flags=re.I)
     name = re.sub(r'\bPK\b', 'Peak', name, flags=re.I)
@@ -34,14 +38,32 @@ def clean_name(raw_name):
     name = re.sub(r'\bNF\b', 'National Forest', name, flags=re.I)
     name = re.sub(r'\bLO\b', 'Lookout', name, flags=re.I)
     name = re.sub(r'\bTWR\b', 'Tower', name, flags=re.I)
+
+    # Strip parentheticals, e.g. (Payette National Forest), (Lookout Site), (1921)
+    name = re.sub(r'\s*\([^)]*\)\s*', ' ', name).strip()
+
+    # Strip trailing dash metadata
+    name = re.sub(r'\s+[-–—]\s+([A-Za-z\s]+National Forest).*$', '', name, flags=re.I).strip()
+    name = re.sub(r'\s+[-–—]\s+(Inactive|Aws Post|Norcross Station|Lookout Site).*$', '', name, flags=re.I).strip()
+
     # Title case
     words = [w.capitalize() if w.lower() not in ['of', 'and', 'the', 'in', 'on', 'at'] else w.lower() for w in name.split()]
     title = " ".join(words)
     if title:
         title = title[0].upper() + title[1:]
+
     # Ensure "Lookout" or "Fire Tower" suffix if bare mountain name
-    if not any(k in title.lower() for k in ['lookout', 'tower', 'cabin', 'station']):
+    if not re.search(r'\b(lookout|tower|firetower|cabin)\b', title, flags=re.I):
         title += " Lookout"
+
+    # Normalize spaces
+    title = re.sub(r'\s+', ' ', title).strip()
+
+    # Celtic/Irish capitalization: O'Leary, McCormick
+    title = re.sub(r"\bO'([a-z])", lambda m: f"O'{m.group(1).upper()}", title)
+    title = re.sub(r"\bMc([a-z])", lambda m: f"Mc{m.group(1).upper()}", title)
+    title = re.sub(r"\bSt\.\s*([a-z])", lambda m: f"St. {m.group(1).upper()}", title)
+
     return title
 
 def haversine_km(lat1, lon1, lat2, lon2):

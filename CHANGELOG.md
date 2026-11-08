@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: sanitize fire lookout names, decode HTML entities, and isolate agency metadata`
+- **What was wrong before**:
+  - Lookout names contained parenthetical bureaucratic metadata, county annotations, and national forest labels (e.g. `Pilot Peak Lookout (payette National Forest) · 7,979'`, `Bald Mountain Lookout (cal Fire - Butte County)`, `Lookout Mountain Lookout (boundary County)`), cluttering map labels and popup titles.
+  - HTML entities were left raw and unescaped from the registry scrape (e.g. `O&#39;leary Lookout · 8,888'`, `Ben&#39;s Knob Fire Tower`, `Stony Mountain &quot;moon&quot; Lookout`).
+  - Celtic/Irish names had lowercase letters after apostrophes and prefixes (e.g. `O'leary`, `O'bannon`, `Mccormick's`, `Mccool`).
+  - Misread characters like `Ō` with macrons (e.g. `Bar Ōf Ranch Tower`) and underscores remained in names.
+  - Generic non-specific category relics (`lookout-666` "Fire Tower" and `lookout-1129` "Lookouts") and duplicate records were present.
+- **Root Cause**:
+  - The scraper pipeline passed raw registry string fields directly into `clean_name` without running HTML entity decoding, without stripping parentheticals/trailing dash annotations, and used standard `.capitalize()` which forced lower-case characters after internal apostrophes.
+- **Solution**:
+  - **Lookout Name Isolation**: Stripped all parenthetical additions and trailing dash annotations across all 2,149 lookouts so only the authentic lookout name is displayed (e.g. `Pilot Peak Lookout`, `Bald Mountain Lookout`, `Backbone Lookout`).
+  - **Agency Attribute Enrichment**: Transferred extracted national forest and county metadata into the structured `agency` field (e.g. `USFS Payette NF`, `USFS Stanislaus NF`, `CAL FIRE`, `USFS Eldorado NF`), keeping map labels concise while displaying authentic managing agency details in the popup footer.
+  - **HTML Entity & Character Sanitation**: Decoded all HTML entities (`&#39;` -> `'`, `&quot;` -> stripped) and sanitized character corruptions (`Ō` -> `O`, quotes and underscores stripped).
+  - **Celtic/Irish Capitalization**: Applied title-casing rules for names with apostrophes and Celtic prefixes (`O'Leary`, `O'Bannon`, `O'Haco`, `McCormick's`, `McGuire`, `McCool`).
+  - **Purged Relics & Cache Busting**: Removed generic category relics and duplicate points, updated [`scripts/build_fire_lookouts.py`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/build_fire_lookouts.py), and incremented the client GeoJSON cache key to `v=20261108_v2` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+
+
 ### `fix: eliminate camera navigation jump on flight release and fix keyboard zoom freeze`
 - **What was wrong before**:
   - **End-of-flight camera jump**: After flying with keyboard navigation controls (Arrow keys), releasing the keys caused the camera to jerk or jump abruptly to a different focal distance or altitude rather than coming to a seamless, stationary stop.

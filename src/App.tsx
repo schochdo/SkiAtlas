@@ -627,7 +627,7 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v1'))
+    fetch(getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v2'))
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!cancelled && data && data.features) {
@@ -2887,7 +2887,7 @@ export default function App() {
       map.addSource('fire-lookouts-source', {
         type: 'geojson',
         promoteId: 'id',
-        data: getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v1'),
+        data: getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v2'),
       });
 
       // Markers (Tier 3 -> Tier 2 -> Tier 1 so Apex giants render on top)
