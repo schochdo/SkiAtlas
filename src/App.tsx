@@ -4192,30 +4192,7 @@ export default function App() {
         animationFrameId = null;
       }
       lastTimestamp = null;
-      if (isElevationHeld && mapRef.current) {
-        isElevationHeld = false;
-        try {
-          const map = mapRef.current;
-          const terrain = (map as any).terrain;
-          const cam = (map as any)._camera;
-
-          if (cam?.applyTransformChange && terrain) {
-            cam.applyTransformChange((transform: any) => {
-              if (cam.putCenterBackOnTerrain) {
-                cam.putCenterBackOnTerrain(transform, terrain, false);
-              } else if (transform.recalculateZoomAndCenter) {
-                transform.recalculateZoomAndCenter(terrain);
-              }
-            });
-          }
-
-          map.setCenterClampedToGround(true);
-        } catch (_) {
-          try {
-            mapRef.current?.setCenterClampedToGround(true);
-          } catch (_) {}
-        }
-      }
+      isElevationHeld = false;
     };
 
     const flightStep = (timestamp: number) => {

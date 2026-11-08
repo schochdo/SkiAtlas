@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: eliminate camera jump upon releasing arrow key navigation`
+- **What was wrong before**:
+  - When panning around with keyboard arrow keys in rugged mountain terrain (such as around Mount McGuire), the camera flew at a steady, level cruising altitude, but when releasing the arrow key, the camera violently jumped or snapped to a different zoom level and center position.
+- **Root Cause**:
+  - In `stopFlight` inside [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), whenever key flight stopped, an elevation-recovery block called `cam.applyTransformChange(tr => cam.putCenterBackOnTerrain(tr, terrain, false))` and `map.setCenterClampedToGround(true)`.
+  - In MapLibre 5, `putCenterBackOnTerrain(tr, terrain, false)` invokes `transform.recalculateZoomAndCenter(terrain)`. In steep 3D terrain with 4,000–5,000 ft vertical relief (canyons vs. peaks), casting a ray from the camera through the focal center onto a distant slope or valley recalculated the camera's zoom and center coordinates, while `setCenterClampedToGround(true)` snapped the transform's elevation to the newly sampled DEM height on the next render frame. This caused a massive visual kick the instant an arrow key was released.
+- **Solution**:
+  - **Removed Jump-Inducing Post-Flight Transform**: Simplified `stopFlight` to halt the animation loop and clear key state without invoking `putCenterBackOnTerrain` or re-enabling `centerClampedToGround(true)`.
+  - The camera now halts exactly where the user releases the arrow key, maintaining its identical physical 3D eye position, altitude, pitch, bearing, and zoom with zero jumping.
+
+
 ### `fix: purge floating ocean border and enrich nationwide fire lookout registry with authentic agencies and statuses`
 - **What was wrong before**:
   - **Floating Ocean Border**: An isolated 9-point curved boundary line was floating in the Atlantic ocean off Bar Harbor, Maine (`lon: -67.30` to `-67.09`, `lat: 44.36` to `44.30`). This was an orphaned maritime delimitation arc (1984 ICJ Gulf of Maine case) disconnected from any terrestrial borders, creating cartographic noise.
