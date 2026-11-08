@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: eliminate popup footer text truncation, add historic ruins badge, and reconcile Leon Peak`
+- **What was wrong before**:
+  - In fire lookout map inspection popups, the agency and state text in the footer row was getting cut off with an ellipsis (e.g. `Historic Registry (NHLR) · ...`), hiding the state code and managing jurisdiction.
+  - On satellite imagery, Leon Peak Lookout showed a bare rocky summit with no standing tower, leaving users wondering where the lookout was. The database listed its status as "Standing" rather than historical stone/log ruins.
+  - Lookouts with non-standing operational statuses (such as `Ruins` or `Abandoned`) rendered without any status indicator, leaving users confused when visiting unstaffed or foundation sites.
+- **Root Cause**:
+  - The popup footer agency span had hardcoded inline styles `max-width: 170px`, `overflow: hidden`, `text-overflow: ellipsis`, and `white-space: nowrap`, while MapLibre's default popup container capped width at 240px.
+  - Leon Peak Lookout was a low 10x10 ft rustic log-and-stone cabin built in 1911 by early Forest Service personnel that was abandoned in 1916 due to frequent, violent lightning strikes on the exposed 11,236' summit. Over a century of weather reduced it to historic foundation remnants.
+- **Solution**:
+  - **Eliminated Footer Truncation**: Expanded popup container width to `maxWidth: '340px'` in MapLibre options and CSS (`min-width: 220px; max-width: 320px;` in HTML), and removed `max-width: 170px` / `text-overflow: ellipsis` / `white-space: nowrap` from the agency span so text fits on a single line or wraps gracefully without truncation.
+  - **Historic Ruins & Abandoned Badges**: Added dedicated status pills in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx): `Historic Ruins` (stone/slate pill for foundation and remnant sites) and `Abandoned Tower` (soft amber pill for decommissioned towers).
+  - **Leon Peak Reconciled**: Updated Leon Peak Lookout in [`public/data/fire_lookouts.geojson`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/fire_lookouts.geojson) to its authentic surveyed benchmark elevation **$11,236'$** ($3,425\text{ m}$), assigned managing agency **`USFS Grand Mesa NF`**, and set status to **`Historic Ruins`**.
+  - **Colorado Inventory Polish**: Upgraded agencies and statuses across Colorado towers (Devil's Head, Fairview Peak, Hahns Peak, Mesa Verde Park Point, Shadow Mountain).
+
+
 ### `fix: sanitize fire lookout names, decode HTML entities, and isolate agency metadata`
 - **What was wrong before**:
   - Lookout names contained parenthetical bureaucratic metadata, county annotations, and national forest labels (e.g. `Pilot Peak Lookout (payette National Forest) · 7,979'`, `Bald Mountain Lookout (cal Fire - Butte County)`, `Lookout Mountain Lookout (boundary County)`), cluttering map labels and popup titles.

@@ -627,7 +627,7 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v2'))
+    fetch(getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v3'))
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!cancelled && data && data.features) {
@@ -698,17 +698,31 @@ export default function App() {
             <span style="font-size: 8px;">⌂</span> Cabin Rental
           </span>
         </div>`;
-    } else if (status === 'historic' || status === 'historical') {
+    } else if (status.includes('ruin') || status.includes('foundation') || status.includes('remnant')) {
+      statusBadge = `
+        <div style="margin-top: 4px; margin-bottom: 2px;">
+          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #57534E; background: #F5F5F4; border: 1px solid #D6D3D1; padding: 1.5px 6px; border-radius: 3px;">
+            Historic Ruins
+          </span>
+        </div>`;
+    } else if (status === 'historic' || status === 'historical' || status === 'retired') {
       statusBadge = `
         <div style="margin-top: 4px; margin-bottom: 2px;">
           <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #78350F; background: #FEF3C7; border: 1px solid #FDE68A; padding: 1.5px 6px; border-radius: 3px;">
             Historic Site
           </span>
         </div>`;
+    } else if (status === 'abandoned' || status === 'unstaffed') {
+      statusBadge = `
+        <div style="margin-top: 4px; margin-bottom: 2px;">
+          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #713F12; background: #FEF9C3; border: 1px solid #FEF08A; padding: 1.5px 6px; border-radius: 3px;">
+            Abandoned Tower
+          </span>
+        </div>`;
     }
 
     return `
-      <div style="font-family: system-ui, -apple-system, sans-serif; padding: 11px 14px 10px; min-width: 200px; max-width: 280px; background: #FAF8F3; color: #1C1B18; border-radius: 6px; position: relative; box-sizing: border-box;">
+      <div style="font-family: system-ui, -apple-system, sans-serif; padding: 11px 14px 10px; min-width: 220px; max-width: 320px; background: #FAF8F3; color: #1C1B18; border-radius: 6px; position: relative; box-sizing: border-box;">
         <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #D96B27; margin-bottom: 4px; padding-right: 28px; display: flex; align-items: center; gap: 5px;">
           <span style="font-size: 12px; line-height: 1;">⌂</span>
           <span>Fire Lookout</span>
@@ -717,9 +731,9 @@ export default function App() {
           ${name}
         </div>
         ${statusBadge}
-        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 11px; padding-top: 7px; margin-top: 6px; border-top: 1px solid #EAE5D9;">
-          <span style="font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; color: #1C1B18; white-space: nowrap;">${elev}</span>
-          <span style="font-size: 10.5px; color: #736E67; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;" title="${displayAgency}${stateSuffix}">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 11px; padding-top: 7px; margin-top: 6px; border-top: 1px solid #EAE5D9;">
+          <span style="font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; color: #1C1B18; white-space: nowrap; flex-shrink: 0;">${elev}</span>
+          <span style="font-size: 10.5px; color: #736E67; text-align: right; line-height: 1.35; white-space: normal; flex-grow: 1;">
             ${displayAgency}${stateSuffix}
           </span>
         </div>
@@ -768,6 +782,7 @@ export default function App() {
       closeButton: true,
       closeOnClick: false,
       offset: [0, -12],
+      maxWidth: '340px',
       className: 'lookout-editorial-popup',
     })
       .setLngLat(lookout.coordinates)
@@ -2887,7 +2902,7 @@ export default function App() {
       map.addSource('fire-lookouts-source', {
         type: 'geojson',
         promoteId: 'id',
-        data: getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v2'),
+        data: getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v3'),
       });
 
       // Markers (Tier 3 -> Tier 2 -> Tier 1 so Apex giants render on top)
@@ -3118,6 +3133,7 @@ export default function App() {
           closeButton: true,
           closeOnClick: false,
           offset: [0, -12],
+          maxWidth: '340px',
           className: 'lookout-editorial-popup',
         })
           .setLngLat(coords)
