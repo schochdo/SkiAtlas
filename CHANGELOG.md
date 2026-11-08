@@ -6,6 +6,38 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `fix: snap Cerro El Plomo and companion peaks to physical topographic summit apexes`
+- **What was wrong before**:
+  - The map label and marker for **El Plomo** (`peak-2873`, 17,815' / 5,430m) appeared 3.76 km southwest of its actual mountain summit, situated down in a brown scree valley at an elevation of only 2,709m instead of on the snow-covered peak apex.
+  - Companion Andean peaks (Cerro Cuerno, Cerro El Plata, Volcan Lanín, Lascar, Paine Grande) and selected international peaks (Cima dei Preti, Monte Maggiorasca, Col Nudo, Sveti Jure, Golyam Perelik, Mount Arrowsmith) also inherited coarse or swapped arcminute coordinates from early seed data.
+- **Root Cause**:
+  - `peak-2873` had seed coordinates truncated to coarse whole arcminutes (`-70° 14', -33° 16'` -> `[-70.2333, -33.2667]`).
+  - In `scripts/definitive_peak_reconcile.py`, missing DEM tiles were skipped if they were not already present on disk in `/tmp/mapterhorn_cache`, preventing un-cached peaks from undergoing automated high-point snapping.
+- **What changed**:
+  - **Cerro El Plomo Snapped to 30m DEM Summit Apex**:
+    - Reconciled `peak-2873` to `[-70.214138, -33.236821]`, placing the marker directly on the true summit pyramid apex at a verified 30m Copernicus / Mapterhorn DEM elevation of 5,437.0m (17,838 ft).
+  - **Global Ground-Truth Corrections in `scripts/definitive_peak_reconcile.py`**:
+    - Added on-demand tile caching to `get_tile()` in `scripts/definitive_peak_reconcile.py` so peak apex snapping executes reliably across all regions worldwide.
+    - Added ground-truth summit coordinates for companion displaced peaks into `KNOWN_CORRECTIONS`:
+      - `Cerro Cuerno` (`peak-2802`): `[-70.062904, -32.623328]` (5,416m DEM apex, was 22 km off)
+      - `Plata / Cerro El Plata` (`peak-2827`): `[-69.455051, -33.015717]` (5,950m DEM apex)
+      - `Volcán Lanín` (`peak-2833`): `[-71.502972, -39.636761]` (3,735m DEM apex, was 3.5 km south)
+      - `Láscar` (`peak-2876`): `[-67.737236, -23.368417]` (5,594m DEM apex, was 80 km off in salt flats)
+      - `Paine Grande` (`peak-2881`): `[-73.094959, -51.000145]` (2,647m DEM apex, was in Lake Pehoé)
+      - `Pedra Da Mina` (`peak-2858`): `[-44.843102, -22.428008]` (2,790m DEM apex)
+      - `Mount Arrowsmith` (`peak-1545`): `[-124.595089, 49.224100]` (1,746m DEM apex)
+      - `Cima dei Preti` (`peak-882`): `[12.420902, 46.342425]` (2,700m DEM apex)
+      - `Col Nudo` (`peak-887`): `[12.402191, 46.228659]` (2,454m DEM apex)
+      - `Monte Maggiorasca` (`peak-910`): `[9.488411, 44.550723]` (1,777m DEM apex)
+      - `Sveti Jure` (`peak-666`): `[17.053699, 43.342034]` (1,754m DEM apex)
+      - `Golyam Perelik` (`peak-657`): `[24.574013, 41.604918]` (2,178m DEM apex)
+      - `Mount Tinniswood` (`peak-1653`): `[-123.838921, 50.313681]` (2,548m DEM apex)
+      - `McGinnis Peak` (`peak-1809`): `[-146.302872, 63.543888]` (3,556m DEM apex)
+  - **Cache Busting**:
+    - Updated the GeoJSON source URL cache buster in both [`src/layers/poiLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/poiLayers.ts) and [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) to `major_peaks.geojson?v=20261108_dem_apex_reconciled` to guarantee immediate client reload without stale browser cache.
+- **Why this specific approach was chosen**:
+  - Ensures every mountain peak pin sits mathematically at the physical highest elevation pixel in the 3D Mapterhorn terrain, eliminating any visual discrepancy when orbiting mountains in 3D pitch.
+
 ### `feat: add toggleable ski touring discipline, filter controls, and authentic Tuckerman Ravine dataset`
 - **What was wrong before**:
   - Ski touring routes and backcountry ski mountaineering lines (`piste:type=skitour`, `uses: ['skitour']`, `grooming=backcountry`) were previously unconditionally stripped from the trail ingestion pipeline and excluded by MapLibre layer filters to prevent non-resort sprawl.

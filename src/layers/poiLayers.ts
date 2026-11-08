@@ -21,7 +21,7 @@ export function registerPoiLayers(
   map.addSource(SOURCE_IDS.MAJOR_PEAKS, {
     type: 'geojson',
     promoteId: 'id',
-    data: getStaticDataUrl('data/major_peaks.geojson?v=20261106_dem_clean_summits'),
+    data: getStaticDataUrl('data/major_peaks.geojson?v=20261108_dem_apex_reconciled'),
   });
 
   // Markers: Tier 3 -> Tier 2 -> Tier 1

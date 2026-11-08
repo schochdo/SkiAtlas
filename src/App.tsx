@@ -532,7 +532,7 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(getStaticDataUrl('data/major_peaks.geojson?v=20261106_dem_clean_summits'))
+    fetch(getStaticDataUrl('data/major_peaks.geojson?v=20261108_dem_apex_reconciled'))
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!cancelled && data && data.features) {

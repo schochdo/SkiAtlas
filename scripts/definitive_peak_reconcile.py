@@ -13,6 +13,7 @@ import json
 import math
 import os
 import time
+import urllib.request
 from PIL import Image
 
 GEOJSON_PATH = 'public/data/major_peaks.geojson'
@@ -49,7 +50,16 @@ def get_tile(tx, ty):
     key = (tx, ty)
     if key in tile_cache:
         return tile_cache[key]
+    os.makedirs(CACHE_DIR, exist_ok=True)
     cache_path = os.path.join(CACHE_DIR, f'12_{tx}_{ty}.webp')
+    if not os.path.exists(cache_path):
+        url = f"https://tiles.mapterhorn.com/{ZOOM}/{tx}/{ty}.webp"
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "SkiAtlas/1.0"})
+            with urllib.request.urlopen(req, timeout=8) as resp, open(cache_path, "wb") as f:
+                f.write(resp.read())
+        except Exception:
+            return None
     if os.path.exists(cache_path):
         try:
             img = Image.open(cache_path).convert('RGB')
@@ -82,6 +92,25 @@ KNOWN_CORRECTIONS = {
     'peak-792': [10.295680, 47.299925],    # Mädelegabel (Allgäu Alps)
     'peak-778': [10.292500, 47.297500],    # Hochfrottspitze (Allgäu Alps)
     'peak-1308': [9.796389, 46.833889],    # Weissfluhgipfel (Davos/Parsenn summit, was mislabeled and 50km off)
+    'peak-2873': [-70.214138, -33.236821], # El Plomo (Santiago Andes, Chile — snapped to DEM apex 5,437m)
+    'peak-2802': [-70.062904, -32.623328], # Cerro Cuerno (Aconcagua region, Argentina — snapped to DEM apex 5,416m)
+    'peak-2827': [-69.455051, -33.015717], # Plata / Cerro El Plata (Mendoza, Argentina — snapped to DEM apex 5,950m)
+    'peak-2833': [-71.502972, -39.636761], # Volcan Lanin (Neuquén, Argentina / Chile — snapped to DEM apex 3,735m)
+    'peak-2876': [-67.737236, -23.368417], # Lascar (Antofagasta, Chile — snapped to DEM apex 5,594m)
+    'peak-2881': [-73.094959, -51.000145], # Paine Grande (Torres del Paine, Chile — snapped to DEM apex 2,647m)
+    'peak-2858': [-44.843102, -22.428008], # Pedra Da Mina (Mantiqueira, Brazil — snapped to DEM apex 2,790m)
+    'peak-1545': [-124.595089, 49.224100], # Mount Arrowsmith (Vancouver Island, BC — snapped to DEM apex 1,746m)
+    'peak-2253': [-105.213490, 36.629994], # Mount Baldy (Wheeler Peak Wilderness, NM — snapped to DEM apex 3,792m)
+    'peak-2193': [-113.649960, 48.728681], # Mount Siyeh (Glacier NP, MT — snapped to DEM apex 3,049m)
+    'peak-1566': [-115.061016, 50.710048], # Mount Burney (Highwood Range, AB — snapped to DEM apex 2,892m)
+    'peak-2422': [-104.880123, 31.929729], # Bush Mountain (Guadalupe Mountains, TX — snapped to DEM apex 2,631m)
+    'peak-882': [12.420902, 46.342425],    # Cima dei Preti (Friuli Dolomites, Italy — snapped to DEM apex 2,700m)
+    'peak-887': [12.402191, 46.228659],    # Col Nudo (Venetian Prealps, Italy — snapped to DEM apex 2,454m)
+    'peak-910': [9.488411, 44.550723],     # Monte Maggiorasca (Ligurian Apennines, Italy — snapped to DEM apex 1,777m)
+    'peak-666': [17.053699, 43.342034],    # Sveti Jure (Biokovo, Croatia — snapped to DEM apex 1,754m)
+    'peak-657': [24.574013, 41.604918],    # Golyam Perelik (Rhodope Mountains, Bulgaria — snapped to DEM apex 2,178m)
+    'peak-1653': [-123.838921, 50.313681], # Mount Tinniswood (Coast Mountains, BC — snapped to DEM apex 2,548m)
+    'peak-1809': [-146.302872, 63.543888], # McGinnis Peak (Hayes Range, Alaska — snapped to DEM apex 3,556m)
 }
 
 # 2. Redundant sub-peaks, subsidiary horns, passes, and non-peak features
@@ -127,6 +156,7 @@ def main():
         pid = feat['id']
         if pid in KNOWN_CORRECTIONS:
             feat['geometry']['coordinates'] = list(KNOWN_CORRECTIONS[pid])
+            feat['properties']['geodetic_reconciled'] = True
             pname = feat['properties'].get('name', '')
             print(f"  Fixed corrupted coordinate for {pname} ({pid}) -> {KNOWN_CORRECTIONS[pid]}")
         if pid == 'peak-1308':
