@@ -4817,6 +4817,34 @@ export default function App() {
             onSelectResort={handleSelectResort}
             onDeselectResort={handleDeselectResort}
             onViewProfile={() => setPanelView('profile')}
+            activeFiltersCount={activeFiltersCount}
+            onResetFilters={handleResetFilters}
+            onToggleDownhill={() => setShowDownhill(!showDownhill)}
+            onToggleNordic={() => setShowNordic(!showNordic)}
+            onToggleHeliCat={() => setShowHeliCat(!showHeliCat)}
+            categoryFilterCounts={categoryFilterCounts}
+            selectedPasses={selectedPasses}
+            onTogglePass={(pass) => {
+              setSelectedPasses((prev) =>
+                prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass]
+              );
+            }}
+            onSetAllPasses={() =>
+              setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'])
+            }
+            onClearPasses={() => setSelectedPasses([])}
+            minVerticalM={minVerticalM}
+            onChangeMinVerticalM={setMinVerticalM}
+            minVerticalFt={minVerticalFt}
+            onChangeMinVerticalFt={setMinVerticalFt}
+            minAreaHa={minAreaHa}
+            onChangeMinAreaHa={setMinAreaHa}
+            minAreaAcres={minAreaAcres}
+            onChangeMinAreaAcres={setMinAreaAcres}
+            minNordicKm={minNordicKm}
+            onChangeMinNordicKm={setMinNordicKm}
+            minNordicMi={minNordicMi}
+            onChangeMinNordicMi={setMinNordicMi}
           />
         )}
       </LeftDock>
@@ -4862,6 +4890,34 @@ export default function App() {
             onSelectResort={handleSelectResort}
             onDeselectResort={handleDeselectResort}
             onViewProfile={() => setPanelView('profile')}
+            activeFiltersCount={activeFiltersCount}
+            onResetFilters={handleResetFilters}
+            onToggleDownhill={() => setShowDownhill(!showDownhill)}
+            onToggleNordic={() => setShowNordic(!showNordic)}
+            onToggleHeliCat={() => setShowHeliCat(!showHeliCat)}
+            categoryFilterCounts={categoryFilterCounts}
+            selectedPasses={selectedPasses}
+            onTogglePass={(pass) => {
+              setSelectedPasses((prev) =>
+                prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass]
+              );
+            }}
+            onSetAllPasses={() =>
+              setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'])
+            }
+            onClearPasses={() => setSelectedPasses([])}
+            minVerticalM={minVerticalM}
+            onChangeMinVerticalM={setMinVerticalM}
+            minVerticalFt={minVerticalFt}
+            onChangeMinVerticalFt={setMinVerticalFt}
+            minAreaHa={minAreaHa}
+            onChangeMinAreaHa={setMinAreaHa}
+            minAreaAcres={minAreaAcres}
+            onChangeMinAreaAcres={setMinAreaAcres}
+            minNordicKm={minNordicKm}
+            onChangeMinNordicKm={setMinNordicKm}
+            minNordicMi={minNordicMi}
+            onChangeMinNordicMi={setMinNordicMi}
           />
         )}
       </MobileSheet>
@@ -4905,7 +4961,7 @@ export default function App() {
         />
       </div>
 
-      {/* FLOATING TOP-RIGHT CARTO CONTROLS & RESORT FILTERS */}
+      {/* FLOATING TOP-RIGHT CARTO & MAP SETTINGS */}
       <BasemapMenu
         mapMenuOpen={mapMenuOpen}
         onToggleMenu={() => {
@@ -4915,18 +4971,6 @@ export default function App() {
         onCloseMenu={() => setMapMenuOpen(false)}
         basemapMode={basemapMode}
         onSelectBasemap={setBasemapMode}
-        showPeaks={showPeaks}
-        onTogglePeaks={() => setShowPeaks((prev) => !prev)}
-        showCountryOutlines={showCountryOutlines}
-        onToggleCountryOutlines={() => setShowCountryOutlines((prev) => !prev)}
-        terrainExaggeration={terrainExaggeration}
-        onChangeTerrainExaggeration={handleTerrainExaggerationChange}
-        terrainOverlay={terrainOverlay}
-        onSelectTerrainOverlay={setTerrainOverlay}
-        terrainOverlayOpacity={terrainOverlayOpacity}
-        onChangeTerrainOverlayOpacity={setTerrainOverlayOpacity}
-        activeFiltersCount={activeFiltersCount}
-        onResetFilters={handleResetFilters}
         earthProjection={earthProjection}
         onSelectProjection={(mode) => {
           setEarthProjection(mode);
@@ -4937,36 +4981,16 @@ export default function App() {
         }}
         unitsMetric={unitsMetric}
         onSetUnitsMetric={handleSetUnitsMetric}
-        filteredCount={filteredResorts.length}
-        showDownhill={showDownhill}
-        onToggleDownhill={() => setShowDownhill(!showDownhill)}
-        showNordic={showNordic}
-        onToggleNordic={() => setShowNordic(!showNordic)}
-        showHeliCat={showHeliCat}
-        onToggleHeliCat={() => setShowHeliCat(!showHeliCat)}
-        categoryFilterCounts={categoryFilterCounts}
-        selectedPasses={selectedPasses}
-        onTogglePass={(pass) => {
-          setSelectedPasses((prev) =>
-            prev.includes(pass) ? prev.filter((p) => p !== pass) : [...prev, pass]
-          );
-        }}
-        onSetAllPasses={() =>
-          setSelectedPasses(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'])
-        }
-        onClearPasses={() => setSelectedPasses([])}
-        minVerticalM={minVerticalM}
-        onChangeMinVerticalM={setMinVerticalM}
-        minVerticalFt={minVerticalFt}
-        onChangeMinVerticalFt={setMinVerticalFt}
-        minAreaHa={minAreaHa}
-        onChangeMinAreaHa={setMinAreaHa}
-        minAreaAcres={minAreaAcres}
-        onChangeMinAreaAcres={setMinAreaAcres}
-        minNordicKm={minNordicKm}
-        onChangeMinNordicKm={setMinNordicKm}
-        minNordicMi={minNordicMi}
-        onChangeMinNordicMi={setMinNordicMi}
+        showPeaks={showPeaks}
+        onTogglePeaks={() => setShowPeaks((prev) => !prev)}
+        showCountryOutlines={showCountryOutlines}
+        onToggleCountryOutlines={() => setShowCountryOutlines((prev) => !prev)}
+        terrainExaggeration={terrainExaggeration}
+        onChangeTerrainExaggeration={handleTerrainExaggerationChange}
+        terrainOverlay={terrainOverlay}
+        onSelectTerrainOverlay={setTerrainOverlay}
+        terrainOverlayOpacity={terrainOverlayOpacity}
+        onChangeTerrainOverlayOpacity={setTerrainOverlayOpacity}
       />
 
       {/* CARTOGRAPHIC MAP FURNITURE: ALTERNATING BAR SCALE & LEGEND */}

@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Menu, X, Layers, Sliders, Mountain, Globe } from 'lucide-react';
-import type { BasemapMode, TerrainOverlayMode, EarthProjectionMode, PassNetwork } from '../../types';
-import { FilterPanel } from '../header/FilterModal';
+import { Menu, X, Layers, Mountain, Globe } from 'lucide-react';
+import type { BasemapMode, TerrainOverlayMode, EarthProjectionMode } from '../../types';
 
 interface BasemapMenuProps {
   mapMenuOpen: boolean;
@@ -10,6 +9,10 @@ interface BasemapMenuProps {
   // Basemap & Cartography props
   basemapMode: BasemapMode;
   onSelectBasemap: (mode: BasemapMode) => void;
+  earthProjection: EarthProjectionMode;
+  onSelectProjection: (mode: EarthProjectionMode) => void;
+  unitsMetric: boolean;
+  onSetUnitsMetric: (toMetric: boolean) => void;
   showPeaks: boolean;
   onTogglePeaks: () => void;
   showCountryOutlines: boolean;
@@ -20,37 +23,6 @@ interface BasemapMenuProps {
   onSelectTerrainOverlay: (mode: TerrainOverlayMode) => void;
   terrainOverlayOpacity: number;
   onChangeTerrainOverlayOpacity: (val: number) => void;
-  // Filter & Display props
-  activeFiltersCount: number;
-  onResetFilters: () => void;
-  earthProjection: EarthProjectionMode;
-  onSelectProjection: (mode: EarthProjectionMode) => void;
-  unitsMetric: boolean;
-  onSetUnitsMetric: (toMetric: boolean) => void;
-  filteredCount: number;
-  showDownhill: boolean;
-  onToggleDownhill: () => void;
-  showNordic: boolean;
-  onToggleNordic: () => void;
-  showHeliCat: boolean;
-  onToggleHeliCat: () => void;
-  categoryFilterCounts: { downhill: number; nordic: number; heli_cat: number };
-  selectedPasses: PassNetwork[];
-  onTogglePass: (pass: PassNetwork) => void;
-  onSetAllPasses: () => void;
-  onClearPasses: () => void;
-  minVerticalM: number;
-  onChangeMinVerticalM: (v: number) => void;
-  minVerticalFt: number;
-  onChangeMinVerticalFt: (v: number) => void;
-  minAreaHa: number;
-  onChangeMinAreaHa: (v: number) => void;
-  minAreaAcres: number;
-  onChangeMinAreaAcres: (v: number) => void;
-  minNordicKm: number;
-  onChangeMinNordicKm: (v: number) => void;
-  minNordicMi: number;
-  onChangeMinNordicMi: (v: number) => void;
 }
 
 export const BasemapMenu: React.FC<BasemapMenuProps> = ({
@@ -59,6 +31,10 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
   onCloseMenu,
   basemapMode,
   onSelectBasemap,
+  earthProjection,
+  onSelectProjection,
+  unitsMetric,
+  onSetUnitsMetric,
   showPeaks,
   onTogglePeaks,
   showCountryOutlines,
@@ -69,39 +45,8 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
   onSelectTerrainOverlay,
   terrainOverlayOpacity,
   onChangeTerrainOverlayOpacity,
-  activeFiltersCount,
-  onResetFilters,
-  earthProjection,
-  onSelectProjection,
-  unitsMetric,
-  onSetUnitsMetric,
-  filteredCount,
-  showDownhill,
-  onToggleDownhill,
-  showNordic,
-  onToggleNordic,
-  showHeliCat,
-  onToggleHeliCat,
-  categoryFilterCounts,
-  selectedPasses,
-  onTogglePass,
-  onSetAllPasses,
-  onClearPasses,
-  minVerticalM,
-  onChangeMinVerticalM,
-  minVerticalFt,
-  onChangeMinVerticalFt,
-  minAreaHa,
-  onChangeMinAreaHa,
-  minAreaAcres,
-  onChangeMinAreaAcres,
-  minNordicKm,
-  onChangeMinNordicKm,
-  minNordicMi,
-  onChangeMinNordicMi,
 }) => {
   const basemapMenuRef = useRef<HTMLDivElement | null>(null);
-  const [activeTab, setActiveTab] = useState<'map' | 'filters'>('map');
   const [isSticky, setIsSticky] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -221,17 +166,11 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
         <button
           onClick={handleButtonClick}
           className="relative w-8 h-8 rounded-md border flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]"
-          title="Map Controls & Filters"
-          aria-label="Map Controls & Filters"
+          title="Map Settings"
+          aria-label="Map Settings"
           aria-expanded={mapMenuOpen}
         >
           <Menu className="w-4 h-4 text-[#5C5852]" />
-          {activeFiltersCount > 0 && (
-            <span
-              className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#B84A39] rounded-full ring-2 ring-[#FAF8F3]"
-              title={`${activeFiltersCount} active filter${activeFiltersCount > 1 ? 's' : ''}`}
-            />
-          )}
         </button>
 
         {mapMenuOpen && (
@@ -242,48 +181,14 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
             }}
             className="absolute right-0 top-0 w-88 max-w-[calc(100vw-1.5rem)] bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150 max-h-[calc(100dvh-4.5rem)] overflow-y-auto"
           >
-            {/* Header: Segmented Tabs + Close button */}
-            <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2.5 gap-2">
-              <div className="flex items-center gap-1 bg-[#F2EFE8] p-0.5 rounded-md border border-[#D6D0C2] flex-1">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveTab('map');
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === 'map'
-                      ? 'bg-[#FAF8F3] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
-                      : 'text-[#736E67] hover:text-[#1C1B18]'
-                  }`}
-                  title="Cartographic Base & Terrain Layers"
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>Map</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveTab('filters');
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === 'filters'
-                      ? 'bg-[#FAF8F3] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
-                      : 'text-[#736E67] hover:text-[#1C1B18]'
-                  }`}
-                  title="Resort Filters & Display Settings"
-                >
-                  <Sliders className="w-3.5 h-3.5" />
-                  <span>Filters</span>
-                  {activeFiltersCount > 0 && (
-                    <span className="bg-[#B84A39] text-[#FAF8F3] text-[9.5px] px-1.5 py-0.2 rounded-full font-bold tabular-nums">
-                      {activeFiltersCount}
-                    </span>
-                  )}
-                </button>
+            {/* Header: Map Settings Title + Close button */}
+            <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[#5C5852]" />
+                <span className="font-bold text-xs uppercase tracking-wider text-[#1C1B18]">
+                  Map Settings
+                </span>
               </div>
-
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -297,8 +202,7 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
               </button>
             </div>
 
-            {activeTab === 'map' ? (
-              <div className="space-y-3">
+            <div className="space-y-3">
 
             {/* BASEMAP STYLE SELECTION */}
             <div>
@@ -652,43 +556,9 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
               </div>
             </div>
           </div>
-        ) : (
-          <FilterPanel
-            activeFiltersCount={activeFiltersCount}
-            onResetFilters={onResetFilters}
-            earthProjection={earthProjection}
-            onSelectProjection={onSelectProjection}
-            unitsMetric={unitsMetric}
-            onSetUnitsMetric={onSetUnitsMetric}
-            filteredCount={filteredCount}
-            showDownhill={showDownhill}
-            onToggleDownhill={onToggleDownhill}
-            showNordic={showNordic}
-            onToggleNordic={onToggleNordic}
-            showHeliCat={showHeliCat}
-            onToggleHeliCat={onToggleHeliCat}
-            categoryFilterCounts={categoryFilterCounts}
-            selectedPasses={selectedPasses}
-            onTogglePass={onTogglePass}
-            onSetAllPasses={onSetAllPasses}
-            onClearPasses={onClearPasses}
-            minVerticalM={minVerticalM}
-            onChangeMinVerticalM={onChangeMinVerticalM}
-            minVerticalFt={minVerticalFt}
-            onChangeMinVerticalFt={onChangeMinVerticalFt}
-            minAreaHa={minAreaHa}
-            onChangeMinAreaHa={onChangeMinAreaHa}
-            minAreaAcres={minAreaAcres}
-            onChangeMinAreaAcres={onChangeMinAreaAcres}
-            minNordicKm={minNordicKm}
-            onChangeMinNordicKm={onChangeMinNordicKm}
-            minNordicMi={minNordicMi}
-            onChangeMinNordicMi={onChangeMinNordicMi}
-          />
-        )}
-      </div>
-    )}
+        </div>
+      )}
+    </div>
   </div>
-</div>
   );
 };

@@ -1,7 +1,8 @@
-import React from 'react';
-import { Search, X } from 'lucide-react';
-import type { SkiResort, SortBy, SortOrder, DirectoryScope, MajorPeak } from '../../types';
+import React, { useState } from 'react';
+import { Search, X, Sliders, ChevronDown } from 'lucide-react';
+import type { SkiResort, SortBy, SortOrder, DirectoryScope, MajorPeak, PassNetwork } from '../../types';
 import { ResortCard } from './ResortCard';
+import { FilterPanel } from '../header/FilterModal';
 
 interface DirectoryListProps {
   searchQuery: string;
@@ -25,6 +26,29 @@ interface DirectoryListProps {
   onSelectResort: (id: string) => void;
   onDeselectResort: () => void;
   onViewProfile: () => void;
+  // Filter Props
+  activeFiltersCount: number;
+  onResetFilters: () => void;
+  onToggleDownhill: () => void;
+  onToggleNordic: () => void;
+  onToggleHeliCat: () => void;
+  categoryFilterCounts: { downhill: number; nordic: number; heli_cat: number };
+  selectedPasses: PassNetwork[];
+  onTogglePass: (pass: PassNetwork) => void;
+  onSetAllPasses: () => void;
+  onClearPasses: () => void;
+  minVerticalM: number;
+  onChangeMinVerticalM: (v: number) => void;
+  minVerticalFt: number;
+  onChangeMinVerticalFt: (v: number) => void;
+  minAreaHa: number;
+  onChangeMinAreaHa: (v: number) => void;
+  minAreaAcres: number;
+  onChangeMinAreaAcres: (v: number) => void;
+  minNordicKm: number;
+  onChangeMinNordicKm: (v: number) => void;
+  minNordicMi: number;
+  onChangeMinNordicMi: (v: number) => void;
 }
 
 export const DirectoryList: React.FC<DirectoryListProps> = ({
@@ -49,11 +73,118 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
   onSelectResort,
   onDeselectResort,
   onViewProfile,
+  activeFiltersCount,
+  onResetFilters,
+  onToggleDownhill,
+  onToggleNordic,
+  onToggleHeliCat,
+  categoryFilterCounts,
+  selectedPasses,
+  onTogglePass,
+  onSetAllPasses,
+  onClearPasses,
+  minVerticalM,
+  onChangeMinVerticalM,
+  minVerticalFt,
+  onChangeMinVerticalFt,
+  minAreaHa,
+  onChangeMinAreaHa,
+  minAreaAcres,
+  onChangeMinAreaAcres,
+  minNordicKm,
+  onChangeMinNordicKm,
+  minNordicMi,
+  onChangeMinNordicMi,
 }) => {
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
   return (
     <div className="flex flex-col h-full min-h-0 bg-[#F7F4ED] overflow-hidden">
       {/* Search & Directory Controls */}
       <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-2.5 shrink-0">
+        {/* Collapsible Filters Section */}
+        <div className="border border-[#D6D0C2] rounded-md bg-[#FAF8F3] overflow-hidden transition-all shadow-2xs">
+          <div
+            onClick={() => setIsFiltersOpen((prev) => !prev)}
+            className="w-full px-2.5 py-1.5 flex items-center justify-between text-xs font-semibold text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none"
+            role="button"
+            tabIndex={0}
+            aria-expanded={isFiltersOpen}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                if (e.target === e.currentTarget) {
+                  e.preventDefault();
+                  setIsFiltersOpen((prev) => !prev);
+                }
+              }
+            }}
+          >
+            <div className="flex items-center gap-1.5">
+              <Sliders className="w-3.5 h-3.5 text-[#5C5852]" />
+              <span className="font-bold text-xs text-[#1C1B18]">Filters</span>
+              {activeFiltersCount > 0 && (
+                <span className="bg-[#B84A39] text-[#FAF8F3] text-[10px] px-1.5 py-0.2 rounded-full font-bold tabular-nums">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-[#736E67]">
+              {activeFiltersCount > 0 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onResetFilters();
+                  }}
+                  className="text-[#B84A39] hover:underline cursor-pointer font-bold mr-1"
+                >
+                  Reset
+                </button>
+              )}
+              <span className="text-[11px] font-medium text-[#736E67]">{isFiltersOpen ? 'Hide' : 'Show'}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-[#736E67] transition-transform duration-200 ${
+                  isFiltersOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </div>
+          </div>
+
+          {isFiltersOpen && (
+            <div className="p-3 pt-2.5 border-t border-[#D6D0C2] max-h-[46vh] overflow-y-auto bg-[#F7F4ED]">
+              <FilterPanel
+                activeFiltersCount={activeFiltersCount}
+                onResetFilters={onResetFilters}
+                filteredCount={filteredResortsCount}
+                showDownhill={showDownhill}
+                onToggleDownhill={onToggleDownhill}
+                showNordic={showNordic}
+                onToggleNordic={onToggleNordic}
+                showHeliCat={showHeliCat}
+                onToggleHeliCat={onToggleHeliCat}
+                categoryFilterCounts={categoryFilterCounts}
+                selectedPasses={selectedPasses}
+                onTogglePass={onTogglePass}
+                onSetAllPasses={onSetAllPasses}
+                onClearPasses={onClearPasses}
+                unitsMetric={unitsMetric}
+                minVerticalM={minVerticalM}
+                onChangeMinVerticalM={onChangeMinVerticalM}
+                minVerticalFt={minVerticalFt}
+                onChangeMinVerticalFt={onChangeMinVerticalFt}
+                minAreaHa={minAreaHa}
+                onChangeMinAreaHa={onChangeMinAreaHa}
+                minAreaAcres={minAreaAcres}
+                onChangeMinAreaAcres={onChangeMinAreaAcres}
+                minNordicKm={minNordicKm}
+                onChangeMinNordicKm={onChangeMinNordicKm}
+                minNordicMi={minNordicMi}
+                onChangeMinNordicMi={onChangeMinNordicMi}
+              />
+            </div>
+          )}
+        </div>
+
         {/* Search Input */}
         <div className="relative flex items-center">
           <Search className="absolute left-3 w-4 h-4 text-[#8A847C] pointer-events-none" />

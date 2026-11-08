@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `feat: relocate resort filters above search bar with collapsible accordion and streamline Map Settings menu`
+- **What was changed**:
+  - **Collapsible Filter Accordion**: Moved the full resort filter panel directly **above the search bar** inside the left directory tray ([`DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx)).
+  - **Starts Collapsed**: Configured initial state to collapsed (`isFiltersOpen = false`), displaying an uncluttered bar with a filter icon, active filter count badge, quick reset action, and expand toggle (`Show` / `Hide` with animated chevron).
+  - **Scroll-Safe Expansion**: When expanded, the filter panel (Categories: Downhill / Nordic / Heli, Pass Networks, Vertical Drop, Skiable Acreage, and Nordic Trail Network sliders) renders inside a capped scrollable container (`max-h-[46vh]`), preventing the search bar or directory controls from being pushed off-screen.
+  - **Single-Purpose Map Settings Menu**: Streamlined [`BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx) from a two-tab interface into a dedicated **Map Settings** drawer (Cartographic Base, Earth Projection, Units of Measure, Horizon Summits, Geographic Reference, Terrain Overlays, and 3D Terrain Relief), eliminating redundant tab navigation.
+
+
 ### `feat: move Earth Projection and Units of Measure controls into Map tab`
 - **What was changed**:
   - Relocated the **Earth Projection** (`3D Globe` vs. `Flat Map`) and **Units of Measure** (`Imperial` vs. `Metric`) segmented controls directly into the **Map** tab (`activeTab === 'map'`) of [`BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx).
