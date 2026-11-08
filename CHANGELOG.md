@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: ensure exactly one day is labeled 'Today' in 7-day snowfall forecast`
+- **What was wrong before**:
+  - In the resort mountain profile's 7-day snowfall forecast bar chart, two consecutive days were simultaneously labeled as `[Today]` (e.g. `[Today] [Today] Sun Mon Tue Wed Thu`), confusing the daily timeline.
+- **Root Cause**:
+  - In [`src/components/profile/MountainProfile.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/profile/MountainProfile.tsx), the logic was `isToday = idx === 0 || (dateObj.getDate() === now.getDate() ...)`.
+  - Because `idx === 0` was unconditionally hardcoded to `true`, and the calendar day comparison also matched index 1 when user local time was near midnight or offset from the forecast timezone, both index 0 and index 1 evaluated to `isToday = true`.
+- **Solution**:
+  - Pre-identified the single authentic matching calendar index (`matchedIdx`) via exact year/month/day comparison, defaulting to `0` only if today's date is not within the forecast range.
+  - Set `isToday = idx === activeTodayIdx`, guaranteeing by definition that exactly one day in the 7-day bar chart is labeled `Today`, while all other days display their correct weekday names (`Sat`, `Sun`, `Mon`, etc.).
+
 ### `feat: rebuild boundaries from authoritative Natural Earth 10m topological mesh, purge all water lines, and enforce 100% terrestrial connectivity`
 - **What was wrong before**:
   - **Water Lines & Offshore Arcs**: Boundary lines were extending out into oceans, seas, bays, and straits (e.g. Aegean Sea between Greece and Turkey, South China Sea around the Spratly Islands, Caribbean Sea, Andaman Sea, the ICJ maritime arc off Bar Harbor in Maine, and lines cutting across coastal inlets).

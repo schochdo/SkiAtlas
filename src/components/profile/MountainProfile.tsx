@@ -229,61 +229,69 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
                 </span>
               </div>
               <div className="grid grid-cols-7 gap-1 h-20 items-end bg-[#F7F4ED] p-2 border border-[#E8E4DA] rounded-sm">
-                {resort.weather.daily_forecast.map((day, idx) => {
-                  const val = unitsMetric ? day.snowfall_cm : day.snowfall_in;
-                  const maxVal = Math.max(1, ...resort.weather!.daily_forecast.map((d) => (unitsMetric ? d.snowfall_cm : d.snowfall_in)));
-                  const heightPercent = Math.max(6, Math.min(100, Math.round((val / maxVal) * 100)));
-
-                  // Safe calendar date parsing: splits YYYY-MM-DD directly into year/month/day
-                  // to prevent UTC midnight date shift across local timezones
-                  const [y, m, d] = day.date.split('-').map(Number);
-                  const dateObj = new Date(y, m - 1, d);
+                {(() => {
                   const now = new Date();
-                  const isToday =
-                    idx === 0 ||
-                    (dateObj.getFullYear() === now.getFullYear() &&
-                      dateObj.getMonth() === now.getMonth() &&
-                      dateObj.getDate() === now.getDate());
+                  // Identify the single day index that represents Today (defaults to index 0 if not matched)
+                  const matchedIdx = resort.weather.daily_forecast.findIndex((d) => {
+                    const [y, m, dayNum] = d.date.split('-').map(Number);
+                    return (
+                      y === now.getFullYear() &&
+                      m === now.getMonth() + 1 &&
+                      dayNum === now.getDate()
+                    );
+                  });
+                  const activeTodayIdx = matchedIdx >= 0 ? matchedIdx : 0;
 
-                  const dayName = isToday ? 'Today' : dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                  return resort.weather.daily_forecast.map((day, idx) => {
+                    const val = unitsMetric ? day.snowfall_cm : day.snowfall_in;
+                    const maxVal = Math.max(1, ...resort.weather!.daily_forecast.map((d) => (unitsMetric ? d.snowfall_cm : d.snowfall_in)));
+                    const heightPercent = Math.max(6, Math.min(100, Math.round((val / maxVal) * 100)));
 
-                  return (
-                    <div key={idx} className="flex flex-col items-center h-full justify-end group">
-                      {/* Numeric snowfall value above bar */}
-                      <span className={`text-[8px] font-bold tabular-nums mb-1 tracking-tighter ${
-                        val > 0 ? (isToday ? 'text-[#2E5A44]' : 'text-[#3B627E]') : 'text-transparent'
-                      }`}>
-                        {val > 0 ? formatSnow(day.snowfall_in, unitsMetric) : '—'}
-                      </span>
+                    // Safe calendar date parsing: splits YYYY-MM-DD directly into year/month/day
+                    // to prevent UTC midnight date shift across local timezones
+                    const [y, m, d] = day.date.split('-').map(Number);
+                    const dateObj = new Date(y, m - 1, d);
+                    const isToday = idx === activeTodayIdx;
+                    const dayName = isToday ? 'Today' : dateObj.toLocaleDateString('en-US', { weekday: 'short' });
 
-                      {/* Bar */}
-                      <div className="w-full flex-1 flex items-end justify-center">
-                        <div
-                          style={{ height: `${heightPercent}%` }}
-                          className={`w-full rounded-xs transition-all ${
-                            val > 0
-                              ? isToday ? 'bg-[#2E5A44]' : 'bg-[#3B627E]'
-                              : 'bg-[#D6D0C2]'
-                          } ${isToday ? 'ring-1 ring-[#2E5A44]/40' : ''}`}
-                          title={`${isToday ? 'Today, ' : ''}${dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}: ${formatSnow(day.snowfall_in, unitsMetric)} snow`}
-                        />
-                      </div>
-
-                      {/* Weekday label with Today highlight */}
-                      <div className="mt-1 flex flex-col items-center">
-                        <span
-                          className={`text-[9px] tracking-tight transition-colors ${
-                            isToday
-                              ? 'text-[#1C1B18] font-extrabold bg-[#EAE5D9] px-1 py-0.5 rounded-[2px] border border-[#A8A299]'
-                              : 'text-[#736E67] font-semibold'
-                          }`}
-                        >
-                          {dayName}
+                    return (
+                      <div key={idx} className="flex flex-col items-center h-full justify-end group">
+                        {/* Numeric snowfall value above bar */}
+                        <span className={`text-[8px] font-bold tabular-nums mb-1 tracking-tighter ${
+                          val > 0 ? (isToday ? 'text-[#2E5A44]' : 'text-[#3B627E]') : 'text-transparent'
+                        }`}>
+                          {val > 0 ? formatSnow(day.snowfall_in, unitsMetric) : '—'}
                         </span>
+
+                        {/* Bar */}
+                        <div className="w-full flex-1 flex items-end justify-center">
+                          <div
+                            style={{ height: `${heightPercent}%` }}
+                            className={`w-full rounded-xs transition-all ${
+                              val > 0
+                                ? isToday ? 'bg-[#2E5A44]' : 'bg-[#3B627E]'
+                                : 'bg-[#D6D0C2]'
+                            } ${isToday ? 'ring-1 ring-[#2E5A44]/40' : ''}`}
+                            title={`${isToday ? 'Today, ' : ''}${dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}: ${formatSnow(day.snowfall_in, unitsMetric)} snow`}
+                          />
+                        </div>
+
+                        {/* Weekday label with Today highlight */}
+                        <div className="mt-1 flex flex-col items-center">
+                          <span
+                            className={`text-[9px] tracking-tight transition-colors ${
+                              isToday
+                                ? 'text-[#1C1B18] font-extrabold bg-[#EAE5D9] px-1 py-0.5 rounded-[2px] border border-[#A8A299]'
+                                : 'text-[#736E67] font-semibold'
+                            }`}
+                          >
+                            {dayName}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}
