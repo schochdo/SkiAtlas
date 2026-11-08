@@ -177,7 +177,7 @@ export function generateFallbackForecast(resort: SkiResort): ResortWeatherData {
   for (let i = 0; i < 7; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() + i);
-    const dStr = d.toISOString().split('T')[0];
+    const dStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
     // Storm cycle distribution: ~30-40% of days see snow
     const isStormDay = rand() > 0.62;

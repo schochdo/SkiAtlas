@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: correct meteorology 7-day forecast calendar date shift, call out Today, and expand fire lookouts zoom range`
+- **What was wrong before**:
+  - **Meteorology Week Shift**: When viewing mountain profile meteorology on Saturday, the 7-day sparkline rendered as Friday through Thursday (`F S S M T W T`) with no indication of which day was today.
+    - **Root Cause**: In JavaScript, passing `"YYYY-MM-DD"` date strings (e.g. `"2026-11-07"`) to `new Date(day.date)` parses as UTC midnight (`00:00:00Z`). In US timezones (e.g. Mountain Time, UTC-7), UTC midnight is 5:00 PM on Friday evening! `toLocaleDateString` converted this UTC midnight into Friday, shifting the entire 7-day calendar backward by one full day. Furthermore, `weekday: 'narrow'` produced single ambiguous letters (`S` for Saturday/Sunday, `T` for Tuesday/Thursday).
+  - **Fire Lookouts Visibility at Regional Zooms**: When toggling on the Fire Lookouts layer, users browsing at standard multi-state or continental viewports (zooms 4.0 to 6.8) saw no lookouts because the layer minzoom was set to `7.0`.
+- **Solution**:
+  - **Local Calendar Date Parsing**: In [`MountainProfile.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/profile/MountainProfile.tsx), split `"YYYY-MM-DD"` directly into integer `[year, month, day]` and construct local calendar date `new Date(year, month - 1, day)`. Completely eliminates the UTC midnight timezone shift across all timezones.
+  - **Prominent "Today" Callout & Unambiguous Weekdays**:
+    - Replaced ambiguous single-letter labels with **"Today"** for the active day and clear 3-letter abbreviations (`Sun`, `Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`) for all other days.
+    - Added an editorial active pill badge (`Today` highlighted in archival paper `#EAE5D9` with border) and accented bar color (`#2E5A44`).
+    - Added daily snowfall amounts directly above each bar (formatted via `formatSnow`), eliminating the need to hover.
+  - **Expanded Fire Lookouts Zoom Visibility**:
+    - Lowered Tier 1 (Apex Lookouts $\ge 7,000'$) marker minzoom from `7.0` to `4.8` (labels at `5.8`), allowing lookouts across the Cascades, Sierras, and Rockies to immediately appear upon toggling the layer.
+    - Lowered Tier 2 ($4,500' - 7,000'$) marker minzoom to `6.5` (labels at `7.8`).
+    - Lowered Tier 3 ($< 4,500'$) marker minzoom to `8.0` (labels at `9.5`).
+  - **Layers Tab Active Indicator**: In [`BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx), added an active dot indicator on the `[ Layers ]` tab button when any layer is active.
+
 ### `feat: add curated fire lookouts and watchtowers layer to map settings layers panel`
 - **What was changed**:
   - **Curated Multi-Agency Dataset (`public/data/fire_lookouts.geojson`)**:

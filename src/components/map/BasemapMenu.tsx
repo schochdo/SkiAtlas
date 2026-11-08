@@ -212,10 +212,13 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                       ? 'bg-[#FAF8F3] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
                       : 'text-[#736E67] hover:text-[#1C1B18]'
                   }`}
-                  title="Overlays, Horizon Summits & 3D Relief"
+                  title="Overlays, Horizon Summits, Fire Lookouts & 3D Relief"
                 >
                   <Layers className="w-3.5 h-3.5" />
                   <span>Layers</span>
+                  {(showLookouts || terrainOverlay !== 'none') && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D96B27]" />
+                  )}
                 </button>
               </div>
 

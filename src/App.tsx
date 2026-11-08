@@ -2724,12 +2724,12 @@ export default function App() {
         data: getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v1'),
       });
 
-      // Markers (Tier 3 -> Tier 2 -> Tier 1)
+      // Markers (Tier 3 -> Tier 2 -> Tier 1 so Apex giants render on top)
       map.addLayer({
         id: 'fire-lookouts-marker-tier3',
         type: 'circle',
         source: 'fire-lookouts-source',
-        minzoom: 10.0,
+        minzoom: 8.0,
         filter: ['==', ['coalesce', ['get', 'tier'], 3], 3],
         layout: {
           visibility: showLookouts ? 'visible' : 'none',
@@ -2737,8 +2737,8 @@ export default function App() {
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
-            10.0, 2.0,
-            12.0, 3.0,
+            8.0, 1.8,
+            11.0, 2.8,
             14.0, 4.0,
           ],
           'circle-color': '#D96B27',
@@ -2751,7 +2751,7 @@ export default function App() {
         id: 'fire-lookouts-marker-tier2',
         type: 'circle',
         source: 'fire-lookouts-source',
-        minzoom: 8.5,
+        minzoom: 6.5,
         filter: ['==', ['coalesce', ['get', 'tier'], 3], 2],
         layout: {
           visibility: showLookouts ? 'visible' : 'none',
@@ -2759,8 +2759,8 @@ export default function App() {
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
-            8.5, 2.0,
-            11.0, 2.8,
+            6.5, 1.8,
+            9.0, 2.6,
             14.0, 4.0,
           ],
           'circle-color': '#D96B27',
@@ -2773,7 +2773,7 @@ export default function App() {
         id: 'fire-lookouts-marker-tier1',
         type: 'circle',
         source: 'fire-lookouts-source',
-        minzoom: 7.0,
+        minzoom: 4.8,
         filter: ['==', ['coalesce', ['get', 'tier'], 3], 1],
         layout: {
           visibility: showLookouts ? 'visible' : 'none',
@@ -2781,8 +2781,9 @@ export default function App() {
         paint: {
           'circle-radius': [
             'interpolate', ['linear'], ['zoom'],
-            7.0, 2.0,
-            9.0, 3.0,
+            4.8, 1.8,
+            7.0, 2.4,
+            10.0, 3.2,
             14.0, 4.2,
           ],
           'circle-color': '#D96B27',
@@ -2796,25 +2797,25 @@ export default function App() {
         id: 'fire-lookouts-label',
         type: 'symbol',
         source: 'fire-lookouts-source',
-        minzoom: 7.0,
+        minzoom: 5.8,
         layout: {
           'visibility': showLookouts ? 'visible' : 'none',
           'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 0],
           'text-field': [
             'step', ['zoom'],
             ['case', ['==', ['coalesce', ['get', 'tier'], 3], 1], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
-            8.5,
+            7.8,
             ['case', ['<=', ['coalesce', ['get', 'tier'], 3], 2], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
-            10.0,
+            9.5,
             ['get', unitsMetric ? 'label_m' : 'label_ft'],
           ],
           'text-font': ['Open Sans Bold Italic'],
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            7.0, 9.0,
-            10.0, 10.5,
-            12.0, 12.0,
-            15.0, 14.0,
+            5.8, 8.5,
+            8.0, 10.0,
+            11.0, 11.5,
+            14.0, 13.5,
           ],
           'text-max-width': 26,
           'text-offset': [0, -1.2],
@@ -3879,9 +3880,9 @@ export default function App() {
           map.setLayoutProperty(layerId, 'text-field', [
             'step', ['zoom'],
             ['case', ['==', ['coalesce', ['get', 'tier'], 3], 1], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
-            8.5,
+            7.8,
             ['case', ['<=', ['coalesce', ['get', 'tier'], 3], 2], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
-            10.0,
+            9.5,
             ['get', unitsMetric ? 'label_m' : 'label_ft'],
           ]);
         }
