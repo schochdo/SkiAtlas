@@ -1170,6 +1170,26 @@ export default function App() {
     const canvas = map.getCanvas();
     const canvasContainer = map.getCanvasContainer();
 
+    // Dynamic ground clamping based on altitude scale:
+    // When zoomed into mountain terrain (z >= 14.0), clamp the center to the local terrain elevation.
+    // This allows zooming all the way down to snow level (z = 20.5) without hitting subterranean sea-level collision.
+    // At cruising altitudes (z < 13.2, altitude > 30k ft), unclamp to prevent camera altitude bouncing during cross-country pans.
+    const updateGroundClamping = (currentZoom: number) => {
+      if (isProgrammaticFlightActive) return;
+      const isClamped = (map as any).getCenterClampedToGround?.();
+      let shouldClamp = isClamped;
+      if (currentZoom >= 14.0) {
+        shouldClamp = true;
+      } else if (currentZoom < 13.2) {
+        shouldClamp = false;
+      }
+      try {
+        if (isClamped !== shouldClamp) {
+          (map as any).setCenterClampedToGround?.(shouldClamp);
+        }
+      } catch (_) {}
+    };
+
     // 1. Intercept mousedown at capture phase on canvasContainer:
     // If a new click begins (left, middle, right), ensure dragRotate is properly calibrated
     // and any orphaned drag is cleared.
@@ -1177,6 +1197,7 @@ export default function App() {
       if (map.dragRotate && (map.dragRotate.around !== 'center' || map.dragRotate.movement !== 'linear')) {
         map.dragRotate.enable({ around: 'center', movement: 'linear' });
       }
+      updateGroundClamping(map.getZoom());
       resetOrphanedDragHandlers();
     };
 
@@ -1232,6 +1253,7 @@ export default function App() {
       // Do not fight programmatic flights across continents
       if (isProgrammaticFlightActive) return;
       const z = map.getZoom();
+      updateGroundClamping(z);
       // Ensure camera does not dip below terrain surface when pitched steeply at high zoom close to ground
       if (z > 16.0) {
         const maxPitchAtZoom = z <= 17.0 ? 75 : (z <= 19.0 ? 65 : 55);
@@ -1325,6 +1347,7 @@ export default function App() {
         } catch (_) {}
       }
       const z = map.getZoom();
+      updateGroundClamping(z);
       // Ensure camera does not dip below terrain surface when pitched steeply at high zoom close to ground
       if (z > 16.0) {
         const maxPitchAtZoom = z <= 17.0 ? 75 : (z <= 19.0 ? 65 : 55);
@@ -3768,13 +3791,22 @@ export default function App() {
 
       // Initialize flightElevation once and ensure ground clamping doesn't bounce the camera
       if (flightElevation === null) {
-        try { (map as any).setCenterClampedToGround?.(false); } catch (_) {}
         const curElev = map.getCenterElevation();
         const ground = map.queryTerrainElevation(map.getCenter());
         flightElevation = (curElev !== null && curElev !== undefined && isFinite(curElev))
           ? curElev
           : ((ground !== null && ground !== undefined && isFinite(ground)) ? ground : 0);
       }
+
+      const curZoom = map.getZoom();
+      // Manage ground clamping during flight: enable at z >= 14.0 for mountain inspection, disable below 13.2 for cruise
+      const isClamped = (map as any).getCenterClampedToGround?.();
+      let shouldClamp = isClamped;
+      if (curZoom >= 14.0) shouldClamp = true;
+      else if (curZoom < 13.2) shouldClamp = false;
+      try {
+        if (isClamped !== shouldClamp) (map as any).setCenterClampedToGround?.(shouldClamp);
+      } catch (_) {}
 
       const isShift = activeKeys.has('ShiftLeft') || activeKeys.has('ShiftRight');
 
@@ -3831,11 +3863,17 @@ export default function App() {
         const curZoom = map.getZoom();
         const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.5;
         const nextZoom = Math.max(1.0, Math.min(20.5, curZoom + zoomDelta * zoomSpeed * dt));
+        const shouldClampZoom = nextZoom >= 14.0;
+        try {
+          if ((map as any).getCenterClampedToGround?.() !== shouldClampZoom) {
+            (map as any).setCenterClampedToGround?.(shouldClampZoom);
+          }
+        } catch (_) {}
         map.setZoom(nextZoom);
       }
 
-      const curZoom = map.getZoom();
-      const speedMps = 720 * Math.pow(2, 14 - curZoom) * (isShift ? 2.5 : 1.0);
+      const liveZoom = map.getZoom();
+      const speedMps = 720 * Math.pow(2, 14 - liveZoom) * (isShift ? 2.5 : 1.0);
 
       // Manual altitude control (Q/E or PageUp/PageDown)
       if (altitudeDelta !== 0) {
@@ -3990,9 +4028,6 @@ export default function App() {
         stopFlight(true);
       }
       flightElevation = null;
-      try {
-        (mapRef.current as any)?.setCenterClampedToGround?.(false);
-      } catch (_) {}
     };
     canvasContainer.addEventListener('mousedown', onCanvasMouseInteraction, { capture: true });
     canvasContainer.addEventListener('pointerdown', onCanvasMouseInteraction, { capture: true });

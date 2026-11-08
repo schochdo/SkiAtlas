@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-06
 
+### `fix: eliminate high-zoom camera freeze and stuck subterranean collision lock`
+- **What was wrong before**:
+  - When zooming into alpine terrain using the keyboard camera flight controls (or upon reaching high zoom close to the ground, $z \approx 14.5–16+$), the camera would suddenly seize up and become permanently stuck.
+  - While stuck, directional panning, rotation, and zooming in with the camera controls failed to respond. The user had to manually scroll the mouse wheel backward, click the navigation zoom-out button (`[ - ]`), or reload the web page to escape the freeze.
+  - **Root Cause**:
+    1. **Forced `centerClampedToGround: false`**: In `flightStep`, `onCanvasMouseInteraction`, and `safeFlyTo`'s `onEnd`, `map.setCenterClampedToGround(false)` was being called unconditionally.
+    2. **Subterranean Sea-Level Collision**: When `centerClampedToGround` is `false`, MapLibre GL JS leaves the camera's center elevation at sea level ($0\text{ m}$). In mountainous terrain (where summits and ski areas sit at 2,000–4,000 meters / 6,500–13,000 feet above sea level), aiming at sea level points the camera vector directly into the core of the earth.
+    3. As the camera zoomed in past $\sim 14,000$ feet altitude ($z \ge 14.5$), the camera eye trajectory collided with the mountain surface. MapLibre's safety algorithm (`_raiseCameraByPitchAndZoom`) forcibly clamped the zoom and pitch to prevent subterranean clipping, rejecting any further `map.setZoom` or `map.jumpTo` attempts. Any key interaction re-triggered the collision and kept the camera locked.
+- **Solution**:
+  - **Scale-Aware Dynamic Ground Clamping**: Added `updateGroundClamping` in `src/App.tsx` with a clean hysteresis curve:
+    - **Alpine / Mountain Inspection ($z \ge 14.0$)**: Automatically engages `setCenterClampedToGround(true)`. Clamping the center directly to the local mountain surface anchors camera zoom and orbit to the snow, allowing effortless, collision-free zooming all the way down to $z=20.5$ ($\sim 100\text{ ft}$ above ground).
+    - **Macro / Cruising ($z < 13.2$, altitude $> 30,000\text{ ft}$)**: Disengages ground clamping (`false`), guaranteeing steady, level continental flight across mountain ranges without transient peak/valley bouncing.
+  - **Removed Unconditional Unclamping**: Eliminated destructive `setCenterClampedToGround(false)` calls from `onCanvasMouseInteraction` and `flightStep` initialization.
+  - **Retained Ground Clamping on Resort Arrival**: In `src/utils/camera.ts`, `safeFlyTo` now preserves ground clamping if the landing zoom is within alpine inspection range ($z \ge 14.0$).
+
 ### `feat: default to 3D globe and satellite basemap focused on North America with viewport framing`
 - **What was changed**:
   - Configured the application to initialize on launch with the **3D Globe** projection (`earthProjection: 'globe'`) and **Satellite 3D** basemap (`basemapMode: 'satellite'`) with real-time 3D terrain elevation active.
