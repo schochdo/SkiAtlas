@@ -2939,7 +2939,7 @@ export default function App() {
 
         const p = feat.properties || {};
         const name = p.name || 'Fire Lookout';
-        const elev = unitsMetric ? p.elevation_formatted_m : p.elevation_formatted_ft;
+        const elev = (unitsMetric ? p.elevation_formatted_m : p.elevation_formatted_ft) || (p.elevation_ft ? formatVert(p.elevation_ft, unitsMetric) : '');
         const agency = p.agency || 'USFS';
         const state = p.state ? ` · ${p.state}` : '';
         const status = p.status || 'Standing';
