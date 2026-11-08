@@ -208,6 +208,9 @@ export function getResortWebsite(resort: SkiResort | null | undefined): string |
       if (host.includes('sayama-ski.jp')) {
         return 'https://www.seibu-leisure.co.jp/ski_web/';
       }
+      if (withProto.includes('stubai.at/skigebiete/elferlifte')) {
+        return 'https://www.stubai.at/skigebiete/elferbahnen/';
+      }
       // Safety filter against scam / casino affiliate sites, parked drop-catchers, and malicious redirects
       if (
         host.includes('parik24') ||

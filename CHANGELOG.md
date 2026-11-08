@@ -4,6 +4,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-11-07
+
+### `fix: correct broken Elferlifte website URL and document global resort link data provenance`
+- **What was changed**:
+  - **Repaired Stubaital Elfer URL**: Updated `properties.website` for `11er Neustift/Neder` (`id: 14e44f003d9b6e9b2b4b0558cb95b247b4008b3c`) from `https://www.stubai.at/skigebiete/elferlifte/` to the active official URL `https://www.stubai.at/skigebiete/elferbahnen/` in [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json).
+  - **URL Sanitization Routing**: Added automatic path rewrite rules in [`getResortWebsite()`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/classification.ts) and [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) routing legacy `/elferlifte/` references to `/elferbahnen/`.
+- **Data Provenance Context**:
+  - The ~91 curated flagship resorts in [`src/data/resorts.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/data/resorts.ts) use hand-vetted official homepages.
+  - The broader 5,519 worldwide ski areas in [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json) are ingested from **OpenSkiData / OpenStreetMap (OSM)** tags (`website=*`, `contact:website=*`).
+  - 404 errors on European areas (such as Stubaital) stem from OSM contributors mapping deep, season-specific CMS subpaths (e.g. `/skigebiete/elferlifte/`) rather than persistent domains, which break whenever regional tourism boards restructure their CMS routes without setting up 301 redirects.
+
+---
+
 ## 2026-11-06
 
 ### `fix: eliminate high-zoom camera freeze and stuck subterranean collision lock`

@@ -4184,6 +4184,8 @@ export default function App() {
               cleanSite = 'https://westsportcenter.in.ua/';
             } else if (cleanSite.includes('sayama-ski.jp')) {
               cleanSite = 'https://www.seibu-leisure.co.jp/ski_web/';
+            } else if (cleanSite.includes('stubai.at/skigebiete/elferlifte')) {
+              cleanSite = 'https://www.stubai.at/skigebiete/elferbahnen/';
             } else if (
               cleanSite.includes('parik24') ||
               cleanSite.includes('1xbet') ||
