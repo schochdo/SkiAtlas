@@ -208,10 +208,35 @@ if (sortBy === 'snow') {
 
 ## 10. Known Constraints & Gotchas
 
-- **Monolithic App.tsx** — intentional. Do not split into components without explicit user direction. The file is large but all logic is in one place, which makes it easier to reason about state flow.
+- **Modular Architecture** — `src/App.tsx` coordinates dedicated sub-components (`src/components/`), services (`src/services/`), data modules (`src/data/`), types (`src/types/`), and utilities (`src/utils/`). Do not re-collapse into a monolithic file.
 - **No backend** — all data is client-side. Do not add a server dependency.
 - **Open-Meteo rate limits** — the API is free but has limits. Batch size of 5 with 200ms delay is conservative. Do not increase batch size beyond 10.
 - **Globe centering** — `setPadding` must be called synchronously before map construction, not in a `useEffect`. This was a hard-won fix; do not change the initialization order.
 - **Terrain on globe** — terrain source must be re-added when switching from mercator back to globe. The `useEffect` watching `earthProjection` handles this.
 - **`safeFlyTo()`** — always use this instead of `map.flyTo()` directly. It validates coordinates and prevents crashes from NaN/Infinity values.
 - **Cluster counts** — updated dynamically when filters change via a `useEffect` that re-generates GeoJSON source data. Do not bypass this.
+
+---
+
+## 11. Data Pipeline, Upstream Ingestion & Maintenance Procedures
+
+To prevent undoing previous sanitization work or re-introducing upstream bugs, follow these documented procedures when refreshing data:
+
+### Ingestion Cadence
+- **Annual Macro Refresh (Late October / Early November)**: Ingest fresh OpenSkiData/OSM exports only once per year ahead of the Northern Hemisphere winter. Frequent pulls re-introduce spam, unverified edits, and classification regressions for minimal trail gain.
+- **In-Season Spot Edits (As Needed)**: For landmark new lifts (e.g., replacement gondolas or trams at flagship resorts), edit individual resort trail files in `public/data/trails/<slug>.json` or `src/data/resorts.ts` directly.
+
+### Upstream Ingestion QA Checklist (Run After Any Raw Pull)
+1. **URL Sanitization & Healing Pipeline**:
+   - Run `node scripts/run_url_audit.cjs` followed by `python3 scripts/apply_comprehensive_url_cleanup.py`.
+   - **Deep-Path 404 Rescuing**: Automatically heals stale seasonal subpaths back to verified active root portals.
+   - **Dead Link Zeroing**: Purges dead domains, NXDOMAINs, discontinued `business.site` links, and spam landers to `""` so the link button cleanly omits itself in `MountainProfile`.
+   - **Runtime Firewall**: Never remove the domain filter in `getResortWebsite()` (`src/utils/classification.ts`) or `src/App.tsx`.
+2. **Nordic Acreage Hygiene**:
+   - Upstream OpenSkiData often assigns entire national park boundary acreage to Nordic centers (e.g. 30,000 acres to Pyhätunturi-Luosto or 19,000 acres to Katahdin).
+   - Ensure `category === 'nordic'` entries have `skiable_acres` zeroed out so they do not falsely outrank major alpine downhill resorts. Trail network length (`trail_km` / `trail_mi`) is the metric for Nordic centers.
+3. **Geometry Filtering (Piste Casing Lines)**:
+   - When importing piste lines, ensure `LineString` and `MultiLineString` geometry filters are preserved on `live-pistes-casing`, `live-pistes-lines`, and `live-pistes-labels` to prevent polygon boundary strokes (3-parallel-line visual glitch).
+4. **Resort Name Sanitization**:
+   - Verify `cleanResortName()` in `src/utils/classification.ts` runs on ingestion to suppress multilingual script concatenation (e.g., Cyrillic/CJK concatenations when English Latin names exist).
+

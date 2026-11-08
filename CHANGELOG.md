@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `docs: document data pipeline, upstream ingestion protocols, and QA checklists in ARCHITECTURE.md`
+- **What was changed**:
+  - Added **Section 11 (Data Pipeline, Upstream Ingestion & Maintenance Procedures)** to [`ARCHITECTURE.md`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/ARCHITECTURE.md).
+  - Codified the **Annual Macro Refresh (Late October/November)** vs. **In-Season Spot Edits** cadence.
+  - Documented the exact post-ingestion QA checklist: automated URL audit and healing (`scripts/apply_comprehensive_url_cleanup.py`), Nordic acreage sanitization (zeroing park boundary acreages), geometry filtering to prevent polygon 3-line artifacts, and name sanitization (`cleanResortName()`).
+  - Corrected Section 10 to reflect the current Modular Architecture standard.
+
 ### `fix: comprehensive global ski resort URL cleanup, dead-link purging, and subpath healing`
 - **What was changed**:
   - **Comprehensive Multi-Protocol Network Audit**: Ran automated HTTP and DNS audits across all 3,305 unique website links and 3,155 hostnames in the global ski area atlas.
