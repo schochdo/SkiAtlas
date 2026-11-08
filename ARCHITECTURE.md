@@ -32,11 +32,17 @@ SkiAtlas/
 │   ├── App.tsx                    ← Core orchestrator & map viewport (~2,800 lines)
 │   ├── main.tsx                   ← React root mount
 │   ├── index.css                  ← Tailwind base + MapLibre overrides
+│   ├── camera/                    ← Camera & Flight Subsystem
+│   │   ├── index.ts               ← Unified camera module entry point
+│   │   ├── types.ts               ← CameraMode ('idle'|'flight'|'flyto'|'inspect'), kinematics constants
+│   │   ├── cameraStateMachine.ts  ← Finite State Machine, safeFlyTo, safeEaseTo
+│   │   ├── cameraUtils.ts         ← Geodesic displacement math, terrain sampling, globe fit
+│   │   └── useKeyboardFlight.ts   ← 60fps rAF keyboard flight engine (WASD + arrows + QE)
 │   ├── types/
 │   │   └── index.ts               ← SkiResort, PassNetwork, BasemapMode, SortBy, etc.
 │   ├── utils/
 │   │   ├── formatters.ts          ← Unit hygiene helpers: formatSnow, formatVert, formatAcres, formatDistance
-│   │   ├── camera.ts              ← safeFlyTo, safeEaseTo, programmatic flight coordination
+│   │   ├── camera.ts              ← Forwarding facade to src/camera/
 │   │   ├── geometry.ts            ← extractPointCoordinates, haversineDistanceKm
 │   │   ├── classification.ts      ← PASS_COLORS, PASS_DISPLAY_NAMES, getResortStats, getCategoryBadge
 │   │   ├── mapStyles.ts           ← MapLibre style JSON factory (satellite, osm, topo, Mapterhorn DEM, slope, aspect)
@@ -86,6 +92,7 @@ The codebase follows clean separation of concerns, isolating heavy data sets, do
 
 | Layer / Directory | Primary Files | Responsibilities |
 |---|---|---|
+| **Camera Subsystem** | `src/camera/` | Finite State Machine (`idle`, `flight`, `flyto`, `inspect`), 60fps rAF keyboard flight engine (`useKeyboardFlight`), terrain obstacle clearance guards, and safe programmatic navigation (`safeFlyTo`, `safeEaseTo`). |
 | **Types** | `src/types/index.ts` | Complete TypeScript domain interfaces (`SkiResort`, `PassNetwork`, `DailyForecast`, `ResortWeatherData`, etc.) |
 | **Data Modules** | `src/data/resorts.ts`, `src/data/heliCat.ts` | Static curated flagship resorts (~91 global ski areas) and heli/cat operators. Separated from component closures to prevent HMR recompilation slowdowns. |
 | **Utilities** | `src/utils/` | Formatters (unit hygiene), camera bounds validation (`safeFlyTo`), geometry math (`haversineDistanceKm`), pass & badge classifications (`classifySkiFeature`), and MapLibre style factories. |

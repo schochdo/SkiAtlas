@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `refactor: extract camera controls and 60fps keyboard flight engine into modular src/camera subsystem`
+- **What was changed**:
+  - **Modular Architecture (`src/camera/`)**: Extracted 330+ lines of raw keyboard flight logic, `requestAnimationFrame` loops, transform calls, and camera matrix math out of [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) into a dedicated camera subsystem.
+  - **Finite State Machine (`cameraStateMachine.ts`)**: Implemented a formal FSM (`'idle' | 'flight' | 'flyto' | 'inspect'`) coordinating keyboard cruising, mouse interactions, and programmatic transitions (`safeFlyTo`). Keystrokes or canvas clicks cleanly interrupt running programmatic flights without race conditions.
+  - **Terrain Clearance Guards (`cameraUtils.ts`)**: Built-in predictive terrain obstacle detection (`LOOKAHEAD_SECONDS = 0.6`) and camera eye clearance floors (`MIN_CAMERA_CLEARANCE_METERS = 25.0`), preventing the camera from clipping into mountain slopes or getting locked when zooming in.
+  - **Clean React Hook (`useKeyboardFlight.ts`)**: Declarative hook managing window key events, active velocity integration, ground clamping release during flight for level cruising, and instant cancellation on blur or canvas mouse gestures.
+  - **Backward-Compatible Facade (`src/utils/camera.ts`)**: Forwarded existing camera utility exports to `src/camera/` while keeping all interfaces completely backward-compatible.
+- **Why this specific approach was chosen**:
+  - Isolating camera controls from `App.tsx` prevents camera regressions when modifying UI or data ingestion, improves maintainability, and provides a clear boundary for future camera features (e.g. gamepads, waypoints, or tour mode).
+
 ### `docs: document data provenance in DATA_SOURCES.md and add on-demand sources modal`
 - **What was changed**:
   - **Comprehensive Data Documentation (`DATA_SOURCES.md`)**: Created an authoritative specification of all 7 foundational datasets powering SkiAtlas: 3D Terrain (Mapterhorn DEM), Satellite Orthophotos (Esri & EOX Sentinel-2), Ski Areas & Trails (OpenSkiData & OSM), Historic Fire Lookouts (NHLR & FFLA), Mountain Summits (USGS GNIS & Natural Earth), International Boundaries (Natural Earth 10m Land Mesh), and Alpine Snowfall (Open-Meteo Ensemble). Details providers, URLs, resolutions, calibrations, and verification standards.
