@@ -625,11 +625,17 @@ export default function App() {
   const fetchedBboxKeysSetRef = useRef<Set<string>>(new Set());
   const hasLocalServerRef = useRef(true);
 
-  const ingestTrailFeatures = useCallback((features: any[], isPermanent: boolean = false) => {
+  const ingestTrailFeatures = useCallback((features: any[], isPermanent: boolean = false, resortCategory?: string) => {
     if (!features || !features.length || !mapRef.current) return;
 
     for (const f of features) {
       const p = f.properties;
+      if (resortCategory) {
+        p.resort_category = resortCategory;
+        if (resortCategory === 'nordic') {
+          p['piste:type'] = 'nordic';
+        }
+      }
       if (p?.kind === 'lift') {
         if (p.status && p.status !== 'operating') continue;
         const n = (p.name || '').toLowerCase();
@@ -645,6 +651,14 @@ export default function App() {
           uses.includes('backcountry')
         ) {
           continue;
+        }
+
+        // Sanitize mislabeled trails:
+        // If a trail is marked downhill but only has 'hike' or 'nordic' in its uses (and no 'downhill'), it is cross-country/hiking
+        if (p['piste:type'] === 'downhill') {
+          if ((uses.includes('nordic') || uses.includes('hike')) && !uses.includes('downhill')) {
+            p['piste:type'] = 'nordic';
+          }
         }
       }
       const fid = String(f.id || p?.id);
@@ -679,8 +693,20 @@ export default function App() {
     }
   }, []);
 
-  const fetchResortStaticTrails = useCallback(async (resortId: string) => {
+  const fetchResortStaticTrails = useCallback(async (resortId: string, knownCategory?: string) => {
     if (loadedResortTrailsRef.current.has(resortId)) return;
+    let category = knownCategory;
+    if (!category) {
+      const gFeat = allGlobalFeaturesRef.current?.find((f) => f.properties?.id === resortId);
+      if (gFeat) {
+        category = gFeat.properties?.category;
+      } else {
+        const atlasResort = GLOBAL_SKI_ATLAS.find((r) => r.id === resortId);
+        if (atlasResort) category = atlasResort.category;
+      }
+    }
+    category = category || 'downhill';
+
     if (hasLocalServerRef.current) {
       try {
         // 1. Try local SQLite API first (instant query from trails.db)
@@ -688,7 +714,7 @@ export default function App() {
         if (apiRes.ok) {
           const data = await apiRes.json();
           if (data.features && data.features.length) {
-            ingestTrailFeatures(data.features, true);
+            ingestTrailFeatures(data.features, true, category);
             loadedResortTrailsRef.current.add(resortId);
             return;
           }
@@ -705,7 +731,7 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data.features && data.features.length) {
-          ingestTrailFeatures(data.features, true);
+          ingestTrailFeatures(data.features, true, category);
           loadedResortTrailsRef.current.add(resortId);
         }
       }
@@ -753,7 +779,11 @@ export default function App() {
       // 1. Curated flagships
       for (const r of GLOBAL_SKI_ATLAS) {
         if (r.lat >= south - 0.04 && r.lat <= north + 0.04 && r.lng >= west - 0.04 && r.lng <= east + 0.04) {
-          fetchResortStaticTrails(r.id);
+          const cat = r.category || 'downhill';
+          if (cat === 'nordic' && !showNordic) continue;
+          if (cat === 'downhill' && !showDownhill) continue;
+          if (cat === 'heli_cat' && !showHeliCat) continue;
+          fetchResortStaticTrails(r.id, cat);
           matchedAny = true;
         }
       }
@@ -764,7 +794,11 @@ export default function App() {
           const pt = f.geometry?.coordinates;
           if (pt && pt[1] >= south - 0.04 && pt[1] <= north + 0.04 && pt[0] >= west - 0.04 && pt[0] <= east + 0.04) {
             if (f.properties?.id) {
-              fetchResortStaticTrails(f.properties.id);
+              const cat = f.properties?.category || 'downhill';
+              if (cat === 'nordic' && !showNordic) continue;
+              if (cat === 'downhill' && !showDownhill) continue;
+              if (cat === 'heli_cat' && !showHeliCat) continue;
+              fetchResortStaticTrails(f.properties.id, cat);
               matchedAny = true;
             }
           }
@@ -814,7 +848,7 @@ export default function App() {
         }
       } catch (_) {}
     }
-  }, [fetchResortStaticTrails, ingestTrailFeatures]);
+  }, [fetchResortStaticTrails, ingestTrailFeatures, showDownhill, showNordic, showHeliCat]);
 
   const fetchOverpassBboxRef = useRef(fetchOverpassBbox);
   useEffect(() => {
@@ -3070,10 +3104,14 @@ export default function App() {
       // Strictly match downhill alpine pistes and connector trails; exclude nordic and municipal paths.
       // When showHeliCat is off, also exclude trails tagged is_heli_cat=true.
       const dlCond: any[] = [
-        'any',
-        ['==', ['get', 'piste:type'], 'downhill'],
-        ['==', ['get', 'piste:type'], 'connection'],
-        ['all', ['!', ['has', 'piste:type']], ['!=', ['get', 'piste:type'], 'nordic']],
+        'all',
+        ['!=', ['get', 'piste:type'], 'nordic'],
+        ['!=', ['coalesce', ['get', 'resort_category'], ''], 'nordic'],
+        [
+          'any',
+          ['==', ['get', 'piste:type'], 'downhill'],
+          ['==', ['get', 'piste:type'], 'connection'],
+        ],
       ];
       if (heliCatExclusion) {
         allowedConditions.push(['all', dlCond, heliCatExclusion]);
@@ -3084,7 +3122,11 @@ export default function App() {
 
     if (showNordic) {
       // Match dedicated cross-country nordic trails
-      allowedConditions.push(['==', ['get', 'piste:type'], 'nordic']);
+      allowedConditions.push([
+        'any',
+        ['==', ['get', 'piste:type'], 'nordic'],
+        ['==', ['get', 'resort_category'], 'nordic'],
+      ]);
     }
 
     if (showHeliCat && !showDownhill) {

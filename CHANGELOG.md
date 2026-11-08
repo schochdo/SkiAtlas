@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: eliminate rogue nordic and hiking trails when Nordic category is toggled off`
+- **What was wrong before**:
+  - When viewing downhill alpine resorts (e.g. Wildcat Mountain, NH), random cross-country/hiking loops across the valley (e.g. Great Glen Trails: "Aqueduct Loop", "Sage's Path", "Up Up and Away", "Drifter", etc.) continued to render on screen even with Nordic toggled off.
+  - **Root Cause**:
+    1. **OpenSkiMap Pipeline Tagging Bug**: OpenSkiMap's upstream data pipeline defaulted ways with `piste:difficulty` tags to `piste:type="downhill"` even when they were hiking/XC trails (`uses=["hike"]` or `uses=["nordic"]`) or inside dedicated Nordic ski centers. 11,351 trails across 693 trail files in `public/data/trails/` were mislabeled with `piste:type="downhill"`.
+    2. **Over-Fetching Across Categories**: In `fetchOverpassBbox`, spatial bbox bounding queries loaded static trail files for any ski area within the bbox without checking whether that ski area's category (`cat === 'nordic'`) was currently active.
+    3. **Permissive Downhill Filter**: MapLibre's downhill filter (`dlCond`) rendered any feature matching `piste:type == 'downhill'` without checking `resort_category` or `uses`.
+- **Solution**:
+  - **Comprehensive Data Healing (`scripts/fix_mislabeled_nordic_trails.py`)**: Sanitized all 693 affected trail files in `public/data/trails/`, correcting 2,846 hiking/XC trails in alpine files and 8,505 trails inside dedicated Nordic centers from erroneous `"downhill"` to `"nordic"`.
+  - **Runtime Ingestion Reclassification**: In `ingestTrailFeatures()`, automatically reclassifies any incoming trail tagged `"downhill"` that has `uses: ['hike']` or `uses: ['nordic']` (without `'downhill'`) to `"nordic"`, and stamps `resort_category: 'nordic'` on all trails from Nordic centers.
+  - **Strict GPU Layer Clamping**: Updated MapLibre's downhill filter (`dlCond`) to explicitly forbid `resort_category == 'nordic'` and `piste:type == 'nordic'`, ensuring zero Nordic trails can render when Nordic is disabled.
+  - **Category-Aware Bbox Loading**: Updated `fetchOverpassBbox` to skip fetching Nordic resort files when `showNordic` is false.
+
+
 ### `feat: partition map drawer into Basemap and Layers tabs and elevate minimalist °F/°C unit toggle to header`
 - **What was changed**:
   - **Minimalist `°F` / `°C` Toggle in Top Header**: Placed a Swiss-crafted minimalist segmented pill (`[ °F | °C ]`) directly in [`TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx) next to the Fullscreen button. Removed the units selector from map menus, treating units of measure as the global app-wide preference they actually are.
