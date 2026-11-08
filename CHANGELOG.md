@@ -6,6 +6,27 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: purge floating ocean border and enrich nationwide fire lookout registry with authentic agencies and statuses`
+- **What was wrong before**:
+  - **Floating Ocean Border**: An isolated 9-point curved boundary line was floating in the Atlantic ocean off Bar Harbor, Maine (`lon: -67.30` to `-67.09`, `lat: 44.36` to `44.30`). This was an orphaned maritime delimitation arc (1984 ICJ Gulf of Maine case) disconnected from any terrestrial borders, creating cartographic noise.
+  - **The Leon Peak Situation Nationwide**: Like Leon Peak, hundreds of lookouts across North America (such as Mount Holmes in Yellowstone, Wyoming Peak in the Bridger-Teton, Cold Mountain, Little Snowy Top, and Rock Rabbit in Idaho) had been defaulted to status `"Standing"` with generic agency `"Historic Registry (NHLR)"`. When users zoomed in to these mountain summits on 3D satellite imagery, they found bare ground, rubble, or stone foundations with no standing tower, causing confusion ("Where is the lookout here?").
+  - Many operational watchtowers (e.g. Arctic Point, Sheepeater, Benchmark) and recreation cabin rentals (e.g. Castle Butte, Deadwood) were indistinguishable from ordinary or decommissioned lookouts.
+- **Root Cause**:
+  - In `public/data/world_boundaries.geojson`, feature index 20 was a raw ICJ maritime border fragment retained from the upstream Natural Earth/OSM dataset.
+  - The lookout data pipeline originally extracted NHLR coordinates and names without fetching the accompanying site descriptions, locations, or administering bodies, blindly assigning `agency: "Historic Registry (NHLR)"` and `status: "Standing"` to every single registry entry regardless of whether the tower was active, rented, abandoned, or in ruins.
+- **Solution**:
+  - **Purged Ocean Maritime Delimitation Line**: Removed feature index 20 from `public/data/world_boundaries.geojson` and bumped boundary cache buster to `v=20261108_clean_borders` in `src/App.tsx`.
+  - **Enriched Nationwide NHLR Inventory**: Scraped and parsed all 1,843 NHLR lookout register profiles, extracting authentic managing agencies (`USFS Salmon-Challis NF`, `USFS Payette NF`, `USFS Grand Mesa NF`, `NPS Yellowstone`, `CAL FIRE`, `WA DNR`, `ODF`, etc.), official surveyed elevations, and site historical descriptions.
+  - **Operational Status Classification**: Reconciled the entire database into distinct operational badges:
+    - **Historic Ruins** (47 lookouts): Stone bases, log frames, and foundation sites (Leon Peak, Mount Holmes, Wyoming Peak, Beartrap, Rock Rabbit, Cold Mountain).
+    - **Abandoned Tower** (253 lookouts): Decommissioned and unstaffed standing towers (Fairview Peak, Deadline Ridge, Burton Peak, Short Creek).
+    - **Active Watchtower** (113 lookouts): Staffed towers actively used for wildfire detection (Arctic Point, Sheepeater, Benchmark, Devil's Head).
+    - **Cabin Rental** (36 lookouts): Lookouts available in the USFS/Recreation.gov rental system (Castle Butte, Deadwood, Jersey Jim).
+    - **Historic Site** (112 lookouts): Restored historical lookouts and interpretive sites (James T. Saban, Shadow Mountain, Hahns Peak).
+  - **Bumped Lookout Cache Buster**: Updated `src/App.tsx` references to `v=20261108_v4`.
+
+
+
 ### `fix: eliminate popup footer text truncation, add historic ruins badge, and reconcile Leon Peak`
 - **What was wrong before**:
   - In fire lookout map inspection popups, the agency and state text in the footer row was getting cut off with an ellipsis (e.g. `Historic Registry (NHLR) · ...`), hiding the state code and managing jurisdiction.

@@ -627,7 +627,7 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v3'))
+    fetch(getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v4'))
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!cancelled && data && data.features) {
@@ -2034,7 +2034,7 @@ export default function App() {
       // World Country & Administrative Boundary Lines (Crisp vector lines, zero raster blur)
       map.addSource('world-boundaries-source', {
         type: 'geojson',
-        data: getStaticDataUrl('data/world_boundaries.geojson?v=20261106_restored_borders'),
+        data: getStaticDataUrl('data/world_boundaries.geojson?v=20261108_clean_borders'),
       });
 
       // Country International Borders (High-resolution 10m Natural Earth vectors, stitched & smoothed)
@@ -2902,7 +2902,7 @@ export default function App() {
       map.addSource('fire-lookouts-source', {
         type: 'geojson',
         promoteId: 'id',
-        data: getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v3'),
+        data: getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v4'),
       });
 
       // Markers (Tier 3 -> Tier 2 -> Tier 1 so Apex giants render on top)

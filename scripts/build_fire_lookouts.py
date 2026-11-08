@@ -118,45 +118,60 @@ except Exception as e:
     print(f"   USFS EDW error: {e}")
 
 # --- 2. National Historic Lookout Register (NHLR) Across All States ---
-print("2. Fetching National Historic Lookout Register (NHLR) lookouts across all states...")
-all_states = [
-    'id', 'wa', 'or', 'mt', 'ca', 'wy', 'co', 'ut', 'nm', 'az', 'nv',
-    'nh', 'vt', 'me', 'ny', 'pa', 'nc', 'va', 'wv', 'tn', 'ga', 'al',
-    'sc', 'fl', 'ms', 'la', 'ar', 'tx', 'ok', 'mo', 'il', 'in', 'oh',
-    'mi', 'wi', 'mn', 'ia', 'nd', 'sd', 'ne', 'ks', 'ky', 'md', 'de',
-    'nj', 'ct', 'ri', 'ma'
-]
-
+print("2. Loading enriched National Historic Lookout Register (NHLR) lookouts...")
+nhlr_cache_file = "scripts/nhlr_enriched.json"
 nhlr_count = 0
-for st in all_states:
-    url = f"http://nhlr.org/lookouts/us/{st}/"
-    try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'})
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            html = resp.read().decode('utf-8', errors='ignore')
-            # Extract esri Graphics: Graphic(new Point(lon, lat), flagSymbol, {attributes})
-            matches = re.findall(r'Graphic\(new Point\(([-0-9\.]+),\s*([-0-9\.]+)\)[^\{]*(\{.*?\})', html)
-            for lon_str, lat_str, meta_str in matches:
-                try:
-                    lon = float(lon_str)
-                    lat = float(lat_str)
-                    name_m = re.search(r'\"LookoutName\":\s*\"([^\"]+)\"', meta_str)
-                    name = name_m.group(1) if name_m else "Fire Lookout"
-                    raw_items.append({
-                        "name": clean_name(name),
-                        "lat": lat,
-                        "lon": lon,
-                        "elevation_ft": None,
-                        "agency": "Historic Registry (NHLR)",
-                        "state": st.upper(),
-                        "status": "Standing"
-                    })
-                    nhlr_count += 1
-                except:
-                    pass
-    except Exception as e:
-        pass
-print(f"   Collected {nhlr_count} from NHLR across {len(all_states)} states.")
+if os.path.exists(nhlr_cache_file):
+    with open(nhlr_cache_file, "r", encoding="utf-8") as f:
+        enriched_items = json.load(f)
+    for item in enriched_items:
+        raw_items.append({
+            "name": clean_name(item["name"]),
+            "lat": item["lat"],
+            "lon": item["lon"],
+            "elevation_ft": item.get("elev_ft"),
+            "agency": item.get("agency") or "USFS",
+            "state": item.get("state", ""),
+            "status": item.get("status", "Standing")
+        })
+        nhlr_count += 1
+    print(f"   Loaded {nhlr_count} enriched lookouts from NHLR cache.")
+else:
+    all_states = [
+        'id', 'wa', 'or', 'mt', 'ca', 'wy', 'co', 'ut', 'nm', 'az', 'nv',
+        'nh', 'vt', 'me', 'ny', 'pa', 'nc', 'va', 'wv', 'tn', 'ga', 'al',
+        'sc', 'fl', 'ms', 'la', 'ar', 'tx', 'ok', 'mo', 'il', 'in', 'oh',
+        'mi', 'wi', 'mn', 'ia', 'nd', 'sd', 'ne', 'ks', 'ky', 'md', 'de',
+        'nj', 'ct', 'ri', 'ma'
+    ]
+    for st in all_states:
+        url = f"http://nhlr.org/lookouts/us/{st}/"
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                html = resp.read().decode('utf-8', errors='ignore')
+                matches = re.findall(r'Graphic\(new Point\(([-0-9\.]+),\s*([-0-9\.]+)\)[^\{]*(\{.*?\})', html)
+                for lon_str, lat_str, meta_str in matches:
+                    try:
+                        lon = float(lon_str)
+                        lat = float(lat_str)
+                        name_m = re.search(r'\"LookoutName\":\s*\"([^\"]+)\"', meta_str)
+                        name = name_m.group(1) if name_m else "Fire Lookout"
+                        raw_items.append({
+                            "name": clean_name(name),
+                            "lat": lat,
+                            "lon": lon,
+                            "elevation_ft": None,
+                            "agency": "USFS",
+                            "state": st.upper(),
+                            "status": "Standing"
+                        })
+                        nhlr_count += 1
+                    except:
+                        pass
+        except Exception as e:
+            pass
+    print(f"   Collected {nhlr_count} from NHLR across {len(all_states)} states.")
 
 # --- 3. Dedicated Core Alpine & Wilderness Lookouts (Salmon-Challis NF, Mount Rainier, Glacier, etc.) ---
 print("3. Adding dedicated verified Alpine & Wilderness towers...")
@@ -178,6 +193,21 @@ premier_lookouts = [
     {"name": "Sheephorn Lookout", "lat": 44.88252, "lon": -114.09117, "elevation_ft": 8620, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
     {"name": "Salmon Mountain Lookout", "lat": 45.6169, "lon": -114.8367, "elevation_ft": 8943, "agency": "USFS Bitterroot / Salmon NF", "state": "ID", "status": "Active"},
     {"name": "Greylock Mountain Lookout", "lat": 44.4197, "lon": -114.6974, "elevation_ft": 9317, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
+
+    # Colorado High Alpine Lookouts
+    {"name": "Leon Peak Lookout", "lat": 39.07942, "lon": -107.84395, "elevation_ft": 11236, "agency": "USFS Grand Mesa NF", "state": "CO", "status": "Historic Ruins"},
+    {"name": "Fairview Peak Lookout", "lat": 38.6853, "lon": -106.5658, "elevation_ft": 13214, "agency": "USFS Gunnison NF", "state": "CO", "status": "Abandoned"},
+    {"name": "Devil's Head Lookout", "lat": 39.2599, "lon": -105.1006, "elevation_ft": 9748, "agency": "USFS Pike NF", "state": "CO", "status": "Active Watchtower"},
+    {"name": "Deadman Lookout", "lat": 40.8299, "lon": -105.7515, "elevation_ft": 10710, "agency": "USFS Roosevelt-Arapaho NF", "state": "CO", "status": "Standing"},
+    {"name": "Hahns Peak Lookout", "lat": 40.8038, "lon": -106.9494, "elevation_ft": 10759, "agency": "USFS Routt NF", "state": "CO", "status": "Historic Site"},
+    {"name": "Parkview Lookout", "lat": 40.3294, "lon": -106.1362, "elevation_ft": 12296, "agency": "USFS Routt NF", "state": "CO", "status": "Historic Site"},
+    {"name": "Shadow Mountain Lookout", "lat": 40.2100, "lon": -105.8350, "elevation_ft": 9923, "agency": "NPS Rocky Mountain", "state": "CO", "status": "Historic Site"},
+    {"name": "Park Point Lookout", "lat": 37.3325, "lon": -108.4558, "elevation_ft": 8571, "agency": "NPS Mesa Verde", "state": "CO", "status": "Active Watchtower"},
+    {"name": "Jersey Jim Lookout", "lat": 37.4917, "lon": -108.2417, "elevation_ft": 9830, "agency": "USFS San Juan NF", "state": "CO", "status": "Cabin Rental"},
+
+    # Wyoming Range & Yellowstone
+    {"name": "Mount Holmes Lookout", "lat": 44.8217, "lon": -110.8547, "elevation_ft": 10256, "agency": "NPS Yellowstone", "state": "WY", "status": "Historic Ruins"},
+    {"name": "Wyoming Peak Lookout", "lat": 42.6053, "lon": -110.7303, "elevation_ft": 11375, "agency": "USFS Bridger-Teton NF", "state": "WY", "status": "Historic Ruins"},
 
     # Mount Rainier National Park (Washington)
     {"name": "Mount Fremont Lookout", "lat": 46.9343, "lon": -121.6751, "elevation_ft": 7181, "agency": "NPS Mount Rainier", "state": "WA", "status": "Active / Historic"},
@@ -432,10 +462,16 @@ for item in raw_items:
                 existing["elevation_ft"] = item["elevation_ft"]
             if not existing.get("state") and item.get("state"):
                 existing["state"] = item["state"]
-            if item.get("agency") and "USFS / NPS / State" not in item.get("agency"):
-                existing["agency"] = item["agency"]
-            if item.get("status") and item.get("status") != "Standing":
-                existing["status"] = item["status"]
+            # Upgrade agency if new one is more specific
+            cur_agency = existing.get("agency", "")
+            new_agency = item.get("agency", "")
+            if new_agency and new_agency not in ["USFS", "Historic Registry (NHLR)", "USFS / NPS / State"]:
+                if cur_agency in ["USFS", "Historic Registry (NHLR)", "USFS / NPS / State"] or len(new_agency) > len(cur_agency):
+                    existing["agency"] = new_agency
+            # Upgrade status if new one is distinctive
+            new_status = item.get("status", "Standing")
+            if new_status and new_status != "Standing":
+                existing["status"] = new_status
             dup = True
             break
         # Also check name similarity if in same state (up to 25 km for approx centroid lists)
@@ -445,10 +481,14 @@ for item in raw_items:
             if norm1 and norm1 == norm2 and dist < 25.0:
                 if existing.get("elevation_ft") is None and item.get("elevation_ft") is not None:
                     existing["elevation_ft"] = item["elevation_ft"]
-                if item.get("agency") and "USFS / NPS / State" not in item.get("agency"):
-                    existing["agency"] = item["agency"]
-                if item.get("status") and item.get("status") != "Standing":
-                    existing["status"] = item["status"]
+                cur_agency = existing.get("agency", "")
+                new_agency = item.get("agency", "")
+                if new_agency and new_agency not in ["USFS", "Historic Registry (NHLR)", "USFS / NPS / State"]:
+                    if cur_agency in ["USFS", "Historic Registry (NHLR)", "USFS / NPS / State"] or len(new_agency) > len(cur_agency):
+                        existing["agency"] = new_agency
+                new_status = item.get("status", "Standing")
+                if new_status and new_status != "Standing":
+                    existing["status"] = new_status
                 dup = True
                 break
 
