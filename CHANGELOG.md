@@ -6,6 +6,28 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `fix: restore persistent country boundary labels with zoom-responsive spacing`
+- **What was wrong before**:
+  - Country boundary labels (`name_left` and `name_right` along international borders) completely disappeared across all zoom levels.
+- **Root Cause**:
+  - **Root Cause #1 (Excessive `symbol-spacing`)**: In [`src/layers/boundaryLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/boundaryLayers.ts), `symbol-spacing` was set to `1600px` at zoom 3.5, `2600px` at zoom 5.5, and `3600px` at zoom 7.0. Because `symbol-spacing` in MapLibre GL is measured in screen pixels, MapLibre required border lines in the viewport to exceed 1600–3600 pixels in length to place a label. On standard screens (1440–1920px wide), almost no border segment met this requirement, causing MapLibre to reject and drop all labels.
+  - **Root Cause #2 (Premature `maxzoom: 7.2` & Opacity Cutoff)**: Both left and right label layers had `maxzoom: 7.2` and an opacity interpolation ending at `7.2, 0.0`. This abruptly terminated all country boundary labels as soon as the user zoomed into ski regions or mountain passes (zooms 7.5–14+), leaving thick border lines unlabelled (e.g. Chile/Argentina at Portillo, Switzerland/Italy at Zermatt).
+  - **Root Cause #3 (Strict `text-max-angle: 45`)**: Mountain boundaries follow jagged alpine crests and continental divides. With `text-max-angle` at 45°, MapLibre suppressed text whenever neighboring line segments turned by >45°.
+  - **Root Cause #4 (Delayed `minzoom: 3.2`)**: The `minzoom: 3.2` threshold prevented labels from showing on wide continental and globe views.
+- **What changed**:
+  - In [`src/layers/boundaryLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/boundaryLayers.ts):
+    - Lowered `minzoom` to `2.8` and removed `maxzoom` so country boundary labels remain persistent from sub-continental zoom all the way down into mountain ski valleys.
+    - Replaced screen-busting `symbol-spacing` with responsive pixel interpolation: `3.0: 600px, 6.0: 450px, 9.0: 350px, 12.0: 250px, 15.0: 200px`.
+    - Relaxed `text-max-angle` from 45° to 65° to accommodate natural alpine ridge curvature without label rejection.
+    - Updated `text-size` to scale smoothly (`3.0: 9.0px, 6.0: 10.5px, 9.0: 11.5px, 12.0: 12.5px, 15.0: 13.5px`).
+    - Updated `text-opacity` to remain steady (`2.8: 0.0, 3.4: 0.85, 6.0: 0.95, 14.0: 0.90`) without any high-zoom fadeout.
+  - In [`src/layers/layerThemeManager.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/layerThemeManager.ts):
+    - Aligned theme sync colors to `#FFFFFF` on dark basemaps with `#0F0E0D` halo, and `#0F172A` on light basemaps with `#FAF8F3` halo.
+- **Why this specific approach was chosen**:
+  - Restores reliable, high-contrast sovereign nation labeling along every international boundary line at both global overviews and high-resolution mountain resort scales, honoring the editorial cartographic aesthetic.
+
+---
+
 ### `fix: purge cross-border Argentine backcountry routes from Ski Portillo trail network`
 - **What was wrong before**:
   - Viewing Ski Portillo displayed spurious trails across the international border in Mendoza, Argentina (in the alpine cirques around Cerro Iglesia and near Refugio Casa del Gringo / Cristo Redentor), as well as distant backcountry routes 5 km to the west in Cajón Ojos de Agua.
