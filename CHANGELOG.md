@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `refactor: extract vector layer management and reactive styling into modular src/layers subsystem`
+- **What was changed**:
+  - **Modular Vector Layer Architecture (`src/layers/`)**: Extracted over 2,000 lines of imperative `addSource`, `addLayer`, layout/paint properties, and reactive filter/theme synchronization out of [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+  - **Domain Modularization**:
+    - [`trailLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/trailLayers.ts): Live vector ski pistes, difficulty fills/casings, aerialway lifts, hit-target buffers, and selected trail highlight vectors.
+    - [`boundaryLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/boundaryLayers.ts): Natural Earth 10m international land boundaries, 50m state borders, and 4-tier geographic reference places.
+    - [`resortLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/resortLayers.ts): Curated flagship ski atlas concentric rings, selected resort marker pulse, and global OpenSkiData mineral cluster hierarchy.
+    - [`poiLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/poiLayers.ts): Major mountain summits (with strict mathematical elevation sorting) and authentic historic fire lookouts.
+    - [`layerThemeManager.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/layerThemeManager.ts): Dedicated synchronization functions for basemap light/dark themes, metric/imperial elevation units, discipline visibility (downhill, nordic, heli/cat), and GPU slider filters.
+    - [`url.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/url.ts): Extracted standalone `getStaticDataUrl` helper resolving Vite public asset subpaths.
+  - **Codebase Simplification**: `src/App.tsx` shrank from 5,538 lines down to ~3,498 lines (over 36% smaller), converting massive raw configuration blocks into declarative subsystem calls.
+- **Why this specific approach was chosen**:
+  - Consolidating MapLibre layer specifications into domain-specific modules isolates styling and filter logic from the React view state, prevents accidental layer collision or z-index regressions, and enables isolated testing of map layers.
+
 ### `refactor: extract camera controls and 60fps keyboard flight engine into modular src/camera subsystem`
 - **What was changed**:
   - **Modular Architecture (`src/camera/`)**: Extracted 330+ lines of raw keyboard flight logic, `requestAnimationFrame` loops, transform calls, and camera matrix math out of [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) into a dedicated camera subsystem.

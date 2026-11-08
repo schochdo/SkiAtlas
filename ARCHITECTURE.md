@@ -38,6 +38,14 @@ SkiAtlas/
 │   │   ├── cameraStateMachine.ts  ← Finite State Machine, safeFlyTo, safeEaseTo
 │   │   ├── cameraUtils.ts         ← Geodesic displacement math, terrain sampling, globe fit
 │   │   └── useKeyboardFlight.ts   ← 60fps rAF keyboard flight engine (WASD + arrows + QE)
+│   ├── layers/                    ← Vector Layers & Styling Subsystem
+│   │   ├── index.ts               ← registerAllVectorLayers orchestrator & exports
+│   │   ├── types.ts               ← LAYER_IDS, SOURCE_IDS, registration interfaces
+│   │   ├── trailLayers.ts         ← Live vector pistes, aerial lifts, and selected trail highlight
+│   │   ├── boundaryLayers.ts      ← Natural Earth country/state borders, 4-tier places
+│   │   ├── resortLayers.ts        ← Curated flagship markers, selected pin, global clusters
+│   │   ├── poiLayers.ts           ← Major mountain peaks and historic fire lookouts
+│   │   └── layerThemeManager.ts   ← Reactive basemap theme, visibility, and GPU filter sync
 │   ├── types/
 │   │   └── index.ts               ← SkiResort, PassNetwork, BasemapMode, SortBy, etc.
 │   ├── utils/
@@ -93,6 +101,7 @@ The codebase follows clean separation of concerns, isolating heavy data sets, do
 | Layer / Directory | Primary Files | Responsibilities |
 |---|---|---|
 | **Camera Subsystem** | `src/camera/` | Finite State Machine (`idle`, `flight`, `flyto`, `inspect`), 60fps rAF keyboard flight engine (`useKeyboardFlight`), terrain obstacle clearance guards, and safe programmatic navigation (`safeFlyTo`, `safeEaseTo`). |
+| **Vector Layers Subsystem** | `src/layers/` | Modular source and layer definitions (`trailLayers`, `boundaryLayers`, `resortLayers`, `poiLayers`), central orchestrator (`registerAllVectorLayers`), and reactive theme/filter synchronization (`layerThemeManager`). |
 | **Types** | `src/types/index.ts` | Complete TypeScript domain interfaces (`SkiResort`, `PassNetwork`, `DailyForecast`, `ResortWeatherData`, etc.) |
 | **Data Modules** | `src/data/resorts.ts`, `src/data/heliCat.ts` | Static curated flagship resorts (~91 global ski areas) and heli/cat operators. Separated from component closures to prevent HMR recompilation slowdowns. |
 | **Utilities** | `src/utils/` | Formatters (unit hygiene), camera bounds validation (`safeFlyTo`), geometry math (`haversineDistanceKm`), pass & badge classifications (`classifySkiFeature`), and MapLibre style factories. |
