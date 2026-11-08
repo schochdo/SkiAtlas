@@ -6,6 +6,15 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `feat: partition map drawer into Basemap and Layers tabs and elevate minimalist °F/°C unit toggle to header`
+- **What was changed**:
+  - **Minimalist `°F` / `°C` Toggle in Top Header**: Placed a Swiss-crafted minimalist segmented pill (`[ °F | °C ]`) directly in [`TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx) next to the Fullscreen button. Removed the units selector from map menus, treating units of measure as the global app-wide preference they actually are.
+  - **Two-Tab Map Drawer (`Basemap` | `Layers`)**: Divided [`BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx) cleanly into two dedicated tabs:
+    - **Basemap Tab**: 5 cartographic raster/vector styles (Satellite 3D, Cloudless, OSM, Clean Voyager, Alpine Topo) + Earth Projection (`[ 🌐 3D Globe | 🗺️ Flat Map ]`).
+    - **Layers Tab**: Horizon Summits, Geographic Reference (Borders & Places), Terrain Overlays (None, Slope Angle, Aspect with opacity slider and micro-legend), and 3D Terrain Relief (Multiplier slider + quick presets).
+  - **Eliminated Scrolling**: Neither tab requires scrolling on standard viewports, resolving the tall 600px vertical stack into two crisp, single-glance panels.
+
+
 ### `feat: relocate resort filters above search bar with collapsible accordion and streamline Map Settings menu`
 - **What was changed**:
   - **Collapsible Filter Accordion**: Moved the full resort filter panel directly **above the search bar** inside the left directory tray ([`DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx)).

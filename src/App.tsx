@@ -4782,6 +4782,8 @@ export default function App() {
         onResetToGlobal={handleResetToGlobalExtent}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
+        unitsMetric={unitsMetric}
+        onSetUnitsMetric={handleSetUnitsMetric}
       />
 
       {/* DESKTOP DIRECTORY DOCK */}
@@ -4979,8 +4981,6 @@ export default function App() {
             setMapPitch(0);
           }
         }}
-        unitsMetric={unitsMetric}
-        onSetUnitsMetric={handleSetUnitsMetric}
         showPeaks={showPeaks}
         onTogglePeaks={() => setShowPeaks((prev) => !prev)}
         showCountryOutlines={showCountryOutlines}

@@ -5,12 +5,16 @@ interface TopNavBarProps {
   onResetToGlobal: () => void;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
+  unitsMetric: boolean;
+  onSetUnitsMetric: (toMetric: boolean) => void;
 }
 
 export const TopNavBar: React.FC<TopNavBarProps> = ({
   onResetToGlobal,
   isFullscreen,
   onToggleFullscreen,
+  unitsMetric,
+  onSetUnitsMetric,
 }) => {
   return (
     <header className="absolute top-0 inset-x-0 z-40 h-11 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
@@ -56,6 +60,36 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-medium">
+        {/* Minimalist Units of Measure Toggle (°F / ft vs °C / m) */}
+        <div className="flex items-center bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-0.5 h-7">
+          <button
+            type="button"
+            onClick={() => onSetUnitsMetric(false)}
+            className={`h-full px-2 rounded-[4px] text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center ${
+              !unitsMetric
+                ? 'bg-[#EAE5D9] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
+                : 'text-[#8A847C] hover:text-[#1C1B18]'
+            }`}
+            title="Imperial Units (°F, ft, in)"
+            aria-label="Imperial Units (°F, ft, in)"
+          >
+            °F
+          </button>
+          <button
+            type="button"
+            onClick={() => onSetUnitsMetric(true)}
+            className={`h-full px-2 rounded-[4px] text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center ${
+              unitsMetric
+                ? 'bg-[#EAE5D9] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
+                : 'text-[#8A847C] hover:text-[#1C1B18]'
+            }`}
+            title="Metric Units (°C, m, cm)"
+            aria-label="Metric Units (°C, m, cm)"
+          >
+            °C
+          </button>
+        </div>
+
         <button
           onClick={onToggleFullscreen}
           className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer flex items-center justify-center"
