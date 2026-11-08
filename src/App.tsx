@@ -4180,16 +4180,19 @@ export default function App() {
         isElevationHeld = false;
         try {
           const map = mapRef.current;
-          const tr = (map as any).transform;
-          const camLngLat = tr?.getCameraLngLat?.() || map.getCenter();
-          const camAlt = tr?.getCameraAltitude?.();
-          const bearing = map.getBearing();
-          const pitch = map.getPitch();
+          const terrain = (map as any).terrain;
+          const cam = (map as any)._camera;
 
-          if (camAlt !== null && camAlt !== undefined && isFinite(camAlt) && (map as any).calculateCameraOptionsFromCameraLngLatAltRotation) {
-            const opts = (map as any).calculateCameraOptionsFromCameraLngLatAltRotation(camLngLat, camAlt, bearing, pitch);
-            map.jumpTo(opts);
+          if (cam?.applyTransformChange && terrain) {
+            cam.applyTransformChange((transform: any) => {
+              if (cam.putCenterBackOnTerrain) {
+                cam.putCenterBackOnTerrain(transform, terrain, false);
+              } else if (transform.recalculateZoomAndCenter) {
+                transform.recalculateZoomAndCenter(terrain);
+              }
+            });
           }
+
           map.setCenterClampedToGround(true);
         } catch (_) {
           try {
@@ -4276,7 +4279,24 @@ export default function App() {
       if (zoomDelta !== 0) {
         const curZoom = map.getZoom();
         const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.5;
-        const nextZoom = Math.max(1.0, Math.min(20.5, curZoom + zoomDelta * zoomSpeed * dt));
+        let nextZoom = Math.max(1.0, Math.min(20.5, curZoom + zoomDelta * zoomSpeed * dt));
+
+        // Ground clearance protection when zooming in towards terrain
+        if (zoomDelta > 0) {
+          const tr = (map as any)._camera?.transform;
+          const camLngLat = tr?.getCameraLngLat?.() || map.getCenter();
+          const camAlt = tr?.getCameraAltitude?.();
+          const groundUnderCam = map.queryTerrainElevation(camLngLat);
+          const MIN_CAM_CLEARANCE = 15.0; // 15m camera eye clearance
+
+          if (camAlt !== null && camAlt !== undefined && isFinite(camAlt) &&
+              groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam)) {
+            if (camAlt <= groundUnderCam + MIN_CAM_CLEARANCE) {
+              nextZoom = curZoom; // Prevent crashing camera eye into terrain
+            }
+          }
+        }
+
         map.setZoom(nextZoom);
       }
 
@@ -4310,8 +4330,10 @@ export default function App() {
         map.setZoom(Math.max(1.0, Math.min(20.5, nextZ)));
       }
 
-      // Smooth horizontal flight and zoom with level, steady-altitude cruising
-      if (moveForward !== 0 || moveStrafe !== 0 || zoomDelta !== 0 || altitudeDelta !== 0) {
+      // Smooth horizontal flight with level, steady-altitude cruising
+      const hasHorizontalMove = moveForward !== 0 || moveStrafe !== 0;
+
+      if (hasHorizontalMove) {
         // Temporarily release center ground clamping so camera cruises level without peak-and-valley bouncing
         if (!isElevationHeld) {
           try {
@@ -4321,8 +4343,8 @@ export default function App() {
         }
 
         const len = Math.hypot(moveForward, moveStrafe);
-        moveForward /= len;
-        moveStrafe /= len;
+        const normForward = moveForward / len;
+        const normStrafe = moveStrafe / len;
 
         const curCenter = map.getCenter();
         const curBearing = map.getBearing();
@@ -4331,8 +4353,8 @@ export default function App() {
 
         const sinB = Math.sin(bearingRad);
         const cosB = Math.cos(bearingRad);
-        const deltaEastMeters = (sinB * moveForward + cosB * moveStrafe) * distMeters;
-        const deltaNorthMeters = (cosB * moveForward - sinB * moveStrafe) * distMeters;
+        const deltaEastMeters = (sinB * normForward + cosB * normStrafe) * distMeters;
+        const deltaNorthMeters = (cosB * normForward - sinB * normStrafe) * distMeters;
 
         const latRad = (curCenter.lat * Math.PI) / 180;
         const metersPerDegLat = 111320;

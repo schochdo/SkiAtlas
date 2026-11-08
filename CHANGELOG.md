@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: eliminate camera navigation jump on flight release and fix keyboard zoom freeze`
+- **What was wrong before**:
+  - **End-of-flight camera jump**: After flying with keyboard navigation controls (Arrow keys), releasing the keys caused the camera to jerk or jump abruptly to a different focal distance or altitude rather than coming to a seamless, stationary stop.
+  - **Keyboard zoom getting stuck**: Zooming in using keyboard keys (`+`/`=` or `Z`) would freeze, stick, or refuse to zoom in close to mountain terrain.
+- **Root Causes**:
+  1. **Division by Zero on Zoom/Altitude Navigation**: In `flightStep`, the translation block was gated on `if (moveForward !== 0 || moveStrafe !== 0 || zoomDelta !== 0 || altitudeDelta !== 0)`. When zooming with keyboard keys without pressing an arrow key, `moveForward` and `moveStrafe` were both `0`. `Math.hypot(0, 0)` produced `0`, resulting in `0 / 0 = NaN`. This evaluated `nextLat` and `nextLng` as `NaN` and called `map.jumpTo({ center: [NaN, NaN] })` on every frame, corrupting the center coordinates and causing zoom controls to lock up and freeze.
+  2. **Flat-Plane Camera Options vs. 3D DEM Terrain Raycasting**: In `stopFlight`, the camera recovery logic called `map.calculateCameraOptionsFromCameraLngLatAltRotation(camLngLat, camAlt, bearing, pitch)`. Under the hood, MapLibre's `calculateCameraOptionsFromCameraLngLatAltRotation` assumes a flat horizontal datum plane at `this.elevation` without querying 3D DEM relief. At oblique mountain angles, this flat-plane projection generated a center point miles away from the real mountain intersection. When `map.jumpTo(opts)` applied those flat coordinates, followed immediately by `map.setCenterClampedToGround(true)`, MapLibre's render loop on the next frame detected a massive elevation discrepancy against the actual 3D DEM, kicking the camera a second time and producing the visible jump.
+- **Solution**:
+  - **Isolated Horizontal Translation**: Guarded ground translation with `const hasHorizontalMove = moveForward !== 0 || moveStrafe !== 0`. Zoom and altitude keys no longer trigger horizontal displacement math, completely eliminating the `NaN` center corruption and allowing `setZoom` to zoom in and out smoothly.
+  - **Proximity Clearance for Keyboard Zoom**: Added camera eye ground clearance protection (`MIN_CAM_CLEARANCE = 15.0m`) to keyboard zoom-in, preventing the camera frustum from colliding with 3D terrain meshes or triggering near-clipping-plane rejection.
+  - **MapLibre-Native `putCenterBackOnTerrain` Transition**: In `stopFlight`, removed the flat-plane `calculateCameraOptionsFromCameraLngLatAltRotation` and `map.jumpTo(opts)` call. Instead, utilized MapLibre's native elevation settlement pipeline: `cam.applyTransformChange(transform => cam.putCenterBackOnTerrain(transform, terrain, false))` followed by `map.setCenterClampedToGround(true)`. This preserves the exact camera eye position and orientation in 3D space, raycasts along the line of sight to find the true DEM intersection, and anchors the center with zero camera eye displacement and zero jerk.
+
+
 ### `fix: relocate lookouts to surveyed topographic peak summits across Salmon-Challis and wilderness crests`
 - **What was wrong before**:
   - In 3D terrain inspections, several fire lookout marker dots (most noticeably Mount McGuire Lookout) were rendered on steep $45^\circ$ talus slopes and cliff faces thousands of feet below the actual mountain summit ridges.
