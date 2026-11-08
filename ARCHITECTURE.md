@@ -60,7 +60,13 @@ SkiAtlas/
 │   │   ├── heliCat.ts             ← Curated heli/cat operators (HELI_CAT_OPERATIONS)
 │   │   └── curatedTrails.ts       ← Pre-exported OSM piste/lift GeoJSON
 │   ├── services/
-│   │   └── weather.ts             ← Open-Meteo live meteorology service & neutral forecast builder
+│   │   ├── weather.ts             ← Open-Meteo live meteorology service & neutral forecast builder
+│   │   └── resorts/               ← OpenSkiData & Curated Dataset Pipeline Subsystem
+│   │       ├── index.ts           ← Pipeline exports
+│   │       ├── types.ts           ← Filter criteria, seed index, result types
+│   │       ├── deduplication.ts   ← Spatial & token deduplication, quality filters, URL hygiene
+│   │       ├── resortCatalog.ts   ← Ingestion of OpenSkiData, catalog merging, weather state preservation
+│   │       └── resortFiltering.ts ← Viewport in-bounds filtering, directory sorting, dynamic GeoJSON sync
 │   ├── components/
 │   │   ├── header/
 │   │   │   ├── TopNavBar.tsx      ← Editorial brand wordmark, extent reset, fullscreen, popover triggers
@@ -105,7 +111,7 @@ The codebase follows clean separation of concerns, isolating heavy data sets, do
 | **Types** | `src/types/index.ts` | Complete TypeScript domain interfaces (`SkiResort`, `PassNetwork`, `DailyForecast`, `ResortWeatherData`, etc.) |
 | **Data Modules** | `src/data/resorts.ts`, `src/data/heliCat.ts` | Static curated flagship resorts (~91 global ski areas) and heli/cat operators. Separated from component closures to prevent HMR recompilation slowdowns. |
 | **Utilities** | `src/utils/` | Formatters (unit hygiene), camera bounds validation (`safeFlyTo`), geometry math (`haversineDistanceKm`), pass & badge classifications (`classifySkiFeature`), and MapLibre style factories. |
-| **Services** | `src/services/weather.ts` | Asynchronous Open-Meteo live weather queries, temperature/snowfall caching, and batch prefetch orchestration. |
+| **Services** | `src/services/weather.ts`, `src/services/resorts/` | Asynchronous Open-Meteo live weather queries, batch prefetch orchestration, OpenSkiData ingestion, spatial & token deduplication, quality filtering, and viewport bounds filtering. |
 | **Header Components** | `src/components/header/` | `TopNavBar` (brand crest, global extent reset, display popover triggers) and `FilterModal` (pass toggles, sliders, unit selectors). |
 | **Sidebar Components** | `src/components/sidebar/` | `LeftDock`, `DirectoryList`, `ResortCard`, `ActiveSelectionBanner`, and `MobileSheet`. Manages directory search, sorting, and responsive drawer transitions. |
 | **Profile Components** | `src/components/profile/` | `MountainProfile` provides deep editorial inspection of selected mountains (elevation profiles, lifts/pistes stats, official website links, and 7-day meteorology bars). |

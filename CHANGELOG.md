@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `refactor: extract OpenSkiData ingestion, deduplication, and catalog pipeline into src/services/resorts subsystem`
+- **What was changed**:
+  - **Dedicated Resort Pipeline Subsystem (`src/services/resorts/`)**: Extracted all client-side spatial and token deduplication, quality filters, URL hygiene, catalog assembly, and dynamic GeoJSON synchronization out of [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+  - **Domain Modularization**:
+    - [`deduplication.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/services/resorts/deduplication.ts): Spatial proximity (<800m), vicinity (<15km) substring matching, and significant token analysis (`isDuplicateAgainstCurated`). Quality filters purging closed, defunct, abandoned, or zero-infrastructure ghost entries (`isDefunctOrClosed`, `isGhostOrZeroInfra`). URL sanitization with spam/casino domain blacklists and protocol repair (`sanitizeWebsiteUrl`).
+    - [`resortCatalog.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/services/resorts/resortCatalog.ts): OpenSkiData ingestion (`fetchGlobalSkiAreas`), feature classification, and catalog merging (`mergeResortsWithWeather`) which preserves active live weather states when global data resolves.
+    - [`resortFiltering.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/services/resorts/resortFiltering.ts): Directory filtering and sorting (`filterResortCatalog`), viewport in-bounds detection (`filterResortsInBounds`), dynamic source synchronization (`syncDynamicMapSources`), and selected resort pin updates (`updateSelectedResortPin`).
+  - **Codebase Simplification**: `src/App.tsx` shrank further from 3,498 lines down to 3,069 lines (total reduction of 2,469 lines across refactoring sessions), eliminating monolithic loops and regex filters from component code.
+- **Why this specific approach was chosen**:
+  - Isolates data validation, deduplication, and coordinate geometry from UI component closures, dramatically speeding up Hot Module Replacement (HMR) and enabling independent unit testing of deduplication algorithms.
+
 ### `refactor: extract vector layer management and reactive styling into modular src/layers subsystem`
 - **What was changed**:
   - **Modular Vector Layer Architecture (`src/layers/`)**: Extracted over 2,000 lines of imperative `addSource`, `addLayer`, layout/paint properties, and reactive filter/theme synchronization out of [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).

@@ -84,10 +84,16 @@ import {
   getResortStats,
   getResortWebsite,
   getCategoryBadge,
-  cleanNameForMatching,
-  getSignificantTokens,
-  cleanResortName,
 } from './utils/classification';
+import {
+  buildInitialResorts,
+  fetchGlobalSkiAreas,
+  mergeResortsWithWeather,
+  filterResortCatalog,
+  filterResortsInBounds,
+  syncDynamicMapSources,
+  updateSelectedResortPin,
+} from './services/resorts';
 import {
   getNeutralWeather,
   getInitialWeather,
@@ -135,16 +141,7 @@ import {
 } from './layers';
 
 export default function App() {
-  const [resorts, setResorts] = useState<SkiResort[]>(() => [
-    ...GLOBAL_SKI_ATLAS.map((r) => ({
-      ...r,
-      weather: getInitialWeather(r),
-    })),
-    ...HELI_CAT_OPERATIONS.map((r) => ({
-      ...r,
-      weather: getInitialWeather(r),
-    })),
-  ]);
+  const [resorts, setResorts] = useState<SkiResort[]>(buildInitialResorts);
 
   const [selectedResortId, setSelectedResortId] = useState<string | null>(null);
   const [panelView, setPanelView] = useState<'directory' | 'profile'>('directory');
@@ -486,67 +483,28 @@ export default function App() {
 
   // Filtered Resorts across entire world dataset
   const filteredResorts = useMemo(() => {
-    const list = resorts.filter((r) => {
-      if (r.is_closed) return false;
-      const cat = r.category || 'downhill';
-      if (cat === 'downhill' && !showDownhill) return false;
-      if (cat === 'nordic' && !showNordic) return false;
-      if (cat === 'heli_cat' && !showHeliCat) return false;
-
-      const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
-      if (!passMatch) return false;
-
-      // Downhill alpine resorts filtered by vertical drop and skiable acreage
-      if (cat === 'downhill') {
-        if (effectiveMinVerticalFt > 0 && (r.vertical_drop_ft === null || r.vertical_drop_ft === undefined || r.vertical_drop_ft < effectiveMinVerticalFt)) return false;
-        if (effectiveMinAcreage > 0 && (r.skiable_acres === null || r.skiable_acres === undefined || r.skiable_acres < effectiveMinAcreage)) return false;
-      } else if (cat === 'nordic') {
-        // Nordic cross-country networks filtered by trail network length (km)
-        if (effectiveMinNordicKm > 0 && ((r.trail_km || 0) < effectiveMinNordicKm)) return false;
+    return filterResortCatalog(
+      resorts,
+      {
+        showDownhill,
+        showNordic,
+        showHeliCat,
+        selectedPasses,
+        effectiveMinVerticalFt,
+        effectiveMinAcreage,
+        effectiveMinNordicKm,
+        searchQuery,
+      },
+      {
+        sortBy,
+        sortOrder,
       }
-
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesName = r.name.toLowerCase().includes(q);
-        const matchesRegion = (r.region || '').toLowerCase().includes(q);
-        const matchesCountry = (r.country || '').toLowerCase().includes(q);
-        const matchesSummary = (r.summary || '').toLowerCase().includes(q);
-        if (!matchesName && !matchesRegion && !matchesCountry && !matchesSummary) return false;
-      }
-
-      return true;
-    });
-
-    const multiplier = sortOrder === 'asc' ? 1 : -1;
-    list.sort((a, b) => {
-      if (sortBy === 'snow') {
-        const diff = (a.weather?.snowfall_7d_in ?? 0) - (b.weather?.snowfall_7d_in ?? 0);
-        return diff * multiplier;
-      } else if (sortBy === 'vert') {
-        const diff = (a.vertical_drop_ft || 0) - (b.vertical_drop_ft || 0);
-        return diff * multiplier;
-      } else if (sortBy === 'acres') {
-        const valA = a.category === 'nordic' ? (a.trail_km || a.run_count || 0) : (a.skiable_acres || 0);
-        const valB = b.category === 'nordic' ? (b.trail_km || b.run_count || 0) : (b.skiable_acres || 0);
-        const diff = valA - valB;
-        return diff * multiplier;
-      } else {
-        return a.name.localeCompare(b.name) * multiplier;
-      }
-    });
-
-    return list;
+    );
   }, [resorts, selectedPasses, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, searchQuery, showDownhill, showNordic, showHeliCat, sortBy, sortOrder]);
 
   // Resorts in current map viewport bounds
   const inViewResorts = useMemo(() => {
-    if (!viewportBounds) return filteredResorts;
-    const [west, south, east, north] = viewportBounds;
-    return filteredResorts.filter((r) => {
-      const inLng = west <= east ? r.lng >= west && r.lng <= east : r.lng >= west || r.lng <= east;
-      const inLat = r.lat >= south && r.lat <= north;
-      return inLng && inLat;
-    });
+    return filterResortsInBounds(filteredResorts, viewportBounds);
   }, [filteredResorts, viewportBounds]);
 
   // Ski Areas Directory: In Frame vs All Matching Filters
@@ -2114,99 +2072,17 @@ export default function App() {
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-
-    // 1. Sync global clustered ski areas source
-    const globalSrc = map.getSource('global-ski-areas-source') as GeoJSONSource;
-    if (globalSrc && allGlobalFeaturesRef.current.length > 0) {
-      const allowedCats = new Set<string>();
-      if (showDownhill) allowedCats.add('downhill');
-      if (showNordic) allowedCats.add('nordic');
-      if (showHeliCat) allowedCats.add('heli_cat');
-
-      const filteredFeatures = allGlobalFeaturesRef.current.filter((f) => {
-        const p = f.properties;
-        const cat = p.category || 'downhill';
-        if (!allowedCats.has(cat)) return false;
-
-        // Pass Networks filter (matches any active pass network)
-        const passes: PassNetwork[] = p.pass_networks && p.pass_networks.length > 0 ? p.pass_networks : ['Independent'];
-        const passMatch = passes.some((pn) => selectedPasses.includes(pn));
-        if (!passMatch) return false;
-
-        if (cat === 'downhill') {
-          const vert = p.vertical_ft || p.vertical_drop_ft || 0;
-          if (effectiveMinVerticalFt > 0 && vert < effectiveMinVerticalFt) return false;
-          const acres = p.skiable_acres || 0;
-          if (effectiveMinAcreage > 0 && acres < effectiveMinAcreage) return false;
-        } else if (cat === 'nordic') {
-          if (effectiveMinNordicKm > 0 && ((p.trail_km || 0) < effectiveMinNordicKm)) return false;
-        }
-
-        if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase();
-          const matchName = (p.name || '').toLowerCase().includes(q);
-          const matchReg = (p.region || '').toLowerCase().includes(q);
-          const matchCountry = (p.country || '').toLowerCase().includes(q);
-          if (!matchName && !matchReg && !matchCountry) return false;
-        }
-        return true;
-      });
-
-      globalSrc.setData({ type: 'FeatureCollection', features: filteredFeatures });
-    }
-
-    // 2. Sync curated seed resorts source
-    const curatedSrc = map.getSource('resorts-source') as GeoJSONSource;
-    if (curatedSrc) {
-      const allowedCats = new Set<string>();
-      if (showDownhill) allowedCats.add('downhill');
-      if (showNordic) allowedCats.add('nordic');
-      if (showHeliCat) allowedCats.add('heli_cat');
-
-      const allCurated = [...GLOBAL_SKI_ATLAS, ...HELI_CAT_OPERATIONS];
-      const filteredCurated = allCurated.filter((r) => {
-        const cat = r.category || 'downhill';
-        if (!allowedCats.has(cat)) return false;
-        const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
-        if (!passMatch) return false;
-
-        if (cat === 'downhill') {
-          const vert = r.vertical_drop_ft || 0;
-          if (effectiveMinVerticalFt > 0 && vert < effectiveMinVerticalFt) return false;
-          const acres = r.skiable_acres || 0;
-          if (effectiveMinAcreage > 0 && acres < effectiveMinAcreage) return false;
-        } else if (cat === 'nordic') {
-          if (effectiveMinNordicKm > 0 && ((r.trail_km || 0) < effectiveMinNordicKm)) return false;
-        }
-
-        if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase();
-          const matchName = r.name.toLowerCase().includes(q);
-          const matchReg = (r.region || '').toLowerCase().includes(q);
-          const matchCountry = (r.country || '').toLowerCase().includes(q);
-          if (!matchName && !matchReg && !matchCountry) return false;
-        }
-        return true;
-      }).map((r) => ({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [r.lng, r.lat] },
-        properties: {
-          id: r.id,
-          name: r.name,
-          category: r.category || 'downhill',
-          primary_pass: r.pass_networks?.[0] || 'Independent',
-          pass_color: r.category === 'heli_cat' ? '#C85A32' : (PASS_COLORS[r.pass_networks?.[0] || 'Independent'] || '#8A847C'),
-          vertical_ft: r.vertical_drop_ft || 0,
-          vertical_drop_ft: r.vertical_drop_ft || 0,
-          skiable_acres: r.skiable_acres || 0,
-          trail_km: r.trail_km || null,
-          trail_mi: r.trail_mi || null,
-        },
-      }));
-
-      curatedSrc.setData({ type: 'FeatureCollection', features: filteredCurated as any });
-    }
+    syncDynamicMapSources(mapRef.current, {
+      allGlobalFeatures: allGlobalFeaturesRef.current,
+      showDownhill,
+      showNordic,
+      showHeliCat,
+      effectiveMinVerticalFt,
+      effectiveMinAcreage,
+      effectiveMinNordicKm,
+      selectedPasses,
+      searchQuery,
+    });
   }, [showDownhill, showNordic, showHeliCat, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedPasses, searchQuery, mapLoaded, resorts]);
 
   /* =========================================================================
@@ -2217,37 +2093,7 @@ export default function App() {
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-    const src = map.getSource('selected-resort-source') as GeoJSONSource;
-    if (!src) return;
-
-    if (selectedResort && selectedResort.lng != null && selectedResort.lat != null) {
-      const pass = selectedResort.pass_networks?.[0] || 'Independent';
-      const passColor = selectedResort.category === 'heli_cat' ? '#C85A32' : (PASS_COLORS[pass] || '#8A847C');
-      src.setData({
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [selectedResort.lng, selectedResort.lat],
-            },
-            properties: {
-              id: selectedResort.id,
-              name: selectedResort.name,
-              category: selectedResort.category,
-              pass_color: passColor,
-            },
-          },
-        ],
-      });
-    } else {
-      src.setData({
-        type: 'FeatureCollection',
-        features: [],
-      });
-    }
+    updateSelectedResortPin(mapRef.current, selectedResort);
   }, [selectedResort, mapLoaded]);
 
   /* =========================================================================
@@ -2444,290 +2290,15 @@ export default function App() {
     let cancelled = false;
     const fetchGlobal = async () => {
       try {
-        // Load local curated JSON first, fallback to CDN
-        let data: any = null;
-        try {
-          const localRes = await fetch(getStaticDataUrl('data/global_ski_areas.json'));
-          if (localRes.ok) data = await localRes.json();
-        } catch (_) {}
-
-        if (!data) {
-          const remoteRes = await fetch('https://tiles.openskimap.org/geojson/ski_areas.geojson');
-          if (remoteRes.ok) data = await remoteRes.json();
-        }
-
-        if (cancelled || !data || !data.features) return;
-
-        // Curated resort definitions for duplicate suppression
-        const curatedList = [...GLOBAL_SKI_ATLAS, ...HELI_CAT_OPERATIONS].map((r) => ({
-          name: r.name.toLowerCase().trim(),
-          cleanName: cleanNameForMatching(r.name),
-          tokens: getSignificantTokens(r.name),
-          lat: r.lat,
-          lng: r.lng,
-        }));
-
-        const features: any[] = [];
-        let dhTotal = 0;
-        let nordTotal = 0;
-
-        for (const f of data.features) {
-          const pt = extractPointCoordinates(f.geometry);
-          if (!pt) continue;
-          const p = f.properties;
-          if (!p || !p.name) continue;
-
-          const rawName = p.name ? String(p.name).trim() : '';
-          const pName = cleanResortName(rawName);
-          const pNameLower = pName.toLowerCase();
-
-          // Quality filter: Exclude permanently closed, defunct, abandoned, or historic ski areas
-          if (
-            p.status === 'abandoned' ||
-            p.status === 'closed' ||
-            p.status === 'disused' ||
-            p.status === 'defunct' ||
-            p.status === 'historic' ||
-            p.is_closed === true ||
-            (p.archetype && (p.archetype.includes('Defunct') || p.archetype.includes('Lost Ski Area') || p.archetype.includes('Historic'))) ||
-            (p.infrastructure && (p.infrastructure.toLowerCase().includes('defunct') || p.infrastructure.toLowerCase().includes('abandoned') || p.infrastructure.toLowerCase().includes('historic'))) ||
-            pNameLower.includes('(closed)') ||
-            pNameLower.includes('(abandoned)') ||
-            pNameLower.includes('(defunct)') ||
-            pNameLower.includes('(historic)') ||
-            pNameLower.includes('(fermé)') ||
-            pNameLower === 'a venir' ||
-            pNameLower === 'à venir' ||
-            pNameLower === 'unknown' ||
-            pNameLower.startsWith('former ') ||
-            pNameLower.startsWith('touring -') ||
-            pNameLower.startsWith('hors-piste -')
-          ) {
-            continue;
-          }
-
-          // Quality filter: Exclude zero-infrastructure downhill ghost entries and lone backcountry trail traces
-          const lifts = p.lift_count || 0;
-          const runs = p.run_count || 0;
-          const vert = p.vertical_ft || 0;
-          const acres = p.skiable_acres || 0;
-          const hasSite = !!p.website && typeof p.website === 'string' && p.website.trim().length > 0;
-          if (p.category === 'downhill') {
-            if (lifts === 0 && runs <= 1 && !hasSite) {
-              continue;
-            }
-            if (lifts === 0 && runs === 0 && vert <= 50 && acres <= 5 && !hasSite) {
-              continue;
-            }
-          }
-
-          // Check if already in curated seed list -> SKIP to prevent double label!
-          const pLng = pt[0];
-          const pLat = pt[1];
-
-          let isDuplicate = false;
-          const gClean = cleanNameForMatching(pName);
-          const gTokens = getSignificantTokens(pName);
-
-          for (const cr of curatedList) {
-            const dist = Math.hypot(pLat - cr.lat, pLng - cr.lng);
-
-            // 1. Extreme proximity: coordinate pin within ~800m
-            if (dist < 0.008) {
-              isDuplicate = true;
-              break;
-            }
-
-            // 2. Vicinity check (< 0.14 deg ~15 km)
-            if (dist < 0.14) {
-              const cClean = cr.cleanName;
-              const cTokens = cr.tokens;
-
-              // Whole substring match after punctuation stripping
-              const subMatch =
-                (cClean.length >= 4 && gClean.includes(cClean)) ||
-                (gClean.length >= 4 && cClean.includes(gClean));
-
-              if (subMatch) {
-                isDuplicate = true;
-                break;
-              }
-
-              // Token matching (require >= 2 common tokens or 1 distinctive token within 5km)
-              const commonTokens = cTokens.filter((t) => gTokens.includes(t));
-              if (
-                (commonTokens.length >= 2 && dist < 0.12) ||
-                (commonTokens.length >= 1 && (dist < 0.05 || commonTokens.some((t) => t.length >= 5)))
-              ) {
-                isDuplicate = true;
-                break;
-              }
-            }
-          }
-          if (isDuplicate) continue;
-
-          // Website protocol hygiene
-          let cleanSite = p.website ? String(p.website).trim() : '';
-          if (cleanSite) {
-            if (cleanSite.includes('westsportcenter.com.ua')) {
-              cleanSite = 'https://westsportcenter.in.ua/';
-            } else if (cleanSite.includes('sayama-ski.jp')) {
-              cleanSite = 'https://www.seibu-leisure.co.jp/ski_web/';
-            } else if (cleanSite.includes('stubai.at/skigebiete/elferlifte')) {
-              cleanSite = 'https://www.stubai.at/skigebiete/elferbahnen/';
-            } else if (cleanSite.includes('skiparadies-kranzberg.de')) {
-              cleanSite = 'https://www.familienparadies-kranzberg.de/';
-            } else if (
-              cleanSite.includes('parik24') ||
-              cleanSite.includes('1xbet') ||
-              cleanSite.includes('vulkan777') ||
-              cleanSite.includes('sultan-casino') ||
-              cleanSite.includes('winwins.pl') ||
-              cleanSite.includes('shortshortawards') ||
-              cleanSite.includes('inmobiliariacasitas') ||
-              cleanSite.includes('sseseislands') ||
-              cleanSite.includes('buktijpmantra62') ||
-              cleanSite.includes('b288-onlen') ||
-              cleanSite.includes('autok.io') ||
-              cleanSite.includes('truthlect') ||
-              cleanSite.includes('jetskisrentalfortlauderdale') ||
-              cleanSite.includes('business.site') ||
-              cleanSite.includes('lapinilla.es') ||
-              cleanSite.includes('freeski.fi') ||
-              cleanSite.includes('domaincatcher') ||
-              cleanSite.includes('nicsell') ||
-              cleanSite.includes('vetlab-ufa') ||
-              cleanSite.includes('s-vidnoe') ||
-              cleanSite.includes('kocianka.com') ||
-              cleanSite.includes('clearwaterskihill.com') ||
-              cleanSite.includes('nevelandia.it') ||
-              cleanSite.includes('skigora.ru') ||
-              cleanSite.includes('ermitage-resort.com') ||
-              cleanSite.includes('skizentrum-ludwigsstadt.de') ||
-              cleanSite.includes('natanay.ru') ||
-              cleanSite.includes('listvennaya.com') ||
-              cleanSite.includes('hoteldivniy.com') ||
-              cleanSite.includes('hugedomains') ||
-              cleanSite.includes('sedoparking') ||
-              cleanSite.endsWith('.casino')
-            ) {
-              cleanSite = '';
-            } else if (cleanSite.startsWith('hhttps://')) {
-              cleanSite = cleanSite.replace('hhttps://', 'https://');
-            } else if (!cleanSite.startsWith('http://') && !cleanSite.startsWith('https://')) {
-              if (cleanSite.includes('.') && !cleanSite.includes(' ')) {
-                cleanSite = `https://${cleanSite}`;
-              } else {
-                cleanSite = '';
-              }
-            }
-          }
-
-          const place = p.places?.[0]?.localized?.en;
-          const country = place?.country || p.country || '';
-          const region = place?.region || p.region || '';
-          const classified = classifySkiFeature(p, pt);
-
-          const rVert = p.vertical_ft || classified.cleanedVertFt || 0;
-          // Nordic cross-country networks do not have alpine skiable acreage; zero out to prevent clogging
-          const rAcres = classified.category === 'nordic' ? 0 : (p.skiable_acres || 0);
-
-          if (classified.category === 'downhill') dhTotal++;
-          else if (classified.category === 'nordic') nordTotal++;
-
-          const rawPassNets = (p.pass_networks && p.pass_networks.length > 0 ? p.pass_networks : ['Independent']) as PassNetwork[];
-          const passNets = rawPassNets.length > 1 && rawPassNets.includes('Independent')
-            ? rawPassNets.filter((net) => net !== 'Independent')
-            : rawPassNets;
-          const primaryPass = passNets[0] || 'Independent';
-          const passColor = PASS_COLORS[primaryPass] || '#8A847C';
-
-          features.push({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: pt },
-            properties: {
-              ...p,
-              id: p.id,
-              name: pName,
-              country,
-              region,
-              lng: pt[0],
-              lat: pt[1],
-              category: classified.category,
-              archetype: classified.archetype,
-              infrastructure: p.infrastructure || classified.infrastructure || 'Ski area',
-              vertical_drop_ft: rVert,
-              vertical_ft: rVert,
-              summit_elev_ft: p.summit_elev_ft || classified.cleanedSummitFt || 0,
-              base_elev_ft: p.base_elev_ft || classified.cleanedBaseFt || 0,
-              skiable_acres: rAcres,
-              website: cleanSite,
-              trail_km: p.trail_km || null,
-              trail_mi: p.trail_mi || null,
-              pass_networks: passNets,
-              primary_pass: primaryPass,
-              pass_color: passColor,
-              avg_snowfall_in: p.avg_snowfall_in || null,
-            },
-          });
-        }
+        const { features, resorts: globalResorts, counts } = await fetchGlobalSkiAreas();
+        if (cancelled) return;
 
         allGlobalFeaturesRef.current = features;
         globalFeaturesRef.current = features;
-        setCategoryCounts({ downhill: dhTotal, nordic: nordTotal, heli_cat: HELI_CAT_OPERATIONS.length });
+        setCategoryCounts(counts);
 
-        // Populate master resorts dataset with ALL 6,592 worldwide ski areas!
-        const globalResortItems: SkiResort[] = features.map((f) => {
-          const props = f.properties;
-          return {
-            id: props.id,
-            name: props.name,
-            country: props.country,
-            region: props.region,
-            lng: props.lng,
-            lat: props.lat,
-            default_bearing: props.default_bearing || (props.lat < 0 ? 0 : 180),
-            category: props.category,
-            archetype: props.archetype,
-            infrastructure: props.infrastructure,
-            vertical_drop_ft: props.vertical_ft || 0,
-            summit_elev_ft: props.summit_elev_ft || 0,
-            base_elev_ft: props.base_elev_ft || 0,
-            skiable_acres: props.category === 'nordic' ? 0 : (props.skiable_acres || 0),
-            pass_networks: (props.pass_networks && props.pass_networks.length > 0 ? props.pass_networks : ['Independent']) as PassNetwork[],
-            summary: props.summary || '',
-            website: props.website || '',
-            lift_count: props.lift_count || null,
-            run_count: props.run_count || null,
-            trail_km: props.trail_km || null,
-            trail_mi: props.trail_mi || null,
-            avg_snowfall_in: props.avg_snowfall_in || null,
-          };
-        });
+        setResorts((prev) => mergeResortsWithWeather(prev, globalResorts));
 
-        setResorts((prev) => {
-          const weatherMap = new Map<string, ResortWeatherData>();
-          prev.forEach((r) => {
-            if (r.weather) weatherMap.set(r.id, r.weather);
-          });
-
-          return [
-            ...GLOBAL_SKI_ATLAS.map((r) => ({
-              ...r,
-              weather: weatherMap.get(r.id) || getInitialWeather(r),
-            })),
-            ...HELI_CAT_OPERATIONS.map((r) => ({
-              ...r,
-              weather: weatherMap.get(r.id) || getInitialWeather(r),
-            })),
-            ...globalResortItems.map((r) => ({
-              ...r,
-              weather: weatherMap.get(r.id) || getNeutralWeather(r),
-            })),
-          ];
-        });
-
-        // Update GeoJSON source on map
         if (mapRef.current) {
           const src = mapRef.current.getSource('global-ski-areas-source') as GeoJSONSource;
           if (src) src.setData({ type: 'FeatureCollection', features });
