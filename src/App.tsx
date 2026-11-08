@@ -1916,18 +1916,16 @@ export default function App() {
           ['!=', ['get', 'name_left'], ''],
         ],
         minzoom: 3.2,
+        maxzoom: 8.0,
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'symbol-placement': 'line',
           'symbol-sort-key': 0.5,
           'symbol-spacing': [
             'interpolate', ['linear'], ['zoom'],
-            3.5, 450,
-            6.0, 550,
-            9.0, 700,
-            11.5, 850,
-            12.5, 1000,
-            14.5, 1200,
+            3.5, 1200,
+            5.5, 1800,
+            7.5, 2400,
           ],
           'symbol-avoid-edges': false,
           'text-field': ['get', 'name_left'],
@@ -1937,9 +1935,7 @@ export default function App() {
             'interpolate', ['linear'], ['zoom'],
             3.5, 9.0,
             6.0, 10.0,
-            8.5, 11.0,
-            11.5, 12.0,
-            14.0, 13.0,
+            7.5, 10.5,
           ],
           'text-letter-spacing': 0.18,
           'text-transform': 'uppercase',
@@ -1947,7 +1943,7 @@ export default function App() {
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'map',
           'text-max-angle': 45,
-          'text-padding': 2,
+          'text-padding': 4,
         },
         paint: {
           'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1E293B',
@@ -1957,9 +1953,10 @@ export default function App() {
           'text-opacity': [
             'interpolate', ['linear'], ['zoom'],
             3.2, 0.0,
-            3.8, 0.75,
-            6.0, 0.9,
-            9.0, 1.0,
+            3.8, 0.7,
+            6.5, 0.8,
+            7.2, 0.5,
+            8.0, 0.0,
           ],
         },
       });
@@ -1976,18 +1973,16 @@ export default function App() {
           ['!=', ['get', 'name_right'], ''],
         ],
         minzoom: 3.2,
+        maxzoom: 8.0,
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'symbol-placement': 'line',
           'symbol-sort-key': 0.5,
           'symbol-spacing': [
             'interpolate', ['linear'], ['zoom'],
-            3.5, 450,
-            6.0, 550,
-            9.0, 700,
-            11.5, 850,
-            12.5, 1000,
-            14.5, 1200,
+            3.5, 1200,
+            5.5, 1800,
+            7.5, 2400,
           ],
           'symbol-avoid-edges': false,
           'text-field': ['get', 'name_right'],
@@ -1997,9 +1992,7 @@ export default function App() {
             'interpolate', ['linear'], ['zoom'],
             3.5, 9.0,
             6.0, 10.0,
-            8.5, 11.0,
-            11.5, 12.0,
-            14.0, 13.0,
+            7.5, 10.5,
           ],
           'text-letter-spacing': 0.18,
           'text-transform': 'uppercase',
@@ -2007,7 +2000,7 @@ export default function App() {
           'text-rotation-alignment': 'map',
           'text-pitch-alignment': 'map',
           'text-max-angle': 45,
-          'text-padding': 2,
+          'text-padding': 4,
         },
         paint: {
           'text-color': basemapMode === 'satellite' ? '#FAF8F3' : '#1E293B',
@@ -2017,9 +2010,10 @@ export default function App() {
           'text-opacity': [
             'interpolate', ['linear'], ['zoom'],
             3.2, 0.0,
-            3.8, 0.75,
-            6.0, 0.9,
-            9.0, 1.0,
+            3.8, 0.7,
+            6.5, 0.8,
+            7.2, 0.5,
+            8.0, 0.0,
           ],
         },
       });
@@ -2939,7 +2933,16 @@ export default function App() {
 
         const p = feat.properties || {};
         const name = p.name || 'Fire Lookout';
-        const elev = (unitsMetric ? p.elevation_formatted_m : p.elevation_formatted_ft) || (p.elevation_ft ? formatVert(p.elevation_ft, unitsMetric) : '');
+        let elevVal = p.elevation_ft;
+        if (!elevVal || elevVal === 0) {
+          try {
+            const liveM = map.queryTerrainElevation(coords);
+            if (liveM !== null && liveM !== undefined && isFinite(liveM)) {
+              elevVal = Math.round(liveM * 3.28084);
+            }
+          } catch (_) {}
+        }
+        const elev = elevVal ? formatVert(elevVal, unitsMetric) : '';
         const agency = p.agency || 'USFS';
         const state = p.state ? ` · ${p.state}` : '';
         const status = p.status || 'Standing';
@@ -4024,21 +4027,23 @@ export default function App() {
         isElevationHeld = false;
         try {
           const map = mapRef.current;
-          const cam = (map as any)._camera;
-          const terrain = (map as any).terrain;
-          const tookDem = cam?.releaseElevation?.();
-          if (cam?.applyTransformChange && terrain) {
-            cam.applyTransformChange((tr: any) => {
-              cam.putCenterBackOnTerrain?.(tr, terrain, tookDem);
-            });
+          const tr = (map as any).transform;
+          const camLngLat = tr?.getCameraLngLat?.() || map.getCenter();
+          const camAlt = tr?.getCameraAltitude?.();
+          const bearing = map.getBearing();
+          const pitch = map.getPitch();
+
+          if (camAlt !== null && camAlt !== undefined && isFinite(camAlt) && (map as any).calculateCameraOptionsFromCameraLngLatAltRotation) {
+            const opts = (map as any).calculateCameraOptionsFromCameraLngLatAltRotation(camLngLat, camAlt, bearing, pitch);
+            map.jumpTo(opts);
           }
-        } catch (_) {}
-      }
-      try {
-        if (mapRef.current) {
-          (mapRef.current as any).setCenterClampedToGround?.(true);
+          map.setCenterClampedToGround(true);
+        } catch (_) {
+          try {
+            mapRef.current?.setCenterClampedToGround(true);
+          } catch (_) {}
         }
-      } catch (_) {}
+      }
     };
 
     const flightStep = (timestamp: number) => {
@@ -4154,14 +4159,11 @@ export default function App() {
 
       // Smooth horizontal flight with level, steady-altitude cruising
       if (moveForward !== 0 || moveStrafe !== 0) {
-        // Freeze elevation hold on first horizontal flight step so camera flies steady without terrain bouncing
+        // Temporarily release center ground clamping so camera cruises level without peak-and-valley bouncing
         if (!isElevationHeld) {
           try {
-            const cam = (map as any)._camera;
-            if (cam?.holdElevation && (map as any).terrain) {
-              cam.holdElevation(cam.transform, 'gesture');
-              isElevationHeld = true;
-            }
+            map.setCenterClampedToGround(false);
+            isElevationHeld = true;
           } catch (_) {}
         }
 
@@ -5256,10 +5258,13 @@ export default function App() {
           mapZoom={mapZoom}
           viewportBounds={viewportBounds}
           resorts={resorts}
-          onFlyTo={(center) => {
+          onFlyTo={(center, zoom, pitch, bearing) => {
             if (!mapRef.current) return;
             safeFlyTo(mapRef.current, {
               center,
+              ...(zoom !== undefined ? { zoom } : {}),
+              ...(pitch !== undefined ? { pitch } : {}),
+              ...(bearing !== undefined ? { bearing } : {}),
               duration: 1000,
               essential: true,
             });

@@ -13,7 +13,7 @@ interface RegionalLocatorProps {
   mapZoom: number;
   viewportBounds: [number, number, number, number] | null;
   resorts: SkiResort[];
-  onFlyTo: (center: [number, number]) => void;
+  onFlyTo: (center: [number, number], zoom?: number, pitch?: number, bearing?: number) => void;
   onResetToGlobal: (e: React.MouseEvent) => void;
 }
 
@@ -408,17 +408,40 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     });
   }, [mapCenter, locatorZoomPreset, locatorOpen, getOverviewTargetCenter]);
 
+  // Sync preset tab indicator with live main map zoom
+  useEffect(() => {
+    if (mapZoom >= 5.8) {
+      setLocatorZoomPreset('regional');
+    } else if (mapZoom < 3.2) {
+      setLocatorZoomPreset('global');
+    } else {
+      setLocatorZoomPreset('continental');
+    }
+  }, [mapZoom]);
+
   const handleSetLocatorPreset = (preset: 'regional' | 'continental' | 'global') => {
     setLocatorZoomPreset(preset);
     const targetZoom = getOverviewTargetZoom(preset);
     savedZoomRef.current = targetZoom;
-    if (!locatorMapRef.current) return;
     const targetCenter = getOverviewTargetCenter(mapCenter, preset);
-    locatorMapRef.current.easeTo({
-      center: targetCenter,
-      zoom: targetZoom,
-      duration: 350,
-    });
+
+    if (locatorMapRef.current) {
+      locatorMapRef.current.easeTo({
+        center: targetCenter,
+        zoom: targetZoom,
+        duration: 350,
+      });
+    }
+
+    // Simultaneously navigate the main map viewport to match the requested scale
+    if (preset === 'global') {
+      onResetToGlobal({ stopPropagation: () => {} } as any);
+    } else if (preset === 'continental') {
+      onFlyTo(targetCenter, 3.8, 0, 0);
+    } else if (preset === 'regional') {
+      const flyCenter = selectedResort ? ([selectedResort.lng, selectedResort.lat] as [number, number]) : targetCenter;
+      onFlyTo(flyCenter, 7.2, 0, 0);
+    }
   };
 
   const handleLocatorZoomIn = (e: React.MouseEvent) => {

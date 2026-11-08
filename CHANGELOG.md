@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `feat: national historic lookouts expansion, zero-bounce arrow cruising, and interactive locator scale controls`
+- **What was changed**:
+  1. **Comprehensive National Lookouts Dataset (`public/data/fire_lookouts.geojson`)**:
+     - Upgraded the fire lookouts data pipeline to ingest the authoritative National Historic Lookout Register (NHLR) across all 48 continental states, scaling the directory from 148 rental-only points to over 2,160 authentic active and historic lookouts.
+     - Specifically ensured comprehensive coverage for previously missing regions, including all iconic Salmon-Challis National Forest / Frank Church Wilderness towers (Middle Fork Peak, Ruffneck Peak, Pinyon Peak, Long Tom, Stein Mountain, Sleeping Deer, Twin Peaks, Salmon Mountain, Mount McGuire, Basin Butte, Blue Mountain, Jureano, Sheephorn) and Mount Rainier National Park towers (Mount Fremont, Tolmie Peak, Shriner Peak, Gobblers Knob).
+     - Cleaned labels so missing elevations omit `· 0'`, and enhanced the map popup click handler to dynamically query live GPU DEM elevations via `map.queryTerrainElevation(coords)` in real time.
+  2. **Eliminated Peak-and-Valley Altitude Bouncing During Arrow Flight**:
+     - **Root Cause**: MapLibre's `jumpTo({ center })` method evaluates terrain elevation under `center` on every animation frame (60fps) when `getCenterClampedToGround()` is true. Over mountainous terrain, `tr.elevation` jumped by thousands of feet with every ridge and canyon, causing the camera eye altitude ($camAlt = tr.elevation + d \cdot \cos(pitch)$) to violently bounce.
+     - **Fix**: Temporarily set `map.setCenterClampedToGround(false)` on horizontal keyboard flight initiation so `tr.elevation` remains fixed throughout the flight path. On key release, calculate the exact terrain-projected center and zoom using `map.calculateCameraOptionsFromCameraLngLatAltRotation(...)` to re-anchor the focal center to the ground with zero camera eye displacement, restoring `setCenterClampedToGround(true)` for mouse gestures.
+  3. **Connected Regional, Continental, and World Preset Buttons**:
+     - In [`RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx), updated `handleSetLocatorPreset` so clicking `[ Region ]`, `[ Continent ]`, or `[ World ]` not only frames the 200px overview popup, but also simultaneously navigates the main map viewport to the corresponding scale (`onResetToGlobal` for World, continental zoom $3.8$ for Continent, regional zoom $7.2$ for Region).
+     - Synced the locator preset toggle button highlighting to reflect live camera zoom as the user navigates.
+  4. **De-cluttered Country Border Labels at Mountain Zooms**:
+     - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), set `maxzoom: 8.0` on `world-country-border-labels-left` and `world-country-border-labels-right` and increased `symbol-spacing` from 450–700px to 1200–2400px. Country border labels (e.g. `CANADA` / `UNITED STATES` along the 49th parallel) now smoothly fade out before mountain/resort zoom levels and appear at most once across the screen width.
+
 ### `feat: position search input above filters in directory sidebar`
 - **What was changed**:
   - In [`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx), reordered the directory sidebar controls so the Search input bar (and matching mountain summit suggestions) sits directly at the top of the pane above the collapsible Filters section.

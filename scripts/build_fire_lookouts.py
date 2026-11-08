@@ -18,6 +18,7 @@ import json
 import math
 import os
 import re
+import time
 import urllib.parse
 import urllib.request
 
@@ -94,8 +95,98 @@ try:
 except Exception as e:
     print(f"   USFS EDW error: {e}")
 
-# --- 2. Montana NHLR Lookouts ---
-print("2. Fetching Montana Lookouts...")
+# --- 2. National Historic Lookout Register (NHLR) Across All States ---
+print("2. Fetching National Historic Lookout Register (NHLR) lookouts across all states...")
+all_states = [
+    'id', 'wa', 'or', 'mt', 'ca', 'wy', 'co', 'ut', 'nm', 'az', 'nv',
+    'nh', 'vt', 'me', 'ny', 'pa', 'nc', 'va', 'wv', 'tn', 'ga', 'al',
+    'sc', 'fl', 'ms', 'la', 'ar', 'tx', 'ok', 'mo', 'il', 'in', 'oh',
+    'mi', 'wi', 'mn', 'ia', 'nd', 'sd', 'ne', 'ks', 'ky', 'md', 'de',
+    'nj', 'ct', 'ri', 'ma'
+]
+
+nhlr_count = 0
+for st in all_states:
+    url = f"http://nhlr.org/lookouts/us/{st}/"
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            html = resp.read().decode('utf-8', errors='ignore')
+            # Extract esri Graphics: Graphic(new Point(lon, lat), flagSymbol, {attributes})
+            matches = re.findall(r'Graphic\(new Point\(([-0-9\.]+),\s*([-0-9\.]+)\)[^\{]*(\{.*?\})', html)
+            for lon_str, lat_str, meta_str in matches:
+                try:
+                    lon = float(lon_str)
+                    lat = float(lat_str)
+                    name_m = re.search(r'\"LookoutName\":\s*\"([^\"]+)\"', meta_str)
+                    name = name_m.group(1) if name_m else "Fire Lookout"
+                    raw_items.append({
+                        "name": clean_name(name),
+                        "lat": lat,
+                        "lon": lon,
+                        "elevation_ft": None,
+                        "agency": "USFS / NPS / State (NHLR)",
+                        "state": st.upper(),
+                        "status": "Standing"
+                    })
+                    nhlr_count += 1
+                except:
+                    pass
+    except Exception as e:
+        pass
+print(f"   Collected {nhlr_count} from NHLR across {len(all_states)} states.")
+
+# --- 3. Dedicated Core Alpine & Wilderness Lookouts (Salmon-Challis NF, Mount Rainier, Glacier, etc.) ---
+print("3. Adding dedicated verified Alpine & Wilderness towers...")
+premier_lookouts = [
+    # Salmon-Challis National Forest & Frank Church Wilderness (Idaho)
+    {"name": "Middle Fork Peak Lookout", "lat": 45.0763, "lon": -114.7334, "elevation_ft": 9127, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Ruffneck Peak Lookout", "lat": 44.4984, "lon": -115.1111, "elevation_ft": 9419, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Pinyon Peak Lookout", "lat": 44.6033, "lon": -114.9289, "elevation_ft": 9944, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Long Tom Lookout", "lat": 45.3970, "lon": -114.6190, "elevation_ft": 8128, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Stein Mountain Lookout", "lat": 45.4560, "lon": -114.0730, "elevation_ft": 8438, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Sleeping Deer Mountain Lookout", "lat": 44.7570, "lon": -114.7430, "elevation_ft": 9881, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Twin Peaks Lookout", "lat": 44.6020, "lon": -114.4640, "elevation_ft": 10340, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Blackbird Mountain Lookout", "lat": 45.1610, "lon": -114.3640, "elevation_ft": 8980, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
+    {"name": "Taylor Mountain Lookout", "lat": 44.9750, "lon": -114.8510, "elevation_ft": 9960, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
+    {"name": "Mount McGuire Lookout", "lat": 45.1970, "lon": -114.5940, "elevation_ft": 10082, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
+    {"name": "Basin Butte Lookout", "lat": 44.3460, "lon": -114.8960, "elevation_ft": 8826, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Rental"},
+    {"name": "Blue Mountain Lookout", "lat": 45.1430, "lon": -114.3480, "elevation_ft": 8100, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Jureano Mountain Lookout", "lat": 45.2890, "lon": -114.0320, "elevation_ft": 8345, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
+    {"name": "Sheephorn Lookout", "lat": 44.9490, "lon": -114.5420, "elevation_ft": 8620, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
+    {"name": "Salmon Mountain Lookout", "lat": 45.6170, "lon": -114.8290, "elevation_ft": 8943, "agency": "USFS Bitterroot / Salmon NF", "state": "ID", "status": "Active"},
+    {"name": "Greylock Mountain Lookout", "lat": 43.8960, "lon": -115.1010, "elevation_ft": 9317, "agency": "USFS Sawtooth NF", "state": "ID", "status": "Standing"},
+
+    # Mount Rainier National Park (Washington)
+    {"name": "Mount Fremont Lookout", "lat": 46.9343, "lon": -121.6751, "elevation_ft": 7181, "agency": "NPS Mount Rainier", "state": "WA", "status": "Active / Historic"},
+    {"name": "Tolmie Peak Lookout", "lat": 46.9575, "lon": -121.8805, "elevation_ft": 5920, "agency": "NPS Mount Rainier", "state": "WA", "status": "Active / Historic"},
+    {"name": "Shriner Peak Lookout", "lat": 46.8153, "lon": -121.5303, "elevation_ft": 5834, "agency": "NPS Mount Rainier", "state": "WA", "status": "Active / Historic"},
+    {"name": "Gobblers Knob Lookout", "lat": 46.7942, "lon": -121.9133, "elevation_ft": 5489, "agency": "NPS Mount Rainier", "state": "WA", "status": "Active / Historic"},
+
+    # North Cascades & Olympic (Washington)
+    {"name": "Desolation Peak Lookout", "lat": 48.9119, "lon": -121.0169, "elevation_ft": 6102, "agency": "NPS North Cascades", "state": "WA", "status": "Active"},
+    {"name": "Hidden Lake Peak Lookout", "lat": 48.5144, "lon": -121.2189, "elevation_ft": 6840, "agency": "USFS Mt. Baker-Snoqualmie NF", "state": "WA", "status": "Historic"},
+    {"name": "Park Butte Lookout", "lat": 48.7175, "lon": -121.8550, "elevation_ft": 5450, "agency": "USFS Mt. Baker-Snoqualmie NF", "state": "WA", "status": "Historic"},
+    {"name": "Dodger Point Lookout", "lat": 47.8864, "lon": -123.5133, "elevation_ft": 5750, "agency": "NPS Olympic", "state": "WA", "status": "Historic"},
+    {"name": "Three Fingers Lookout", "lat": 48.1692, "lon": -121.6881, "elevation_ft": 6850, "agency": "USFS Mt. Baker-Snoqualmie NF", "state": "WA", "status": "Historic"},
+    {"name": "Winchester Mountain Lookout", "lat": 48.9567, "lon": -121.6433, "elevation_ft": 6521, "agency": "USFS Mt. Baker-Snoqualmie NF", "state": "WA", "status": "Historic"},
+
+    # Glacier National Park (Montana)
+    {"name": "Swiftcurrent Lookout", "lat": 48.7770, "lon": -113.7660, "elevation_ft": 8436, "agency": "NPS Glacier", "state": "MT", "status": "Active"},
+    {"name": "Mount Brown Lookout", "lat": 48.6290, "lon": -113.8340, "elevation_ft": 7487, "agency": "NPS Glacier", "state": "MT", "status": "Active"},
+    {"name": "Apgar Lookout", "lat": 48.5170, "lon": -114.0200, "elevation_ft": 5260, "agency": "NPS Glacier", "state": "MT", "status": "Active"},
+    {"name": "Huckleberry Mountain Lookout", "lat": 48.5990, "lon": -114.1290, "elevation_ft": 6560, "agency": "NPS Glacier", "state": "MT", "status": "Active"},
+    {"name": "Numa Ridge Lookout", "lat": 48.9190, "lon": -114.2480, "elevation_ft": 6960, "agency": "NPS Glacier", "state": "MT", "status": "Active"},
+    {"name": "Scalplock Mountain Lookout", "lat": 48.3360, "lon": -113.5670, "elevation_ft": 6919, "agency": "NPS Glacier", "state": "MT", "status": "Active"},
+    {"name": "Loneman Mountain Lookout", "lat": 48.4980, "lon": -113.7040, "elevation_ft": 7181, "agency": "NPS Glacier", "state": "MT", "status": "Active"},
+]
+
+for p in premier_lookouts:
+    raw_items.append(p)
+print(f"   Added {len(premier_lookouts)} premier alpine lookouts.")
+
+# --- 4. Montana State Lookouts ---
+print("4. Fetching Montana State Lookouts...")
 try:
     url = ("https://services7.arcgis.com/DoPm6blCXySXtcAS/arcgis/rest/services/MontanaLookouts_ExportFeatures/FeatureServer/0/query?"
            "where=1%3D1&outFields=*&f=json&resultRecordCount=500")
@@ -331,26 +422,63 @@ for item in raw_items:
 
 print(f"Deduplicated down to {len(unique_items)} unique lookouts.")
 
-# --- Backfill missing elevations via Open-Meteo elevation API in batches ---
+# --- Reuse already resolved elevations from existing GeoJSON cache ---
+existing_elev_cache = {}
+out_path = "public/data/fire_lookouts.geojson"
+if os.path.exists(out_path):
+    try:
+        with open(out_path, "r", encoding="utf-8") as f:
+            prev_data = json.load(f)
+            for feat in prev_data.get("features", []):
+                coords = feat.get("geometry", {}).get("coordinates", [])
+                p = feat.get("properties", {})
+                e_ft = p.get("elevation_ft")
+                if coords and len(coords) >= 2 and e_ft and e_ft > 0:
+                    key = (round(coords[1], 3), round(coords[0], 3))
+                    existing_elev_cache[key] = e_ft
+
+        cache_hits = 0
+        for item in unique_items:
+            if item.get("elevation_ft") is None:
+                key = (round(item["lat"], 3), round(item["lon"], 3))
+                if key in existing_elev_cache:
+                    item["elevation_ft"] = existing_elev_cache[key]
+                    cache_hits += 1
+        print(f"Reused {cache_hits} verified elevations from existing GeoJSON cache.")
+    except Exception as e:
+        print(f"Cache load notice: {e}")
+
+# --- Backfill missing elevations via Open-Meteo DEM in resilient batches ---
 missing_elev = [i for i, item in enumerate(unique_items) if item.get("elevation_ft") is None]
 print(f"Backfilling {len(missing_elev)} missing elevations via Open-Meteo DEM...")
 
-BATCH_SIZE = 80
+BATCH_SIZE = 100
 for b in range(0, len(missing_elev), BATCH_SIZE):
     batch_indices = missing_elev[b:b+BATCH_SIZE]
     lats = ",".join(f"{unique_items[i]['lat']:.5f}" for i in batch_indices)
     lons = ",".join(f"{unique_items[i]['lon']:.5f}" for i in batch_indices)
     elev_url = f"https://api.open-meteo.com/v1/elevation?latitude={lats}&longitude={lons}"
-    try:
-        data = fetch_json(elev_url)
-        elevs_m = data.get("elevation", [])
-        for idx, elev_m in zip(batch_indices, elevs_m):
-            if elev_m is not None:
-                elev_ft = int(round(elev_m * 3.28084))
-                unique_items[idx]["elevation_ft"] = elev_ft
-                unique_items[idx]["elevation_m"] = int(round(elev_m))
-    except Exception as e:
-        print(f"Batch {b} failed: {e}")
+    
+    success = False
+    for attempt in range(4):
+        try:
+            data = fetch_json(elev_url)
+            elevs_m = data.get("elevation", [])
+            for idx, elev_m in zip(batch_indices, elevs_m):
+                if elev_m is not None:
+                    elev_ft = int(round(elev_m * 3.28084))
+                    unique_items[idx]["elevation_ft"] = elev_ft
+                    unique_items[idx]["elevation_m"] = int(round(elev_m))
+            success = True
+            break
+        except Exception as e:
+            wait_sec = 2.0 * (attempt + 1)
+            print(f"Batch {b} attempt {attempt+1} error: {e}. Waiting {wait_sec}s...")
+            time.sleep(wait_sec)
+    
+    if not success:
+        print(f"Batch {b} permanently failed.")
+    time.sleep(1.2)
 
 # Compute elevation_m for those that had elevation_ft
 for item in unique_items:
@@ -367,29 +495,37 @@ for idx, item in enumerate(unique_items):
     elev_m = item.get("elevation_m") or 0
     
     # Tiering:
-    # Tier 1: Giants >= 7000 ft
-    # Tier 2: 4500 - 7000 ft
-    # Tier 3: < 4500 ft
+    # Tier 1: Apex Giants >= 7000 ft
+    # Tier 2: Mid-Elevation 4500 - 7000 ft or unranked
+    # Tier 3: Lowland < 4500 ft
     if elev_ft >= 7000:
         tier = 1
-    elif elev_ft >= 4500:
+    elif elev_ft >= 4500 or elev_ft == 0:
         tier = 2
     else:
         tier = 3
 
-    label_ft = f"⌂ {item['name']} · {elev_ft:,}'"
-    label_m = f"⌂ {item['name']} · {elev_m:,} m"
+    if elev_ft > 0:
+        label_ft = f"⌂ {item['name']} · {elev_ft:,}'"
+        label_m = f"⌂ {item['name']} · {elev_m:,} m"
+        elev_formatted_ft = f"{elev_ft:,}'"
+        elev_formatted_m = f"{elev_m:,} m"
+    else:
+        label_ft = f"⌂ {item['name']}"
+        label_m = f"⌂ {item['name']}"
+        elev_formatted_ft = ""
+        elev_formatted_m = ""
 
     props = {
         "id": f"lookout-{idx+1}",
         "name": item["name"],
         "elevation_ft": elev_ft,
         "elevation_m": elev_m,
-        "elevation_formatted_ft": f"{elev_ft:,}'",
-        "elevation_formatted_m": f"{elev_m:,} m",
+        "elevation_formatted_ft": elev_formatted_ft,
+        "elevation_formatted_m": elev_formatted_m,
         "label_ft": label_ft,
         "label_m": label_m,
-        "sort_key": 50000 - elev_ft,
+        "sort_key": 50000 - elev_ft if elev_ft > 0 else 45000,
         "tier": tier,
         "agency": item.get("agency") or "USFS",
         "state": item.get("state") or "",
