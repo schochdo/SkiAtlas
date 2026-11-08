@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `fix: heighten visibility and click affordance of directory filters button`
+- **What was wrong before**:
+  - The collapsible "Filters" bar in [`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx) used the same light cream background (`#FAF8F3`) as the surrounding dock panel, causing it to blend completely into the container.
+  - The "Show ⌵" affordance on the right used low-contrast, muted text (`#736E67`), making it unclear that the element was an interactive, expandable card.
+- **What changed**:
+  - Set a permanent darker warm-tint background (`bg-[#EFECE4]`) with a crisp defined border (`border-[#C4BEB1]`), matching the hover state contrast permanently so the filter bar immediately stands out.
+  - Enhanced hover state (`hover:bg-[#E5E1D7]` and `hover:border-[#8A847C]`) with a smooth transition.
+  - Added a tactile, high-contrast button pill (`bg-[#FAF8F3] border-[#C4BEB1] text-[#1C1B18] shadow-2xs font-bold`) for the `[ Show ⌵ ]` / `[ Hide ⌃ ]` expansion toggle, making the click-to-expand affordance unmistakable.
+- **Why this specific approach was chosen**:
+  - Directly resolves the user feedback by giving the bar contrast on all the time while maintaining the clean editorial cartographic aesthetic without adding SaaS vanity chrome.
+
+---
+
 ### `fix: overhaul mobile touch gestures and bottom sheet UX`
 - **What was wrong before**:
   - **Inverted Touch Rotation**: When twisting two fingers on mobile or touchscreen devices, the camera bearing delta was manually negated (`res.bearingDelta = -res.bearingDelta`), causing the map to rotate in the exact opposite direction of the user's fingers.

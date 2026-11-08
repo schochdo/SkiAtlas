@@ -205,10 +205,12 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
         )}
 
         {/* Collapsible Filters Section */}
-        <div className="border border-[#D6D0C2] rounded-md bg-[#FAF8F3] overflow-hidden transition-all shadow-2xs">
+        <div className="border border-[#C4BEB1] rounded-md bg-[#EFECE4] overflow-hidden transition-all shadow-2xs">
           <div
             onClick={() => setIsFiltersOpen((prev) => !prev)}
-            className="w-full px-2.5 py-1.5 flex items-center justify-between text-xs font-semibold text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer select-none"
+            className={`w-full px-2.5 py-1.5 flex items-center justify-between text-xs font-semibold text-[#1C1B18] transition-colors cursor-pointer select-none group ${
+              isFiltersOpen ? 'bg-[#EAE5D9] border-b border-[#D6D0C2]' : 'bg-[#EFECE4] hover:bg-[#E5E1D7]'
+            }`}
             role="button"
             tabIndex={0}
             aria-expanded={isFiltersOpen}
@@ -222,7 +224,7 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
             }}
           >
             <div className="flex items-center gap-1.5">
-              <Sliders className="w-3.5 h-3.5 text-[#5C5852]" />
+              <Sliders className="w-3.5 h-3.5 text-[#1C1B18]" />
               <span className="font-bold text-xs text-[#1C1B18]">Filters</span>
               {activeFiltersCount > 0 && (
                 <span className="bg-[#B84A39] text-[#FAF8F3] text-[10px] px-1.5 py-0.2 rounded-full font-bold tabular-nums">
@@ -230,7 +232,7 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-[#736E67]">
+            <div className="flex items-center gap-1.5 text-[11px]">
               {activeFiltersCount > 0 && (
                 <button
                   type="button"
@@ -238,17 +240,19 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
                     e.stopPropagation();
                     onResetFilters();
                   }}
-                  className="text-[#B84A39] hover:underline cursor-pointer font-bold mr-1"
+                  className="text-[#B84A39] hover:underline cursor-pointer font-bold mr-0.5"
                 >
                   Reset
                 </button>
               )}
-              <span className="text-[11px] font-medium text-[#736E67]">{isFiltersOpen ? 'Hide' : 'Show'}</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-[#736E67] transition-transform duration-200 ${
-                  isFiltersOpen ? 'rotate-180' : ''
-                }`}
-              />
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1C1B18] bg-[#FAF8F3] px-2 py-0.5 rounded border border-[#C4BEB1] shadow-2xs group-hover:border-[#8A847C] transition-colors">
+                <span>{isFiltersOpen ? 'Hide' : 'Show'}</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-[#1C1B18] transition-transform duration-200 ${
+                    isFiltersOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </span>
             </div>
           </div>
 
