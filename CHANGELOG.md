@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: calibrate trail click buffer and hit-target widths for accurate trail selection`
+- **What was wrong before**:
+  - Clicking on open snow or in valleys far from a ski run or chairlift would unexpectedly trigger a trail information popup.
+  - **Root Cause**:
+    1. In commit `628708f`, `hitRadius` was enlarged to 38px on desktop and 52px on mobile (a 76px–104px square query box).
+    2. Additionally, the transparent hit-target layers (`live-pistes-hit-target` and `live-pistes-lifts-hit-target`) had stroke widths expanding up to 96px at zoom 18.
+    3. The combination of a 96px stroke width and a 38px query box captured clicks occurring up to 86 pixels away from the actual trail centerline.
+- **Solution**:
+  - **Calibrated Hit-Target Widths**: Scaled down invisible hit-target stroke widths across zoom levels ($z=10: 14\text{px}, z=14: 24\text{px}, z=18: 38\text{px}$), maintaining a comfortable target along the trail without creating an oversized footprint across open terrain.
+  - **Tightened Click Bounding Box**: Reduced `hitRadius` from 38px to **12px** on desktop (and from 52px to **22px** on mobile/touch), requiring clicks to land close to the actual trail or lift line.
+  - **Refined Cursor Hover Bounding Box**: Reduced `cRadius` in `onMapMouseMove` from 20px down to **10px**, ensuring the pointer cursor activates only when the mouse is positioned directly over or adjacent to a clickable trail, lift, or label.
+
 ### `fix: eliminate camera elevation jumps during zoom by maintaining continuous ground clamping and smooth pitch ramping`
 - **What was wrong before**:
   - When zooming into terrain with the mouse wheel, trackpad pinch, or navigation controls, the camera would suddenly suffer a violent visual snap or jump around zoom level $z \approx 14$.

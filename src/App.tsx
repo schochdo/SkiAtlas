@@ -1513,7 +1513,7 @@ export default function App() {
         },
       });
 
-      // Wide invisible hit-target layer for piste lines — makes trails easy to click/tap
+      // Calibrated invisible hit-target layer for piste lines — makes trails easy to click/tap
       // without changing any visible widths. Must sit above the visible lines in draw order
       // so it intercepts pointer events, but opacity=0 keeps it fully transparent.
       map.addLayer({
@@ -1526,11 +1526,11 @@ export default function App() {
           'line-color': 'transparent',
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
-            10, 32,
-            12, 46,
-            14, 64,
-            16, 80,
-            18, 96,
+            10, 14,
+            12, 18,
+            14, 24,
+            16, 30,
+            18, 38,
           ],
           'line-opacity': 0,
         },
@@ -1566,7 +1566,7 @@ export default function App() {
         },
       });
 
-      // Wide invisible hit-target layer for lifts / aerialways — makes chairlifts and gondolas easy to tap
+      // Calibrated invisible hit-target layer for lifts / aerialways — makes chairlifts and gondolas easy to tap
       map.addLayer({
         id: 'live-pistes-lifts-hit-target',
         type: 'line',
@@ -1585,11 +1585,11 @@ export default function App() {
           'line-color': 'transparent',
           'line-width': [
             'interpolate', ['linear'], ['zoom'],
-            10, 32,
-            12, 46,
-            14, 64,
-            16, 80,
-            18, 96,
+            10, 14,
+            12, 18,
+            14, 24,
+            16, 30,
+            18, 38,
           ],
           'line-opacity': 0,
         },
@@ -2798,12 +2798,13 @@ export default function App() {
         ].filter((id) => map.getLayer(id));
 
         if (trailLayers.length > 0) {
-          // Generous touch & click target buffer (52px on touch/mobile/iPad, 38px on desktop)
-          // Eliminates the need for pixel-level precision when inspecting ski runs and chairlifts
+          // Calibrated touch & click target buffer (22px on touch/mobile, 12px on desktop)
+          // Tight and accurate so clicks on open mountain terrain or between parallel trails
+          // don't trigger distant trail popups, while remaining natural to click.
           const isTouch =
             typeof window !== 'undefined' &&
             (window.innerWidth < 768 || 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0));
-          const hitRadius = isTouch ? 52 : 38;
+          const hitRadius = isTouch ? 22 : 12;
           const clickBbox: [maplibregl.PointLike, maplibregl.PointLike] = [
             [e.point.x - hitRadius, e.point.y - hitRadius],
             [e.point.x + hitRadius, e.point.y + hitRadius],
@@ -2939,7 +2940,7 @@ export default function App() {
         if (now - lastCursorThrottle < 40) return;
         lastCursorThrottle = now;
 
-        const cRadius = 20;
+        const cRadius = 10;
         const cursorBbox: [maplibregl.PointLike, maplibregl.PointLike] = [
           [e.point.x - cRadius, e.point.y - cRadius],
           [e.point.x + cRadius, e.point.y + cRadius],
