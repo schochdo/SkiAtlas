@@ -9,8 +9,8 @@ interface BasemapMenuProps {
   // Basemap & Cartography props
   basemapMode: BasemapMode;
   onSelectBasemap: (mode: BasemapMode) => void;
-  earthProjection: EarthProjectionMode;
-  onSelectProjection: (mode: EarthProjectionMode) => void;
+  earthProjection?: EarthProjectionMode;
+  onSelectProjection?: (mode: EarthProjectionMode) => void;
   showPeaks: boolean;
   onTogglePeaks: () => void;
   showCountryOutlines: boolean;
@@ -264,41 +264,6 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                         </button>
                       );
                     })}
-                  </div>
-                </div>
-
-                {/* EARTH PROJECTION */}
-                <div className="pt-2.5 border-t border-[#D6D0C2] space-y-1">
-                  <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
-                    Earth Projection
-                  </div>
-                  <div className="grid grid-cols-2 gap-1 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md p-0.5">
-                    <button
-                      type="button"
-                      onClick={() => onSelectProjection('globe')}
-                      className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
-                        earthProjection === 'globe'
-                          ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                          : 'text-[#736E67] hover:text-[#1C1B18]'
-                      }`}
-                      title="3D Globe Projection"
-                    >
-                      <Globe className="w-3.5 h-3.5" />
-                      <span>3D Globe</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onSelectProjection('mercator')}
-                      className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
-                        earthProjection === 'mercator'
-                          ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                          : 'text-[#736E67] hover:text-[#1C1B18]'
-                      }`}
-                      title="Flat Map Projection"
-                    >
-                      <Layers className="w-3.5 h-3.5" />
-                      <span>Flat Map</span>
-                    </button>
                   </div>
                 </div>
               </div>

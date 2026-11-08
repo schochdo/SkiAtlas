@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `feat: add single-value icon toggles for Earth Projection (Globe/2D) and Units (°F/°C) to top navigation bar`
+- **What was changed**:
+  - **Earth Projection Toggle in Header**: Added a dedicated `[ 🌐 ]` / `[ 🗺️ ]` button directly to [`TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx) next to the units toggle.
+    - Shows **only one value at a time**: displays the Globe icon when in 3D globe mode, and the folded 2D Map icon when in flat map mode.
+    - Clicking the button toggles between 3D Globe and 2D Flat Map.
+  - **Single-Value Units Toggle**: Streamlined the temperature/units toggle from a 2-segment pill (`[ °F | °C ]`) into a single button displaying only the currently active unit (`°F` or `°C`).
+    - Clicking the button flips to the other unit (e.g. clicking `°F` switches to metric `°C`).
+  - **Uncluttered Map Drawer**: Removed the redundant Earth Projection section from [`BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx), leaving the Basemap tab purely dedicated to the 5 cartographic basemaps.
+  - **Cohesive Swiss Header Cluster**: Grouped three matching $28\times28\text{px}$ tactile buttons (`[ 🌐 / 🗺️ ]`, `[ °F / °C ]`, `[ ⛶ ]`) on the right side of the navbar with consistent borders, hover states, and shadows.
+
 ### `fix: decouple ground clearance from focal center to eliminate vertical bouncing at cruising altitudes`
 - **What was wrong before**:
   - Even with 30,000 feet of altitude clearance, navigating horizontally with the arrow keys caused the camera to repeatedly bounce up and down until it reached an altitude higher than any nearby peak, where it finally stuck.

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Maximize, Minimize } from 'lucide-react';
+import { Maximize, Minimize, Globe, Map } from 'lucide-react';
+import type { EarthProjectionMode } from '../../types';
 
 interface TopNavBarProps {
   onResetToGlobal: () => void;
@@ -7,6 +8,8 @@ interface TopNavBarProps {
   onToggleFullscreen: () => void;
   unitsMetric: boolean;
   onSetUnitsMetric: (toMetric: boolean) => void;
+  earthProjection: EarthProjectionMode;
+  onToggleProjection: () => void;
 }
 
 export const TopNavBar: React.FC<TopNavBarProps> = ({
@@ -15,6 +18,8 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   onToggleFullscreen,
   unitsMetric,
   onSetUnitsMetric,
+  earthProjection,
+  onToggleProjection,
 }) => {
   return (
     <header className="absolute top-0 inset-x-0 z-40 h-11 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
@@ -59,40 +64,37 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-medium">
-        {/* Minimalist Units of Measure Toggle (°F / ft vs °C / m) */}
-        <div className="flex items-center bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-0.5 h-7">
-          <button
-            type="button"
-            onClick={() => onSetUnitsMetric(false)}
-            className={`h-full px-2 rounded-[4px] text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center ${
-              !unitsMetric
-                ? 'bg-[#EAE5D9] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
-                : 'text-[#8A847C] hover:text-[#1C1B18]'
-            }`}
-            title="Imperial Units (°F, ft, in)"
-            aria-label="Imperial Units (°F, ft, in)"
-          >
-            °F
-          </button>
-          <button
-            type="button"
-            onClick={() => onSetUnitsMetric(true)}
-            className={`h-full px-2 rounded-[4px] text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center ${
-              unitsMetric
-                ? 'bg-[#EAE5D9] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
-                : 'text-[#8A847C] hover:text-[#1C1B18]'
-            }`}
-            title="Metric Units (°C, m, cm)"
-            aria-label="Metric Units (°C, m, cm)"
-          >
-            °C
-          </button>
-        </div>
+      <div className="flex items-center gap-1.5 text-xs font-medium">
+        {/* Earth Projection Icon Toggle (3D Globe vs 2D Flat Map) */}
+        <button
+          type="button"
+          onClick={onToggleProjection}
+          className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer flex items-center justify-center select-none shadow-2xs focus:outline-hidden"
+          title={earthProjection === 'globe' ? 'Switch to 2D Flat Map' : 'Switch to 3D Globe'}
+          aria-label={earthProjection === 'globe' ? '3D Globe projection active. Click to switch to 2D Flat Map' : '2D Flat Map active. Click to switch to 3D Globe'}
+        >
+          {earthProjection === 'globe' ? (
+            <Globe className="w-3.5 h-3.5 text-[#1C1B18]" />
+          ) : (
+            <Map className="w-3.5 h-3.5 text-[#1C1B18]" />
+          )}
+        </button>
 
+        {/* Minimalist Units Toggle: Shows only active unit (°F or °C); clicking flips to the other */}
+        <button
+          type="button"
+          onClick={() => onSetUnitsMetric(!unitsMetric)}
+          className="h-7 min-w-7 px-1.5 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] font-bold text-[11px] rounded-md transition-colors cursor-pointer flex items-center justify-center select-none shadow-2xs focus:outline-hidden"
+          title={unitsMetric ? 'Metric units active (°C, m). Click for Imperial (°F, ft)' : 'Imperial units active (°F, ft). Click for Metric (°C, m)'}
+          aria-label={unitsMetric ? 'Metric units active. Click for Imperial' : 'Imperial units active. Click for Metric'}
+        >
+          {unitsMetric ? '°C' : '°F'}
+        </button>
+
+        {/* Fullscreen Toggle */}
         <button
           onClick={onToggleFullscreen}
-          className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer flex items-center justify-center"
+          className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer flex items-center justify-center select-none shadow-2xs focus:outline-hidden"
           title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
         >

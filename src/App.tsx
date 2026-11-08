@@ -4830,6 +4830,17 @@ export default function App() {
     }
   };
 
+  const handleToggleProjection = useCallback(() => {
+    setEarthProjection((prev) => {
+      const next = prev === 'globe' ? 'mercator' : 'globe';
+      if (next === 'globe' && mapRef.current && mapRef.current.getZoom() < 5) {
+        safeEaseTo(mapRef.current, { pitch: 0, duration: 400 });
+        setMapPitch(0);
+      }
+      return next;
+    });
+  }, []);
+
   /* =========================================================================
      RENDER: EDWARD TUFTE × BERANN DAYLIGHT CARTOGRAPHY
      ========================================================================= */
@@ -4853,6 +4864,8 @@ export default function App() {
         onToggleFullscreen={toggleFullscreen}
         unitsMetric={unitsMetric}
         onSetUnitsMetric={handleSetUnitsMetric}
+        earthProjection={earthProjection}
+        onToggleProjection={handleToggleProjection}
       />
 
       {/* DESKTOP DIRECTORY DOCK */}
