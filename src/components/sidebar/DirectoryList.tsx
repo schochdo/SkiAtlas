@@ -102,6 +102,63 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
     <div className="flex flex-col h-full min-h-0 bg-[#F7F4ED] overflow-hidden">
       {/* Search & Directory Controls */}
       <div className="p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] space-y-2.5 shrink-0">
+        {/* Search Input */}
+        <div className="relative flex items-center">
+          <Search className="absolute left-3 w-4 h-4 text-[#8A847C] pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search alpine resorts, peaks, countries..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (displayedResorts.length > 0) {
+                  onSelectResort(displayedResorts[0].id);
+                } else if (matchingPeaks && matchingPeaks.length > 0 && onSelectPeak) {
+                  onSelectPeak(matchingPeaks[0]);
+                }
+              }
+            }}
+            className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-md pl-9.5 pr-8 py-2 text-base md:text-sm text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#8A847C] focus:bg-[#FAF8F3] transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => onSearchChange('')}
+              className="absolute right-2.5 text-[#8A847C] hover:text-[#1C1B18]"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Mountain Summits Quick-Fly Matches */}
+        {matchingPeaks.length > 0 && onSelectPeak && (
+          <div className="p-2 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md text-xs space-y-1">
+            <div className="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-[#736E67]">
+              <span>Mountain Summits</span>
+              <span className="text-[9px] font-normal text-[#8A847C] lowercase">Enter or click to fly</span>
+            </div>
+            <div className="space-y-0.5">
+              {matchingPeaks.map((peak) => (
+                <button
+                  key={peak.id}
+                  onClick={() => onSelectPeak(peak)}
+                  className="w-full text-left px-2 py-1 rounded hover:bg-[#FAF8F3] hover:text-[#1C1B18] text-[#3D3A36] flex items-center justify-between cursor-pointer transition-colors"
+                >
+                  <span className="font-semibold truncate flex items-center gap-1.5">
+                    <span className="text-[#B84A39] text-xs">▲</span>
+                    <span>{peak.name}</span>
+                  </span>
+                  <span className="text-[11px] text-[#8A847C] tabular-nums font-mono shrink-0 ml-2">
+                    {unitsMetric ? `${peak.elevation_m.toLocaleString()} m` : `${peak.elevation_ft.toLocaleString()}'`}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Collapsible Filters Section */}
         <div className="border border-[#D6D0C2] rounded-md bg-[#FAF8F3] overflow-hidden transition-all shadow-2xs">
           <div
@@ -184,63 +241,6 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
             </div>
           )}
         </div>
-
-        {/* Search Input */}
-        <div className="relative flex items-center">
-          <Search className="absolute left-3 w-4 h-4 text-[#8A847C] pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search alpine resorts, peaks, countries..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                if (displayedResorts.length > 0) {
-                  onSelectResort(displayedResorts[0].id);
-                } else if (matchingPeaks && matchingPeaks.length > 0 && onSelectPeak) {
-                  onSelectPeak(matchingPeaks[0]);
-                }
-              }
-            }}
-            className="w-full bg-[#F7F4ED] border border-[#D6D0C2] rounded-md pl-9.5 pr-8 py-2 text-base md:text-sm text-[#1C1B18] placeholder-[#8A847C] font-medium focus:outline-none focus:border-[#8A847C] focus:bg-[#FAF8F3] transition-colors"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => onSearchChange('')}
-              className="absolute right-2.5 text-[#8A847C] hover:text-[#1C1B18]"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* Mountain Summits Quick-Fly Matches */}
-        {matchingPeaks.length > 0 && onSelectPeak && (
-          <div className="p-2 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md text-xs space-y-1">
-            <div className="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-[#736E67]">
-              <span>Mountain Summits</span>
-              <span className="text-[9px] font-normal text-[#8A847C] lowercase">Enter or click to fly</span>
-            </div>
-            <div className="space-y-0.5">
-              {matchingPeaks.map((peak) => (
-                <button
-                  key={peak.id}
-                  onClick={() => onSelectPeak(peak)}
-                  className="w-full text-left px-2 py-1 rounded hover:bg-[#FAF8F3] hover:text-[#1C1B18] text-[#3D3A36] flex items-center justify-between cursor-pointer transition-colors"
-                >
-                  <span className="font-semibold truncate flex items-center gap-1.5">
-                    <span className="text-[#B84A39] text-xs">▲</span>
-                    <span>{peak.name}</span>
-                  </span>
-                  <span className="text-[11px] text-[#8A847C] tabular-nums font-mono shrink-0 ml-2">
-                    {unitsMetric ? `${peak.elevation_m.toLocaleString()} m` : `${peak.elevation_ft.toLocaleString()}'`}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Sort Controls Row */}
         <div className="flex items-center justify-between gap-2 pt-0.5">

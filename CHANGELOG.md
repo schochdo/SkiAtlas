@@ -6,6 +6,11 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `feat: position search input above filters in directory sidebar`
+- **What was changed**:
+  - In [`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx), reordered the directory sidebar controls so the Search input bar (and matching mountain summit suggestions) sits directly at the top of the pane above the collapsible Filters section.
+  - Matches the standard, intuitive mental model where users first search or query destinations before applying faceted filtering.
+
 ### `fix: restore center ground clamping and native elevation hold to eliminate camera freeze at 80k feet`
 - **What was wrong before**:
   - The camera got permanently stuck at an altitude of $\sim 80,000\text{ ft}$ ($z \approx 11.5$) and refused to zoom in any further with mouse wheel, pinch, navigation buttons, or keyboard keys.
