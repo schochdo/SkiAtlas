@@ -492,7 +492,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
             <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={() => handleSetLocatorPreset('regional')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1C1B18] ${
                   locatorZoomPreset === 'regional'
                     ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
                     : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
@@ -503,7 +503,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
               </button>
               <button
                 onClick={() => handleSetLocatorPreset('continental')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1C1B18] ${
                   locatorZoomPreset === 'continental'
                     ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
                     : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
@@ -514,7 +514,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
               </button>
               <button
                 onClick={() => handleSetLocatorPreset('global')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1C1B18] ${
                   locatorZoomPreset === 'global'
                     ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
                     : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
@@ -525,7 +525,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
               </button>
               <button
                 onClick={onCloseLocator}
-                className="p-1 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer ml-1"
+                className="p-1 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer ml-1 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1C1B18]"
                 title="Close (Esc)"
                 aria-label="Close"
               >

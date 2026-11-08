@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: eliminate camera bouncing when zooming at an angle over 3D mountain terrain`
+- **What was wrong before**:
+  - When the 3D camera was pitched at an oblique angle (e.g. $40^\circ$ to $80^\circ$) looking across alpine peaks and ridges, zooming in (via mouse scroll wheel, trackpad pinch, navigation buttons, or keyboard keys) caused the camera to violently bounce up and down, shudder, and slide sideways.
+- **Root Causes**:
+  1. **Unconstrained Scroll Zoom Anchor Point**: `map.scrollZoom` had no `around` configuration, defaulting to anchoring around the mouse cursor (`around: undefined`). On steep terrain at an angle, raycasting against sloped terrain shifted the center horizontally by $\Delta x = (z_{\text{cursor}} - z_{\text{center}}) \cdot \tan(\text{pitch})$ on every frame. As the cursor passed over ridges and valleys, this kicked the focal center erratically sideways and vertically.
+  2. **MapLibre `moveCenterOntoTerrain` Oscillation**: In `handler_manager.ts` (line 595), on every frame with `zoomDelta > 0`, MapLibre executed `camera.moveCenterOntoTerrain(tr, zoomDelta)`. In `camera.ts` (lines 1240–1254), this calls `recalculateZoomAndCenter(terrain)`. Whenever relief differences exceeded `MAX_CENTER_OFF_TERRAIN_M` (150m)—which is ubiquitous in high-relief alpine terrain—MapLibre rejected the frame and snapped back (`tr.setZoom(zoom); tr.setCenter(center); tr.setElevation(elevation);`), causing rapid frame oscillations and visible bouncing.
+  3. **Mac Trackpad Pinch Overriding Elevation Hold**: `onWheel` intercepted Mac trackpad pinch gestures (`e.ctrlKey = true`) and called `map.setZoom(nextZoom)`, which executed raw `jumpTo` without gesture elevation holds or easing. This triggered MapLibre's near-clipping-plane terrain safety kick on arbitrary frames.
+  4. **Navigation Zoom Buttons Lacking Elevation Freeze**: `handleZoomIn` and `handleZoomOut` called `map.zoomIn()` and `map.zoomOut()`, allowing terrain recalculation mid-animation.
+  5. **Keyboard Flight Zoom Excluded From Elevation Hold**: `flightStep` only released ground clamping for `moveForward !== 0 || moveStrafe !== 0`, omitting zoom and altitude adjustments.
+- **Solution**:
+  - **Centered Scroll Zoom**: Configured `map.scrollZoom.enable({ around: 'center' })`. Anchoring zoom at the viewport center bypasses terrain-induced horizontal kicks and ensures line-of-sight tracking.
+  - **Neutralized `moveCenterOntoTerrain` Oscillation**: Neutralized `(map as any)._camera.moveCenterOntoTerrain` during live zooming, eliminating frame rejection rollbacks over steep mountain slopes and allowing smooth line-of-sight progression.
+  - **Native Trackpad Pinch Handling**: In `onWheel`, called `e.preventDefault()` to block Chromium browser-level tab zooming while allowing MapLibre's native `ScrollZoomHandler` with `{ around: 'center' }` to handle the pinch with built-in bezier easing and elevation hold.
+  - **Frozen Elevation on Navigation Zoom Buttons**: Updated `handleZoomIn` and `handleZoomOut` to use `map.easeTo({ zoom: ..., duration: 250, freezeElevation: true })`.
+  - **Expanded Flight Elevation Hold**: Extended `flightStep` elevation hold to cover `zoomDelta !== 0 || altitudeDelta !== 0` during keyboard navigation.
+  - **Clean Locator Focus Ring & Border Label Density**: Removed browser-default blue focus outline from Regional Locator preset buttons (`focus-visible:ring-1 focus-visible:ring-[#1C1B18]`), and adjusted country border labels to maxzoom 7.2 with 1600–3600px spacing so they never clutter regional and alpine zooms.
+
+
 ### `feat: searchable fire lookouts and watchtowers in directory search`
 - **What was changed**:
   - **Lookouts Search Engine**:

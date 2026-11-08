@@ -1090,6 +1090,23 @@ export default function App() {
       map.dragRotate.enable({ around: 'center', movement: 'linear' });
     } catch (_) {}
 
+    // Enable smooth scroll wheel zoom anchored around center (prevents cursor raycast terrain kick)
+    try {
+      map.scrollZoom.enable({ around: 'center' });
+    } catch (_) {}
+
+    // Neutralize MapLibre moveCenterOntoTerrain oscillation during zoom over sloped 3D relief
+    const neutralizeCameraBounce = () => {
+      try {
+        const cam = (map as any)._camera;
+        if (cam) {
+          cam.moveCenterOntoTerrain = () => {};
+        }
+      } catch (_) {}
+    };
+    neutralizeCameraBounce();
+    map.on('style.load', neutralizeCameraBounce);
+
     // Tablet & Touchscreen Controls (two-finger pitch tilt, rotate & pinch-zoom)
     try {
       map.touchZoomRotate.enable({ around: 'center' });
@@ -1232,12 +1249,8 @@ export default function App() {
     const onWheel = (e: WheelEvent) => {
       // 1. Pinch-to-Zoom (Brave & Chrome on Mac dispatch wheel with e.ctrlKey = true)
       if (e.ctrlKey) {
+        // Prevent Chromium browser tab zoom, while letting MapLibre's scrollZoom handle smooth centered zoom
         e.preventDefault();
-        e.stopImmediatePropagation();
-        const zoomDelta = -e.deltaY * 0.015;
-        const curZoom = map.getZoom();
-        const nextZoom = Math.max(1.2, Math.min(20.5, curZoom + zoomDelta));
-        map.setZoom(nextZoom);
         return;
       }
 
@@ -2028,16 +2041,16 @@ export default function App() {
           ['!=', ['get', 'name_left'], ''],
         ],
         minzoom: 3.2,
-        maxzoom: 8.0,
+        maxzoom: 7.2,
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'symbol-placement': 'line',
           'symbol-sort-key': 0.5,
           'symbol-spacing': [
             'interpolate', ['linear'], ['zoom'],
-            3.5, 1200,
-            5.5, 1800,
-            7.5, 2400,
+            3.5, 1600,
+            5.5, 2600,
+            7.0, 3600,
           ],
           'symbol-avoid-edges': false,
           'text-field': ['get', 'name_left'],
@@ -2046,8 +2059,8 @@ export default function App() {
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             3.5, 9.0,
-            6.0, 10.0,
-            7.5, 10.5,
+            5.5, 9.8,
+            7.0, 10.2,
           ],
           'text-letter-spacing': 0.18,
           'text-transform': 'uppercase',
@@ -2066,9 +2079,9 @@ export default function App() {
             'interpolate', ['linear'], ['zoom'],
             3.2, 0.0,
             3.8, 0.7,
-            6.5, 0.8,
-            7.2, 0.5,
-            8.0, 0.0,
+            5.8, 0.75,
+            6.5, 0.4,
+            7.2, 0.0,
           ],
         },
       });
@@ -2085,16 +2098,16 @@ export default function App() {
           ['!=', ['get', 'name_right'], ''],
         ],
         minzoom: 3.2,
-        maxzoom: 8.0,
+        maxzoom: 7.2,
         layout: {
           visibility: showCountryOutlines ? 'visible' : 'none',
           'symbol-placement': 'line',
           'symbol-sort-key': 0.5,
           'symbol-spacing': [
             'interpolate', ['linear'], ['zoom'],
-            3.5, 1200,
-            5.5, 1800,
-            7.5, 2400,
+            3.5, 1600,
+            5.5, 2600,
+            7.0, 3600,
           ],
           'symbol-avoid-edges': false,
           'text-field': ['get', 'name_right'],
@@ -2103,8 +2116,8 @@ export default function App() {
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             3.5, 9.0,
-            6.0, 10.0,
-            7.5, 10.5,
+            5.5, 9.8,
+            7.0, 10.2,
           ],
           'text-letter-spacing': 0.18,
           'text-transform': 'uppercase',
@@ -2123,9 +2136,9 @@ export default function App() {
             'interpolate', ['linear'], ['zoom'],
             3.2, 0.0,
             3.8, 0.7,
-            6.5, 0.8,
-            7.2, 0.5,
-            8.0, 0.0,
+            5.8, 0.75,
+            6.5, 0.4,
+            7.2, 0.0,
           ],
         },
       });
@@ -4269,8 +4282,8 @@ export default function App() {
         map.setZoom(Math.max(1.0, Math.min(20.5, nextZ)));
       }
 
-      // Smooth horizontal flight with level, steady-altitude cruising
-      if (moveForward !== 0 || moveStrafe !== 0) {
+      // Smooth horizontal flight and zoom with level, steady-altitude cruising
+      if (moveForward !== 0 || moveStrafe !== 0 || zoomDelta !== 0 || altitudeDelta !== 0) {
         // Temporarily release center ground clamping so camera cruises level without peak-and-valley bouncing
         if (!isElevationHeld) {
           try {
@@ -4802,14 +4815,16 @@ export default function App() {
     e.preventDefault();
     e.stopPropagation();
     if (!mapRef.current) return;
-    mapRef.current.zoomIn({ duration: 250 });
+    const cur = mapRef.current.getZoom();
+    (mapRef.current as any).easeTo({ zoom: Math.min(20.5, cur + 1), duration: 250, freezeElevation: true });
   }, []);
 
   const handleZoomOut = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!mapRef.current) return;
-    mapRef.current.zoomOut({ duration: 250 });
+    const cur = mapRef.current.getZoom();
+    (mapRef.current as any).easeTo({ zoom: Math.max(1.0, cur - 1), duration: 250, freezeElevation: true });
   }, []);
 
   const handleTiltMouseDown = useCallback((e: React.MouseEvent) => {
