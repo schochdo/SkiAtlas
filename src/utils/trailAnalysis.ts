@@ -135,7 +135,7 @@ export function analyzeTrailFeature(
   const topElevationFt = Math.round(maxElev * 3.28084);
   const baseElevationFt = Math.round(minElev * 3.28084);
 
-  const lengthKm = totalDist3D > 0 ? totalDist3D / 1000 : undefined;
+  const lengthKm = totalDist3D > 0 ? Math.round((totalDist3D / 1000) * 10) / 10 : undefined;
 
   let avgSlopeDeg: number | undefined;
   let avgSlopeGrade: number | undefined;

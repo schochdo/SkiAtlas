@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: round distance, snow, and area metrics to nearest 1/10 to eliminate unformatted float sloppiness`
+- **What was wrong before**:
+  - In [`formatDistance`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/formatters.ts), when `unitsMetric` was enabled (`km`), the function returned the raw template string `${km} km` without any rounding. For calculated 3D trail lengths (e.g. `0.5397295742373059`), the trail card rendered unsightly floating-point strings like `↗ LENGTH 0.5397295742373059 km`.
+  - While imperial miles were rounded to the nearest tenth, distances under `0.05 mi` rounded to `0 mi`, and metric values were completely unrounded.
+  - Imperial snowfall in `formatSnow` leaked unrounded decimal values when given floating-point snow amounts.
+- **Solution**:
+  - In [`src/utils/formatters.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/formatters.ts):
+    - `formatDistance`: Rounded metric kilometers to the nearest 1/10 (`Math.round(km * 10) / 10`) with a floor of `0.1 km` for any non-zero trail segment, matching imperial miles (`Math.max(0.1, Math.round(km * 0.621371 * 10) / 10)`).
+    - `formatSnow`: Rounded both metric centimeters and imperial inches to the nearest 1/10 (`Math.round(val * 10) / 10`).
+    - `formatAcres`: Ensured small metric areas ($< 10\text{ ha}$) round to the nearest 1/10.
+    - `formatVert`: Guaranteed vertical drop and elevation round to integer values with localized commas.
+  - In [`src/utils/trailAnalysis.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/trailAnalysis.ts):
+    - Pre-rounded `lengthKm` to the nearest 1/10 during 3D vector length calculation.
+
 ### `fix: correct meteorology 7-day forecast calendar date shift, call out Today, and expand fire lookouts zoom range`
 - **What was wrong before**:
   - **Meteorology Week Shift**: When viewing mountain profile meteorology on Saturday, the 7-day sparkline rendered as Friday through Thursday (`F S S M T W T`) with no indication of which day was today.

@@ -4,26 +4,39 @@
    ========================================================================= */
 
 export function formatSnow(inches: number, unitsMetric: boolean = false): string {
-  if (unitsMetric) return `${Math.round(inches * 2.54)} cm`;
-  return `${inches}"`;
+  if (unitsMetric) {
+    const cm = Math.round(inches * 2.54 * 10) / 10;
+    return `${cm} cm`;
+  }
+  const roundedIn = Math.round(inches * 10) / 10;
+  return `${roundedIn}"`;
 }
 
 export function formatVert(ft: number | null | undefined, unitsMetric: boolean = false): string {
   if (!ft || ft <= 0) return '—';
   if (unitsMetric) return `${Math.round(ft * 0.3048).toLocaleString()} m`;
-  return `${ft.toLocaleString()}'`;
+  return `${Math.round(ft).toLocaleString()}'`;
 }
 
 export function formatAcres(acres: number | null | undefined, unitsMetric: boolean = false): string {
   if (!acres || acres <= 0) return '—';
-  if (unitsMetric) return `${Math.round(acres * 0.404686).toLocaleString()} ha`;
-  return `${acres.toLocaleString()} ac`;
+  if (unitsMetric) {
+    const ha = acres * 0.404686;
+    if (ha < 10) {
+      return `${(Math.round(ha * 10) / 10).toLocaleString()} ha`;
+    }
+    return `${Math.round(ha).toLocaleString()} ha`;
+  }
+  return `${Math.round(acres).toLocaleString()} ac`;
 }
 
 export function formatDistance(km: number | null | undefined, unitsMetric: boolean = false): string {
-  if (!km || km <= 0) return '—';
-  if (unitsMetric) return `${km} km`;
-  const mi = Math.round(km * 0.621371 * 10) / 10;
+  if (km === null || km === undefined || !isFinite(km) || km <= 0) return '—';
+  if (unitsMetric) {
+    const val = Math.max(0.1, Math.round(km * 10) / 10);
+    return `${val} km`;
+  }
+  const mi = Math.max(0.1, Math.round(km * 0.621371 * 10) / 10);
   return `${mi} mi`;
 }
 
