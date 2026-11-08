@@ -6,6 +6,25 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: maintain steady flight elevation during arrow key navigation and climb only for terrain clearance`
+- **What was wrong before**:
+  - When navigating 3D terrain using the arrow keys (`ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`), the camera bounced violently up and down with the terrain contours (snapping upwards over ridges and dropping into valleys).
+  - **Root Cause**:
+    1. **Omission of Elevation in `jumpTo`**: Horizontal flight called `map.jumpTo({ center: [nextLng, nextLat] })` without passing `elevation`. In MapLibre GL JS, when `elevation` is omitted and `centerClampedToGround` is true, MapLibre samples terrain elevation under the center focal point on every frame, causing the camera to snap to the elevation of whatever gully, valley, or ridge was directly under the center.
+    2. **Oscillatory Terrain Snapping**: When emergency clearance (`didClimb`) triggered, `elevation` was passed for a single frame, overriding ground clamping; on the next frame `didClimb` became false, omitting `elevation` and snapping the camera instantly back to ground level.
+    3. **Center Clamping in Render Loop**: MapLibre's internal render loop continually overrides `transform.setElevation()` with terrain height whenever `getCenterClampedToGround()` is true.
+    4. **Camera-Only Clearance**: Clearance calculations checked only ground elevation under the camera eye (`groundUnderCam`), ignoring whether a mountain peak ahead was rising higher than the focal center.
+- **Solution**:
+  - **Disable Center Ground Clamping During Flight**: Explicitly call `map.setCenterClampedToGround(false)` at flight initiation so MapLibre does not clamp center elevation to terrain on every render frame.
+  - **Always Supply Constant Flight Elevation**: In `flightStep`, always pass `elevation: flightElevation` to `map.jumpTo()`. Never omit it during flight.
+  - **Predictive Ground Clearance (Center + Camera + Lookahead)**:
+    - Queries terrain elevation under both the focal center and camera eye, plus a 0.6-second forward lookahead along the velocity vector (`groundAheadCenter` and `groundAheadCam`).
+    - Enforces safety clearance floors (`MIN_CAMERA_CLEARANCE = 25m`, `MIN_CENTER_CLEARANCE = 10m`).
+  - **Climb-Only Cruising Policy**:
+    - If terrain rises ahead such that ground clearance is infringed (`minRequiredFlightElev > flightElevation`), smoothly climb at `maxClimbSpeed` to clear the ridge.
+    - If flying over valleys, downhill slopes, or flat terrain (`minRequiredFlightElev <= flightElevation`), keep `flightElevation` completely constant. Zero bouncing, zero diving.
+  - **Protected Manual Descent**: For manual altitude descent (`KeyQ` / `PageDown`), bounds checking ensures descent halts at the safe terrain clearance floor.
+
 ### `fix: eliminate rogue nordic and hiking trails when Nordic category is toggled off`
 - **What was wrong before**:
   - When viewing downhill alpine resorts (e.g. Wildcat Mountain, NH), random cross-country/hiking loops across the valley (e.g. Great Glen Trails: "Aqueduct Loop", "Sage's Path", "Up Up and Away", "Drifter", etc.) continued to render on screen even with Nordic toggled off.

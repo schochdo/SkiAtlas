@@ -3744,10 +3744,6 @@ export default function App() {
     const activeKeys = new Set<string>();
     let animationFrameId: number | null = null;
     let lastTimestamp: number | null = null;
-    let smoothedElevation: number | null = null;
-    let isSettling = false;
-    let settleStartTime = 0;
-
     const NAVIGATION_KEYS = new Set([
       'KeyW',
       'KeyA',
@@ -3813,11 +3809,35 @@ export default function App() {
 
       // Initialize flightElevation once and ensure ground clamping doesn't bounce the camera
       if (flightElevation === null) {
+        try {
+          (map as any).setCenterClampedToGround?.(false);
+        } catch (_) {}
+
         const curElev = map.getCenterElevation();
-        const ground = map.queryTerrainElevation(map.getCenter());
-        flightElevation = (curElev !== null && curElev !== undefined && isFinite(curElev))
-          ? curElev
-          : ((ground !== null && ground !== undefined && isFinite(ground)) ? ground : 0);
+        const center = map.getCenter();
+        const groundAtCenter = map.queryTerrainElevation(center);
+        const centerGround = (groundAtCenter !== null && groundAtCenter !== undefined && isFinite(groundAtCenter))
+          ? groundAtCenter
+          : 0;
+
+        flightElevation = (curElev !== null && curElev !== undefined && isFinite(curElev) && curElev > 0)
+          ? Math.max(curElev, centerGround + 10)
+          : centerGround + 10;
+
+        // Ground eye clearance check at startup
+        const tr = (map as any)._camera?.transform;
+        const camLngLat = tr?.getCameraLngLat?.() || center;
+        const camAlt = tr?.getCameraAltitude?.();
+        const groundUnderCam = map.queryTerrainElevation(camLngLat);
+        const MIN_CAMERA_CLEARANCE = 25.0;
+
+        if (camAlt !== null && camAlt !== undefined && isFinite(camAlt) &&
+            groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam)) {
+          const reqCamAlt = groundUnderCam + MIN_CAMERA_CLEARANCE;
+          if (camAlt < reqCamAlt) {
+            flightElevation += (reqCamAlt - camAlt);
+          }
+        }
       }
 
       const isShift = activeKeys.has('ShiftLeft') || activeKeys.has('ShiftRight');
@@ -3886,17 +3906,26 @@ export default function App() {
         const altSpeed = Math.max(250, speedMps * 0.75) * (isShift ? 2.0 : 1.0);
         let deltaAlt = altitudeDelta * altSpeed * dt;
 
-        // Ground clearance protection for the camera eye:
+        // Ground clearance protection for manual descent
         if (deltaAlt < 0) {
           const tr = (map as any)._camera?.transform;
           const camLngLat = tr?.getCameraLngLat?.() || map.getCenter();
           const camAlt = tr?.getCameraAltitude?.();
           const groundUnderCam = map.queryTerrainElevation(camLngLat);
-          const MIN_CLEARANCE = 15.0; // meters
+          const groundUnderCenter = map.queryTerrainElevation(map.getCenter());
+          const MIN_CAM_CLEARANCE = 25.0;
+          const MIN_CTR_CLEARANCE = 10.0;
 
+          let maxDescent = Infinity;
           if (camAlt !== null && camAlt !== undefined && isFinite(camAlt) &&
               groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam)) {
-            const maxDescent = camAlt - (groundUnderCam + MIN_CLEARANCE);
+            maxDescent = Math.min(maxDescent, Math.max(0, camAlt - (groundUnderCam + MIN_CAM_CLEARANCE)));
+          }
+          if (flightElevation !== null && groundUnderCenter !== null && groundUnderCenter !== undefined && isFinite(groundUnderCenter)) {
+            maxDescent = Math.min(maxDescent, Math.max(0, flightElevation - (groundUnderCenter + MIN_CTR_CLEARANCE)));
+          }
+
+          if (isFinite(maxDescent)) {
             if (maxDescent <= 0) {
               deltaAlt = 0;
             } else if (-deltaAlt > maxDescent) {
@@ -3905,7 +3934,9 @@ export default function App() {
           }
         }
 
-        flightElevation += deltaAlt;
+        if (flightElevation !== null) {
+          flightElevation += deltaAlt;
+        }
       }
 
       // Smooth horizontal flight with level, steady-altitude cruising
@@ -3934,44 +3965,76 @@ export default function App() {
         const nextLat = Math.max(-85, Math.min(85, curCenter.lat + deltaLat));
         const nextLng = curCenter.lng + deltaLng;
 
-        // Ground clearance protection: lift smoothly only if terrain rises above current altitude
+        // Predictive ground clearance: look ahead 0.6s along velocity vector
+        const lookaheadSec = 0.6;
+        const lookaheadMultiplier = dt > 0 ? (lookaheadSec / dt) : 1;
+        const lookaheadLat = deltaLat * lookaheadMultiplier;
+        const lookaheadLng = deltaLng * lookaheadMultiplier;
+
+        const lookCenterLat = Math.max(-85, Math.min(85, nextLat + lookaheadLat));
+        const lookCenterLng = nextLng + lookaheadLng;
+        const groundCenter = map.queryTerrainElevation([nextLng, nextLat]);
+        const groundAheadCenter = map.queryTerrainElevation([lookCenterLng, lookCenterLat]);
+
         const tr = (map as any)._camera?.transform;
         const camLngLat = tr?.getCameraLngLat?.() || curCenter;
         const camAlt = tr?.getCameraAltitude?.();
         const nextCamLat = Math.max(-85, Math.min(85, camLngLat.lat + deltaLat));
         const nextCamLng = camLngLat.lng + deltaLng;
-        const groundUnderCam = map.queryTerrainElevation([nextCamLng, nextCamLat]);
+        const lookCamLat = Math.max(-85, Math.min(85, nextCamLat + lookaheadLat));
+        const lookCamLng = nextCamLng + lookaheadLng;
+        const groundCam = map.queryTerrainElevation([nextCamLng, nextCamLat]);
+        const groundAheadCam = map.queryTerrainElevation([lookCamLng, lookCamLat]);
 
-        let didClimb = false;
-        if (groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam) &&
-            camAlt !== null && camAlt !== undefined && isFinite(camAlt)) {
-          const MIN_CLEARANCE = 15.0; // meters minimum ground clearance buffer
-          const minAllowedElevation = groundUnderCam + MIN_CLEARANCE;
-
-          if (minAllowedElevation > camAlt) {
-            const climbDiff = minAllowedElevation - camAlt;
-            const climbFactor = 1 - Math.exp(-dt * 6.0);
-            const maxClimbSpeed = Math.max(speedMps * 1.5, 450); // m/s
-            const climbDelta = Math.min(climbDiff, Math.max(climbDiff * climbFactor, maxClimbSpeed * dt));
-            if (flightElevation !== null) {
-              flightElevation += climbDelta;
-              didClimb = true;
-            }
-          }
+        // Evaluate max terrain height under/ahead of focal center
+        let maxGroundCenter = -Infinity;
+        if (groundCenter !== null && groundCenter !== undefined && isFinite(groundCenter)) {
+          maxGroundCenter = Math.max(maxGroundCenter, groundCenter);
+        }
+        if (groundAheadCenter !== null && groundAheadCenter !== undefined && isFinite(groundAheadCenter)) {
+          maxGroundCenter = Math.max(maxGroundCenter, groundAheadCenter);
         }
 
-        // When cruising horizontally without altitude modifications, omit elevation so MapLibre
-        // doesn't force terrain raycast recalculations or vertical camera jumps.
-        if (didClimb || altitudeDelta !== 0) {
-          map.jumpTo({
-            center: [nextLng, nextLat],
-            elevation: flightElevation ?? undefined,
-          });
-        } else {
-          map.jumpTo({
-            center: [nextLng, nextLat],
-          });
+        // Evaluate max terrain height under/ahead of camera eye
+        let maxGroundCam = -Infinity;
+        if (groundCam !== null && groundCam !== undefined && isFinite(groundCam)) {
+          maxGroundCam = Math.max(maxGroundCam, groundCam);
         }
+        if (groundAheadCam !== null && groundAheadCam !== undefined && isFinite(groundAheadCam)) {
+          maxGroundCam = Math.max(maxGroundCam, groundAheadCam);
+        }
+
+        // Calculate minimum flightElevation needed to clear terrain
+        const MIN_CAMERA_CLEARANCE = 25.0; // meters eye clearance
+        const MIN_CENTER_CLEARANCE = 10.0; // meters center clearance
+        let minRequiredFlightElev = -Infinity;
+
+        if (maxGroundCenter > -Infinity) {
+          minRequiredFlightElev = Math.max(minRequiredFlightElev, maxGroundCenter + MIN_CENTER_CLEARANCE);
+        }
+
+        if (maxGroundCam > -Infinity && camAlt !== null && camAlt !== undefined && isFinite(camAlt) && flightElevation !== null) {
+          const heightAboveCenter = Math.max(0, camAlt - flightElevation);
+          const reqElevFromCam = (maxGroundCam + MIN_CAMERA_CLEARANCE) - heightAboveCenter;
+          minRequiredFlightElev = Math.max(minRequiredFlightElev, reqElevFromCam);
+        }
+
+        // CLIMB ONLY when terrain forces us to climb to clear the ground!
+        // When flying over valleys, downhill slopes, or flat terrain, DO NOT DESCEND.
+        // Maintain steady cruising elevation.
+        if (flightElevation !== null && minRequiredFlightElev > flightElevation) {
+          const climbDiff = minRequiredFlightElev - flightElevation;
+          const climbFactor = 1 - Math.exp(-dt * 6.0);
+          const maxClimbSpeed = Math.max(speedMps * 2.0, 500); // m/s
+          const climbDelta = Math.min(climbDiff, Math.max(climbDiff * climbFactor, maxClimbSpeed * dt));
+          flightElevation += climbDelta;
+        }
+
+        // Always pass elevation so MapLibre maintains steady cruising altitude without ground bouncing
+        map.jumpTo({
+          center: [nextLng, nextLat],
+          elevation: flightElevation ?? undefined,
+        });
       } else if (altitudeDelta !== 0) {
         map.jumpTo({
           elevation: flightElevation ?? undefined,
