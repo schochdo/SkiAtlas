@@ -84,6 +84,8 @@ export function classifySkiFeature(
     category = 'nordic';
   } else if (p.category === 'heli_cat') {
     category = 'heli_cat';
+  } else if (p.category === 'touring' || p.archetype?.toLowerCase().includes('touring') || p.archetype?.toLowerCase().includes('backcountry')) {
+    category = 'touring';
   } else if (hasXcName && totalLifts <= 4) {
     category = 'nordic';
   } else if (nordicRuns > 0 && downhillRuns === 0) {
@@ -420,6 +422,15 @@ export function getCategoryBadge(category?: SkiActivityCategory) {
         text: 'text-[#B84A39]',
         border: 'border-[#B84A39]/30',
         dot: '#B84A39',
+      };
+    case 'touring':
+      return {
+        label: 'Touring',
+        icon: '🏔️',
+        bg: 'bg-[#D97706]/10',
+        text: 'text-[#B45309]',
+        border: 'border-[#D97706]/30',
+        dot: '#D97706',
       };
     case 'downhill':
     default:

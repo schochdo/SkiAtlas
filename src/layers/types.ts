@@ -80,6 +80,7 @@ export const LAYER_IDS = {
 
 export interface VectorLayerRegistrationOptions {
   showDownhill: boolean;
+  showTouring?: boolean;
   showCountryOutlines: boolean;
   showPeaks: boolean;
   showLookouts: boolean;

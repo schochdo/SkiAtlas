@@ -13,6 +13,7 @@ interface DirectoryListProps {
   showNordic: boolean;
   showDownhill: boolean;
   showHeliCat: boolean;
+  showTouring?: boolean;
   directoryScope: DirectoryScope;
   onScopeChange: (scope: DirectoryScope) => void;
   filteredResortsCount: number;
@@ -34,6 +35,7 @@ interface DirectoryListProps {
   onToggleDownhill: () => void;
   onToggleNordic: () => void;
   onToggleHeliCat: () => void;
+  onToggleTouring?: () => void;
   categoryFilterCounts: { downhill: number; nordic: number; heli_cat: number };
   selectedPasses: PassNetwork[];
   onTogglePass: (pass: PassNetwork) => void;
@@ -62,6 +64,7 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
   showNordic,
   showDownhill,
   showHeliCat,
+  showTouring = true,
   directoryScope,
   onScopeChange,
   filteredResortsCount,
@@ -82,6 +85,7 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
   onToggleDownhill,
   onToggleNordic,
   onToggleHeliCat,
+  onToggleTouring,
   categoryFilterCounts,
   selectedPasses,
   onTogglePass,
@@ -268,6 +272,8 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
                 onToggleNordic={onToggleNordic}
                 showHeliCat={showHeliCat}
                 onToggleHeliCat={onToggleHeliCat}
+                showTouring={showTouring}
+                onToggleTouring={onToggleTouring}
                 categoryFilterCounts={categoryFilterCounts}
                 selectedPasses={selectedPasses}
                 onTogglePass={onTogglePass}
@@ -327,7 +333,7 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
                   : 'text-[#5C5852] hover:text-[#1C1B18]'
               }`}
             >
-              <span>{showNordic && !showDownhill && !showHeliCat ? 'Network' : 'Acres'}</span>
+              <span>{showNordic && !showDownhill && !showHeliCat && !showTouring ? 'Network' : 'Acres'}</span>
               {sortBy === 'acres' && <span className="text-[10px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
             </button>
             <button

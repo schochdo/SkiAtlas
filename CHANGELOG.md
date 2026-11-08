@@ -6,6 +6,30 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `feat: add toggleable ski touring discipline, filter controls, and authentic Tuckerman Ravine dataset`
+- **What was wrong before**:
+  - Ski touring routes and backcountry ski mountaineering lines (`piste:type=skitour`, `uses: ['skitour']`, `grooming=backcountry`) were previously unconditionally stripped from the trail ingestion pipeline and excluded by MapLibre layer filters to prevent non-resort sprawl.
+  - Users had no way to explore legendary backcountry touring zones (such as Mount Washington's Tuckerman Ravine, the Haute Route, or the Catamount Trail) or to toggle touring routes on and off independently from alpine downhill and nordic networks.
+- **What changed**:
+  - **First-Class Touring Category & Toggle State**:
+    - Expanded `SkiActivityCategory` to `'downhill' | 'nordic' | 'heli_cat' | 'touring'`.
+    - Added global `showTouring` state with full toggle support in both [`src/components/header/FilterModal.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/FilterModal.tsx) (4-column category grid: `[ ⛷️ Downhill ] [ 🎿 Nordic ] [ 🚁 Heli/Cat ] [ 🏔️ Touring ]`) and [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx) (Layers popover "Ski Touring Routes" toggle).
+  - **Quality Filtering for Significant Routes**:
+    - In both [`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts) and [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), admitted genuine touring lines while strictly rejecting unnamed noise, non-ski recreational activities (`fatbike`, `hike`, `sled`, `playground`), and defunct traces.
+    - Tagged admitted routes with `is_touring = true` and `piste:type = 'skitour'`.
+  - **Dynamic GPU-Level MapLibre Layer Filtering**:
+    - In [`src/layers/layerThemeManager.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/layerThemeManager.ts), updated `syncTrailFilterAndVisibility` and `syncResortPointFilters` to instantly toggle touring routes and destinations at 60fps on the GPU without requiring network re-queries.
+  - **Authentic Cartographic Piste Styling**:
+    - In [`src/layers/trailLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/trailLayers.ts), styled touring routes with warm tour amber (`#D97706`) for unrated lines while preserving authentic difficulty vermilion (`#B84A39`) and black (`#1C1B18`) for extreme couloirs and chutes.
+  - **Curated Tuckerman Ravine Flagship & Trail Bundle**:
+    - Added Tuckerman Ravine (Mount Washington, NH) to [`src/data/resorts.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/data/resorts.ts) with authentic elevation (3,800' base, 6,288' summit, 2,488' vert), 1,200 acres, and verified editorial history.
+    - Exported all 35 authentic chutes, gullies, and runs (Hillmans Highway, John Sherburne Ski Trail, The Chute, Left Gully, Right Gully, The Lip, The Sluice, Gulf of Slides, etc.) to [`public/data/trails/tuckerman-ravine.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/trails/tuckerman-ravine.json) and registered them in `data_pipeline/trails.db`.
+    - Enhanced [`src/components/profile/MountainProfile.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/profile/MountainProfile.tsx) to display "Lines / Chutes" and "Backcountry" terrain stats for touring entries.
+- **Why this specific approach was chosen**:
+  - Fulfills the user's desire to enjoy significant, legendary ski touring terrain like Tuckerman Ravine with complete toggle control, allowing users to keep downhill views pure or activate touring routes on demand.
+
+---
+
 ### `fix: restore persistent country boundary labels with zoom-responsive spacing`
 - **What was wrong before**:
   - Country boundary labels (`name_left` and `name_right` along international borders) completely disappeared across all zoom levels.

@@ -33,7 +33,12 @@ export function registerTrailLayers(map: MapLibreMap, showDownhill: boolean): vo
         'expert', '#B84A39',       // Double Black Vermilion
         'extreme', '#B84A39',      // Double Black Vermilion
         'freeride', '#B84A39',     // Double Black / Freeride Vermilion
-        '#8A847C',
+        [
+          'case',
+          ['any', ['==', ['get', 'piste:type'], 'skitour'], ['==', ['coalesce', ['get', 'is_touring'], false], true]],
+          '#D97706',
+          '#8A847C',
+        ]
       ],
       'fill-opacity': [
         'interpolate',
@@ -65,7 +70,12 @@ export function registerTrailLayers(map: MapLibreMap, showDownhill: boolean): vo
         'expert', '#B84A39',
         'extreme', '#B84A39',
         'freeride', '#B84A39',
-        '#8A847C',
+        [
+          'case',
+          ['any', ['==', ['get', 'piste:type'], 'skitour'], ['==', ['coalesce', ['get', 'is_touring'], false], true]],
+          '#D97706',
+          '#8A847C',
+        ]
       ],
       'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.8, 14, 1.4, 17, 2.0],
       'line-dasharray': [2, 2],
@@ -112,7 +122,12 @@ export function registerTrailLayers(map: MapLibreMap, showDownhill: boolean): vo
         'expert', '#B84A39',       // Double Black Vermilion
         'extreme', '#B84A39',      // Double Black Vermilion
         'freeride', '#B84A39',     // Double Black / Freeride Vermilion
-        '#8A847C',
+        [
+          'case',
+          ['any', ['==', ['get', 'piste:type'], 'skitour'], ['==', ['coalesce', ['get', 'is_touring'], false], true]],
+          '#D97706',
+          '#8A847C',
+        ]
       ],
       'line-width': [
         'interpolate', ['linear'], ['zoom'],

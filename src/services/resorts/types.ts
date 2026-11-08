@@ -8,6 +8,7 @@ export interface ResortFilterCriteria {
   showDownhill: boolean;
   showNordic: boolean;
   showHeliCat: boolean;
+  showTouring: boolean;
   selectedPasses: PassNetwork[];
   effectiveMinVerticalFt: number;
   effectiveMinAcreage: number;
@@ -36,5 +37,6 @@ export interface GlobalSkiAreasResult {
     downhill: number;
     nordic: number;
     heli_cat: number;
+    touring: number;
   };
 }

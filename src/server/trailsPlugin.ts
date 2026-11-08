@@ -207,50 +207,45 @@ export function localTrailsPlugin(): Plugin {
               const ptype = p['piste:type'];
               const uses = Array.isArray(p.uses) ? p.uses : [];
               const isBackcountryGrooming = p.grooming === 'backcountry' || p['piste:grooming'] === 'backcountry' || p.backcountry === 'yes';
+              const isSkitour = ptype === 'skitour' || uses.includes('skitour');
+              const isBackcountry = ptype === 'backcountry' || isBackcountryGrooming || uses.includes('backcountry');
 
-              // Reject non-resort pistes: backcountry touring/mountaineering routes, fatbike, hike, sled, playgrounds, etc.
-              if (
-                (ptype && ['skitour', 'backcountry', 'fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) ||
-                uses.includes('skitour') ||
-                uses.includes('backcountry')
-              ) {
+              // Strictly reject non-ski recreation: fatbike, hike, sled, sleigh, ice_skate, playground, etc.
+              const isNonSki =
+                (ptype && ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) ||
+                uses.some((u: string) => ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(u));
+
+              if (isNonSki && !isSkitour) {
                 return false;
               }
 
-              // Reject wild backcountry trails not associated with any ski resort.
-              // Use the closest resort to determine ownership. If the closest resort is a
-              // heli/cat operation, tag the trail as is_heli_cat=true so the client can
-              // suppress it when the Cat/Heli toggle is off.
-              if (isBackcountryGrooming && !p.resort_id) {
-                const coordsMap = getAreaCoords();
-                const samplePt = getSamplePoint(f.geometry);
+              // Handle touring & backcountry routes: preserve significant named routes for toggleable display
+              if (isSkitour || isBackcountry) {
+                const rawName = (p.name || '').trim();
+                const nameLower = rawName.toLowerCase();
+                // Filter out non-significant, unnamed or generic traces
+                const isSignificant =
+                  rawName.length > 0 &&
+                  nameLower !== 'unnamed trail' &&
+                  nameLower !== 'unnamed' &&
+                  nameLower !== 'unknown' &&
+                  nameLower !== 'untitled' &&
+                  !nameLower.startsWith('track') &&
+                  !nameLower.startsWith('way ') &&
+                  !nameLower.includes('autoroad') &&
+                  !nameLower.includes('(proposed)') &&
+                  !nameLower.includes('(abandoned)') &&
+                  !nameLower.includes('(disused)');
 
-                if (!samplePt || !coordsMap) {
-                  return false; // Cannot geolocate — drop it
-                }
-
-                const [lng, lat] = samplePt;
-                let closestDist = Infinity;
-                let closestCategory = '';
-
-                for (const [, [rLng, rLat, rCat]] of coordsMap) {
-                  const d = Math.hypot(lng - rLng, lat - rLat);
-                  if (d < closestDist) {
-                    closestDist = d;
-                    closestCategory = rCat;
-                  }
-                }
-
-                // No resort within a reasonable radius (~25 km, ~0.22 deg) → drop
-                if (closestDist > 0.22 || !closestCategory) {
+                if (!isSignificant) {
                   return false;
                 }
 
-                if (closestCategory === 'heli_cat') {
-                  // Exclusively cat/heli terrain — tag for client-side toggle filtering
-                  if (f.properties) f.properties.is_heli_cat = true;
+                // Tag as touring route for client-side toggle filtering
+                p.is_touring = true;
+                if (!p['piste:type'] || p['piste:type'] === 'downhill' || p['piste:type'] === 'backcountry') {
+                  p['piste:type'] = 'skitour';
                 }
-                // If closest is downhill/nordic, allow through untagged
               }
             }
             return true;

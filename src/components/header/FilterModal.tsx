@@ -16,7 +16,9 @@ export interface FilterPanelProps {
   onToggleNordic: () => void;
   showHeliCat: boolean;
   onToggleHeliCat: () => void;
-  categoryFilterCounts: { downhill: number; nordic: number; heli_cat: number };
+  showTouring?: boolean;
+  onToggleTouring?: () => void;
+  categoryFilterCounts: { downhill: number; nordic: number; heli_cat: number; touring?: number };
   selectedPasses: PassNetwork[];
   onTogglePass: (pass: PassNetwork) => void;
   onSetAllPasses: () => void;
@@ -84,6 +86,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onToggleNordic,
   showHeliCat,
   onToggleHeliCat,
+  showTouring = true,
+  onToggleTouring,
   categoryFilterCounts,
   selectedPasses,
   onTogglePass,
@@ -105,7 +109,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   return (
     <div className="space-y-3.5 text-[#1C1B18]">
       {/* Category Segmented Controls (Compact icons, clear active/inactive states) */}
-      <div className="grid grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-4 gap-1.5">
         <button
           onClick={onToggleDownhill}
           className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
@@ -141,6 +145,18 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         >
           <span className={`text-xs ${showHeliCat ? '' : 'opacity-50 grayscale'}`}>🚁</span>
           <span className="truncate">Heli/Cat</span>
+        </button>
+        <button
+          onClick={onToggleTouring}
+          className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            showTouring
+              ? 'bg-[#D97706]/15 border-[#D97706] text-[#B45309] shadow-2xs'
+              : 'bg-[#FAF8F3] border-[#D6D3CD] text-[#8A847C] opacity-75 hover:opacity-100 hover:text-[#5C5852]'
+          }`}
+          title={`Toggle Backcountry Ski Touring Routes & Zones (${(categoryFilterCounts.touring ?? 1).toLocaleString()})`}
+        >
+          <span className={`text-xs ${showTouring ? '' : 'opacity-50 grayscale'}`}>🏔️</span>
+          <span className="truncate">Touring</span>
         </button>
       </div>
 

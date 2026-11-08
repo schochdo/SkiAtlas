@@ -6,6 +6,7 @@ export interface ResortFilterSyncOptions {
   showDownhill: boolean;
   showNordic: boolean;
   showHeliCat: boolean;
+  showTouring?: boolean;
   effectiveMinVerticalFt: number;
   effectiveMinAcreage: number;
   effectiveMinNordicKm: number;
@@ -168,46 +169,80 @@ export function syncTrailFilterAndVisibility(
   map: MapLibreMap,
   showDownhill: boolean,
   showNordic: boolean,
-  showHeliCat: boolean
+  showHeliCat: boolean,
+  showTouring: boolean = true
 ): void {
-  const anyTrails = showDownhill || showNordic || showHeliCat;
+  const anyTrails = showDownhill || showNordic || showHeliCat || showTouring;
   const allowedConditions: any[] = [];
 
   const heliCatExclusion: any = showHeliCat
     ? null
     : ['!=', ['coalesce', ['get', 'is_heli_cat'], false], true];
 
+  const touringExclusion: any = showTouring
+    ? null
+    : [
+        'all',
+        ['!=', ['coalesce', ['get', 'is_touring'], false], true],
+        ['!=', ['get', 'piste:type'], 'skitour'],
+        ['!=', ['coalesce', ['get', 'resort_category'], ''], 'touring'],
+      ];
+
   if (showDownhill) {
     const dlCond: any[] = [
       'all',
       ['!=', ['get', 'piste:type'], 'nordic'],
+      ['!=', ['get', 'piste:type'], 'skitour'],
       ['!=', ['coalesce', ['get', 'resort_category'], ''], 'nordic'],
+      ['!=', ['coalesce', ['get', 'resort_category'], ''], 'touring'],
       [
         'any',
         ['==', ['get', 'piste:type'], 'downhill'],
         ['==', ['get', 'piste:type'], 'connection'],
       ],
     ];
-    if (heliCatExclusion) {
-      allowedConditions.push(['all', dlCond, heliCatExclusion]);
-    } else {
-      allowedConditions.push(dlCond);
-    }
+    const dlCombined = ['all', dlCond];
+    if (heliCatExclusion) dlCombined.push(heliCatExclusion);
+    if (touringExclusion) dlCombined.push(touringExclusion);
+    allowedConditions.push(dlCombined.length > 2 ? dlCombined : dlCond);
   }
 
   if (showNordic) {
-    allowedConditions.push([
-      'any',
-      ['==', ['get', 'piste:type'], 'nordic'],
-      ['==', ['get', 'resort_category'], 'nordic'],
-    ]);
+    const ndCond: any[] = [
+      'all',
+      [
+        'any',
+        ['==', ['get', 'piste:type'], 'nordic'],
+        ['==', ['get', 'resort_category'], 'nordic'],
+      ],
+      ['!=', ['get', 'piste:type'], 'skitour'],
+      ['!=', ['coalesce', ['get', 'resort_category'], ''], 'touring'],
+    ];
+    if (touringExclusion) {
+      allowedConditions.push(['all', ndCond, touringExclusion]);
+    } else {
+      allowedConditions.push(ndCond);
+    }
   }
 
   if (showHeliCat && !showDownhill) {
     allowedConditions.push([
+      'all',
+      [
+        'any',
+        ['==', ['get', 'piste:type'], 'downhill'],
+        ['==', ['get', 'piste:type'], 'connection'],
+      ],
+      ['!=', ['get', 'piste:type'], 'skitour'],
+    ]);
+  }
+
+  if (showTouring) {
+    allowedConditions.push([
       'any',
-      ['==', ['get', 'piste:type'], 'downhill'],
-      ['==', ['get', 'piste:type'], 'connection'],
+      ['==', ['get', 'piste:type'], 'skitour'],
+      ['==', ['get', 'resort_category'], 'touring'],
+      ['==', ['coalesce', ['get', 'is_touring'], false], true],
     ]);
   }
 
@@ -216,7 +251,7 @@ export function syncTrailFilterAndVisibility(
     [
       'in',
       ['coalesce', ['get', 'piste:type'], ''],
-      ['literal', ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other', 'skitour', 'backcountry']],
+      ['literal', ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other', ...(showTouring ? [] : ['skitour', 'backcountry'])]],
     ],
   ];
 
@@ -332,6 +367,7 @@ export function syncResortPointFilters(
     showDownhill,
     showNordic,
     showHeliCat,
+    showTouring = true,
     effectiveMinVerticalFt,
     effectiveMinAcreage,
     effectiveMinNordicKm,
@@ -342,6 +378,7 @@ export function syncResortPointFilters(
   if (showDownhill) allowedCats.push('downhill');
   if (showNordic) allowedCats.push('nordic');
   if (showHeliCat) allowedCats.push('heli_cat');
+  if (showTouring) allowedCats.push('touring');
 
   const downhillConditions: any[] = ['all'];
   if (effectiveMinVerticalFt > 0) {

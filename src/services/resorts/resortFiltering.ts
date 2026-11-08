@@ -18,6 +18,7 @@ export function filterResortCatalog(
     showDownhill,
     showNordic,
     showHeliCat,
+    showTouring,
     selectedPasses,
     effectiveMinVerticalFt,
     effectiveMinAcreage,
@@ -33,6 +34,7 @@ export function filterResortCatalog(
     if (cat === 'downhill' && !showDownhill) return false;
     if (cat === 'nordic' && !showNordic) return false;
     if (cat === 'heli_cat' && !showHeliCat) return false;
+    if (cat === 'touring' && !showTouring) return false;
 
     const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
     if (!passMatch) return false;
@@ -106,6 +108,7 @@ export function syncDynamicMapSources(
     showDownhill: boolean;
     showNordic: boolean;
     showHeliCat: boolean;
+    showTouring?: boolean;
     effectiveMinVerticalFt: number;
     effectiveMinAcreage: number;
     effectiveMinNordicKm: number;
@@ -118,6 +121,7 @@ export function syncDynamicMapSources(
     showDownhill,
     showNordic,
     showHeliCat,
+    showTouring = true,
     effectiveMinVerticalFt,
     effectiveMinAcreage,
     effectiveMinNordicKm,
@@ -129,6 +133,7 @@ export function syncDynamicMapSources(
   if (showDownhill) allowedCats.add('downhill');
   if (showNordic) allowedCats.add('nordic');
   if (showHeliCat) allowedCats.add('heli_cat');
+  if (showTouring) allowedCats.add('touring');
 
   // 1. Sync global clustered ski areas source
   const globalSrc = map.getSource(SOURCE_IDS.GLOBAL_SKI_AREAS) as GeoJSONSource;

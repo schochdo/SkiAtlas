@@ -289,6 +289,7 @@ export default function App() {
   const [showDownhill, setShowDownhill] = useState(true);
   const [showNordic, setShowNordic] = useState(false);
   const [showHeliCat, setShowHeliCat] = useState(false);
+  const [showTouring, setShowTouring] = useState(true);
 
   // Dedicated Imperial and Metric Filter Slider States
   // Imperial defaults: 500' vertical, 100 acres, 0 mi
@@ -365,7 +366,7 @@ export default function App() {
 
   // Global Points Ref & Features
   const [showGlobalPoints, setShowGlobalPoints] = useState(true);
-  const [categoryCounts, setCategoryCounts] = useState({ downhill: 6955, nordic: 5276, heli_cat: HELI_CAT_OPERATIONS.length });
+  const [categoryCounts, setCategoryCounts] = useState({ downhill: 6955, nordic: 5276, heli_cat: HELI_CAT_OPERATIONS.length, touring: 1 });
   const allGlobalFeaturesRef = useRef<any[]>([]);
   const globalFeaturesRef = useRef<any[]>([]);
 
@@ -438,15 +439,16 @@ export default function App() {
       if (minAreaAcres !== 100) count++;
       if (minNordicMi !== 0) count++;
     }
-    if (!showDownhill || showNordic || showHeliCat) count++;
+    if (!showDownhill || showNordic || showHeliCat || !showTouring) count++;
     return count;
-  }, [selectedPasses, unitsMetric, minVerticalFt, minVerticalM, minAreaAcres, minAreaHa, minNordicMi, minNordicKm, showDownhill, showNordic, showHeliCat]);
+  }, [selectedPasses, unitsMetric, minVerticalFt, minVerticalM, minAreaAcres, minAreaHa, minNordicMi, minNordicKm, showDownhill, showNordic, showHeliCat, showTouring]);
 
   // Dynamic Category Counts Matching Sliders & Pass Network Filters
   const categoryFilterCounts = useMemo(() => {
     let downhill = 0;
     let nordic = 0;
     let heli_cat = 0;
+    let touring = 0;
     for (const r of resorts) {
       if (r.is_closed) continue;
       const passMatch = r.pass_networks ? r.pass_networks.some((p) => selectedPasses.includes(p)) : true;
@@ -463,9 +465,11 @@ export default function App() {
         nordic++;
       } else if (cat === 'heli_cat') {
         heli_cat++;
+      } else if (cat === 'touring') {
+        touring++;
       }
     }
-    return { downhill, nordic, heli_cat };
+    return { downhill, nordic, heli_cat, touring: Math.max(touring, 1) };
   }, [resorts, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedPasses]);
 
   const handleResetFilters = () => {
@@ -479,6 +483,7 @@ export default function App() {
     setShowDownhill(true);
     setShowNordic(false);
     setShowHeliCat(false);
+    setShowTouring(true);
   };
 
   // Filtered Resorts across entire world dataset
@@ -489,6 +494,7 @@ export default function App() {
         showDownhill,
         showNordic,
         showHeliCat,
+        showTouring,
         selectedPasses,
         effectiveMinVerticalFt,
         effectiveMinAcreage,
@@ -500,7 +506,7 @@ export default function App() {
         sortOrder,
       }
     );
-  }, [resorts, selectedPasses, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, searchQuery, showDownhill, showNordic, showHeliCat, sortBy, sortOrder]);
+  }, [resorts, selectedPasses, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, searchQuery, showDownhill, showNordic, showHeliCat, showTouring, sortBy, sortOrder]);
 
   // Resorts in current map viewport bounds
   const inViewResorts = useMemo(() => {
@@ -784,12 +790,43 @@ export default function App() {
       } else if (p?.kind === 'piste') {
         const ptype = p['piste:type'];
         const uses = Array.isArray(p.uses) ? p.uses : [];
-        if (
-          (ptype && ['skitour', 'backcountry', 'fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) ||
-          uses.includes('skitour') ||
-          uses.includes('backcountry')
-        ) {
+        const isSkitour = ptype === 'skitour' || uses.includes('skitour');
+        const isBackcountry = ptype === 'backcountry' || p.grooming === 'backcountry' || p['piste:grooming'] === 'backcountry' || uses.includes('backcountry');
+
+        // Filter out non-ski recreation:
+        const isNonSki =
+          (ptype && ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) ||
+          uses.some((u: string) => ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(u));
+
+        if (isNonSki && !isSkitour) {
           continue;
+        }
+
+        // Handle ski touring & backcountry routes
+        if (isSkitour || isBackcountry) {
+          const rawName = (p.name || '').trim();
+          const nameLower = rawName.toLowerCase();
+          const isSignificant =
+            rawName.length > 0 &&
+            nameLower !== 'unnamed trail' &&
+            nameLower !== 'unnamed' &&
+            nameLower !== 'unknown' &&
+            nameLower !== 'untitled' &&
+            !nameLower.startsWith('track') &&
+            !nameLower.startsWith('way ') &&
+            !nameLower.includes('autoroad') &&
+            !nameLower.includes('(proposed)') &&
+            !nameLower.includes('(abandoned)') &&
+            !nameLower.includes('(disused)');
+
+          if (!isSignificant) {
+            continue;
+          }
+
+          p.is_touring = true;
+          if (!p['piste:type'] || p['piste:type'] === 'downhill' || p['piste:type'] === 'backcountry') {
+            p['piste:type'] = 'skitour';
+          }
         }
 
         // Sanitize mislabeled trails:
@@ -922,6 +959,7 @@ export default function App() {
           if (cat === 'nordic' && !showNordic) continue;
           if (cat === 'downhill' && !showDownhill) continue;
           if (cat === 'heli_cat' && !showHeliCat) continue;
+          if (cat === 'touring' && !showTouring) continue;
           fetchResortStaticTrails(r.id, cat);
           matchedAny = true;
         }
@@ -937,6 +975,7 @@ export default function App() {
               if (cat === 'nordic' && !showNordic) continue;
               if (cat === 'downhill' && !showDownhill) continue;
               if (cat === 'heli_cat' && !showHeliCat) continue;
+              if (cat === 'touring' && !showTouring) continue;
               fetchResortStaticTrails(f.properties.id, cat);
               matchedAny = true;
             }
@@ -987,7 +1026,7 @@ export default function App() {
         }
       } catch (_) {}
     }
-  }, [fetchResortStaticTrails, ingestTrailFeatures, showDownhill, showNordic, showHeliCat]);
+  }, [fetchResortStaticTrails, ingestTrailFeatures, showDownhill, showNordic, showHeliCat, showTouring]);
 
   const fetchOverpassBboxRef = useRef(fetchOverpassBbox);
   useEffect(() => {
@@ -1550,7 +1589,7 @@ export default function App() {
           name: r.name,
           category: r.category || 'downhill',
           primary_pass: r.pass_networks?.[0] || 'Independent',
-          pass_color: r.category === 'heli_cat' ? '#C85A32' : (PASS_COLORS[r.pass_networks?.[0] || 'Independent'] || '#8A847C'),
+          pass_color: r.category === 'heli_cat' ? '#C85A32' : r.category === 'touring' ? '#D97706' : (PASS_COLORS[r.pass_networks?.[0] || 'Independent'] || '#8A847C'),
           vertical_ft: r.vertical_drop_ft || 0,
           vertical_drop_ft: r.vertical_drop_ft || 0,
           skiable_acres: r.skiable_acres || 0,
@@ -2010,8 +2049,8 @@ export default function App() {
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
-    syncTrailFilterAndVisibility(mapRef.current, showDownhill, showNordic, showHeliCat);
-  }, [showDownhill, showNordic, showHeliCat, mapLoaded]);
+    syncTrailFilterAndVisibility(mapRef.current, showDownhill, showNordic, showHeliCat, showTouring);
+  }, [showDownhill, showNordic, showHeliCat, showTouring, mapLoaded]);
 
   /* =========================================================================
      MAP POINTS GPU FILTERING (Keeps map markers strictly in sync with filters)
@@ -2023,12 +2062,13 @@ export default function App() {
       showDownhill,
       showNordic,
       showHeliCat,
+      showTouring,
       effectiveMinVerticalFt,
       effectiveMinAcreage,
       effectiveMinNordicKm,
       selectedResort,
     });
-  }, [showDownhill, showNordic, showHeliCat, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedResort, mapLoaded]);
+  }, [showDownhill, showNordic, showHeliCat, showTouring, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedResort, mapLoaded]);
 
   /* =========================================================================
      DYNAMIC MAP GEOJSON SOURCES FILTER SYNC
@@ -2042,13 +2082,14 @@ export default function App() {
       showDownhill,
       showNordic,
       showHeliCat,
+      showTouring,
       effectiveMinVerticalFt,
       effectiveMinAcreage,
       effectiveMinNordicKm,
       selectedPasses,
       searchQuery,
     });
-  }, [showDownhill, showNordic, showHeliCat, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedPasses, searchQuery, mapLoaded, resorts]);
+  }, [showDownhill, showNordic, showHeliCat, showTouring, effectiveMinVerticalFt, effectiveMinAcreage, effectiveMinNordicKm, selectedPasses, searchQuery, mapLoaded, resorts]);
 
   /* =========================================================================
      SELECTED RESORT PIN & TARGET RING
@@ -2782,6 +2823,7 @@ export default function App() {
             showNordic={showNordic}
             showDownhill={showDownhill}
             showHeliCat={showHeliCat}
+            showTouring={showTouring}
             directoryScope={directoryScope}
             onScopeChange={setDirectoryScope}
             filteredResortsCount={filteredResorts.length}
@@ -2802,6 +2844,7 @@ export default function App() {
             onToggleDownhill={() => setShowDownhill(!showDownhill)}
             onToggleNordic={() => setShowNordic(!showNordic)}
             onToggleHeliCat={() => setShowHeliCat(!showHeliCat)}
+            onToggleTouring={() => setShowTouring(!showTouring)}
             categoryFilterCounts={categoryFilterCounts}
             selectedPasses={selectedPasses}
             onTogglePass={(pass) => {
@@ -2857,6 +2900,7 @@ export default function App() {
             showNordic={showNordic}
             showDownhill={showDownhill}
             showHeliCat={showHeliCat}
+            showTouring={showTouring}
             directoryScope={directoryScope}
             onScopeChange={setDirectoryScope}
             filteredResortsCount={filteredResorts.length}
@@ -2877,6 +2921,7 @@ export default function App() {
             onToggleDownhill={() => setShowDownhill(!showDownhill)}
             onToggleNordic={() => setShowNordic(!showNordic)}
             onToggleHeliCat={() => setShowHeliCat(!showHeliCat)}
+            onToggleTouring={() => setShowTouring(!showTouring)}
             categoryFilterCounts={categoryFilterCounts}
             selectedPasses={selectedPasses}
             onTogglePass={(pass) => {
@@ -2970,6 +3015,8 @@ export default function App() {
         onToggleLookouts={() => setShowLookouts((prev) => !prev)}
         showCountryOutlines={showCountryOutlines}
         onToggleCountryOutlines={() => setShowCountryOutlines((prev) => !prev)}
+        showTouring={showTouring}
+        onToggleTouring={() => setShowTouring((prev) => !prev)}
         terrainExaggeration={terrainExaggeration}
         onChangeTerrainExaggeration={handleTerrainExaggerationChange}
         terrainOverlay={terrainOverlay}

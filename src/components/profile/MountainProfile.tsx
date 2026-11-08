@@ -149,6 +149,23 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
                   <div className="text-sm font-bold text-[#1C1B18] mt-0.5">Nordic XC</div>
                 </div>
               </>
+            ) : resort.category === 'touring' ? (
+              <>
+                <div>
+                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Lines / Chutes</div>
+                  <div className="text-sm font-bold text-[#B45309] mt-0.5">{resort.run_count ?? stats.pistes ?? '—'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Terrain</div>
+                  <div className="text-sm font-bold text-[#1C1B18] mt-0.5">Backcountry</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold text-[#5C5852] uppercase tracking-wider">Acres</div>
+                  <div className="text-sm font-bold text-[#1C1B18] mt-0.5">
+                    {stats.acres && stats.acres > 0 ? formatAcres(stats.acres, unitsMetric) : resort.skiable_acres ? formatAcres(resort.skiable_acres, unitsMetric) : '—'}
+                  </div>
+                </div>
+              </>
             ) : (
               <>
                 <div>

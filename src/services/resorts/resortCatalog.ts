@@ -57,7 +57,7 @@ export async function fetchGlobalSkiAreas(): Promise<GlobalSkiAreasResult> {
     return {
       features: [],
       resorts: [],
-      counts: { downhill: 0, nordic: 0, heli_cat: HELI_CAT_OPERATIONS.length },
+      counts: { downhill: 0, nordic: 0, heli_cat: HELI_CAT_OPERATIONS.length, touring: 1 },
     };
   }
 
@@ -185,6 +185,7 @@ export async function fetchGlobalSkiAreas(): Promise<GlobalSkiAreasResult> {
       downhill: dhTotal,
       nordic: nordTotal,
       heli_cat: HELI_CAT_OPERATIONS.length,
+      touring: 1,
     },
   };
 }

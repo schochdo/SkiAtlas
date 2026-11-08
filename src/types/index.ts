@@ -4,8 +4,8 @@
 
 export type PassNetwork = 'Ikon' | 'Epic' | 'Indy' | 'Mountain Collective' | 'Independent';
 
-// Only genuine ski categories: Downhill, Nordic, Cat/Heli (No novelty / wild / touring clutter)
-export type SkiActivityCategory = 'downhill' | 'nordic' | 'heli_cat';
+// Authoritative ski categories: Downhill, Nordic, Heli/Cat, Touring
+export type SkiActivityCategory = 'downhill' | 'nordic' | 'heli_cat' | 'touring';
 
 export type EarthProjectionMode = 'globe' | 'mercator';
 
@@ -66,7 +66,7 @@ export interface SkiResort {
   summary: string;
   weather?: ResortWeatherData;
   category?: SkiActivityCategory;
-  activities?: ('downhill' | 'nordic' | 'heli_cat')[];
+  activities?: ('downhill' | 'nordic' | 'heli_cat' | 'touring')[];
   operation_type?: 'resort' | 'nordic_center' | 'cat_ski' | 'heli_ski';
   tenure_acres?: number;
   lift_count?: number | null;
