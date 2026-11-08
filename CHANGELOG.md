@@ -6,6 +6,45 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `feat: rebuild boundaries from authoritative Natural Earth 10m topological mesh, purge all water lines, and enforce 100% terrestrial connectivity`
+- **What was wrong before**:
+  - **Water Lines & Offshore Arcs**: Boundary lines were extending out into oceans, seas, bays, and straits (e.g. Aegean Sea between Greece and Turkey, South China Sea around the Spratly Islands, Caribbean Sea, Andaman Sea, the ICJ maritime arc off Bar Harbor in Maine, and lines cutting across coastal inlets).
+  - **Terrestrial Disconnections**: Borders on land kept breaking or missing segments (such as the 39.5-km desert gap between Morocco and Algeria, disconnected segments in the Sahara, and fragmented borders requiring manual re-stitching).
+- **Root Cause**:
+  - The previous boundary dataset originated from an ad-hoc OpenStreetMap cadastral scrape that included maritime territorial water boundaries (12-nautical-mile EEZ and international court delimitation lines) extending far into the open sea.
+  - Furthermore, because disputed and partitioned entities (such as Western Sahara) were partially filtered out in earlier scripts, the land segments adjacent to them were dropped, creating artificial dead ends in the middle of landmasses.
+- **Solution**:
+  - **Rebuilt from Authoritative Natural Earth 10m TopoJSON Mesh (`world-atlas/countries-10m.json`)**:
+    - Extracted all 383 international land boundaries directly from shared topological arc meshes where adjacent sovereign nations meet.
+    - Because TopoJSON mathematically shares arc vertices between neighboring polygons, all 175 global tripoints connect with 100% exact vertex parity. There are zero dead ends, zero gaps, and zero disconnected lines on land.
+  - **Purged All Water & Maritime Indicators**:
+    - By relying strictly on shared terrestrial country boundaries, all offshore maritime arcs, territorial water lines, and lines extending into oceans, straits, or open seas are 100% eliminated. Lines terminate strictly at physical coastlines.
+  - **Ray-Casting Point-in-Polygon Side Verification**:
+    - Every boundary line's normal vector was sampled across multiple points against sovereign polygon geometries to ensure `name_left` and `name_right` are 100% positioned on their authentic sovereign side of the border.
+  - **Bumped Boundary Cache Buster**: Updated [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) to `v=20261108_ne10m_land_mesh`.
+
+### `feat: streamline filter & directory UX, deduplicate actions, highlight slider ranges, and polish typography`
+- **What was wrong before**:
+  - **Filter Box Clutter & Duplication**: The filter panel displayed a redundant subheader with `1,611 matching ski areas` (already present in the directory scope switch below) and a duplicate `Reset Filters` action directly beneath the header's own `Reset` button. An all-caps `RESORT FILTERS` sub-label added noise without utility.
+  - **Segmented Category Buttons**: Oversized icons and indistinct inactive styling made active vs. inactive states muddy.
+  - **Pass Networks Pills**: Heavy 1.5px black borders dominated the panel with visual friction instead of clean mineral ink tints.
+  - **Range Sliders**: Repeated 16px tick-marks produced a noisy "railroad track" pattern, lacking an active track fill to visualize the minimum threshold range, while thumbs were small and low-contrast.
+  - **Sort & Scope Alignment**: The `SORT:` options had uneven widths, and the `ALL MATCHING` / `IN FRAME` controls appeared as disconnected standalone buttons rather than a mutually exclusive segmented toggle.
+  - **Disconnected Border**: The international border between Morocco and Algeria along longitude `-8.668°` abruptly halted at latitude `27.6704`, leaving a 39.5-km gap in the desert before the Algeria-Mauritania line began at `[-8.6681, 27.3149]`. Thin `Open Sans Regular` labels washed out against bright desert sand.
+- **Root Cause**:
+  - Top filter subheader and header bar both independently rendered reset actions and resort counts.
+  - Category buttons used mixed opacity without clear borders (`#D6D3CD`) or grayed-out icons for inactive states.
+  - Pass network buttons defaulted to `#1C1B18` solid black borders when active.
+  - CSS repeating gradients generated continuous tick marks, and the slider track had no dynamic range fill.
+  - In `world_boundaries.geojson`, the historic northern Spanish Sahara boundary left the 8° 40' W meridian segment dropped between 27° 40' N and the Mauritania tripoint.
+- **Solution**:
+  - **Deduplicated Filter Header**: Removed the duplicate top subheader, eliminating redundant "Reset Filters" and matching ski areas count; removed the "RESORT FILTERS" label.
+  - **Refined Segmented Categories**: Standardized downhill, nordic, and heli/cat buttons with compact icons, active slate-blue (`#2B5B84`) for downhill, and soft `#D6D3CD` borders with muted, grayed-out text and icons for inactive states.
+  - **Soft Tinted Pass Pills**: Eliminated heavy black borders, adopting soft, desaturated background tints (light red for Ikon, light green for Epic, pale blue for Mountain Collective, pale ochre for Indy, stone for Unaffiliated) with matching colored status dots and 1px low-contrast borders.
+  - **5-Anchor Sliders with Active Blue Fill**: Replaced repeating track marks with exactly 5 major anchor ticks aligned to numeric labels, adding a visible blue `#2B5B84` track fill extending from the thumb to indicate the selected minimum threshold range, with prominent 14px thumbs.
+  - **Neat Sort Alignment & Unified Scope Toggle**: Distributed `SORT:` segmented buttons with uniform `flex-1` widths, and grouped `ALL MATCHING` and `IN FRAME` into a single unified segmented pill on an inset track.
+  - **Connected Boundary & High-Contrast Typography**: Extended Morocco-Algeria south to tripoint `[-8.6681, 27.3149]`, upgraded border typography to `Open Sans Bold` with high-contrast halos (`halo-width: 3.2`), and bumped cache buster to `v=20261108_connected_borders`.
+
 ### `fix: eliminate camera jump upon releasing arrow key navigation`
 - **What was wrong before**:
   - When panning around with keyboard arrow keys in rugged mountain terrain (such as around Mount McGuire), the camera flew at a steady, level cruising altitude, but when releasing the arrow key, the camera violently jumped or snapped to a different zoom level and center position.

@@ -116,6 +116,11 @@ def main():
             best_i = min(range(min(30, len(new_coords))), key=lambda i: math.hypot(new_coords[i][0]-target[0], new_coords[i][1]-target[1]))
             new_coords = new_coords[best_i:]
 
+        # Morocco <-> Algeria: extend south along 8° 40' W meridian from 27.6704 to Mauritania tripoint 27.3149
+        elif pair == tuple(sorted(['Morocco', 'Algeria'])) and new_coords[0][1] < 28.0:
+            if new_coords[0] != [-8.6681, 27.3149]:
+                new_coords.insert(0, [-8.6681, 27.3149])
+
         if len(new_coords) >= 2:
             f['geometry']['coordinates'] = new_coords
             country_features.append(f)

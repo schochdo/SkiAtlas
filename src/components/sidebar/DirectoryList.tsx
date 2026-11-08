@@ -288,85 +288,87 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
         </div>
 
         {/* Sort Controls Row */}
-        <div className="flex items-center justify-between gap-2 pt-0.5">
+        <div className="flex items-center justify-between gap-2.5 pt-1">
           <span className="text-[#736E67] uppercase tracking-wider font-bold text-[11px] shrink-0">
             Sort:
           </span>
-          <div className="flex items-center gap-1 bg-[#FAF8F3] p-0.5 rounded-md border border-[#D6D0C2]">
+          <div className="flex items-center gap-0.5 bg-[#FAF8F3] p-0.5 rounded-md border border-[#D6D3CD] flex-1">
             <button
               onClick={() => onSortClick('name')}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+              className={`flex-1 py-1 px-1 rounded-[5px] text-xs font-semibold text-center transition-colors cursor-pointer flex items-center justify-center ${
                 sortBy === 'name'
                   ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299] shadow-2xs'
                   : 'text-[#5C5852] hover:text-[#1C1B18]'
               }`}
             >
               <span>A-Z</span>
-              {sortBy === 'name' && <span className="text-[10px] ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+              {sortBy === 'name' && <span className="text-[10px] ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
             </button>
             <button
               onClick={() => onSortClick('vert')}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+              className={`flex-1 py-1 px-1 rounded-[5px] text-xs font-semibold text-center transition-colors cursor-pointer flex items-center justify-center ${
                 sortBy === 'vert'
                   ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299] shadow-2xs'
                   : 'text-[#5C5852] hover:text-[#1C1B18]'
               }`}
             >
               <span>Vert</span>
-              {sortBy === 'vert' && <span className="text-[10px] ml-1">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+              {sortBy === 'vert' && <span className="text-[10px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
             </button>
             <button
               onClick={() => onSortClick('acres')}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+              className={`flex-1 py-1 px-1 rounded-[5px] text-xs font-semibold text-center transition-colors cursor-pointer flex items-center justify-center ${
                 sortBy === 'acres'
                   ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299] shadow-2xs'
                   : 'text-[#5C5852] hover:text-[#1C1B18]'
               }`}
             >
               <span>{showNordic && !showDownhill && !showHeliCat ? 'Network' : 'Acres'}</span>
-              {sortBy === 'acres' && <span className="text-[10px] ml-1">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+              {sortBy === 'acres' && <span className="text-[10px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
             </button>
             <button
               onClick={() => onSortClick('snow')}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+              className={`flex-1 py-1 px-1 rounded-[5px] text-xs font-semibold text-center transition-colors cursor-pointer flex items-center justify-center ${
                 sortBy === 'snow'
-                  ? 'bg-[#EAE5D9] text-[#3B627E] font-bold border border-[#A8A299] shadow-2xs'
+                  ? 'bg-[#EAE5D9] text-[#2B5B84] font-bold border border-[#A8A299] shadow-2xs'
                   : 'text-[#5C5852] hover:text-[#1C1B18]'
               }`}
             >
               <span>7-Day ❄</span>
-              {sortBy === 'snow' && <span className="text-[10px] ml-1">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+              {sortBy === 'snow' && <span className="text-[10px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Directory Scope Category Tabs: All Matching vs In Frame */}
-      <div className="px-3 py-2 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center gap-2 shrink-0">
-        <button
-          onClick={() => onScopeChange('all')}
-          className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
-            directoryScope === 'all'
-              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
-              : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
-          }`}
-          title="Show all ski areas matching current filters worldwide"
-        >
-          <span className="tabular-nums">{filteredResortsCount.toLocaleString()}</span>
-          <span>ALL MATCHING</span>
-        </button>
-        <button
-          onClick={() => onScopeChange('in_frame')}
-          className={`flex-1 py-1.5 px-3 rounded-md border text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
-            directoryScope === 'in_frame'
-              ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs'
-              : 'bg-[#FAF8F3] text-[#8A847C] border-[#D6D0C2] hover:text-[#1C1B18] hover:bg-[#F2EFE8]'
-          }`}
-          title="Show only ski areas currently inside the map view frame"
-        >
-          <span className="tabular-nums">{inViewResortsCount.toLocaleString()}</span>
-          <span>IN FRAME</span>
-        </button>
+      {/* Directory Scope Category Tabs: Unified Segmented Toggle */}
+      <div className="px-3 py-2 border-b border-[#D6D0C2] bg-[#FAF8F3] shrink-0">
+        <div className="flex items-center p-0.5 bg-[#EFECE6] rounded-md border border-[#D6D3CD] shadow-2xs">
+          <button
+            onClick={() => onScopeChange('all')}
+            className={`flex-1 py-1.5 px-2 rounded-[5px] text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
+              directoryScope === 'all'
+                ? 'bg-[#FAF8F3] text-[#1C1B18] shadow-xs border border-[#C8C2B7]'
+                : 'text-[#8A847C] hover:text-[#1C1B18] border border-transparent'
+            }`}
+            title="Show all ski areas matching current filters worldwide"
+          >
+            <span className="tabular-nums">{filteredResortsCount.toLocaleString()}</span>
+            <span>ALL MATCHING</span>
+          </button>
+          <button
+            onClick={() => onScopeChange('in_frame')}
+            className={`flex-1 py-1.5 px-2 rounded-[5px] text-center transition-all cursor-pointer text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 ${
+              directoryScope === 'in_frame'
+                ? 'bg-[#FAF8F3] text-[#1C1B18] shadow-xs border border-[#C8C2B7]'
+                : 'text-[#8A847C] hover:text-[#1C1B18] border border-transparent'
+            }`}
+            title="Show only ski areas currently inside the map view frame"
+          >
+            <span className="tabular-nums">{inViewResortsCount.toLocaleString()}</span>
+            <span>IN FRAME</span>
+          </button>
+        </div>
       </div>
 
 
