@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, X, Sliders, ChevronDown } from 'lucide-react';
-import type { SkiResort, SortBy, SortOrder, DirectoryScope, MajorPeak, PassNetwork } from '../../types';
+import type { SkiResort, SortBy, SortOrder, DirectoryScope, MajorPeak, FireLookout, PassNetwork } from '../../types';
 import { ResortCard } from './ResortCard';
 import { FilterPanel } from '../header/FilterModal';
 
@@ -23,6 +23,8 @@ interface DirectoryListProps {
   unitsMetric: boolean;
   matchingPeaks?: MajorPeak[];
   onSelectPeak?: (peak: MajorPeak) => void;
+  matchingLookouts?: FireLookout[];
+  onSelectLookout?: (lookout: FireLookout) => void;
   onSelectResort: (id: string) => void;
   onDeselectResort: () => void;
   onViewProfile: () => void;
@@ -70,6 +72,8 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
   unitsMetric,
   matchingPeaks = [],
   onSelectPeak,
+  matchingLookouts = [],
+  onSelectLookout,
   onSelectResort,
   onDeselectResort,
   onViewProfile,
@@ -115,6 +119,8 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
                 e.preventDefault();
                 if (displayedResorts.length > 0) {
                   onSelectResort(displayedResorts[0].id);
+                } else if (matchingLookouts && matchingLookouts.length > 0 && onSelectLookout) {
+                  onSelectLookout(matchingLookouts[0]);
                 } else if (matchingPeaks && matchingPeaks.length > 0 && onSelectPeak) {
                   onSelectPeak(matchingPeaks[0]);
                 }
@@ -131,6 +137,45 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
             </button>
           )}
         </div>
+
+        {/* Fire Lookouts Quick-Fly Matches */}
+        {matchingLookouts.length > 0 && onSelectLookout && (
+          <div className="p-2 bg-[#FAF5EE] border border-[#E2CEBC] rounded-md text-xs space-y-1 shadow-2xs">
+            <div className="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-[#A0522D]">
+              <span className="flex items-center gap-1.5">
+                <span className="text-[#D96B27] font-bold">⌂</span>
+                <span>Fire Lookouts</span>
+              </span>
+              <span className="text-[9px] font-normal text-[#8A847C] lowercase">Enter or click to fly</span>
+            </div>
+            <div className="space-y-0.5">
+              {matchingLookouts.map((lookout) => (
+                <button
+                  key={lookout.id}
+                  onClick={() => onSelectLookout(lookout)}
+                  className="w-full text-left px-2 py-1 rounded hover:bg-[#FAF8F3] hover:text-[#1C1B18] text-[#3D3A36] flex items-center justify-between cursor-pointer transition-colors"
+                >
+                  <span className="font-semibold truncate flex items-center gap-1.5 min-w-0">
+                    <span className="text-[#D96B27] text-xs font-bold shrink-0">⌂</span>
+                    <span className="truncate">{lookout.name}</span>
+                    {lookout.state && (
+                      <span className="text-[9.5px] px-1 py-0.2 bg-[#EFECE4] text-[#736E67] font-bold rounded shrink-0">
+                        {lookout.state}
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-[11px] text-[#8A847C] tabular-nums font-mono shrink-0 ml-2">
+                    {lookout.elevation_ft > 0
+                      ? unitsMetric
+                        ? `${lookout.elevation_m.toLocaleString()} m`
+                        : `${lookout.elevation_ft.toLocaleString()}'`
+                      : ''}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Mountain Summits Quick-Fly Matches */}
         {matchingPeaks.length > 0 && onSelectPeak && (
@@ -341,6 +386,29 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
               >
                 View all {filteredResortsCount.toLocaleString()} matching areas →
               </button>
+            )}
+            {matchingLookouts.length > 0 && onSelectLookout && (
+              <div className="pt-2.5 border-t border-[#D6D0C2]">
+                <div className="text-[11px] font-medium text-[#5C5852] mb-1.5">
+                  Found fire lookout:
+                </div>
+                <button
+                  onClick={() => onSelectLookout(matchingLookouts[0])}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] border border-[#D6D0C2] hover:border-[#8A847C] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
+                >
+                  <span className="text-[#D96B27] font-bold">⌂</span>
+                  <span>{matchingLookouts[0].name}</span>
+                  {matchingLookouts[0].state && (
+                    <span className="text-[10px] text-[#736E67]">({matchingLookouts[0].state})</span>
+                  )}
+                  {matchingLookouts[0].elevation_ft > 0 && (
+                    <span className="text-[10px] text-[#8A847C] font-mono">
+                      · {unitsMetric ? `${matchingLookouts[0].elevation_m.toLocaleString()} m` : `${matchingLookouts[0].elevation_ft.toLocaleString()}'`}
+                    </span>
+                  )}
+                  <span className="ml-1 text-[#8A847C]">→ Pan &amp; Zoom</span>
+                </button>
+              </div>
             )}
             {matchingPeaks.length > 0 && onSelectPeak && (
               <div className="pt-2.5 border-t border-[#D6D0C2]">

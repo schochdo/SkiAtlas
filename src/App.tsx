@@ -45,6 +45,7 @@ import type {
   PisteFeature,
   TrailInspectionData,
   MajorPeak,
+  FireLookout,
 } from './types';
 export type {
   PassNetwork,
@@ -617,6 +618,117 @@ export default function App() {
       essential: true,
     });
   }, [leftDockOpen, handleDeselectTrail]);
+
+  /* =========================================================================
+     FIRE LOOKOUTS & WATCHTOWERS (SEARCH & CARTOGRAPHIC INSPECTION)
+     ========================================================================= */
+
+  const [lookouts, setLookouts] = useState<FireLookout[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v1'))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data && data.features) {
+          const loaded: FireLookout[] = data.features.map((f: any) => ({
+            id: f.id || f.properties?.id,
+            name: f.properties?.name || '',
+            elevation_ft: f.properties?.elevation_ft || 0,
+            elevation_m: f.properties?.elevation_m || 0,
+            coordinates: f.geometry?.coordinates as [number, number],
+            agency: f.properties?.agency,
+            state: f.properties?.state,
+            status: f.properties?.status,
+            tier: f.properties?.tier,
+          }));
+          setLookouts(loaded);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not load fire lookouts for search:', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const matchingLookouts = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return lookouts
+      .filter((l) => l.name.toLowerCase().includes(q))
+      .slice(0, 5);
+  }, [lookouts, searchQuery]);
+
+  const handleSelectLookout = useCallback((lookout: FireLookout) => {
+    if (!mapRef.current) return;
+    setShowLookouts(true);
+    handleDeselectTrail();
+    setSelectedResortId(null);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setMobileSheetState('peek');
+    }
+
+    const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
+    const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
+    const bottomPad = isMob ? 220 : 0;
+
+    safeFlyTo(mapRef.current, {
+      center: lookout.coordinates,
+      zoom: 13.5,
+      pitch: 58,
+      bearing: -20,
+      padding: { top: 60, bottom: bottomPad, left: leftPad, right: 0 },
+      duration: 2200,
+      essential: true,
+    });
+
+    if (lookoutPopupRef.current) {
+      lookoutPopupRef.current.remove();
+      lookoutPopupRef.current = null;
+    }
+
+    let elevVal = lookout.elevation_ft;
+    if (!elevVal || elevVal === 0) {
+      try {
+        const liveM = mapRef.current.queryTerrainElevation(lookout.coordinates);
+        if (liveM !== null && liveM !== undefined && isFinite(liveM)) {
+          elevVal = Math.round(liveM * 3.28084);
+        }
+      } catch (_) {}
+    }
+    const elev = elevVal ? formatVert(elevVal, unitsMetric) : '';
+    const agency = lookout.agency || 'USFS';
+    const state = lookout.state ? ` · ${lookout.state}` : '';
+    const status = lookout.status || 'Standing';
+
+    const popup = new maplibregl.Popup({
+      closeButton: true,
+      closeOnClick: false,
+      offset: [0, -12],
+      className: 'lookout-editorial-popup',
+    })
+      .setLngLat(lookout.coordinates)
+      .setHTML(`
+        <div style="font-family: system-ui, -apple-system, sans-serif; padding: 10px 12px; min-width: 170px; background: #FAF8F3; color: #1C1B18; border-radius: 6px;">
+          <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #D96B27; margin-bottom: 3px; display: flex; align-items: center; justify-content: space-between;">
+            <span>⌂ Fire Lookout</span>
+            <span style="color: #736E67; font-weight: 500;">${status}</span>
+          </div>
+          <div style="font-family: Georgia, serif; font-size: 13.5px; font-weight: 700; line-height: 1.25; color: #1C1B18; margin-bottom: 6px;">
+            ${lookout.name}
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding-top: 5px; border-top: 1px solid #EAE5D9;">
+            <span style="font-weight: 700; font-variant-numeric: tabular-nums; color: #1C1B18;">${elev || ''}</span>
+            <span style="font-size: 10px; color: #736E67;">${agency}${state}</span>
+          </div>
+        </div>
+      `)
+      .addTo(mapRef.current);
+
+    lookoutPopupRef.current = popup;
+  }, [leftDockOpen, unitsMetric, handleDeselectTrail]);
 
   /* =========================================================================
      TRAILS STREAMING & STATIC PRE-BAKED ENGINE
@@ -5126,6 +5238,8 @@ export default function App() {
             unitsMetric={unitsMetric}
             matchingPeaks={matchingPeaks}
             onSelectPeak={handleSelectPeak}
+            matchingLookouts={matchingLookouts}
+            onSelectLookout={handleSelectLookout}
             onSelectResort={handleSelectResort}
             onDeselectResort={handleDeselectResort}
             onViewProfile={() => setPanelView('profile')}
@@ -5199,6 +5313,8 @@ export default function App() {
             unitsMetric={unitsMetric}
             matchingPeaks={matchingPeaks}
             onSelectPeak={handleSelectPeak}
+            matchingLookouts={matchingLookouts}
+            onSelectLookout={handleSelectLookout}
             onSelectResort={handleSelectResort}
             onDeselectResort={handleDeselectResort}
             onViewProfile={() => setPanelView('profile')}

@@ -129,3 +129,15 @@ export interface MajorPeak {
   tier?: number;
 }
 
+export interface FireLookout {
+  id: string;
+  name: string;
+  elevation_ft: number;
+  elevation_m: number;
+  coordinates: [number, number];
+  agency?: string;
+  state?: string;
+  status?: string;
+  tier?: number;
+}
+

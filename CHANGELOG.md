@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `feat: searchable fire lookouts and watchtowers in directory search`
+- **What was changed**:
+  - **Lookouts Search Engine**:
+    - Pre-loaded all 2,167 national fire lookouts into searchable client-side memory in `src/App.tsx`.
+    - Extended the directory search input to query both mountain summits (`matchingPeaks`) and fire lookouts (`matchingLookouts`).
+  - **Distinguished Editorial Crest**:
+    - Displayed matching fire lookouts in an archival warm parchment card (`#FAF5EE` / `#E2CEBC`) with an amber lookout icon (`⌂`), bold name, state badge (e.g. `ID`, `WA`), and formatted vertical elevation (`formatVert`).
+    - Differentiated clearly from mountain peaks, which retain their classic crimson mountain summit crest (`▲`).
+  - **Quick-Fly Navigation & Editorial Inspection**:
+    - Clicking a lookout (or pressing Enter on the search bar) activates `showLookouts = true`, flies the 3D camera to the tower vantage ($z = 13.5, \text{pitch} = 58^\circ$), and automatically triggers the editorial inspection popup.
+    - Added fallback to live GPU DEM query (`map.queryTerrainElevation`) when elevation is missing from registry metadata.
+
 ### `feat: national historic lookouts expansion, zero-bounce arrow cruising, and interactive locator scale controls`
 - **What was changed**:
   1. **Comprehensive National Lookouts Dataset (`public/data/fire_lookouts.geojson`)**:
