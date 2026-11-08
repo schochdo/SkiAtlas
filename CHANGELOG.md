@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `fix: restore comprehensive 4-mountain Aspen Snowmass trail network and flip layers/basemap tab order`
+- **What was wrong before**:
+  - **Missing Aspen Trails**: Viewing Aspen Snowmass displayed trails only on Snowmass and the lower western fringe of Ruthie's, while the upper slopes of Aspen Mountain (Ajax) — including the Silver Queen Gondola line, Sundeck summit, Dipsy Doodle, Silver Bell, 1 & 2 Leaf, and Hero's — had zero trail vector overlays despite visible ski runs on the satellite imagery.
+  - **Tab Hierarchy in Basemap Popover**: In [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx), the segmented control placed `[ 🌐 Basemap ]` on the left and defaulted to it when opened, requiring extra interaction to reach map layers, 3D exaggeration, horizon summits, and ski touring controls.
+- **Root Cause**:
+  - `public/data/trails/aspen-snowmass.json` was previously exported using a narrow bounding box centered solely around Snowmass Village (`lat: 39.2083, lng: -106.9497`), ending at `maxLng: -106.855`. Because Aspen Mountain is 12 km to the east at `-106.819`, its entire upper mountain network was excluded from the flagship bundle.
+- **What changed**:
+  - **Flipped Layers and Basemap Tabs**:
+    - In [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx), flipped the segmented tab control so `[ 🗂️ Layers ]` is on the left and appears first, and set `activeTab` to default to `'layers'`.
+    - Updated the trigger button title/aria-label to `"Layers & Basemaps"`.
+  - **Comprehensive Aspen Snowmass 4-Mountain Trail Bundle**:
+    - Re-exported [`public/data/trails/aspen-snowmass.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/trails/aspen-snowmass.json) with expanded multi-mountain bounds covering all four mountains in the complex (Snowmass, Aspen Mountain / Ajax, Aspen Highlands, and Buttermilk), expanding coverage from 197 to 623 verified pistes, lifts, and terrain polygons.
+    - Updated [`data_pipeline/export_resort_trails.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/data_pipeline/export_resort_trails.cjs) and [`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts) to detect multi-mountain complexes and automatically query expanded bounds.
+    - Synced all 623 features across `aspen-snowmass.json`, `aspen-mountain.json`, `aspen-highlands.json`, and `buttermilk.json` in both `public/data/trails/` and `dist/data/trails/`.
+- **Why this specific approach was chosen**:
+  - Satisfies user expectation that selecting Aspen Snowmass reveals the complete contiguous trail system across all 4 mountains of the Aspen complex without artificial cutoffs.
+  - Places operational layers, overlays, and relief controls immediately at the user's fingertips upon opening the map options menu.
+
 ### `fix: snap Cerro El Plomo and companion peaks to physical topographic summit apexes`
 - **What was wrong before**:
   - The map label and marker for **El Plomo** (`peak-2873`, 17,815' / 5,430m) appeared 3.76 km southwest of its actual mountain summit, situated down in a brown scree valley at an elevation of only 2,709m instead of on the snow-covered peak apex.

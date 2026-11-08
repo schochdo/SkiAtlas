@@ -51,7 +51,7 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
   onChangeTerrainOverlayOpacity,
 }) => {
   const basemapMenuRef = useRef<HTMLDivElement | null>(null);
-  const [activeTab, setActiveTab] = useState<'basemap' | 'layers'>('basemap');
+  const [activeTab, setActiveTab] = useState<'basemap' | 'layers'>('layers');
   const [isSticky, setIsSticky] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -171,8 +171,8 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
         <button
           onClick={handleButtonClick}
           className="relative w-8 h-8 rounded-md border flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]"
-          title="Basemaps & Layers"
-          aria-label="Basemaps & Layers"
+          title="Layers & Basemaps"
+          aria-label="Layers & Basemaps"
           aria-expanded={mapMenuOpen}
         >
           <Layers className="w-4 h-4 text-[#5C5852]" />
@@ -186,25 +186,9 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
             }}
             className="absolute right-0 top-0 w-88 max-w-[calc(100vw-1.5rem)] bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150 max-h-[calc(100dvh-4.5rem)] overflow-y-auto"
           >
-            {/* Header: Segmented Tabs (Basemap | Layers) + Close button */}
+            {/* Header: Segmented Tabs (Layers | Basemap) + Close button */}
             <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2.5 gap-2">
               <div className="flex items-center gap-1 bg-[#F2EFE8] p-0.5 rounded-md border border-[#D6D0C2] flex-1">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveTab('basemap');
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === 'basemap'
-                      ? 'bg-[#FAF8F3] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
-                      : 'text-[#736E67] hover:text-[#1C1B18]'
-                  }`}
-                  title="Cartographic Basemap & Earth Projection"
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  <span>Basemap</span>
-                </button>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -223,6 +207,22 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                   {(showLookouts || terrainOverlay !== 'none') && (
                     <span className="w-1.5 h-1.5 rounded-full bg-[#D96B27]" />
                   )}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveTab('basemap');
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === 'basemap'
+                      ? 'bg-[#FAF8F3] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
+                      : 'text-[#736E67] hover:text-[#1C1B18]'
+                  }`}
+                  title="Cartographic Basemap & Earth Projection"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>Basemap</span>
                 </button>
               </div>
 

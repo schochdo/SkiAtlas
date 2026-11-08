@@ -68,10 +68,12 @@ for (const r of atlasResorts) {
 
   const chosenArea = candidates[0]?.feat || null;
 
-  // Spatial query centered on resort summit/base bounds (tight ~6-7 km window)
-  const dLng = 0.065;
-  const dLat = 0.05;
-  const rows = bboxStmt.all(r.lng + dLng, r.lng - dLng, r.lat + dLat, r.lat - dLat);
+  // Spatial query centered on resort summit/base bounds (tight ~6-7 km window, expanded for multi-mountain complexes)
+  const dLng = r.id === 'aspen-snowmass' ? 0.16 : 0.065;
+  const dLat = r.id === 'aspen-snowmass' ? 0.07 : 0.05;
+  const centerLng = r.id === 'aspen-snowmass' ? -106.905 : r.lng;
+  const centerLat = r.id === 'aspen-snowmass' ? 39.18 : r.lat;
+  const rows = bboxStmt.all(centerLng + dLng, centerLng - dLng, centerLat + dLat, centerLat - dLat);
 
   let features = [];
   for (const row of rows) {

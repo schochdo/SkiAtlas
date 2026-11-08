@@ -132,14 +132,17 @@ export function localTrailsPlugin(): Plugin {
             const pt = coordsMap?.get(resort);
             if (pt) {
               const [lng, lat] = pt;
-              const dLng = 0.065;
-              const dLat = 0.05;
+              const isMultiMountain = resort === 'aspen-snowmass';
+              const dLng = isMultiMountain ? 0.16 : 0.065;
+              const dLat = isMultiMountain ? 0.07 : 0.05;
+              const centerLng = isMultiMountain ? -106.905 : lng;
+              const centerLat = isMultiMountain ? 39.18 : lat;
               const bboxStmt = database.prepare(`
                 SELECT DISTINCT t.geojson FROM trails t
                 WHERE t.min_lng <= ? AND t.max_lng >= ? AND t.min_lat <= ? AND t.max_lat >= ?
                 LIMIT 2500
               `);
-              const bboxRows = bboxStmt.all(lng + dLng, lng - dLng, lat + dLat, lat - dLat) as { geojson: string }[];
+              const bboxRows = bboxStmt.all(centerLng + dLng, centerLng - dLng, centerLat + dLat, centerLat - dLat) as { geojson: string }[];
               features = bboxRows.map((r) => {
                 const f = JSON.parse(r.geojson);
                 if (!f.id && f.properties?.id) f.id = f.properties.id;
