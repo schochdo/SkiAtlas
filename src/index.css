@@ -79,6 +79,7 @@ body {
   width: 100%;
   height: 6px;
   border-radius: 3px;
+  background: #D6D0C2;
   cursor: pointer;
   position: relative;
   outline: none;

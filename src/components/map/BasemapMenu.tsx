@@ -444,16 +444,24 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                           {Math.round(terrainOverlayOpacity * 100)}%
                         </span>
                       </div>
-                      <input
-                        type="range"
-                        min="0.10"
-                        max="1.0"
-                        step="0.05"
-                        value={terrainOverlayOpacity}
-                        onChange={(e) => onChangeTerrainOverlayOpacity(parseFloat(e.target.value))}
-                        className="w-full tufte-slider cursor-pointer"
-                        aria-label="Terrain overlay opacity"
-                      />
+                      {(() => {
+                        const pct = Math.min(100, Math.max(0, ((terrainOverlayOpacity - 0.10) / 0.90) * 100));
+                        return (
+                          <input
+                            type="range"
+                            min="0.10"
+                            max="1.0"
+                            step="0.05"
+                            value={terrainOverlayOpacity}
+                            onChange={(e) => onChangeTerrainOverlayOpacity(parseFloat(e.target.value))}
+                            style={{
+                              background: `linear-gradient(to right, #2B5B84 0%, #2B5B84 ${pct}%, #D6D0C2 ${pct}%, #D6D0C2 100%)`,
+                            }}
+                            className="w-full tufte-slider cursor-pointer"
+                            aria-label="Terrain overlay opacity"
+                          />
+                        );
+                      })()}
 
                       {/* Micro-Legend */}
                       {terrainOverlay === 'slope' && (
@@ -521,16 +529,24 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <input
-                      type="range"
-                      min="0"
-                      max="2.5"
-                      step="0.05"
-                      value={terrainExaggeration}
-                      onChange={(e) => onChangeTerrainExaggeration(parseFloat(e.target.value))}
-                      className="w-full tufte-slider cursor-pointer"
-                      aria-label="3D terrain relief vertical exaggeration multiplier"
-                    />
+                    {(() => {
+                      const pct = Math.min(100, Math.max(0, (terrainExaggeration / 2.5) * 100));
+                      return (
+                        <input
+                          type="range"
+                          min="0"
+                          max="2.5"
+                          step="0.05"
+                          value={terrainExaggeration}
+                          onChange={(e) => onChangeTerrainExaggeration(parseFloat(e.target.value))}
+                          style={{
+                            background: `linear-gradient(to right, #2B5B84 0%, #2B5B84 ${pct}%, #D6D0C2 ${pct}%, #D6D0C2 100%)`,
+                          }}
+                          className="w-full tufte-slider cursor-pointer"
+                          aria-label="3D terrain relief vertical exaggeration multiplier"
+                        />
+                      );
+                    })()}
 
                     {/* Preset Quick Toggles */}
                     <div className="grid grid-cols-4 gap-1 pt-0.5">

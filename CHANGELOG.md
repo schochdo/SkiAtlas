@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `fix: restore visible track bar on terrain relief and overlay opacity sliders`
+- **What was wrong before**:
+  - In [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx), the range inputs for "Terrain Relief Multiplier" and "Overlay Opacity" lacked inline `background` styles.
+  - In [`src/index.css`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/index.css), `.tufte-slider` had no fallback background, while its WebKit/Moz runnable tracks were set to `transparent`.
+  - As a result, the slider track was completely invisible/transparent, leaving the thumb circle floating in blank space with no visible bar beneath it.
+- **What changed**:
+  - Added a baseline `background: #D6D0C2` to `.tufte-slider` in `src/index.css` so range inputs always render a visible track even without explicit inline styles.
+  - Implemented dynamic active-fill gradients (`linear-gradient(to right, #2B5B84 0%, #2B5B84 ${pct}%, #D6D0C2 ${pct}%, #D6D0C2 100%)`) on both the Terrain Relief Multiplier and Overlay Opacity sliders in `src/components/map/BasemapMenu.tsx`.
+- **Why this specific approach was chosen**:
+  - Matches the visual standard established across the app's range sliders, showing an authentic blue active fill up to the thumb position with a solid warm-gray track for the remaining range.
+
+---
+
 ### `fix: heighten visibility and click affordance of directory filters button`
 - **What was wrong before**:
   - The collapsible "Filters" bar in [`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx) used the same light cream background (`#FAF8F3`) as the surrounding dock panel, causing it to blend completely into the container.
