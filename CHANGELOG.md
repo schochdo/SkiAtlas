@@ -6,6 +6,18 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: eliminate camera elevation jumps during zoom by maintaining continuous ground clamping and smooth pitch ramping`
+- **What was wrong before**:
+  - When zooming into terrain with the mouse wheel, trackpad pinch, or navigation controls, the camera would suddenly suffer a violent visual snap or jump around zoom level $z \approx 14$.
+  - When zooming back out past $z \approx 13.2$, a second jarring jump would occur.
+  - **Root Cause**:
+    1. **Dynamic Ground Clamping Toggle**: In commit `6c63385`, `updateGroundClamping` was attached to `map.on('zoom')`, `map.on('moveend')`, and `flightStep`. It dynamically called `map.setCenterClampedToGround(true)` at $z \ge 14.0$ and `map.setCenterClampedToGround(false)` at $z < 13.2$.
+    2. When `setCenterClampedToGround` toggled from `false` to `true` mid-zoom, MapLibre instantly executed `putCenterBackOnTerrain()` and `recalculateZoomAndCenter()`. In mountain terrain, this abruptly shifted the camera focus point from sea level ($0\text{ m}$) to the mountain surface ($2,500–3,500\text{ m}$), jumping the viewport along the pitched camera axis by thousands of meters in a single frame.
+    3. **Discrete Stair-Step Pitch Clamp**: The high-zoom pitch safety constraint used discrete thresholds (`z <= 17.0 ? 75 : (z <= 19.0 ? 65 : 55)`), which caused 10-degree sudden pitch snaps when crossing $z=17.0$ and $z=19.0$.
+- **Solution**:
+  - **Continuous Ground Clamping**: Set `setCenterClampedToGround(true)` permanently on map initialization and in `safeFlyTo()`. Removed `updateGroundClamping` completely from `handleMapZoom`, `handleMapMoveEnd`, `onCanvasMouseDown`, and `flightStep`. The camera center elevation tracks the 3D ground surface continuously with zero elevation jumps across all zoom levels.
+  - **Continuous Progressive Pitch Ramp**: Replaced the stair-step pitch clamp with a continuous linear ramp (`Math.max(55, Math.round(75 - ((z - 16.0) / 4.5) * 20))`), smoothly tapering pitch from $75^\circ$ at $z=16.0$ down to $55^\circ$ at $z=20.5$ without discrete angle snaps.
+
 ### `docs: document data pipeline, upstream ingestion protocols, and QA checklists in ARCHITECTURE.md`
 - **What was changed**:
   - Added **Section 11 (Data Pipeline, Upstream Ingestion & Maintenance Procedures)** to [`ARCHITECTURE.md`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/ARCHITECTURE.md).

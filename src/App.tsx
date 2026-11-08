@@ -936,9 +936,9 @@ export default function App() {
     (window as any)._skiMap = map;
     (window as any).__skiAtlasMap = map;
 
-    // Enable native linear drag-to-rotate around center without center ground clamping
+    // Enable native linear drag-to-rotate around center with ground clamping
     try {
-      (map as any).setCenterClampedToGround?.(false);
+      (map as any).setCenterClampedToGround?.(true);
       map.dragRotate.enable({ around: 'center', movement: 'linear' });
     } catch (_) {}
 
@@ -1170,26 +1170,6 @@ export default function App() {
     const canvas = map.getCanvas();
     const canvasContainer = map.getCanvasContainer();
 
-    // Dynamic ground clamping based on altitude scale:
-    // When zoomed into mountain terrain (z >= 14.0), clamp the center to the local terrain elevation.
-    // This allows zooming all the way down to snow level (z = 20.5) without hitting subterranean sea-level collision.
-    // At cruising altitudes (z < 13.2, altitude > 30k ft), unclamp to prevent camera altitude bouncing during cross-country pans.
-    const updateGroundClamping = (currentZoom: number) => {
-      if (isProgrammaticFlightActive) return;
-      const isClamped = (map as any).getCenterClampedToGround?.();
-      let shouldClamp = isClamped;
-      if (currentZoom >= 14.0) {
-        shouldClamp = true;
-      } else if (currentZoom < 13.2) {
-        shouldClamp = false;
-      }
-      try {
-        if (isClamped !== shouldClamp) {
-          (map as any).setCenterClampedToGround?.(shouldClamp);
-        }
-      } catch (_) {}
-    };
-
     // 1. Intercept mousedown at capture phase on canvasContainer:
     // If a new click begins (left, middle, right), ensure dragRotate is properly calibrated
     // and any orphaned drag is cleared.
@@ -1197,7 +1177,6 @@ export default function App() {
       if (map.dragRotate && (map.dragRotate.around !== 'center' || map.dragRotate.movement !== 'linear')) {
         map.dragRotate.enable({ around: 'center', movement: 'linear' });
       }
-      updateGroundClamping(map.getZoom());
       resetOrphanedDragHandlers();
     };
 
@@ -1253,10 +1232,10 @@ export default function App() {
       // Do not fight programmatic flights across continents
       if (isProgrammaticFlightActive) return;
       const z = map.getZoom();
-      updateGroundClamping(z);
       // Ensure camera does not dip below terrain surface when pitched steeply at high zoom close to ground
+      // Continuous progressive pitch constraint: smoothly tapers from 75° at z=16 down to 55° at z=20.5 with zero discrete jumps
       if (z > 16.0) {
-        const maxPitchAtZoom = z <= 17.0 ? 75 : (z <= 19.0 ? 65 : 55);
+        const maxPitchAtZoom = Math.max(55, Math.round(75 - ((z - 16.0) / 4.5) * 20));
         if (map.getPitch() > maxPitchAtZoom) {
           map.setPitch(maxPitchAtZoom);
           setMapPitch(maxPitchAtZoom);
@@ -1347,10 +1326,10 @@ export default function App() {
         } catch (_) {}
       }
       const z = map.getZoom();
-      updateGroundClamping(z);
       // Ensure camera does not dip below terrain surface when pitched steeply at high zoom close to ground
+      // Continuous progressive pitch constraint: smoothly tapers from 75° at z=16 down to 55° at z=20.5 with zero discrete jumps
       if (z > 16.0) {
-        const maxPitchAtZoom = z <= 17.0 ? 75 : (z <= 19.0 ? 65 : 55);
+        const maxPitchAtZoom = Math.max(55, Math.round(75 - ((z - 16.0) / 4.5) * 20));
         if (map.getPitch() > maxPitchAtZoom) {
           map.setPitch(maxPitchAtZoom);
           setMapPitch(maxPitchAtZoom);
@@ -3798,16 +3777,6 @@ export default function App() {
           : ((ground !== null && ground !== undefined && isFinite(ground)) ? ground : 0);
       }
 
-      const curZoom = map.getZoom();
-      // Manage ground clamping during flight: enable at z >= 14.0 for mountain inspection, disable below 13.2 for cruise
-      const isClamped = (map as any).getCenterClampedToGround?.();
-      let shouldClamp = isClamped;
-      if (curZoom >= 14.0) shouldClamp = true;
-      else if (curZoom < 13.2) shouldClamp = false;
-      try {
-        if (isClamped !== shouldClamp) (map as any).setCenterClampedToGround?.(shouldClamp);
-      } catch (_) {}
-
       const isShift = activeKeys.has('ShiftLeft') || activeKeys.has('ShiftRight');
 
       let pitchDelta = 0;
@@ -3863,12 +3832,6 @@ export default function App() {
         const curZoom = map.getZoom();
         const zoomSpeed = (isShift ? 2.0 : 1.0) * 1.5;
         const nextZoom = Math.max(1.0, Math.min(20.5, curZoom + zoomDelta * zoomSpeed * dt));
-        const shouldClampZoom = nextZoom >= 14.0;
-        try {
-          if ((map as any).getCenterClampedToGround?.() !== shouldClampZoom) {
-            (map as any).setCenterClampedToGround?.(shouldClampZoom);
-          }
-        } catch (_) {}
         map.setZoom(nextZoom);
       }
 
