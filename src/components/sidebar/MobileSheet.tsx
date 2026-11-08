@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, ChevronUp, ChevronDown, Minus } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Search, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import type { SkiResort, MobileSheetState, PanelView } from '../../types';
 import { formatVert, formatSnow } from '../../utils/formatters';
 
@@ -24,6 +24,75 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
   unitsMetric,
   children,
 }) => {
+  const touchStartY = useRef<number | null>(null);
+  const touchCurrentY = useRef<number | null>(null);
+  const isDragging = useRef<boolean>(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchCurrentY.current = e.touches[0].clientY;
+    isDragging.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    touchCurrentY.current = e.touches[0].clientY;
+    const dy = touchCurrentY.current - touchStartY.current;
+    if (Math.abs(dy) > 10) {
+      isDragging.current = true;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartY.current === null || touchCurrentY.current === null) {
+      touchStartY.current = null;
+      touchCurrentY.current = null;
+      isDragging.current = false;
+      return;
+    }
+
+    const dy = touchCurrentY.current - touchStartY.current;
+    const distance = Math.abs(dy);
+
+    if (distance > 35) {
+      if (dy < 0) {
+        // Swiped UP
+        if (mobileSheetState === 'peek') {
+          // Swipe up from peek expands to full (or half if short swipe)
+          onSetMobileSheetState(distance > 110 ? 'full' : 'half');
+        } else if (mobileSheetState === 'half') {
+          onSetMobileSheetState('full');
+        }
+      } else {
+        // Swiped DOWN
+        if (mobileSheetState === 'full') {
+          // Swipe down from full drops to half or all the way to peek
+          onSetMobileSheetState(distance > 150 ? 'peek' : 'half');
+        } else if (mobileSheetState === 'half') {
+          onSetMobileSheetState('peek');
+        }
+      }
+    }
+
+    touchStartY.current = null;
+    touchCurrentY.current = null;
+    setTimeout(() => {
+      isDragging.current = false;
+    }, 60);
+  };
+
+  const handleHandleClick = () => {
+    if (isDragging.current) return;
+    // Tap handle: peek -> full; half -> full; full -> peek
+    onSetMobileSheetState((prev) => (prev === 'peek' ? 'full' : prev === 'half' ? 'full' : 'peek'));
+  };
+
+  const handlePeekClick = () => {
+    if (isDragging.current) return;
+    // Single tap on collapsed peek bar directly expands to full
+    onSetMobileSheetState('full');
+  };
+
   return (
     <div
       className={`md:hidden fixed inset-x-0 bottom-0 z-30 flex flex-col bg-[#F7F4ED] rounded-t-2xl border-t border-[#D6D0C2] shadow-[0_-4px_24px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom,0px)] transition-all duration-300 ease-in-out ${
@@ -34,20 +103,31 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
           : 'h-[88dvh]'
       }`}
     >
-      {/* Pull tab / Drag handle pill */}
+      {/* Pull tab / Drag handle pill with touch gesture support */}
       <div
-        onClick={() => {
-          onSetMobileSheetState((prev) => (prev === 'peek' ? 'half' : prev === 'half' ? 'full' : 'peek'));
-        }}
-        className="w-full py-2 flex items-center justify-center cursor-pointer shrink-0"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={handleHandleClick}
+        className="w-full py-2 flex items-center justify-center cursor-pointer shrink-0 select-none touch-none"
+        title={
+          mobileSheetState === 'peek'
+            ? 'Tap or swipe up to expand to fullscreen'
+            : mobileSheetState === 'half'
+            ? 'Tap or swipe up for fullscreen, swipe down to collapse'
+            : 'Tap or swipe down to collapse'
+        }
       >
         <div className="w-10 h-1.5 rounded-full bg-[#C4BEB1] hover:bg-[#8A847C] transition-colors" />
       </div>
 
       {mobileSheetState === 'peek' ? (
-        /* Mobile Peek Glance */
+        /* Mobile Peek Glance (Direct 1-tap expand) */
         <div
-          onClick={() => onSetMobileSheetState('half')}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onClick={handlePeekClick}
           className="flex items-center justify-between px-4 pb-3 cursor-pointer select-none flex-1"
         >
           {selectedResort ? (
@@ -86,12 +166,12 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onSetMobileSheetState('half');
+                onSetMobileSheetState('full');
               }}
               className="p-1.5 rounded-md bg-[#FAF8F3] border border-[#D6D0C2] text-[#1C1B18] hover:bg-[#EAE5D9] transition-colors cursor-pointer"
-              title="Expand panel"
+              title="Expand to fullscreen"
             >
-              <ChevronUp className="w-4 h-4" />
+              <Maximize2 className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -100,35 +180,49 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Sheet Control Strip (Shown in Directory view; Profile view integrates controls in its header) */}
           {panelView === 'directory' && (
-            <div className="px-3.5 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center justify-between shrink-0 select-none">
+            <div
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className="px-3.5 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center justify-between shrink-0 select-none"
+            >
               <span className="text-xs font-bold text-[#1C1B18] uppercase tracking-wider truncate">
                 Mountain Directory ({filteredResortsCount.toLocaleString()})
               </span>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 {mobileSheetState === 'half' ? (
                   <button
-                    onClick={() => onSetMobileSheetState('full')}
-                    className="p-1 text-[#5C5852] hover:text-[#1C1B18] rounded cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSetMobileSheetState('full');
+                    }}
+                    className="p-1 text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
                     title="Expand to Fullscreen"
                   >
-                    <ChevronUp className="w-4 h-4" />
+                    <Maximize2 className="w-3.5 h-3.5" />
                   </button>
                 ) : (
                   <button
-                    onClick={() => onSetMobileSheetState('half')}
-                    className="p-1 text-[#5C5852] hover:text-[#1C1B18] rounded cursor-pointer"
-                    title="Collapse to Half"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSetMobileSheetState('half');
+                    }}
+                    className="p-1 text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
+                    title="Split view (half screen)"
                   >
-                    <ChevronDown className="w-4 h-4" />
+                    <Minimize2 className="w-3.5 h-3.5" />
                   </button>
                 )}
                 <button
-                  onClick={() => onSetMobileSheetState('peek')}
-                  className="p-1 text-[#8A847C] hover:text-[#1C1B18] rounded cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSetMobileSheetState('peek');
+                  }}
+                  className="p-1 text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
                   title="Minimize to Peek"
                 >
-                  <Minus className="w-4 h-4" />
+                  <ChevronDown className="w-4 h-4" />
                 </button>
               </div>
             </div>

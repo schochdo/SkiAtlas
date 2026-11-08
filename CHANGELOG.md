@@ -6,6 +6,29 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `fix: overhaul mobile touch gestures and bottom sheet UX`
+- **What was wrong before**:
+  - **Inverted Touch Rotation**: When twisting two fingers on mobile or touchscreen devices, the camera bearing delta was manually negated (`res.bearingDelta = -res.bearingDelta`), causing the map to rotate in the exact opposite direction of the user's fingers.
+  - **Pinch-Zoom Sliding & Pan Conflict**: `map.touchZoomRotate.enable({ around: 'center' })` forced all multi-touch zoom operations to anchor to the geometric screen center rather than the pinch midpoint between fingers. When zooming in on a mountain off-center, the terrain rapidly slid toward screen center, giving the impression of an erratic pan. Furthermore, a monkey patch on `touchPitch.gestureBeginsVertically` with a 2px vertical threshold aggressively hijacked normal pinch gestures into pitch tilts.
+  - **Clunky Two-Step Bottom Sheet**: Expanding the mobile sheet from collapsed `peek` required a frustrating two-step process: tapping peek only opened to `half` (50dvh), requiring a second tap on an ambiguous chevron button to reach `full` size. In addition, selecting a resort card while in full mode unexpectedly collapsed the sheet back to half-screen.
+  - **Missing Touch Dragging**: There was no touch-drag gesture support (`onTouchStart`/`onTouchMove`/`onTouchEnd`) on the mobile sheet pill or header, making it impossible to swipe the sheet up or down.
+- **What changed**:
+  - **Restored Natural MapLibre Touch Controls** in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx):
+    - Removed the bearing inversion monkey patch, restoring authentic 1:1 map rotation with user fingers.
+    - Enabled native midpoint-anchored pinch-to-zoom (`map.touchZoomRotate.enable()`), keeping the terrain under the fingers firmly pinned in place.
+    - Removed low-threshold `touchPitch` overrides so two-finger pitch only activates on intentional vertical swipes without interrupting pinch-zoom.
+  - **Streamlined Mobile Bottom Sheet** in [`src/components/sidebar/MobileSheet.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/MobileSheet.tsx):
+    - Added comprehensive touch drag listeners (`onTouchStart`, `onTouchMove`, `onTouchEnd`) on the pill handle and header strip: swiping up expands directly to `full`, while swiping down collapses smoothly.
+    - Single tap on collapsed `peek` bar or pill handle expands directly to `full` height (`88dvh`) for instant access to the directory search or mountain profile.
+    - Replaced confusing chevron/minus button soup with intuitive controls: `Maximize2` (to expand from half to full), `Minimize2` (split view toggle from full to half), and `ChevronDown` (minimize to peek).
+    - Preserved full sheet mode when selecting a resort card from the directory list so the view doesn't yank down unexpectedly.
+  - **Updated Mobile Profile Controls** in [`src/components/profile/MountainProfile.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/profile/MountainProfile.tsx):
+    - Aligned profile header with `Maximize2` / `Minimize2` / `ChevronDown` controls for seamless cross-component consistency.
+- **Why this specific approach was chosen**:
+  - Leverages MapLibre's built-in multi-touch gesture arbitration rather than brittle monkey-patching, providing standard mobile map behavior familiar from Google Maps and Apple Maps, while giving the bottom sheet instant 1-tap full expansion and natural touch-drag ergonomics.
+
+---
+
 ### `refactor: extract OpenSkiData ingestion, deduplication, and catalog pipeline into src/services/resorts subsystem`
 - **What was changed**:
   - **Dedicated Resort Pipeline Subsystem (`src/services/resorts/`)**: Extracted all client-side spatial and token deduplication, quality filters, URL hygiene, catalog assembly, and dynamic GeoJSON synchronization out of [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).

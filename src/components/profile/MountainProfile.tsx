@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronUp, ChevronDown, Minus, X, Globe, ExternalLink, Snowflake } from 'lucide-react';
+import { ChevronDown, Maximize2, Minimize2, X, Globe, ExternalLink, Snowflake } from 'lucide-react';
 import type { SkiResort, MobileSheetState } from '../../types';
 import { formatSnow, formatVert, formatAcres, formatDistance } from '../../utils/formatters';
 import {
@@ -51,31 +51,31 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
             </h2>
           </div>
           <div className="flex items-center gap-1 shrink-0 -mr-1 -mt-0.5">
-            {/* On mobile, show sheet resize buttons */}
+            {/* On mobile, show intuitive sheet resize buttons */}
             <div className="md:hidden flex items-center gap-1 mr-1 pr-1 border-r border-[#D6D0C2]">
               {mobileSheetState === 'half' ? (
                 <button
                   onClick={() => onSetMobileSheetState('full')}
-                  className="p-1 text-[#5C5852] hover:text-[#1C1B18] rounded cursor-pointer"
+                  className="p-1.5 text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
                   title="Expand to Fullscreen"
                 >
-                  <ChevronUp className="w-4 h-4" />
+                  <Maximize2 className="w-3.5 h-3.5" />
                 </button>
               ) : (
                 <button
                   onClick={() => onSetMobileSheetState('half')}
-                  className="p-1 text-[#5C5852] hover:text-[#1C1B18] rounded cursor-pointer"
-                  title="Collapse to Half"
+                  className="p-1.5 text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
+                  title="Split view (half screen)"
                 >
-                  <ChevronDown className="w-4 h-4" />
+                  <Minimize2 className="w-3.5 h-3.5" />
                 </button>
               )}
               <button
                 onClick={() => onSetMobileSheetState('peek')}
-                className="p-1 text-[#8A847C] hover:text-[#1C1B18] rounded cursor-pointer"
-                title="Minimize to Peek"
+                className="p-1.5 text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
+                title="Minimize to peek"
               >
-                <Minus className="w-4 h-4" />
+                <ChevronDown className="w-4 h-4" />
               </button>
             </div>
             <button

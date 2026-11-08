@@ -1134,45 +1134,10 @@ export default function App() {
 
     // Tablet & Touchscreen Controls (two-finger pitch tilt, rotate & pinch-zoom)
     try {
-      map.touchZoomRotate.enable({ around: 'center' });
+      // Natural pinch-zoom anchors around the midpoint between fingers (not screen center)
+      map.touchZoomRotate.enable();
       map.touchZoomRotate.enableRotation();
       map.touchPitch.enable();
-
-      // Fix 1: Invert two-finger twist rotation to match natural physical object rotation
-      // By default MapLibre rotates the camera clockwise on clockwise twist, which causes the terrain
-      // underneath to rotate counter-clockwise (backwards). Inverting bearingDelta makes the terrain rotate with the fingers.
-      const touchRotate = (map as any).touchZoomRotate?._touchRotate;
-      if (touchRotate && typeof touchRotate._move === 'function') {
-        const origMove = touchRotate._move.bind(touchRotate);
-        touchRotate._move = function (points: any, center: any, event: any) {
-          const res = origMove(points, center, event);
-          if (res && typeof res.bearingDelta === 'number') {
-            res.bearingDelta = -res.bearingDelta;
-          }
-          return res;
-        };
-      }
-
-      // Fix 2: Remove artificial vertical alignment block in MapLibre touchPitch
-      // MapLibre's default _start invalidates touchPitch whenever the two fingers are placed vertically (FP check).
-      // Relaxing this allows two-finger vertical swipe to elevate/pitch reliably in any initial finger orientation.
-      const touchPitch = (map as any).touchPitch;
-      if (touchPitch) {
-        touchPitch._start = function (points: any) {
-          this._lastPoints = points;
-          this._valid = undefined;
-        };
-        touchPitch.gestureBeginsVertically = function (r: any, i: any) {
-          if (Math.abs(r.y) >= 2 && Math.abs(i.y) >= 2) {
-            const sameDirection = (r.y > 0) === (i.y > 0);
-            const verticalDominant = Math.abs(r.y) > Math.abs(r.x) * 0.7 && Math.abs(i.y) > Math.abs(i.x) * 0.7;
-            if (sameDirection && verticalDominant) {
-              return true;
-            }
-          }
-          return false;
-        };
-      }
     } catch (_) {}
 
     // MapLibre GL JS fix: MapLibre's HandlerManager listens to 'mouseup' on document and dispatches 'mouseupWindow'.
@@ -2485,7 +2450,7 @@ export default function App() {
     handleDeselectTrail();
     setSelectedResortId(id);
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setMobileSheetState('half');
+      setMobileSheetState((prev) => (prev === 'full' ? 'full' : 'half'));
     }
     const resort = displayedResorts.find((r) => r.id === id) || resorts.find((r) => r.id === id);
     if (!resort || !mapRef.current) return;
@@ -2577,7 +2542,7 @@ export default function App() {
     const id = p.id || `global-${Math.round(coords[0] * 1000)}-${Math.round(coords[1] * 1000)}`;
     setSelectedResortId(id);
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setMobileSheetState('half');
+      setMobileSheetState((prev) => (prev === 'full' ? 'full' : 'half'));
     }
 
     // If already in resorts master state, forward to handleSelectResort for unified weather and geometry

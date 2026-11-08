@@ -236,6 +236,7 @@ if (sortBy === 'snow') {
 - **Globe centering** — `setPadding` must be called synchronously before map construction, not in a `useEffect`. This was a hard-won fix; do not change the initialization order.
 - **Terrain on globe** — terrain source must be re-added when switching from mercator back to globe. The `useEffect` watching `earthProjection` handles this.
 - **`safeFlyTo()`** — always use this instead of `map.flyTo()` directly. It validates coordinates and prevents crashes from NaN/Infinity values.
+- **Mobile Touch Controls & Bottom Sheet** — multi-touch pinch-to-zoom must anchor around the touch midpoint (`map.touchZoomRotate.enable()` without `{ around: 'center' }`). Never invert `bearingDelta` on touch rotate; MapLibre natively rotates with the user's fingers. Never monkey-patch `touchPitch` with low vertical pixel thresholds (which hijacks pinch-zooms into pitch tilts). Mobile sheet allows single-tap direct full expansion (`88dvh`) from peek and fluid touch-drag gestures.
 - **Cluster counts** — updated dynamically when filters change via a `useEffect` that re-generates GeoJSON source data. Do not bypass this.
 
 ---
