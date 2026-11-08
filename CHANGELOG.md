@@ -6,6 +6,19 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: restore center ground clamping and native elevation hold to eliminate camera freeze at 80k feet`
+- **What was wrong before**:
+  - The camera got permanently stuck at an altitude of $\sim 80,000\text{ ft}$ ($z \approx 11.5$) and refused to zoom in any further with mouse wheel, pinch, navigation buttons, or keyboard keys.
+  - **Root Cause**:
+    1. In commit `c812119`, `centerClampedToGround: false` was set on map initialization, and keyboard flight was setting `(map as any).setCenterClampedToGround(false)` while passing `map.jumpTo({ center, elevation: flightElevation })`.
+    2. Over the course of keyboard flight, `flightElevation` climbed or was held at high altitudes (e.g. $24,000\text{ m} \approx 80,000\text{ ft}$). Passing `elevation` to `map.jumpTo` relocated MapLibre's 3D focal center into the stratosphere.
+    3. Because `centerClampedToGround` remained `false`, the camera center was never placed back on the ground. When attempting to zoom in toward the ground, the camera moved toward the stratospheric focal center point; once the camera reached that point ($\sim 80\text{k ft}$), distance to center hit $0$ and MapLibre refused to zoom any closer.
+- **Solution**:
+  - **Ground Clamping Permanently Restored**: Set `centerClampedToGround: true` in map options and ensure it is restored on flight completion.
+  - **Native Elevation Hold During Arrow Flight**: Integrated MapLibre's built-in `_camera.holdElevation(tr, 'gesture')` on horizontal keyboard flight initiation. MapLibre freezes the center elevation transform during movement, achieving 100% steady, level cruising without peak-and-valley vertical bouncing.
+  - **Clean Elevation Release on Stop**: When keyboard navigation ends or mouse interaction begins, `_camera.releaseElevation()` and `_camera.putCenterBackOnTerrain(tr, terrain, tookDem)` gracefully drop the focal center back onto the 3D mountain surface while keeping the camera eye at its exact position in space.
+  - **Altitude Adjustments via Smooth Zoom**: Altitude ascend/descend (Q/E, PageUp/PageDown) and ridge climb clearance now adjust zoom smoothly rather than injecting disconnected elevations into the sky.
+
 ### `fix: round distance, snow, and area metrics to nearest 1/10 to eliminate unformatted float sloppiness`
 - **What was wrong before**:
   - In [`formatDistance`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/formatters.ts), when `unitsMetric` was enabled (`km`), the function returned the raw template string `${km} km` without any rounding. For calculated 3D trail lengths (e.g. `0.5397295742373059`), the trail card rendered unsightly floating-point strings like `↗ LENGTH 0.5397295742373059 km`.

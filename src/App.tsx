@@ -940,7 +940,7 @@ export default function App() {
       boxZoom: false, // Prevents Shift-key from hijacking left-click panning into a box-zoom box
       maxTileCacheSize: initialIsMobile ? 60 : 120, // Lightweight mobile-friendly tile cache (prevents iPad/browser VRAM exhaustion)
       zoomLevelsToOverscale: 6, // Overscale DEM tiles seamlessly past source maxzoom (z15 -> z21) so terrain mesh remains continuous
-      centerClampedToGround: false, // Decouple camera altitude from terrain elevation spikes at high altitudes and during pans
+      centerClampedToGround: true, // Anchor focal center to 3D ground so zooming and terrain inspection operate smoothly at all altitudes
     });
 
     // Calibrate TileManager in-memory retention for smooth panning without memory exhaustion
@@ -4011,7 +4011,7 @@ export default function App() {
       return tag === 'INPUT' || tag === 'TEXTAREA' || (el as HTMLElement).isContentEditable;
     };
 
-    let flightElevation: number | null = null;
+    let isElevationHeld = false;
 
     const stopFlight = (_immediate = false) => {
       activeKeys.clear();
@@ -4020,9 +4020,25 @@ export default function App() {
         animationFrameId = null;
       }
       lastTimestamp = null;
-      if (_immediate) {
-        flightElevation = null;
+      if (isElevationHeld && mapRef.current) {
+        isElevationHeld = false;
+        try {
+          const map = mapRef.current;
+          const cam = (map as any)._camera;
+          const terrain = (map as any).terrain;
+          const tookDem = cam?.releaseElevation?.();
+          if (cam?.applyTransformChange && terrain) {
+            cam.applyTransformChange((tr: any) => {
+              cam.putCenterBackOnTerrain?.(tr, terrain, tookDem);
+            });
+          }
+        } catch (_) {}
       }
+      try {
+        if (mapRef.current) {
+          (mapRef.current as any).setCenterClampedToGround?.(true);
+        }
+      } catch (_) {}
     };
 
     const flightStep = (timestamp: number) => {
@@ -4046,36 +4062,6 @@ export default function App() {
       if (!hasNavKey) {
         stopFlight(false);
         return;
-      }
-
-      // Initialize flightElevation once and ensure ground clamping doesn't bounce the camera
-      if (flightElevation === null) {
-        try {
-          (map as any).setCenterClampedToGround?.(false);
-        } catch (_) {}
-
-        const curElev = map.getCenterElevation();
-        const center = map.getCenter();
-        const groundAtCenter = map.queryTerrainElevation(center);
-
-        flightElevation = (curElev !== null && curElev !== undefined && isFinite(curElev))
-          ? curElev
-          : ((groundAtCenter !== null && groundAtCenter !== undefined && isFinite(groundAtCenter)) ? groundAtCenter : 0);
-
-        // Ground eye clearance check at startup (camera eye only)
-        const tr = (map as any)._camera?.transform;
-        const camLngLat = tr?.getCameraLngLat?.() || center;
-        const camAlt = tr?.getCameraAltitude?.();
-        const groundUnderCam = map.queryTerrainElevation(camLngLat);
-        const MIN_CAMERA_CLEARANCE = 25.0;
-
-        if (camAlt !== null && camAlt !== undefined && isFinite(camAlt) &&
-            groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam)) {
-          const reqCamAlt = groundUnderCam + MIN_CAMERA_CLEARANCE;
-          if (camAlt < reqCamAlt) {
-            flightElevation += (reqCamAlt - camAlt);
-          }
-        }
       }
 
       const isShift = activeKeys.has('ShiftLeft') || activeKeys.has('ShiftRight');
@@ -4139,13 +4125,16 @@ export default function App() {
       const liveZoom = map.getZoom();
       const speedMps = 720 * Math.pow(2, 14 - liveZoom) * (isShift ? 2.5 : 1.0);
 
-      // Manual altitude control (Q/E or PageUp/PageDown)
+      // Manual altitude control (Q/E or PageUp/PageDown): Adjusts altitude via smooth zoom adjustment
       if (altitudeDelta !== 0) {
-        const altSpeed = Math.max(250, speedMps * 0.75) * (isShift ? 2.0 : 1.0);
-        let deltaAlt = altitudeDelta * altSpeed * dt;
+        const curZ = map.getZoom();
+        const altSpeed = (isShift ? 2.5 : 1.2);
+        // E / PageUp (altitudeDelta > 0) ascends (zooms out)
+        // Q / PageDown (altitudeDelta < 0) descends (zooms in)
+        let nextZ = curZ - altitudeDelta * altSpeed * dt;
 
-        // Ground clearance protection for manual descent (camera eye only)
-        if (deltaAlt < 0) {
+        // Ground clearance protection for manual descent
+        if (altitudeDelta < 0) {
           const tr = (map as any)._camera?.transform;
           const camLngLat = tr?.getCameraLngLat?.() || map.getCenter();
           const camAlt = tr?.getCameraAltitude?.();
@@ -4154,22 +4143,28 @@ export default function App() {
 
           if (camAlt !== null && camAlt !== undefined && isFinite(camAlt) &&
               groundUnderCam !== null && groundUnderCam !== undefined && isFinite(groundUnderCam)) {
-            const maxDescent = Math.max(0, camAlt - (groundUnderCam + MIN_CAM_CLEARANCE));
-            if (maxDescent <= 0) {
-              deltaAlt = 0;
-            } else if (-deltaAlt > maxDescent) {
-              deltaAlt = -maxDescent;
+            if (camAlt <= groundUnderCam + MIN_CAM_CLEARANCE) {
+              nextZ = curZ; // Prevent descending into terrain
             }
           }
         }
 
-        if (flightElevation !== null) {
-          flightElevation += deltaAlt;
-        }
+        map.setZoom(Math.max(1.0, Math.min(20.5, nextZ)));
       }
 
       // Smooth horizontal flight with level, steady-altitude cruising
       if (moveForward !== 0 || moveStrafe !== 0) {
+        // Freeze elevation hold on first horizontal flight step so camera flies steady without terrain bouncing
+        if (!isElevationHeld) {
+          try {
+            const cam = (map as any)._camera;
+            if (cam?.holdElevation && (map as any).terrain) {
+              cam.holdElevation(cam.transform, 'gesture');
+              isElevationHeld = true;
+            }
+          } catch (_) {}
+        }
+
         const len = Math.hypot(moveForward, moveStrafe);
         moveForward /= len;
         moveStrafe /= len;
@@ -4195,7 +4190,6 @@ export default function App() {
         const nextLng = curCenter.lng + deltaLng;
 
         // Predictive ground clearance for the camera eye:
-        // ONLY the camera eye altitude needs ground clearance! The focal center is looking at the ground.
         const lookaheadSec = 0.6;
         const lookaheadMultiplier = dt > 0 ? (lookaheadSec / dt) : 1;
         const lookaheadLat = deltaLat * lookaheadMultiplier;
@@ -4222,25 +4216,19 @@ export default function App() {
         const MIN_CAMERA_CLEARANCE = 25.0; // meters eye clearance (~82 ft)
 
         // Climb ONLY when the camera eye itself is within 25m of terrain directly below or ahead
-        if (maxGroundCam > -Infinity && camAlt !== null && camAlt !== undefined && isFinite(camAlt) && flightElevation !== null) {
+        if (maxGroundCam > -Infinity && camAlt !== null && camAlt !== undefined && isFinite(camAlt) && camAlt > 0) {
           const minAllowedCamAlt = maxGroundCam + MIN_CAMERA_CLEARANCE;
           if (minAllowedCamAlt > camAlt) {
             const climbDiff = minAllowedCamAlt - camAlt;
-            const climbFactor = 1 - Math.exp(-dt * 6.0);
-            const maxClimbSpeed = Math.max(speedMps * 2.0, 500); // m/s
-            const climbDelta = Math.min(climbDiff, Math.max(climbDiff * climbFactor, maxClimbSpeed * dt));
-            flightElevation += climbDelta;
+            const zoomAdjust = Math.log2(1 + climbDiff / camAlt);
+            const curZ = map.getZoom();
+            const nextZ = Math.max(1.0, curZ - zoomAdjust * (1 - Math.exp(-dt * 6.0)));
+            map.setZoom(nextZ);
           }
         }
 
-        // Always pass elevation so MapLibre maintains steady cruising altitude without ground bouncing
         map.jumpTo({
           center: [nextLng, nextLat],
-          elevation: flightElevation ?? undefined,
-        });
-      } else if (altitudeDelta !== 0) {
-        map.jumpTo({
-          elevation: flightElevation ?? undefined,
         });
       }
 
@@ -4296,10 +4284,9 @@ export default function App() {
     // Yield flight engine immediately when user uses mouse to pan or rotate
     const canvasContainer = map.getCanvasContainer();
     const onCanvasMouseInteraction = () => {
-      if (animationFrameId !== null || activeKeys.size > 0) {
+      if (animationFrameId !== null || activeKeys.size > 0 || isElevationHeld) {
         stopFlight(true);
       }
-      flightElevation = null;
     };
     canvasContainer.addEventListener('mousedown', onCanvasMouseInteraction, { capture: true });
     canvasContainer.addEventListener('pointerdown', onCanvasMouseInteraction, { capture: true });
