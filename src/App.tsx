@@ -4186,6 +4186,8 @@ export default function App() {
               cleanSite = 'https://www.seibu-leisure.co.jp/ski_web/';
             } else if (cleanSite.includes('stubai.at/skigebiete/elferlifte')) {
               cleanSite = 'https://www.stubai.at/skigebiete/elferbahnen/';
+            } else if (cleanSite.includes('skiparadies-kranzberg.de')) {
+              cleanSite = 'https://www.familienparadies-kranzberg.de/';
             } else if (
               cleanSite.includes('parik24') ||
               cleanSite.includes('1xbet') ||
@@ -4200,6 +4202,9 @@ export default function App() {
               cleanSite.includes('autok.io') ||
               cleanSite.includes('truthlect') ||
               cleanSite.includes('jetskisrentalfortlauderdale') ||
+              cleanSite.includes('business.site') ||
+              cleanSite.includes('lapinilla.es') ||
+              cleanSite.includes('freeski.fi') ||
               cleanSite.includes('domaincatcher') ||
               cleanSite.includes('nicsell') ||
               cleanSite.includes('vetlab-ufa') ||

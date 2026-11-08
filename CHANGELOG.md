@@ -6,6 +6,15 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: comprehensive global ski resort URL cleanup, dead-link purging, and subpath healing`
+- **What was changed**:
+  - **Comprehensive Multi-Protocol Network Audit**: Ran automated HTTP and DNS audits across all 3,305 unique website links and 3,155 hostnames in the global ski area atlas.
+  - **Deep-Path 404 Rescuing (46 Ski Areas)**: Detected broken subpaths where old season pages or CMS restructuring returned 404s, but the base portal is active. Healed links back to their authoritative working root domains (e.g. Chatel Portes du Soleil, Kronplatz Dolomiti, Engadin St. Moritz, Ski Amadé, Corralco, Sommets Olympia, Koli, Artouste, Lackenhof, etc.) in [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json).
+  - **Rebranded Resort Domain Update**: Upgraded Kranzberg Mittenwald from expired `skiparadies-kranzberg.de` to active `https://www.familienparadies-kranzberg.de/`.
+  - **Dead, Expired & Spam Link Purging (12 Ski Areas)**: Zeroed out (`""`) verified dead links (NXDOMAINs, discontinued Google `business.site` URLs, dead PDFs, 410 Gone, and spam SEO link farms like `jetskisrentalfortlauderdale`) so that `MountainProfile` cleanly omits the link button rather than sending users to broken/spam sites.
+  - **Runtime Firewall Fortification**: Extended domain routing and safety filters in [`src/utils/classification.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/classification.ts) and [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) to intercept known defunct or spam hosts dynamically.
+  - **Reproducible Pipeline Scripts**: Saved [`scripts/run_url_audit.cjs`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/run_url_audit.cjs) and [`scripts/apply_comprehensive_url_cleanup.py`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/apply_comprehensive_url_cleanup.py) in the repository for automated ongoing maintenance.
+
 ### `fix: correct broken Elferlifte website URL and document global resort link data provenance`
 - **What was changed**:
   - **Repaired Stubaital Elfer URL**: Updated `properties.website` for `11er Neustift/Neder` (`id: 14e44f003d9b6e9b2b4b0558cb95b247b4008b3c`) from `https://www.stubai.at/skigebiete/elferlifte/` to the active official URL `https://www.stubai.at/skigebiete/elferbahnen/` in [`public/data/global_ski_areas.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/global_ski_areas.json).

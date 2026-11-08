@@ -211,6 +211,9 @@ export function getResortWebsite(resort: SkiResort | null | undefined): string |
       if (withProto.includes('stubai.at/skigebiete/elferlifte')) {
         return 'https://www.stubai.at/skigebiete/elferbahnen/';
       }
+      if (host.includes('skiparadies-kranzberg.de')) {
+        return 'https://www.familienparadies-kranzberg.de/';
+      }
       // Safety filter against scam / casino affiliate sites, parked drop-catchers, and malicious redirects
       if (
         host.includes('parik24') ||
@@ -226,6 +229,9 @@ export function getResortWebsite(resort: SkiResort | null | undefined): string |
         host.includes('autok.io') ||
         host.includes('truthlect') ||
         host.includes('jetskisrentalfortlauderdale') ||
+        host.includes('business.site') ||
+        host.includes('lapinilla.es') ||
+        host.includes('freeski.fi') ||
         host.includes('domaincatcher') ||
         host.includes('nicsell') ||
         host.includes('vetlab-ufa') ||
