@@ -6,6 +6,28 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: relocate lookouts to surveyed topographic peak summits across Salmon-Challis and wilderness crests`
+- **What was wrong before**:
+  - In 3D terrain inspections, several fire lookout marker dots (most noticeably Mount McGuire Lookout) were rendered on steep $45^\circ$ talus slopes and cliff faces thousands of feet below the actual mountain summit ridges.
+  - Mount McGuire Lookout was placed at `[-114.5940, 45.1970]` (a ravine at $7,881'$ elevation), $2.5\text{ km}$ northeast of the true $10,082'$ peak summit in the Bighorn Crags.
+  - Auditing against Open-Meteo DEM revealed that several other wilderness lookouts (Ruffneck Peak, Pinyon Peak, Sleeping Deer Mountain, Twin Peaks, Blackbird Mountain, Basin Butte, Greylock Mountain) were also positioned on off-summit slope coordinates with $800\text{–}3,200\text{ ft}$ elevation discrepancies from their actual physical benchmarks.
+- **Root Cause**:
+  - Initial auxiliary lookouts metadata used coarse regional or forest centroid coordinates rather than the exact surveyed GNIS/NHLR mountain summit benchmarks.
+- **Solution**:
+  - **Mount McGuire Snapped to Apex**: Relocated Mount McGuire Lookout to its true physical summit benchmark at `[-114.6020, 45.1740]` ($10,082'$, $3,073\text{ m}$), placing the marker dot squarely on the razor-sharp granite crest of the Bighorn Crags.
+  - **Exhaustive Peak Audit & Summit Snapping**: Audited and relocated all Salmon-Challis and Frank Church towers to verified summit coordinates:
+    - Ruffneck Peak: `[-115.1550, 44.4817]` ($9,419'$)
+    - Pinyon Peak: `[-114.9167, 44.5696]` ($9,944'$)
+    - Sleeping Deer Mountain: `[-114.69133, 44.76723]` ($9,881'$)
+    - Twin Peaks: `[-114.47641, 44.59326]` ($10,340'$)
+    - Blackbird Mountain: `[-114.41639, 45.11859]` ($9,096'$)
+    - Basin Butte: `[-114.9777, 44.3385]` ($8,826'$)
+    - Blue Nose Mountain: `[-114.35851, 45.47266]` ($8,660'$)
+    - Greylock Mountain: `[-114.6974, 44.4197]` ($9,317'$)
+    - Salmon Mountain: `[-114.8367, 45.6169]` ($8,943'$)
+  - Verified each updated coordinate against DEM topography to ensure marker dots sit at the true local elevation maxima on 3D terrain.
+
+
 ### `fix: deduplicate Middle Fork Peak, Stein Mountain, and reconcile surveyed summit elevations`
 - **What was wrong before**:
   - Two points appeared for Middle Fork Peak Lookout: a south point on the actual summit (`[-114.6554, 44.96211]`) with an uncalibrated DEM sample elevation of $9,045'$, and a north point ($14\text{ km}$ away in a canyon at $4,688'$) that had the authentic published benchmark elevation of $9,127'$.
