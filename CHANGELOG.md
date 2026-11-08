@@ -6,6 +6,21 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-08
 
+### `fix: purge cross-border Argentine backcountry routes from Ski Portillo trail network`
+- **What was wrong before**:
+  - Viewing Ski Portillo displayed spurious trails across the international border in Mendoza, Argentina (in the alpine cirques around Cerro Iglesia and near Refugio Casa del Gringo / Cristo Redentor), as well as distant backcountry routes 5 km to the west in Cajón Ojos de Agua.
+- **Root Cause**:
+  - In OpenStreetMap, mountaineers mapped backcountry ski touring ascents and off-piste couloirs around Cerro Iglesia and Las Cuevas in Argentina, tagging them with `piste:type=downhill` or `piste:type=skitour`.
+  - When Portillo's trail dataset was pre-exported to [`public/data/trails/portillo.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/public/data/trails/portillo.json), an overly wide bounding box (~14 km wide) swept across the continental divide and national border, pulling in 19 Argentine lines and 3 western valley routes and erroneously attributing them to Ski Portillo.
+- **What changed**:
+  - Sanitized `public/data/trails/portillo.json` to strictly bound features to Portillo's authentic Chilean footprint (`-70.155` to `-70.115` lng, `-32.850` to `-32.827` lat).
+  - Preserved all 15 authentic lifts (Va-et-Vient slingshots, Juncalillo chair, Plateau, Roca Jack, etc.) and all 31 verified ski runs (Super C, Roca Jack, Lake Run, Bajada del Tren, Garganta, etc.).
+  - Purged all 19 spurious Argentine routes and 3 distant Cajón Ojos de Agua lines from both `public/data/trails/portillo.json` and the local spatial trails database (`data_pipeline/trails.db`).
+- **Why this specific approach was chosen**:
+  - Restores geographic truth to Ski Portillo: the resort is situated entirely in Chile around Laguna del Inca, and no lift-served ski runs cross the high Andes international border into Argentina.
+
+---
+
 ### `fix: restore visible track bar on terrain relief and overlay opacity sliders`
 - **What was wrong before**:
   - In [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx), the range inputs for "Terrain Relief Multiplier" and "Overlay Opacity" lacked inline `background` styles.
