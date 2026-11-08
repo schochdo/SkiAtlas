@@ -6,6 +6,34 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `feat: add curated fire lookouts and watchtowers layer to map settings layers panel`
+- **What was changed**:
+  - **Curated Multi-Agency Dataset (`public/data/fire_lookouts.geojson`)**:
+    - Synthesized 742 authentic standing and historical fire lookouts across North America's mountain ranges.
+    - Integrated authoritative datasets:
+      1. **USFS Enterprise Data Warehouse (EDW)**: 148 verified National Forest recreation lookouts and fire towers.
+      2. **Montana National Historic Lookout Register (NHLR)**: 310 standing and historical fire towers.
+      3. **Oregon NHLR & State Forestry**: 156 Pacific Northwest fire lookouts (Mt. Hood, Deschutes, Wallowa-Whitman, Umpqua, Rogue River).
+      4. **California (NorCal, SoCal, SEKI)**: 122 lookouts across Klamath, Shasta-Trinity, Six Rivers, San Bernardino, Angeles, and Sequoia.
+      5. **New Hampshire White Mountains**: 16 state and USFS fire towers (Pack Monadnock, Kearsarge, Milan Hill, etc.).
+      6. **New York State DEC**: 35 Adirondacks and Catskills fire towers (Hunter Mountain, Goodnow Mountain, Blue Mountain, etc.).
+      7. **Yellowstone National Park**: 9 historical fire lookouts (Mount Washburn, Mount Holmes, Pelican Cone, etc.).
+    - Deduplicated within 1 km and normalized names.
+    - Backfilled missing DEM elevations via Open-Meteo elevation API in batches, providing verified ground elevations in both imperial feet (`label_ft`, `elevation_formatted_ft`) and metric meters (`label_m`, `elevation_formatted_m`).
+  - **Toggled Off By Default**: Initialized `showLookouts: false` in `src/App.tsx`. Does not clutter map rendering, directory searches, or performance unless intentionally activated.
+  - **3-Tier Cartographic Hierarchy on MapLibre**:
+    - **Tier 1 (Apex Lookouts $\ge 7,000'$ ft)**: Emerges at zoom 7.0+.
+    - **Tier 2 (Mid-Elevation Lookouts $4,500' - 7,000'$ ft)**: Emerges at zoom 8.5+.
+    - **Tier 3 (All Remaining Lookouts $< 4,500'$ ft)**: Emerges at zoom 10.0+.
+    - Visual styling: Warm amber/burnt-orange circle marker (`#D96B27`) with crisp white stroke and architectural glyph (`⌂`).
+    - Dynamic auto-contrast label paint switching between dark satellite modes (`#FDBA74`) and light cartographic modes (`#9A3412`).
+  - **Map Settings Drawer Integration**:
+    - Added a dedicated **Fire Lookouts & Towers** toggle card in the **Layers tab** of [`BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx) directly adjacent to **Horizon Summits**.
+    - Displays active/off pill indicator, icon glyph (`Flame`), and descriptive hover tooltip.
+  - **Interactive Inspection**:
+    - Clicking any fire lookout smoothly navigates the 3D camera via `safeFlyTo` (zoom 13.5, pitch 58°).
+    - Displays a lightweight, archival Swiss editorial popup displaying lookout name, verified elevation, managing agency, state, and standing/active status.
+
 ### `feat: add single-value icon toggles for Earth Projection (Globe/2D) and Units (°F/°C) to top navigation bar`
 - **What was changed**:
   - **Earth Projection Toggle in Header**: Added a dedicated `[ 🌐 ]` / `[ 🗺️ ]` button directly to [`TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx) next to the units toggle.

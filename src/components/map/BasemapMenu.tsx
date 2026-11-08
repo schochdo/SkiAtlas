@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Menu, X, Layers, Mountain, Globe } from 'lucide-react';
+import { Menu, X, Layers, Mountain, Globe, Flame } from 'lucide-react';
 import type { BasemapMode, TerrainOverlayMode, EarthProjectionMode } from '../../types';
 
 interface BasemapMenuProps {
@@ -13,6 +13,8 @@ interface BasemapMenuProps {
   onSelectProjection?: (mode: EarthProjectionMode) => void;
   showPeaks: boolean;
   onTogglePeaks: () => void;
+  showLookouts?: boolean;
+  onToggleLookouts?: () => void;
   showCountryOutlines: boolean;
   onToggleCountryOutlines: () => void;
   terrainExaggeration: number;
@@ -33,6 +35,8 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
   onSelectProjection,
   showPeaks,
   onTogglePeaks,
+  showLookouts = false,
+  onToggleLookouts,
   showCountryOutlines,
   onToggleCountryOutlines,
   terrainExaggeration,
@@ -301,6 +305,42 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                     </div>
                     <span className="text-[10px] font-semibold text-[#5C5852]">
                       {showPeaks ? 'Visible' : 'Hidden'}
+                    </span>
+                  </button>
+                </div>
+
+                {/* FIRE LOOKOUTS & TOWERS */}
+                <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
+                      Fire Lookouts & Towers
+                    </span>
+                    <span
+                      className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
+                        showLookouts
+                          ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299]'
+                          : 'bg-[#F2EFE8] text-[#8A847C] border-[#D6D0C2]'
+                      }`}
+                    >
+                      {showLookouts ? 'Active' : 'Off'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onToggleLookouts}
+                    className={`w-full flex items-center justify-between p-2 rounded-md border text-xs transition-all cursor-pointer ${
+                      showLookouts
+                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
+                        : 'bg-[#F7F4ED] text-[#736E67] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
+                    }`}
+                    title="Toggle historic and standing fire lookouts and watchtowers across North America"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Flame className="w-3.5 h-3.5 text-[#D96B27]" />
+                      <span>Fire Lookouts</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-[#5C5852]">
+                      {showLookouts ? 'Visible' : 'Hidden'}
                     </span>
                   </button>
                 </div>

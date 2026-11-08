@@ -126,4 +126,27 @@ body {
   cursor: pointer;
 }
 
+/* Editorial Swiss Lookout Popup */
+.lookout-editorial-popup .maplibregl-popup-content {
+  background: #FAF8F3;
+  border: 1px solid #D6D0C2;
+  box-shadow: 0 4px 16px -2px rgba(28, 27, 24, 0.12), 0 2px 6px -1px rgba(28, 27, 24, 0.08);
+  border-radius: 6px;
+  padding: 0;
+}
+.lookout-editorial-popup .maplibregl-popup-tip {
+  border-top-color: #FAF8F3;
+  border-bottom-color: #FAF8F3;
+}
+.lookout-editorial-popup .maplibregl-popup-close-button {
+  font-size: 16px;
+  color: #8A847C;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.lookout-editorial-popup .maplibregl-popup-close-button:hover {
+  color: #1C1B18;
+  background: transparent;
+}
+
 

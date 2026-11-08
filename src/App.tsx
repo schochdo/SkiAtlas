@@ -268,6 +268,7 @@ export default function App() {
   const [terrainExaggeration, setTerrainExaggeration] = useState<number>(0.70);
   const [showHillshade, setShowHillshade] = useState(true);
   const [showPeaks, setShowPeaks] = useState<boolean>(true);
+  const [showLookouts, setShowLookouts] = useState<boolean>(false);
   const [showCountryOutlines, setShowCountryOutlines] = useState<boolean>(true);
   const [attributionOpen, setAttributionOpen] = useState(false);
 
@@ -370,6 +371,7 @@ export default function App() {
   const activeOverpassAbortRef = useRef<AbortController | null>(null);
   const lastFetchedBboxKeyRef = useRef<string>('');
   const handleDeselectResortRef = useRef<() => void>(() => {});
+  const lookoutPopupRef = useRef<maplibregl.Popup | null>(null);
 
   // Clicked Trail / Slope Inspection State
   const [selectedTrail, setSelectedTrail] = useState<TrailInspectionData | null>(null);
@@ -2715,6 +2717,123 @@ export default function App() {
         },
       });
 
+      // 5. Fire Lookouts & Watchtowers Layer (Authentic USFS & State Inventories)
+      map.addSource('fire-lookouts-source', {
+        type: 'geojson',
+        promoteId: 'id',
+        data: getStaticDataUrl('data/fire_lookouts.geojson?v=20261108_v1'),
+      });
+
+      // Markers (Tier 3 -> Tier 2 -> Tier 1)
+      map.addLayer({
+        id: 'fire-lookouts-marker-tier3',
+        type: 'circle',
+        source: 'fire-lookouts-source',
+        minzoom: 10.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 3],
+        layout: {
+          visibility: showLookouts ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            10.0, 2.0,
+            12.0, 3.0,
+            14.0, 4.0,
+          ],
+          'circle-color': '#D96B27',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      map.addLayer({
+        id: 'fire-lookouts-marker-tier2',
+        type: 'circle',
+        source: 'fire-lookouts-source',
+        minzoom: 8.5,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 2],
+        layout: {
+          visibility: showLookouts ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            8.5, 2.0,
+            11.0, 2.8,
+            14.0, 4.0,
+          ],
+          'circle-color': '#D96B27',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      map.addLayer({
+        id: 'fire-lookouts-marker-tier1',
+        type: 'circle',
+        source: 'fire-lookouts-source',
+        minzoom: 7.0,
+        filter: ['==', ['coalesce', ['get', 'tier'], 3], 1],
+        layout: {
+          visibility: showLookouts ? 'visible' : 'none',
+        },
+        paint: {
+          'circle-radius': [
+            'interpolate', ['linear'], ['zoom'],
+            7.0, 2.0,
+            9.0, 3.0,
+            14.0, 4.2,
+          ],
+          'circle-color': '#D96B27',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#FAF8F3',
+        },
+      });
+
+      // Fire Lookout Labels
+      map.addLayer({
+        id: 'fire-lookouts-label',
+        type: 'symbol',
+        source: 'fire-lookouts-source',
+        minzoom: 7.0,
+        layout: {
+          'visibility': showLookouts ? 'visible' : 'none',
+          'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 0],
+          'text-field': [
+            'step', ['zoom'],
+            ['case', ['==', ['coalesce', ['get', 'tier'], 3], 1], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
+            8.5,
+            ['case', ['<=', ['coalesce', ['get', 'tier'], 3], 2], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
+            10.0,
+            ['get', unitsMetric ? 'label_m' : 'label_ft'],
+          ],
+          'text-font': ['Open Sans Bold Italic'],
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            7.0, 9.0,
+            10.0, 10.5,
+            12.0, 12.0,
+            15.0, 14.0,
+          ],
+          'text-max-width': 26,
+          'text-offset': [0, -1.2],
+          'text-anchor': 'bottom',
+          'text-letter-spacing': 0.04,
+          'text-keep-upright': true,
+          'text-pitch-alignment': 'viewport',
+          'text-rotation-alignment': 'viewport',
+          'text-padding': 4,
+          'text-optional': true,
+        },
+        paint: {
+          'text-color': (basemapMode === 'satellite' || basemapMode === 'cloudless') ? '#FDBA74' : '#9A3412',
+          'text-halo-color': (basemapMode === 'satellite' || basemapMode === 'cloudless') ? '#1C1B18' : '#FAF8F3',
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.5,
+        },
+      });
+
       // Click on curated resort
       const onResortClick = (e: any) => {
         if (!e.features || !e.features[0]) return;
@@ -2793,6 +2912,76 @@ export default function App() {
         }
       });
 
+      // Click on fire lookout marker / label to pan and zoom
+      const onLookoutClick = (e: any) => {
+        if (!e.features || !e.features[0]) return;
+        const feat = e.features[0];
+        const coords = (feat.geometry as any).coordinates as [number, number];
+        if (!coords) return;
+        const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
+        const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
+        const bottomPad = isMob ? 220 : 0;
+        safeFlyTo(map, {
+          center: coords,
+          zoom: Math.max(map.getZoom(), 13.5),
+          pitch: 58,
+          bearing: -20,
+          padding: { top: 60, bottom: bottomPad, left: leftPad, right: 0 },
+          duration: 1800,
+          essential: true,
+        });
+
+        if (lookoutPopupRef.current) {
+          lookoutPopupRef.current.remove();
+          lookoutPopupRef.current = null;
+        }
+
+        const p = feat.properties || {};
+        const name = p.name || 'Fire Lookout';
+        const elev = unitsMetric ? p.elevation_formatted_m : p.elevation_formatted_ft;
+        const agency = p.agency || 'USFS';
+        const state = p.state ? ` · ${p.state}` : '';
+        const status = p.status || 'Standing';
+
+        const popup = new maplibregl.Popup({
+          closeButton: true,
+          closeOnClick: false,
+          offset: [0, -12],
+          className: 'lookout-editorial-popup',
+        })
+          .setLngLat(coords)
+          .setHTML(`
+            <div style="font-family: system-ui, -apple-system, sans-serif; padding: 10px 12px; min-width: 170px; background: #FAF8F3; color: #1C1B18; border-radius: 6px;">
+              <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #D96B27; margin-bottom: 3px; display: flex; align-items: center; justify-content: space-between;">
+                <span>⌂ Fire Lookout</span>
+                <span style="color: #736E67; font-weight: 500;">${status}</span>
+              </div>
+              <div style="font-family: Georgia, serif; font-size: 13.5px; font-weight: 700; line-height: 1.25; color: #1C1B18; margin-bottom: 6px;">
+                ${name}
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding-top: 5px; border-top: 1px solid #EAE5D9;">
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; color: #1C1B18;">${elev || ''}</span>
+                <span style="font-size: 10px; color: #736E67;">${agency}${state}</span>
+              </div>
+            </div>
+          `)
+          .addTo(map);
+
+        lookoutPopupRef.current = popup;
+      };
+
+      const lookoutLayers = [
+        'fire-lookouts-marker-tier1',
+        'fire-lookouts-marker-tier2',
+        'fire-lookouts-marker-tier3',
+        'fire-lookouts-label',
+      ];
+      lookoutLayers.forEach((layerId) => {
+        if (map.getLayer(layerId)) {
+          map.on('click', layerId, onLookoutClick);
+        }
+      });
+
       // Click on empty map canvas deselects active resort or inspects clicked trail / lift
       map.on('click', (e) => {
         const resortLayers = [
@@ -2810,12 +2999,18 @@ export default function App() {
           'global-unclustered-label',
           'global-clusters',
           ...peakLayers,
+          ...lookoutLayers,
         ].filter((id) => map.getLayer(id));
         const resortFeats = map.queryRenderedFeatures(e.point, { layers: resortLayers });
         if (resortFeats && resortFeats.length > 0) {
           // Marker or cluster clicked; close any open trail profile card
           handleDeselectTrailRef.current();
           return;
+        }
+
+        if (lookoutPopupRef.current) {
+          lookoutPopupRef.current.remove();
+          lookoutPopupRef.current = null;
         }
 
         const trailLayers = [
@@ -2998,6 +3193,10 @@ export default function App() {
           'major-peaks-marker-tier2',
           'major-peaks-marker-tier3',
           'major-peaks-label',
+          'fire-lookouts-marker-tier1',
+          'fire-lookouts-marker-tier2',
+          'fire-lookouts-marker-tier3',
+          'fire-lookouts-label',
           'live-pistes-hit-target',
           'live-pistes-lifts-hit-target',
           'live-pistes-lines',
@@ -3656,6 +3855,41 @@ export default function App() {
   }, [showPeaks, unitsMetric, mapLoaded]);
 
   /* =========================================================================
+     FIRE LOOKOUTS & TOWERS
+     ========================================================================= */
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+
+    if (!showLookouts && lookoutPopupRef.current) {
+      lookoutPopupRef.current.remove();
+      lookoutPopupRef.current = null;
+    }
+
+    const visibility = showLookouts ? 'visible' : 'none';
+    const lookoutLayers = [
+      'fire-lookouts-marker-tier1', 'fire-lookouts-marker-tier2', 'fire-lookouts-marker-tier3',
+      'fire-lookouts-label'
+    ];
+    lookoutLayers.forEach((layerId) => {
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, 'visibility', visibility);
+        if (layerId === 'fire-lookouts-label') {
+          map.setLayoutProperty(layerId, 'text-field', [
+            'step', ['zoom'],
+            ['case', ['==', ['coalesce', ['get', 'tier'], 3], 1], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
+            8.5,
+            ['case', ['<=', ['coalesce', ['get', 'tier'], 3], 2], ['get', unitsMetric ? 'label_m' : 'label_ft'], ''],
+            10.0,
+            ['get', unitsMetric ? 'label_m' : 'label_ft'],
+          ]);
+        }
+      }
+    });
+  }, [showLookouts, unitsMetric, mapLoaded]);
+
+  /* =========================================================================
      GEOGRAPHIC REFERENCE: BORDERS & PLACES (AUTO-CONTRAST BY BASEMAP)
      ========================================================================= */
 
@@ -3727,6 +3961,10 @@ export default function App() {
         map.setPaintProperty(layerId, 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
       }
     });
+    if (map.getLayer('fire-lookouts-label')) {
+      map.setPaintProperty('fire-lookouts-label', 'text-color', isDark ? '#FDBA74' : '#9A3412');
+      map.setPaintProperty('fire-lookouts-label', 'text-halo-color', isDark ? '#1C1B18' : '#FAF8F3');
+    }
   }, [showCountryOutlines, basemapMode, mapLoaded]);
 
   /* =========================================================================
@@ -5065,6 +5303,8 @@ export default function App() {
         }}
         showPeaks={showPeaks}
         onTogglePeaks={() => setShowPeaks((prev) => !prev)}
+        showLookouts={showLookouts}
+        onToggleLookouts={() => setShowLookouts((prev) => !prev)}
         showCountryOutlines={showCountryOutlines}
         onToggleCountryOutlines={() => setShowCountryOutlines((prev) => !prev)}
         terrainExaggeration={terrainExaggeration}
