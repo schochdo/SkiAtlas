@@ -140,11 +140,11 @@ print(f"   Collected {nhlr_count} from NHLR across {len(all_states)} states.")
 print("3. Adding dedicated verified Alpine & Wilderness towers...")
 premier_lookouts = [
     # Salmon-Challis National Forest & Frank Church Wilderness (Idaho)
-    {"name": "Middle Fork Peak Lookout", "lat": 45.0763, "lon": -114.7334, "elevation_ft": 9127, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Middle Fork Peak Lookout", "lat": 44.96211, "lon": -114.6554, "elevation_ft": 9127, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
     {"name": "Ruffneck Peak Lookout", "lat": 44.4984, "lon": -115.1111, "elevation_ft": 9419, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
     {"name": "Pinyon Peak Lookout", "lat": 44.6033, "lon": -114.9289, "elevation_ft": 9944, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
     {"name": "Long Tom Lookout", "lat": 45.3970, "lon": -114.6190, "elevation_ft": 8128, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
-    {"name": "Stein Mountain Lookout", "lat": 45.4560, "lon": -114.0730, "elevation_ft": 8438, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Stein Mountain Lookout", "lat": 45.45908, "lon": -113.88064, "elevation_ft": 8527, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
     {"name": "Sleeping Deer Mountain Lookout", "lat": 44.7570, "lon": -114.7430, "elevation_ft": 9881, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
     {"name": "Twin Peaks Lookout", "lat": 44.6020, "lon": -114.4640, "elevation_ft": 10340, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
     {"name": "Blackbird Mountain Lookout", "lat": 45.1610, "lon": -114.3640, "elevation_ft": 8980, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
@@ -152,8 +152,8 @@ premier_lookouts = [
     {"name": "Mount McGuire Lookout", "lat": 45.1970, "lon": -114.5940, "elevation_ft": 10082, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
     {"name": "Basin Butte Lookout", "lat": 44.3460, "lon": -114.8960, "elevation_ft": 8826, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Rental"},
     {"name": "Blue Mountain Lookout", "lat": 45.1430, "lon": -114.3480, "elevation_ft": 8100, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
-    {"name": "Jureano Mountain Lookout", "lat": 45.2890, "lon": -114.0320, "elevation_ft": 8345, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
-    {"name": "Sheephorn Lookout", "lat": 44.9490, "lon": -114.5420, "elevation_ft": 8620, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
+    {"name": "Jureano Mountain Lookout", "lat": 45.20392, "lon": -114.24298, "elevation_ft": 8345, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Active"},
+    {"name": "Sheephorn Lookout", "lat": 44.8825, "lon": -114.0911, "elevation_ft": 8620, "agency": "USFS Salmon-Challis NF", "state": "ID", "status": "Standing"},
     {"name": "Salmon Mountain Lookout", "lat": 45.6170, "lon": -114.8290, "elevation_ft": 8943, "agency": "USFS Bitterroot / Salmon NF", "state": "ID", "status": "Active"},
     {"name": "Greylock Mountain Lookout", "lat": 43.8960, "lon": -115.1010, "elevation_ft": 9317, "agency": "USFS Sawtooth NF", "state": "ID", "status": "Standing"},
 
@@ -391,6 +391,11 @@ print(f"\nTotal raw lookouts collected: {len(raw_items)}")
 print("Deduplicating points within 1 km or matching names...")
 unique_items = []
 for item in raw_items:
+    # Filter out campgrounds, trailheads, and picnic areas
+    name_lower = item["name"].lower()
+    if any(w in name_lower for w in ["campground", "trailhead", "picnic"]):
+        continue
+
     # Validate coordinate range
     if not (24.0 <= item["lat"] <= 60.0 and -130.0 <= item["lon"] <= -60.0):
         continue
@@ -405,15 +410,23 @@ for item in raw_items:
                 existing["elevation_ft"] = item["elevation_ft"]
             if not existing.get("state") and item.get("state"):
                 existing["state"] = item["state"]
+            if item.get("agency") and "USFS / NPS / State" not in item.get("agency"):
+                existing["agency"] = item["agency"]
+            if item.get("status") and item.get("status") != "Standing":
+                existing["status"] = item["status"]
             dup = True
             break
-        # Also check name similarity if in same state
+        # Also check name similarity if in same state (up to 25 km for approx centroid lists)
         if existing.get("state") == item.get("state") and item["state"] != "":
-            norm1 = re.sub(r'[^a-z0-9]', '', item["name"].lower().replace('lookout', '').replace('tower', ''))
-            norm2 = re.sub(r'[^a-z0-9]', '', existing["name"].lower().replace('lookout', '').replace('tower', ''))
-            if norm1 and norm1 == norm2 and dist < 10.0:
+            norm1 = re.sub(r'[^a-z0-9]', '', item["name"].lower().replace('lookout', '').replace('tower', '').replace('mountain', '').replace('peak', ''))
+            norm2 = re.sub(r'[^a-z0-9]', '', existing["name"].lower().replace('lookout', '').replace('tower', '').replace('mountain', '').replace('peak', ''))
+            if norm1 and norm1 == norm2 and dist < 25.0:
                 if existing.get("elevation_ft") is None and item.get("elevation_ft") is not None:
                     existing["elevation_ft"] = item["elevation_ft"]
+                if item.get("agency") and "USFS / NPS / State" not in item.get("agency"):
+                    existing["agency"] = item["agency"]
+                if item.get("status") and item.get("status") != "Standing":
+                    existing["status"] = item["status"]
                 dup = True
                 break
 

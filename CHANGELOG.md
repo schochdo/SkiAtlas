@@ -6,6 +6,22 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: deduplicate Middle Fork Peak, Stein Mountain, and reconcile surveyed summit elevations`
+- **What was wrong before**:
+  - Two points appeared for Middle Fork Peak Lookout: a south point on the actual summit (`[-114.6554, 44.96211]`) with an uncalibrated DEM sample elevation of $9,045'$, and a north point ($14\text{ km}$ away in a canyon at $4,688'$) that had the authentic published benchmark elevation of $9,127'$.
+  - Two points previously appeared for Stein Mountain Lookout ($15\text{ km}$ apart across the river valley), as well as duplicates for Jureano Mountain, Sheephorn, Loneman Mountain (Glacier NP), and Drake Peak.
+  - 8 non-tower recreation records (such as `Lookout Campground` and `Big Hole Lookout Trailhead`) were mistakenly included by text queries matching "Lookout".
+- **Root Cause**:
+  - Authoritative National Historic Lookout Register (NHLR) points had surveyed GNIS coordinates for peak summits, while the auxiliary `premier_lookouts` list had approximate or estimated centroid coordinates ($10\text{–}15\text{ km}$ away).
+  - The deduplication script checked `dist < 10.0 km`. Because the offset exceeded $10\text{ km}$, both records survived deduplication, resulting in one accurate coordinate with an unverified elevation and one inaccurate coordinate with the true elevation benchmark.
+- **Solution**:
+  - **Middle Fork Peak Reconciled**: Retained the authentic south summit coordinate `[-114.6554, 44.96211]`, updated its elevation to the true $9,127'$ ($2,782\text{ m}$) benchmark, attributed management to `USFS Salmon-Challis NF`, set status to `Active Watchtower`, and purged the false north point (`lookout-1224`).
+  - **Stein Mountain Verified**: Confirmed single authentic summit record (`lookout-1858`) at `[-113.88064, 45.45908]` ($8,527'$, `USFS Salmon-Challis NF`, `Active Watchtower`), with the $15\text{ km}$ west duplicate permanently removed.
+  - **Full Dataset Deduplication**: Reconciled Jureano Mountain ($8,345'$ at true summit `[-114.24298, 45.20392]`), Sheephorn ($8,620'$ at `[-114.0911, 44.8825]`), Loneman Mountain in Glacier NP ($7,181'$ at `[-113.76899, 48.4889]`), and Drake Peak ($8,333'$).
+  - **Purged Non-Tower Recreation Artifacts**: Removed 8 campground, trailhead, and picnic area points that lacked fire towers.
+  - **Expanded Deduplication Range**: In [`scripts/build_fire_lookouts.py`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/scripts/build_fire_lookouts.py), widened same-state normalized-name deduplication threshold to $25\text{ km}$ and added strict keyword exclusion for campgrounds and trailheads.
+
+
 ### `fix: eliminate close button collision, remove redundant standing status, and polish lookout popups`
 - **What was wrong before**:
   - In fire lookout map inspection popups, MapLibre's `×` close button was placed directly on top of the right-aligned status label `STANDING`, obscuring the text and creating an awkward overlapping UI.
