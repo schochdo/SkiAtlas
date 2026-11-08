@@ -1,15 +1,14 @@
 import React from 'react';
-import { Globe, Layers } from 'lucide-react';
 import type { EarthProjectionMode, PassNetwork } from '../../types';
 import { PASS_COLORS, PASS_DISPLAY_NAMES, PASS_SHORT_LABELS } from '../../utils/classification';
 
 export interface FilterPanelProps {
   activeFiltersCount: number;
   onResetFilters: () => void;
-  earthProjection: EarthProjectionMode;
-  onSelectProjection: (mode: EarthProjectionMode) => void;
-  unitsMetric: boolean;
-  onSetUnitsMetric: (toMetric: boolean) => void;
+  earthProjection?: EarthProjectionMode;
+  onSelectProjection?: (mode: EarthProjectionMode) => void;
+  unitsMetric?: boolean;
+  onSetUnitsMetric?: (toMetric: boolean) => void;
   filteredCount: number;
   showDownhill: boolean;
   onToggleDownhill: () => void;
@@ -84,76 +83,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </button>
         )}
       </div>
-
-      {/* Display Settings Section */}
-      <div className="space-y-2.5">
-        <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
-          Display Settings
-        </div>
-
-        {/* Projection Segmented */}
-        <div className="space-y-1">
-          <div className="text-xs text-[#5C5852] font-medium">Earth Projection</div>
-          <div className="grid grid-cols-2 gap-1 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md p-0.5">
-            <button
-              onClick={() => onSelectProjection('globe')}
-              className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
-                earthProjection === 'globe'
-                  ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                  : 'text-[#736E67] hover:text-[#1C1B18]'
-              }`}
-              title="3D Globe Projection"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>3D Globe</span>
-            </button>
-            <button
-              onClick={() => onSelectProjection('mercator')}
-              className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
-                earthProjection === 'mercator'
-                  ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                  : 'text-[#736E67] hover:text-[#1C1B18]'
-              }`}
-              title="Flat Map Projection"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Flat Map</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Unit System Segmented */}
-        <div className="space-y-1">
-          <div className="text-xs text-[#5C5852] font-medium">Units of Measure</div>
-          <div className="grid grid-cols-2 gap-1 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md p-0.5">
-            <button
-              onClick={() => onSetUnitsMetric(false)}
-              className={`py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer text-center ${
-                !unitsMetric
-                  ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                  : 'text-[#736E67] hover:text-[#1C1B18]'
-              }`}
-              title="Imperial Units (ft, in, °F)"
-            >
-              Imperial (ft, in, °F)
-            </button>
-            <button
-              onClick={() => onSetUnitsMetric(true)}
-              className={`py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer text-center ${
-                unitsMetric
-                  ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
-                  : 'text-[#736E67] hover:text-[#1C1B18]'
-              }`}
-              title="Metric Units (m, cm, °C)"
-            >
-              Metric (m, cm, °C)
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-[#D6D0C2]" />
 
       {/* Resort Filters Section */}
       <div className="space-y-3">

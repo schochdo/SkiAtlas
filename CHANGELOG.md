@@ -6,6 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `feat: move Earth Projection and Units of Measure controls into Map tab`
+- **What was changed**:
+  - Relocated the **Earth Projection** (`3D Globe` vs. `Flat Map`) and **Units of Measure** (`Imperial` vs. `Metric`) segmented controls directly into the **Map** tab (`activeTab === 'map'`) of [`BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx).
+  - Positioned them right beneath **Cartographic Base** and above **Horizon Summits**, grouping global projection and measurement scale with map appearance and basemap settings.
+  - Removed the display controls from [`FilterModal.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/FilterModal.tsx), keeping the **Filters** tab strictly focused on resort queries (Categories, Pass Networks, Vertical Drop, Skiable Acreage, and Nordic Distance sliders).
+
 ### `fix: calibrate trail click buffer and hit-target widths for accurate trail selection`
 - **What was wrong before**:
   - Clicking on open snow or in valleys far from a ski run or chairlift would unexpectedly trigger a trail information popup.

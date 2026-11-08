@@ -336,6 +336,73 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
               </div>
             </div>
 
+            {/* EARTH PROJECTION & UNITS OF MEASURE */}
+            <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2.5">
+              {/* Earth Projection */}
+              <div className="space-y-1">
+                <div className="text-xs text-[#5C5852] font-medium">Earth Projection</div>
+                <div className="grid grid-cols-2 gap-1 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => onSelectProjection('globe')}
+                    className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
+                      earthProjection === 'globe'
+                        ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                        : 'text-[#736E67] hover:text-[#1C1B18]'
+                    }`}
+                    title="3D Globe Projection"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>3D Globe</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSelectProjection('mercator')}
+                    className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer ${
+                      earthProjection === 'mercator'
+                        ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                        : 'text-[#736E67] hover:text-[#1C1B18]'
+                    }`}
+                    title="Flat Map Projection"
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Flat Map</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Units of Measure */}
+              <div className="space-y-1">
+                <div className="text-xs text-[#5C5852] font-medium">Units of Measure</div>
+                <div className="grid grid-cols-2 gap-1 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => onSetUnitsMetric(false)}
+                    className={`py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer text-center ${
+                      !unitsMetric
+                        ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                        : 'text-[#736E67] hover:text-[#1C1B18]'
+                    }`}
+                    title="Imperial Units (ft, in, °F)"
+                  >
+                    Imperial (ft, in, °F)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSetUnitsMetric(true)}
+                    className={`py-1.5 px-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer text-center ${
+                      unitsMetric
+                        ? 'bg-[#FAF8F3] text-[#1C1B18] border border-[#A8A299] shadow-2xs'
+                        : 'text-[#736E67] hover:text-[#1C1B18]'
+                    }`}
+                    title="Metric Units (m, cm, °C)"
+                  >
+                    Metric (m, cm, °C)
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* MOUNTAIN SUMMITS (PEAKFINDER HORIZON LABELS) */}
             <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">
               <div className="flex items-center justify-between">
