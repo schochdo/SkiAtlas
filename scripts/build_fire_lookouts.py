@@ -125,7 +125,7 @@ for st in all_states:
                         "lat": lat,
                         "lon": lon,
                         "elevation_ft": None,
-                        "agency": "USFS / NPS / State (NHLR)",
+                        "agency": "Historic Registry (NHLR)",
                         "state": st.upper(),
                         "status": "Standing"
                     })

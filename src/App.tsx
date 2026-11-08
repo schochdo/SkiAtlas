@@ -661,6 +661,72 @@ export default function App() {
       .slice(0, 5);
   }, [lookouts, searchQuery]);
 
+  const buildLookoutPopupHTML = useCallback((
+    name: string,
+    elevFt: number | null | undefined,
+    rawAgency: string | undefined,
+    state: string | undefined,
+    rawStatus: string | undefined
+  ) => {
+    const elev = elevFt && elevFt > 0 ? formatVert(elevFt, unitsMetric) : '—';
+
+    // Format agency cleanly, eliminating long scrape placeholders
+    let displayAgency = (rawAgency || 'USFS').trim();
+    if (displayAgency.includes('USFS / NPS / State') || displayAgency === 'NHLR') {
+      displayAgency = 'Historic Registry (NHLR)';
+    } else if (displayAgency.includes('State of NH')) {
+      displayAgency = 'NH State Parks';
+    } else if (displayAgency.includes('NYS DEC')) {
+      displayAgency = 'NY DEC';
+    }
+    const stateSuffix = state ? ` · ${state.trim()}` : '';
+
+    // Only render status badges for genuinely distinctive operational states (omit redundant "Standing")
+    const status = (rawStatus || '').trim().toLowerCase();
+    let statusBadge = '';
+    if (status === 'active' || status === 'active watch' || status === 'active watchtower') {
+      statusBadge = `
+        <div style="margin-top: 4px; margin-bottom: 2px;">
+          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #166534; background: #DCFCE7; border: 1px solid #BBF7D0; padding: 1.5px 6px; border-radius: 3px;">
+            <span style="font-size: 7.5px;">●</span> Active Watchtower
+          </span>
+        </div>`;
+    } else if (status === 'rental' || status === 'cabin rental' || status === 'recreation rental') {
+      statusBadge = `
+        <div style="margin-top: 4px; margin-bottom: 2px;">
+          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #9A3412; background: #FFEDD5; border: 1px solid #FED7AA; padding: 1.5px 6px; border-radius: 3px;">
+            <span style="font-size: 8px;">⌂</span> Cabin Rental
+          </span>
+        </div>`;
+    } else if (status === 'historic' || status === 'historical') {
+      statusBadge = `
+        <div style="margin-top: 4px; margin-bottom: 2px;">
+          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #78350F; background: #FEF3C7; border: 1px solid #FDE68A; padding: 1.5px 6px; border-radius: 3px;">
+            Historic Site
+          </span>
+        </div>`;
+    }
+
+    return `
+      <div style="font-family: system-ui, -apple-system, sans-serif; padding: 11px 14px 10px; min-width: 200px; max-width: 280px; background: #FAF8F3; color: #1C1B18; border-radius: 6px; position: relative; box-sizing: border-box;">
+        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #D96B27; margin-bottom: 4px; padding-right: 28px; display: flex; align-items: center; gap: 5px;">
+          <span style="font-size: 12px; line-height: 1;">⌂</span>
+          <span>Fire Lookout</span>
+        </div>
+        <div style="font-family: Georgia, serif; font-size: 14px; font-weight: 700; line-height: 1.25; color: #1C1B18; padding-right: 20px; margin-bottom: 4px; word-break: break-word;">
+          ${name}
+        </div>
+        ${statusBadge}
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 11px; padding-top: 7px; margin-top: 6px; border-top: 1px solid #EAE5D9;">
+          <span style="font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; color: #1C1B18; white-space: nowrap;">${elev}</span>
+          <span style="font-size: 10.5px; color: #736E67; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;" title="${displayAgency}${stateSuffix}">
+            ${displayAgency}${stateSuffix}
+          </span>
+        </div>
+      </div>
+    `;
+  }, [unitsMetric]);
+
   const handleSelectLookout = useCallback((lookout: FireLookout) => {
     if (!mapRef.current) return;
     setShowLookouts(true);
@@ -698,11 +764,6 @@ export default function App() {
         }
       } catch (_) {}
     }
-    const elev = elevVal ? formatVert(elevVal, unitsMetric) : '';
-    const agency = lookout.agency || 'USFS';
-    const state = lookout.state ? ` · ${lookout.state}` : '';
-    const status = lookout.status || 'Standing';
-
     const popup = new maplibregl.Popup({
       closeButton: true,
       closeOnClick: false,
@@ -710,21 +771,7 @@ export default function App() {
       className: 'lookout-editorial-popup',
     })
       .setLngLat(lookout.coordinates)
-      .setHTML(`
-        <div style="font-family: system-ui, -apple-system, sans-serif; padding: 10px 12px; min-width: 170px; background: #FAF8F3; color: #1C1B18; border-radius: 6px;">
-          <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #D96B27; margin-bottom: 3px; display: flex; align-items: center; justify-content: space-between;">
-            <span>⌂ Fire Lookout</span>
-            <span style="color: #736E67; font-weight: 500;">${status}</span>
-          </div>
-          <div style="font-family: Georgia, serif; font-size: 13.5px; font-weight: 700; line-height: 1.25; color: #1C1B18; margin-bottom: 6px;">
-            ${lookout.name}
-          </div>
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding-top: 5px; border-top: 1px solid #EAE5D9;">
-            <span style="font-weight: 700; font-variant-numeric: tabular-nums; color: #1C1B18;">${elev || ''}</span>
-            <span style="font-size: 10px; color: #736E67;">${agency}${state}</span>
-          </div>
-        </div>
-      `)
+      .setHTML(buildLookoutPopupHTML(lookout.name, elevVal, lookout.agency, lookout.state, lookout.status))
       .addTo(mapRef.current);
 
     lookoutPopupRef.current = popup;
@@ -3067,11 +3114,6 @@ export default function App() {
             }
           } catch (_) {}
         }
-        const elev = elevVal ? formatVert(elevVal, unitsMetric) : '';
-        const agency = p.agency || 'USFS';
-        const state = p.state ? ` · ${p.state}` : '';
-        const status = p.status || 'Standing';
-
         const popup = new maplibregl.Popup({
           closeButton: true,
           closeOnClick: false,
@@ -3079,21 +3121,7 @@ export default function App() {
           className: 'lookout-editorial-popup',
         })
           .setLngLat(coords)
-          .setHTML(`
-            <div style="font-family: system-ui, -apple-system, sans-serif; padding: 10px 12px; min-width: 170px; background: #FAF8F3; color: #1C1B18; border-radius: 6px;">
-              <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #D96B27; margin-bottom: 3px; display: flex; align-items: center; justify-content: space-between;">
-                <span>⌂ Fire Lookout</span>
-                <span style="color: #736E67; font-weight: 500;">${status}</span>
-              </div>
-              <div style="font-family: Georgia, serif; font-size: 13.5px; font-weight: 700; line-height: 1.25; color: #1C1B18; margin-bottom: 6px;">
-                ${name}
-              </div>
-              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding-top: 5px; border-top: 1px solid #EAE5D9;">
-                <span style="font-weight: 700; font-variant-numeric: tabular-nums; color: #1C1B18;">${elev || ''}</span>
-                <span style="font-size: 10px; color: #736E67;">${agency}${state}</span>
-              </div>
-            </div>
-          `)
+          .setHTML(buildLookoutPopupHTML(name, elevVal, p.agency, p.state, p.status))
           .addTo(map);
 
         lookoutPopupRef.current = popup;

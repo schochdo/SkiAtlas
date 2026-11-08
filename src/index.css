@@ -139,14 +139,27 @@ body {
   border-bottom-color: #FAF8F3;
 }
 .lookout-editorial-popup .maplibregl-popup-close-button {
-  font-size: 16px;
+  font-size: 15px;
+  font-family: system-ui, -apple-system, sans-serif;
   color: #8A847C;
-  padding: 4px 8px;
+  top: 7px;
+  right: 7px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
   cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
 }
 .lookout-editorial-popup .maplibregl-popup-close-button:hover {
   color: #1C1B18;
-  background: transparent;
+  background: #EFECE4;
 }
 
 

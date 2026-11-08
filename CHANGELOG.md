@@ -6,6 +6,20 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-07
 
+### `fix: eliminate close button collision, remove redundant standing status, and polish lookout popups`
+- **What was wrong before**:
+  - In fire lookout map inspection popups, MapLibre's `×` close button was placed directly on top of the right-aligned status label `STANDING`, obscuring the text and creating an awkward overlapping UI.
+  - Displaying `STANDING` on active towers was redundant and confusing status clutter ("I assume standing means still there" — every lookout in an active inventory is standing unless marked as ruins or historical sites).
+  - The bottom footer row ran the elevation string directly against long scrape agency fallback strings (e.g. `8,527'USFS / NPS / State (NHLR) · ID`) without separation.
+  - A duplicate point existed for Stein Mountain Lookout (`lookout-1858` from NHLR scrape and `lookout-1859` from premier list).
+- **Solution**:
+  - **Eliminated Close Button Overlap**: Removed right-aligned status text from the top header and added `padding-right: 28px` to ensure the corner is exclusively reserved for the close `×` button.
+  - **Omitted Redundant "Standing" Status**: Completely removed the `STANDING` label. Status badges now only render when communicating distinctive operational status: `Active Watchtower` (green pill) for staffed active lookouts, `Cabin Rental` (warm orange pill) for public recreation cabins, or `Historic Site` (amber pill).
+  - **Deduplication & Agency Sanitation**: Removed the duplicate Stein Mountain Lookout record and correctly attributed `lookout-1858` to `USFS Salmon-Challis NF`. Cleaned raw NHLR scrape strings from `USFS / NPS / State (NHLR)` to `Historic Registry (NHLR)`.
+  - **Spaced & Cleaned Footer Metrics**: Expanded popup width to `min-width: 200px; max-width: 280px;`, styled elevation in monospace with `white-space: nowrap`, and added `gap: 12px` between elevation and the managing agency/state so metrics never collide.
+  - **Refined Close Button Styling**: In [`src/index.css`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/index.css), gave the popup close button an exact 22x22px hit target with subtle hover background (`#EFECE4`), centered alignment, and seamless border radius.
+
+
 ### `fix: eliminate camera bouncing when zooming at an angle over 3D mountain terrain`
 - **What was wrong before**:
   - When the 3D camera was pitched at an oblique angle (e.g. $40^\circ$ to $80^\circ$) looking across alpine peaks and ridges, zooming in (via mouse scroll wheel, trackpad pinch, navigation buttons, or keyboard keys) caused the camera to violently bounce up and down, shudder, and slide sideways.
