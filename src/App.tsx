@@ -333,7 +333,7 @@ export default function App() {
   const [showDownhill, setShowDownhill] = useState(true);
   const [showNordic, setShowNordic] = useState(false);
   const [showHeliCat, setShowHeliCat] = useState(false);
-  const [showTouring, setShowTouring] = useState(true);
+  const [showTouring, setShowTouring] = useState(false);
 
   // Dedicated Imperial and Metric Filter Slider States
   // Imperial defaults: 500' vertical, 100 acres, 0 mi

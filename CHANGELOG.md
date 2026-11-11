@@ -1,3 +1,10 @@
+## 2026-11-11
+
+### `fix: touring routes off by default`
+- Changed `showTouring` initial state from `true` to `false` in `src/App.tsx`.
+- Touring routes (skin tracks, Tuckerman Ravine, backcountry descents) remain fully toggleable in the Layers panel; they just no longer appear on first load.
+
+
 # SkiAtlas — Changelog
 
 All notable changes in reverse chronological order. Format: `[date] type: description`.
