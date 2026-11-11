@@ -35,7 +35,7 @@ export function registerTrailLayers(map: MapLibreMap, showDownhill: boolean): vo
         'freeride', '#B84A39',     // Double Black / Freeride Vermilion
         [
           'case',
-          ['any', ['==', ['get', 'piste:type'], 'skitour'], ['==', ['coalesce', ['get', 'is_touring'], false], true]],
+          ['any', ['==', ['get', 'atlas_category'], 'touring'], ['==', ['get', 'piste:type'], 'skitour'], ['==', ['coalesce', ['get', 'is_touring'], false], true]],
           '#D97706',
           '#8A847C',
         ]
@@ -72,7 +72,7 @@ export function registerTrailLayers(map: MapLibreMap, showDownhill: boolean): vo
         'freeride', '#B84A39',
         [
           'case',
-          ['any', ['==', ['get', 'piste:type'], 'skitour'], ['==', ['coalesce', ['get', 'is_touring'], false], true]],
+          ['any', ['==', ['get', 'atlas_category'], 'touring'], ['==', ['get', 'piste:type'], 'skitour'], ['==', ['coalesce', ['get', 'is_touring'], false], true]],
           '#D97706',
           '#8A847C',
         ]
@@ -124,7 +124,7 @@ export function registerTrailLayers(map: MapLibreMap, showDownhill: boolean): vo
         'freeride', '#B84A39',     // Double Black / Freeride Vermilion
         [
           'case',
-          ['any', ['==', ['get', 'piste:type'], 'skitour'], ['==', ['coalesce', ['get', 'is_touring'], false], true]],
+          ['any', ['==', ['get', 'atlas_category'], 'touring'], ['==', ['get', 'piste:type'], 'skitour'], ['==', ['coalesce', ['get', 'is_touring'], false], true]],
           '#D97706',
           '#8A847C',
         ]
@@ -232,19 +232,7 @@ export function registerTrailLayers(map: MapLibreMap, showDownhill: boolean): vo
       'visibility': 'none',
       'symbol-placement': 'point',
       'text-padding': 12,
-      'text-field': [
-        'case',
-        [
-          'any',
-          ['!', ['has', 'name']],
-          ['==', ['coalesce', ['get', 'name'], ''], ''],
-          ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]],
-          ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]],
-          ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]],
-        ],
-        '',
-        ['get', 'name'],
-      ],
+      'text-field': ['coalesce', ['get', 'name:en'], ['get', 'piste:name:en'], ['get', 'name'], ['get', 'piste:name'], ''],
       'text-size': [
         'interpolate', ['linear'], ['zoom'],
         12.0, 11,
@@ -283,19 +271,7 @@ export function registerTrailLayers(map: MapLibreMap, showDownhill: boolean): vo
       'symbol-placement': 'line',
       'symbol-spacing': 500,
       'text-padding': 10,
-      'text-field': [
-        'case',
-        [
-          'any',
-          ['!', ['has', 'name']],
-          ['==', ['coalesce', ['get', 'name'], ''], ''],
-          ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]],
-          ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]],
-          ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]],
-        ],
-        '',
-        ['get', 'name'],
-      ],
+      'text-field': ['coalesce', ['get', 'name:en'], ['get', 'piste:name:en'], ['get', 'name'], ['get', 'piste:name'], ''],
       'text-size': [
         'interpolate', ['linear'], ['zoom'],
         12.5, 11.5,
@@ -342,19 +318,7 @@ export function registerTrailLayers(map: MapLibreMap, showDownhill: boolean): vo
       'symbol-placement': 'line',
       'symbol-spacing': 600,
       'text-padding': 12,
-      'text-field': [
-        'case',
-        [
-          'any',
-          ['!', ['has', 'name']],
-          ['==', ['coalesce', ['get', 'name'], ''], ''],
-          ['in', 'unnamed', ['downcase', ['coalesce', ['get', 'name'], '']]],
-          ['in', 'unknown', ['downcase', ['coalesce', ['get', 'name'], '']]],
-          ['in', 'untitled', ['downcase', ['coalesce', ['get', 'name'], '']]],
-        ],
-        '',
-        ['get', 'name'],
-      ],
+      'text-field': ['coalesce', ['get', 'name:en'], ['get', 'piste:name:en'], ['get', 'name'], ['get', 'piste:name'], ''],
       'text-size': [
         'interpolate',
         ['linear'],

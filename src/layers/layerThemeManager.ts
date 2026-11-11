@@ -175,84 +175,53 @@ export function syncTrailFilterAndVisibility(
   const anyTrails = showDownhill || showNordic || showHeliCat || showTouring;
   const allowedConditions: any[] = [];
 
-  const heliCatExclusion: any = showHeliCat
-    ? null
-    : ['!=', ['coalesce', ['get', 'is_heli_cat'], false], true];
-
-  const touringExclusion: any = showTouring
-    ? null
-    : [
-        'all',
-        ['!=', ['coalesce', ['get', 'is_touring'], false], true],
-        ['!=', ['get', 'piste:type'], 'skitour'],
-        ['!=', ['coalesce', ['get', 'resort_category'], ''], 'touring'],
-      ];
-
   if (showDownhill) {
-    const dlCond: any[] = [
+    allowedConditions.push(['==', ['get', 'atlas_category'], 'downhill']);
+    // Also include old-style features without atlas_category for backward compat
+    allowedConditions.push([
       'all',
+      ['!', ['has', 'atlas_category']],
+      ['!=', ['get', 'kind'], 'lift'],
+      ['any', ['==', ['get', 'piste:type'], 'downhill'], ['==', ['get', 'piste:type'], 'connection'], ['==', ['get', 'piste:type'], 'freeride']],
+      ['!=', ['coalesce', ['get', 'is_touring'], false], true],
       ['!=', ['get', 'piste:type'], 'nordic'],
       ['!=', ['get', 'piste:type'], 'skitour'],
-      ['!=', ['coalesce', ['get', 'resort_category'], ''], 'nordic'],
-      ['!=', ['coalesce', ['get', 'resort_category'], ''], 'touring'],
-      [
-        'any',
-        ['==', ['get', 'piste:type'], 'downhill'],
-        ['==', ['get', 'piste:type'], 'connection'],
-      ],
-    ];
-    const dlCombined = ['all', dlCond];
-    if (heliCatExclusion) dlCombined.push(heliCatExclusion);
-    if (touringExclusion) dlCombined.push(touringExclusion);
-    allowedConditions.push(dlCombined.length > 2 ? dlCombined : dlCond);
+    ]);
   }
 
   if (showNordic) {
-    const ndCond: any[] = [
+    allowedConditions.push(['==', ['get', 'atlas_category'], 'nordic']);
+    allowedConditions.push([
       'all',
-      [
-        'any',
-        ['==', ['get', 'piste:type'], 'nordic'],
-        ['==', ['get', 'resort_category'], 'nordic'],
-      ],
-      ['!=', ['get', 'piste:type'], 'skitour'],
-      ['!=', ['coalesce', ['get', 'resort_category'], ''], 'touring'],
-    ];
-    if (touringExclusion) {
-      allowedConditions.push(['all', ndCond, touringExclusion]);
-    } else {
-      allowedConditions.push(ndCond);
-    }
+      ['!', ['has', 'atlas_category']],
+      ['any', ['==', ['get', 'piste:type'], 'nordic'], ['==', ['get', 'resort_category'], 'nordic']],
+    ]);
   }
 
   if (showHeliCat && !showDownhill) {
     allowedConditions.push([
       'all',
-      [
-        'any',
-        ['==', ['get', 'piste:type'], 'downhill'],
-        ['==', ['get', 'piste:type'], 'connection'],
-      ],
-      ['!=', ['get', 'piste:type'], 'skitour'],
+      ['!=', ['get', 'kind'], 'lift'],
+      ['any', ['==', ['get', 'piste:type'], 'downhill'], ['==', ['get', 'piste:type'], 'connection']],
     ]);
   }
 
   if (showTouring) {
+    allowedConditions.push(['==', ['get', 'atlas_category'], 'touring']);
     allowedConditions.push([
-      'any',
-      ['==', ['get', 'piste:type'], 'skitour'],
-      ['==', ['get', 'resort_category'], 'touring'],
-      ['==', ['coalesce', ['get', 'is_touring'], false], true],
+      'all',
+      ['!', ['has', 'atlas_category']],
+      ['any',
+        ['==', ['get', 'piste:type'], 'skitour'],
+        ['==', ['get', 'resort_category'], 'touring'],
+        ['==', ['coalesce', ['get', 'is_touring'], false], true],
+      ],
     ]);
   }
 
   const nonSkiExclusion = [
     '!',
-    [
-      'in',
-      ['coalesce', ['get', 'piste:type'], ''],
-      ['literal', ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other', ...(showTouring ? [] : ['skitour', 'backcountry'])]],
-    ],
+    ['in', ['coalesce', ['get', 'piste:type'], ''], ['literal', ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other']]],
   ];
 
   const isLineGeom = ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']];
@@ -325,9 +294,6 @@ export function syncTrailFilterAndVisibility(
     ['==', ['get', 'kind'], 'lift'],
     ['==', ['coalesce', ['get', 'status'], 'operating'], 'operating'],
   ];
-  if (heliCatExclusion) {
-    baseLiftConditions.push(heliCatExclusion);
-  }
   const liftFilter: any = ['all', ...baseLiftConditions];
 
   const liftLabelFilter: any = [

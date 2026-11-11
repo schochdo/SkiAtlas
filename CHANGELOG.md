@@ -4,6 +4,31 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ---
 
+## 2026-11-11
+
+### `feat: deterministic piste categorization overhaul with resort-proximity classification`
+- **What changed**:
+  - **`classifyOsmPiste()` module-level function** added to [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) before the `App` component. Accepts OSM tags and an `isInsideResortOrNearLift` boolean; returns `'downhill' | 'touring' | 'nordic' | 'ignore'`.
+  - **Four deterministic rules** replace the previous ad-hoc multi-condition classification block:
+    1. **RULE 1**: Discard all non-ski types (snowshoeing, fat-biking, sledding, etc.) not in `['downhill', 'freeride', 'connection', 'nordic', 'skitour']`.
+    2. **RULE 2**: Downhill/freeride/connection → `'downhill'` if inside resort or has operator; `'touring'` if `patrolled=no` or not near a known resort.
+    3. **RULE 3**: `skitour` → always `'touring'`.
+    4. **RULE 4**: `nordic` → `'nordic'` unless `grooming=backcountry` (→ `'ignore'`).
+  - **`ingestTrailFeatures` updated**: Static pre-exported trails always pass `true` for `isInsideResortOrNearLift`; result stored in `p.atlas_category`; `'ignore'` features are skipped immediately.
+  - **Overpass query upgraded** in `fetchOverpassBbox`: now fetches `relation["piste:type"]`, `way/relation["landuse"="winter_sports"]`, and `way["aerialway"]` elements in addition to ways, with `timeout:20` instead of `timeout:12`. Uses `out body;>;out skel qt;` for full node resolution.
+  - **Node coordinate map built** from raw Overpass response for spatial lookups.
+  - **Resort & lift bounding boxes** constructed from `landuse=winter_sports` and `aerialway` ways/relations, expanded 0.005° (~500m buffer), and used by `isPointNearResortOrLift()` to classify each piste as inbounds vs. backcountry.
+  - **Parent relation tags propagated** to member ways before classification so that pistes tagged only at the relation level (route=piste) inherit `piste:type`, `piste:difficulty`, `patrolled`, and `name`.
+  - **Closed bowl polygons preserved**: ways where first node == last node and `piste:type` is set are stored as `Polygon` geometry (Highland Bowl, freeride terrain polygons) instead of being dropped.
+  - **English-first trail labels**: All three label layers (`PISTES_POLYGONS_LABELS`, `PISTES_LABELS`, `PISTES_LIFTS_LABELS`) in [`src/layers/trailLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/trailLayers.ts) now use `['coalesce', ['get', 'name:en'], ['get', 'piste:name:en'], ['get', 'name'], ['get', 'piste:name'], '']`.
+  - **Touring color detection enhanced**: All three difficulty color `case` expressions in `PISTES_LINES`, `PISTES_POLYGONS_FILL`, and `PISTES_POLYGONS_OUTLINE` now also check `['==', ['get', 'atlas_category'], 'touring']` before falling back to `piste:type` and `is_touring`.
+  - **`syncTrailFilterAndVisibility` overhauled** in [`src/layers/layerThemeManager.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/layerThemeManager.ts): replaced complex `heliCatExclusion`/`touringExclusion` variable patterns with clean `atlas_category` equality checks, while retaining backward-compatible fallback conditions (using `['!', ['has', 'atlas_category']]`) for pre-existing features that predate the new field.
+- **Why this approach**:
+  - Deterministic classification eliminates the brittleness of multi-condition ad-hoc logic and correctly handles OSM edge cases (unpatrolled inbounds terrain, relation-only tagging, closed bowl polygons). The resort-proximity check using `landuse=winter_sports` and `aerialway` footprints is semantically robust — if a piste is next to a lift or inside a designated winter sports area, it is classified as inbounds downhill terrain regardless of whether `patrolled=yes` was explicitly set.
+- **Build result**: `✓ built in 1.91s` — 0 TypeScript errors, 0 warnings.
+
+---
+
 ## 2026-11-08
 
 ### `fix: restore comprehensive 4-mountain Aspen Snowmass trail network and flip layers/basemap tab order`
