@@ -6,6 +6,37 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-11
 
+### `feat: Berann panorama mode — zoom-aware terrain, hillshade glaze, satellite desaturation, label fog`
+- **Zoom-Aware Terrain Relief Scaling** (`src/App.tsx` — `handleMapZoom`):
+  - Added a smooth zoom-curve scaler inside the existing `handleMapZoom` callback. Preserves the user's raw slider value; applies a zoom-based multiplier:
+    - `zoom ≤ 7` → 100% of user multiplier (mountain ranges pop off plains at continental view)
+    - `zoom 7 → 13.5` → smoothly tapers to 57% (regional/resort approach)
+    - `zoom 13.5 → 14.5` → tapers to 44% (trail/chairlift level — no vertical spike distortion)
+  - Throttled: `setTerrain()` only fires when the calculated exaggeration changes by ≥ 0.02 to avoid render thrashing during zoom animations.
+  - Zero change to the UI slider or preset buttons.
+- **Satellite Imagery Berann Tuning** (`src/utils/mapStyles.ts`):
+  - `basemap-satellite` and `basemap-cloudless` raster paint now use zoom-interpolated expressions:
+    - `raster-saturation`: `−0.20` at z5 → `−0.38` at z13 (mutes flatland noise; lets ski run colors pop at resort zoom)
+    - `raster-contrast`: `+0.15` at z5 → `−0.10` at z13 (macro ridge contrast boost; soften close-up canopy speckle)
+    - `raster-brightness-min`: `0.05` → `0.10` (north-face gully shadows become soft charcoal, not dead black)
+    - `raster-brightness-max`: capped at `0.92` (snowfields no longer blow out white text labels)
+- **Berann Alpine Tint Wash** (`src/utils/mapStyles.ts`):
+  - Added `berann-tint-wash` background layer (above satellite/cloudless, below hillshade) with deep alpine slate-sage `#1c2a24` tint at `0.10` opacity at z4, fading to `0.0` at z13. Unifies noisy flatlands at continental zoom without hiding satellite texture up close. Only visible on satellite/cloudless basemaps.
+- **Berann Hillshade Glaze** (`src/utils/mapStyles.ts`):
+  - `alpine-painted-hillshade` and `hillshade-relief` both updated:
+    - `hillshade-illumination-anchor`: `'viewport'` (light always rakes from upper-left regardless of camera bearing/rotation)
+    - `hillshade-illumination-direction`: `325` (classic Berann/Niehues oblique upper-left sun angle)
+    - `hillshade-shadow-color`: `#0b1d30` (deep Prussian blue — cool shadow signature)
+    - `hillshade-highlight-color`: `#fff3d1` (warm golden-cream alpenglow on lit ridges)
+    - `hillshade-accent-color`: `#1a302b` (subtle dark alpine green for steep rock/gully)
+    - `hillshade-exaggeration`: zoom-interpolated (`0.45` at z5 → `0.35` at z12 → `0.20` at z15)
+- **Label Fog / Pitch-Distance Hierarchy** (`src/layers/poiLayers.ts`, `src/layers/resortLayers.ts`):
+  - Added `symbol-z-order: 'viewport-y'` to peak labels, resort labels, and global ski area labels. Foreground features (lower on screen at pitched view) always render in front of horizon clutter.
+  - Peak label `text-padding` is now zoom-interpolated (`12px` at z5 → `4px` at z13) so dense horizon clusters automatically drop lower-priority labels via MapLibre collision detection, leaving only the most prominent summits visible at pitched panoramic views.
+  - Resort labels similarly get zoom-interpolated padding (`14px` at z5 → `8px` at z12).
+- **Berann tint wash basemap toggle** (`src/App.tsx` basemap effect): `berann-tint-wash` visibility toggled alongside the basemap switch.
+- **Build result**: `✓ built in 2.02s` — 0 TypeScript errors.
+
 ### `fix: slider track bar fill, Filters button always-dark, Portillo trail data verified`
 - **Slider track bar** (`src/index.css`): Removed `background: transparent` from `.tufte-slider::-webkit-slider-runnable-track` and `.tufte-slider::-moz-range-track`. On WebKit, the track pseudo-element's explicit `background: transparent` was overriding the inline gradient style set on the `<input>` element itself, making the filled track portion invisible. Now the pseudo-element has no background, allowing the inline gradient to render correctly.
 - **Filters button always-dark** (`src/components/sidebar/DirectoryList.tsx`): Changed the closed-state background from `bg-[#EFECE4]` (same as surrounding panel) to `bg-[#E5E1D7]` and updated the containing wrapper to match. The button is now visually distinct and clearly clickable at rest, not just on hover. Open state is `bg-[#DDD9CF]` (slightly darker). Border on the wrapper updated from `#EFECE4` to `#E5E1D7` to match.

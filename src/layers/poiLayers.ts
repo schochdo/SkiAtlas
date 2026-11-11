@@ -99,6 +99,8 @@ export function registerPoiLayers(
     minzoom: 6.0,
     layout: {
       'visibility': peakVisibility,
+      // viewport-y: foreground features (lower on screen at pitch) always render in front of horizon clutter
+      'symbol-z-order': 'viewport-y',
       'symbol-sort-key': ['-', 50000, ['coalesce', ['get', 'elevation_ft'], 0]],
       'text-field': [
         'step', ['zoom'],
@@ -123,7 +125,13 @@ export function registerPoiLayers(
       'text-keep-upright': true,
       'text-pitch-alignment': 'viewport',
       'text-rotation-alignment': 'viewport',
-      'text-padding': 4,
+      // Wider padding at low zoom so horizon clusters auto-drop lower-priority labels via collision
+      'text-padding': [
+        'interpolate', ['linear'], ['zoom'],
+        5, 12,
+        9, 8,
+        13, 4,
+      ],
       'text-optional': true,
     },
     paint: {
@@ -217,6 +225,7 @@ export function registerPoiLayers(
     minzoom: 5.8,
     layout: {
       'visibility': lookoutVisibility,
+      'symbol-z-order': 'viewport-y',
       'symbol-sort-key': ['coalesce', ['get', 'sort_key'], 0],
       'text-field': [
         'step', ['zoom'],

@@ -100,25 +100,63 @@ export const createMapStyle = (
       },
     },
     layers: [
-      // Base 1: Satellite 3D (Standard Esri)
+      // Base 1: Satellite 3D (Standard Esri) — Berann-tuned: lift shadows, mute forest noise, cap snowfield blow-out
       {
         id: 'basemap-satellite',
         type: 'raster',
         source: 'satellite-tiles',
         layout: { visibility: basemapMode === 'satellite' ? 'visible' : 'none' },
         paint: {
-          'raster-contrast': 0.08,
+          // Mute flatland color noise at continental zoom; desaturate dark conifer canopy at resort zoom so ski runs pop
+          'raster-saturation': [
+            'interpolate', ['linear'], ['zoom'],
+            5, -0.20,
+            8, -0.25,
+            13, -0.38,
+          ],
+          // Boost macro ridge contrast from space; soften speckle close-up
+          'raster-contrast': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 0.15,
+            10, 0.06,
+            13, -0.10,
+          ],
+          // Lift black floor so north-face shadows become soft charcoal-slate, not dead blotches
+          'raster-brightness-min': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 0.05,
+            13, 0.10,
+          ],
+          // Cap snowfield brightness so white labels stay legible
+          'raster-brightness-max': 0.92,
           'raster-fade-duration': 0,
         },
       },
-      // Base 1b: Satellite Cloudless (Seamless EOX Sentinel-2)
+      // Base 1b: Satellite Cloudless (Seamless EOX Sentinel-2) — same Berann palette
       {
         id: 'basemap-cloudless',
         type: 'raster',
         source: 'cloudless-tiles',
         layout: { visibility: basemapMode === 'cloudless' ? 'visible' : 'none' },
         paint: {
-          'raster-contrast': 0.05,
+          'raster-saturation': [
+            'interpolate', ['linear'], ['zoom'],
+            5, -0.18,
+            8, -0.22,
+            13, -0.35,
+          ],
+          'raster-contrast': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 0.12,
+            10, 0.05,
+            13, -0.08,
+          ],
+          'raster-brightness-min': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 0.04,
+            13, 0.09,
+          ],
+          'raster-brightness-max': 0.93,
           'raster-fade-duration': 0,
         },
       },
@@ -161,32 +199,66 @@ export const createMapStyle = (
           'raster-fade-duration': 0,
         },
       },
-      // Alpine Multi-Color Painted Hillshade (uses unified terrain-dem source)
+      // Berann Alpine Tint Wash — deep slate-sage unifies noisy flatlands at continental zoom; fades to 0 at resort level
+      // Non-interactive fill layer, sits above satellite/cloudless and below hillshade
+      {
+        id: 'berann-tint-wash',
+        type: 'background',
+        layout: { visibility: (basemapMode === 'satellite' || basemapMode === 'cloudless') ? 'visible' : 'none' },
+        paint: {
+          'background-color': '#1c2a24',
+          'background-opacity': [
+            'interpolate', ['linear'], ['zoom'],
+            4, 0.10,
+            8, 0.08,
+            11, 0.04,
+            13, 0.0,
+          ],
+        },
+      },
+      // Alpine Berann-Glazed Hillshade — warm sunlit ridges, Prussian-blue shadows, oblique upper-left light
       {
         id: 'alpine-painted-hillshade',
         type: 'hillshade',
         source: 'terrain-dem',
         layout: { visibility: basemapMode === 'topo' ? 'visible' : 'none' },
         paint: {
-          'hillshade-exaggeration': 0.45,
-          'hillshade-illumination-direction': 315,
-          'hillshade-illumination-anchor': 'map',
-          'hillshade-shadow-color': 'rgba(44, 62, 80, 0.42)',
-          'hillshade-highlight-color': 'rgba(255, 255, 255, 0.75)',
-          'hillshade-accent-color': 'rgba(74, 107, 83, 0.22)',
+          // Zoom-scaled exaggeration: macro ranges look sculpted; close-up resort views stay clean
+          'hillshade-exaggeration': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 0.45,
+            12, 0.35,
+            15, 0.20,
+          ],
+          // Viewport-anchored: light always rakes from upper-left regardless of camera bearing
+          'hillshade-illumination-anchor': 'viewport',
+          'hillshade-illumination-direction': 325,
+          // Prussian blue shadows (Berann signature)
+          'hillshade-shadow-color': '#0b1d30',
+          // Warm golden-cream alpenglow on lit ridges
+          'hillshade-highlight-color': '#fff3d1',
+          // Subtle steep-rock/gully accent in dark alpine green
+          'hillshade-accent-color': '#1a302b',
         },
       },
-      // Subtle hillshade for OSM & Clean Voyager modes (uses unified terrain-dem source)
+      // Berann Glaze for OSM & Voyager modes
       {
         id: 'hillshade-relief',
         type: 'hillshade',
         source: 'terrain-dem',
         layout: { visibility: (basemapMode === 'osm' || basemapMode === 'carto') && showHillshade ? 'visible' : 'none' },
         paint: {
-          'hillshade-exaggeration': 0.35,
-          'hillshade-shadow-color': 'rgba(51, 65, 85, 0.40)',
-          'hillshade-highlight-color': 'rgba(255, 255, 255, 0.90)',
-          'hillshade-accent-color': 'rgba(148, 163, 184, 0.30)',
+          'hillshade-exaggeration': [
+            'interpolate', ['linear'], ['zoom'],
+            5, 0.40,
+            12, 0.30,
+            15, 0.18,
+          ],
+          'hillshade-illumination-anchor': 'viewport',
+          'hillshade-illumination-direction': 325,
+          'hillshade-shadow-color': '#0b1d30',
+          'hillshade-highlight-color': '#fff3d1',
+          'hillshade-accent-color': '#1a302b',
         },
       },
     // Overlay 1: Dynamic Slope Angle Layer

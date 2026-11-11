@@ -1547,6 +1547,39 @@ export default function App() {
           setMapPitch(Math.round(maxAllowedPitch));
         }
       }
+
+      // ── Berann Zoom-Aware Terrain Relief Scaling ──────────────────────────
+      // Applies a smooth zoom curve to the user's chosen multiplier so that
+      // high exaggeration looks incredible at continental zoom (mountain ranges
+      // pop off plains) but tapers to natural-feeling relief at resort zoom
+      // (vector trails drape without vertical spike distortion).
+      // The user's raw slider value is preserved — this is a zoom-scaler overlay.
+      if (map.getTerrain?.()) {
+        const userMult = (map.getTerrain() as any)?.exaggeration ?? terrainExaggeration;
+        // Zoom scale factor: 1.0 at ≤7, interpolates to 0.57 at 13.5, 0.44 at ≥14.5
+        let zoomScale: number;
+        if (z <= 7) {
+          zoomScale = 1.0;
+        } else if (z >= 14.5) {
+          zoomScale = 0.44;
+        } else if (z <= 13.5) {
+          // 7 → 13.5: 1.0 → 0.57
+          zoomScale = 1.0 - ((z - 7) / 6.5) * 0.43;
+        } else {
+          // 13.5 → 14.5: 0.57 → 0.44
+          zoomScale = 0.57 - ((z - 13.5) / 1.0) * 0.13;
+        }
+        const scaledExagg = Math.max(0.0, userMult * zoomScale);
+        // Throttle: only fire setTerrain when change exceeds 0.02 to avoid render thrashing
+        const prev = (map as any).__berannLastExagg ?? -1;
+        if (Math.abs(scaledExagg - prev) >= 0.02) {
+          try {
+            map.setTerrain({ source: 'terrain-dem', exaggeration: scaledExagg });
+            (map as any).__berannLastExagg = scaledExagg;
+          } catch (_) {}
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────
     };
     map.on('zoom', handleMapZoom);
 
@@ -2330,6 +2363,14 @@ export default function App() {
         'alpine-painted-hillshade',
         'visibility',
         basemapMode === 'topo' && showHillshade ? 'visible' : 'none'
+      );
+    }
+    // Berann tint wash — only on satellite/cloudless
+    if (map.getLayer('berann-tint-wash')) {
+      map.setLayoutProperty(
+        'berann-tint-wash',
+        'visibility',
+        (basemapMode === 'satellite' || basemapMode === 'cloudless') ? 'visible' : 'none'
       );
     }
   }, [basemapMode, showHillshade, mapLoaded]);
