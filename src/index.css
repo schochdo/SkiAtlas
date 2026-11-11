@@ -91,13 +91,14 @@ body {
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: transparent;
+  /* Do NOT set background here — inline style on the input element drives the fill gradient */
 }
 .tufte-slider::-moz-range-track {
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: transparent;
+  /* background set via inline style on the input element */
+  background: inherit;
 }
 .tufte-slider::-webkit-slider-thumb {
   -webkit-appearance: none;

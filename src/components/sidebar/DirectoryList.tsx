@@ -209,11 +209,11 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
         )}
 
         {/* Collapsible Filters Section */}
-        <div className="border border-[#C4BEB1] rounded-md bg-[#EFECE4] overflow-hidden transition-all shadow-2xs">
+        <div className="border border-[#C4BEB1] rounded-md bg-[#E5E1D7] overflow-hidden transition-all shadow-2xs">
           <div
             onClick={() => setIsFiltersOpen((prev) => !prev)}
             className={`w-full px-2.5 py-1.5 flex items-center justify-between text-xs font-semibold text-[#1C1B18] transition-colors cursor-pointer select-none group ${
-              isFiltersOpen ? 'bg-[#EAE5D9] border-b border-[#D6D0C2]' : 'bg-[#EFECE4] hover:bg-[#E5E1D7]'
+              isFiltersOpen ? 'bg-[#DDD9CF] border-b border-[#C4BEB1]' : 'bg-[#E5E1D7] hover:bg-[#DDD9CF]'
             }`}
             role="button"
             tabIndex={0}

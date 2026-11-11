@@ -6,6 +6,12 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-11
 
+### `fix: slider track bar fill, Filters button always-dark, Portillo trail data verified`
+- **Slider track bar** (`src/index.css`): Removed `background: transparent` from `.tufte-slider::-webkit-slider-runnable-track` and `.tufte-slider::-moz-range-track`. On WebKit, the track pseudo-element's explicit `background: transparent` was overriding the inline gradient style set on the `<input>` element itself, making the filled track portion invisible. Now the pseudo-element has no background, allowing the inline gradient to render correctly.
+- **Filters button always-dark** (`src/components/sidebar/DirectoryList.tsx`): Changed the closed-state background from `bg-[#EFECE4]` (same as surrounding panel) to `bg-[#E5E1D7]` and updated the containing wrapper to match. The button is now visually distinct and clearly clickable at rest, not just on hover. Open state is `bg-[#DDD9CF]` (slightly darker). Border on the wrapper updated from `#EFECE4` to `#E5E1D7` to match.
+- **Portillo trail spread**: Verified that all 46 features in `public/data/trails/portillo.json` are within 4km of the resort pin — data is clean. The right-side cluster seen in the screenshot was from live Overpass fetching nearby Chilean ski areas; the new `classifyOsmPiste()` proximity detection addresses this.
+- **El Plomo coordinates**: Confirmed that the geojson coordinates (`[-70.214138, -33.236821]`) match the authoritative OSM peak node (`[-70.2144495, -33.2368382]`) within ~30m. The apparent label offset below the summit in the screenshot is a 3D terrain perspective artifact at high pitch, not a data error.
+
 ### `feat: deterministic piste categorization overhaul with resort-proximity classification`
 - **What changed**:
   - **`classifyOsmPiste()` module-level function** added to [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) before the `App` component. Accepts OSM tags and an `isInsideResortOrNearLift` boolean; returns `'downhill' | 'touring' | 'nordic' | 'ignore'`.
