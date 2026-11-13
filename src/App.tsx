@@ -147,37 +147,36 @@ import {
  * or is confirmed near a lift/winter_sports boundary.
  */
 function classifyOsmPiste(
-  tags: Record<string, any>,
-  isInsideResortOrNearLift: boolean = false
+  tags: Record<string, any> = {},
+  isLiftServed: boolean = false
 ): 'downhill' | 'touring' | 'nordic' | 'ignore' {
   const rawType = (tags['piste:type'] || '').toLowerCase();
   const types = rawType.split(/[;+]/).map((s: string) => s.trim()).filter(Boolean);
-  const grooming = (tags['piste:grooming'] || tags['grooming'] || '').toLowerCase();
   const patrolled = (tags['patrolled'] || '').toLowerCase();
 
-  // RULE 1: Discard non-ski winter trails
-  const validSkiTypes = ['downhill', 'freeride', 'connection', 'nordic', 'skitour'];
-  if (!types.some((t: string) => validSkiTypes.includes(t))) {
+  // 1. Ignore winter walking, snowshoeing, sledding, fatbiking
+  if (!types.some((t: string) => ['downhill', 'freeride', 'connection', 'nordic', 'skitour'].includes(t))) {
     return 'ignore';
   }
 
-  // RULE 2: INBOUNDS RESORT DOWNHILL vs. OUT-OF-BOUNDS DOWNHILL TOURING
+  // 2. DOWNHILL vs. DOWNHILL TOURING (Separated by Lift/Resort Proximity)
+  // Note: `piste:grooming=backcountry` in OSM just means "ungroomed" (like Highland Bowl or Third Bowl).
+  // If it's lift-served and not explicitly `patrolled=no`, it is a Resort Downhill run.
+  // If it's NOT lift-served (or is `patrolled=no`), it is a Backcountry Downhill Touring line.
   if (types.includes('downhill') || types.includes('freeride') || types.includes('connection')) {
-    const isOutOfBoundsDescent =
-      patrolled === 'no' || (!isInsideResortOrNearLift && !tags.operator);
-    return isOutOfBoundsDescent ? 'touring' : 'downhill';
+    if (patrolled === 'no' || !isLiftServed) {
+      return 'touring';
+    }
+    return 'downhill';
   }
 
-  // RULE 3: DOWNHILL / ALPINE SKI TOURING
+  // 3. SKI TOURING (Uphill skin tracks & alpine touring routes)
   if (types.includes('skitour')) {
     return 'touring';
   }
 
-  // RULE 4: GROOMED NORDIC / CROSS-COUNTRY ONLY
+  // 4. NORDIC (All cross-country skiing, kept completely separate from AT ski touring)
   if (types.includes('nordic')) {
-    if (grooming.includes('backcountry')) {
-      return 'ignore';
-    }
     return 'nordic';
   }
 

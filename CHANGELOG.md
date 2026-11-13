@@ -1,15 +1,25 @@
-## 2026-11-11
-
-### `fix: touring routes off by default`
-- Changed `showTouring` initial state from `true` to `false` in `src/App.tsx`.
-- Touring routes (skin tracks, Tuckerman Ravine, backcountry descents) remain fully toggleable in the Layers panel; they just no longer appear on first load.
-
-
 # SkiAtlas — Changelog
 
 All notable changes in reverse chronological order. Format: `[date] type: description`.
 
 ---
+
+## 2026-11-13
+
+### `refactor: lock in clean 3-bucket piste classifier with lift proximity`
+- **What changed**:
+  - Replaced `classifyOsmPiste` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) with the exact 3-bucket classifier:
+    1. Ignores non-ski activities (walking, snowshoeing, sledding, fatbiking).
+    2. Separates Resort Downhill (`downhill`, `freeride`, `connection` with lift/resort proximity and not `patrolled=no`) from Backcountry Downhill Touring (`patrolled=no` or not lift-served).
+    3. Retains all `skitour` routes in `touring`.
+    4. Routes all `nordic` cross-country trails cleanly to `nordic`.
+- **Why**: Keeps all XC trails strictly separated from alpine touring and deterministically classifies inbounds ungroomed bowls as downhill.
+
+## 2026-11-11
+
+### `fix: touring routes off by default`
+- Changed `showTouring` initial state from `true` to `false` in `src/App.tsx`.
+- Touring routes (skin tracks, Tuckerman Ravine, backcountry descents) remain fully toggleable in the Layers panel; they just no longer appear on first load.
 
 ## 2026-11-11
 
