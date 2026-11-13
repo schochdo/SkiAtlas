@@ -179,36 +179,70 @@ export function useKeyboardFlight({
       const liveZoom = map.getZoom();
       const speedMps = CAMERA_CONSTANTS.BASE_SPEED_MPS * Math.pow(2, 14 - liveZoom) * (isShift ? 2.5 : 1.0);
 
-      // 4. MANUAL ALTITUDE CONTROL (Q/E or PageUp/PageDown)
+      // 4. MANUAL ALTITUDE CONTROL: TRUE VERTICAL "HELICOPTER" ELEVATOR (Q / E or PageDown / PageUp)
+      // Unlike zoom (which glides along the angled line-of-sight vector towards the ground target),
+      // altitude changes camera elevation STRAIGHT UP and DOWN vertically without horizontal camera drift.
       if (altitudeDelta !== 0) {
-        const curZ = map.getZoom();
-        const altSpeed = isShift ? 2.5 : CAMERA_CONSTANTS.ALTITUDE_SPEED_PER_SEC;
-        // E / PageUp (altitudeDelta > 0) ascends (zooms out)
-        // Q / PageDown (altitudeDelta < 0) descends (zooms in)
-        let nextZ = curZ - altitudeDelta * altSpeed * dt;
+        const tr = (map as any)._camera?.transform;
+        const curCenter = map.getCenter();
+        const curBearing = map.getBearing();
+        const curPitch = map.getPitch();
+        const curCamLngLat = tr?.getCameraLngLat?.() || curCenter;
+        const curCamAlt = tr?.getCameraAltitude?.();
+        const groundUnderCam = map.queryTerrainElevation(curCamLngLat) ?? 0;
+        const groundUnderCenter = map.queryTerrainElevation(curCenter) ?? (map.getCenterElevation?.() ?? 0);
 
-        // Ground clearance protection for manual descent
-        if (altitudeDelta < 0) {
-          const tr = (map as any)._camera?.transform;
-          const camLngLat = tr?.getCameraLngLat?.() || map.getCenter();
-          const camAlt = tr?.getCameraAltitude?.();
-          const groundUnderCam = map.queryTerrainElevation(camLngLat);
+        // Climb/descent rate in vertical meters per second, scaled with zoom level and shift sprint
+        const vertSpeedMps = (CAMERA_CONSTANTS.BASE_SPEED_MPS * 0.75) * Math.pow(2, 14 - liveZoom) * (isShift ? 2.5 : 1.0);
+        const deltaAltMeters = altitudeDelta * vertSpeedMps * dt;
 
-          if (
-            camAlt !== null &&
-            camAlt !== undefined &&
-            isFinite(camAlt) &&
-            groundUnderCam !== null &&
-            groundUnderCam !== undefined &&
-            isFinite(groundUnderCam)
-          ) {
-            if (camAlt <= groundUnderCam + CAMERA_CONSTANTS.MIN_CAMERA_CLEARANCE_METERS) {
-              nextZ = curZ; // Prevent descending into terrain
-            }
+        if (curCamAlt !== null && curCamAlt !== undefined && isFinite(curCamAlt) && curCamAlt > 0) {
+          const targetCamAlt = curCamAlt + deltaAltMeters;
+          const minAllowedCamAlt = groundUnderCam + CAMERA_CONSTANTS.MIN_CAMERA_CLEARANCE_METERS;
+
+          // Enforce ground collision clearance floor for vertical descent
+          if (deltaAltMeters < 0 && targetCamAlt < minAllowedCamAlt) {
+            // Camera eye is at or below safe clearance floor; stop descent
+          } else {
+            const nextCamAlt = Math.max(minAllowedCamAlt, targetCamAlt);
+            const pitchRad = (curPitch * Math.PI) / 180;
+            const bearingRad = (curBearing * Math.PI) / 180;
+
+            // Height of camera above ground target
+            const prevHeightAboveGround = Math.max(10, curCamAlt - groundUnderCenter);
+            const nextHeightAboveGround = Math.max(10, nextCamAlt - groundUnderCenter);
+
+            // 1. Zoom adjustment: camera distance along view vector scales with vertical height change
+            // -log2(nextDist / prevDist) maintains geometric focal scale
+            const zoomAdjust = -Math.log2(nextHeightAboveGround / prevHeightAboveGround);
+            const curZoom = map.getZoom();
+            const nextZoom = Math.max(1.0, Math.min(20.5, curZoom + zoomAdjust));
+
+            // 2. Horizontal center shift: as camera goes straight up/down at fixed pitch and bearing,
+            // the intersection of the line-of-sight with the ground shifts along bearing by deltaHeight * tan(pitch)
+            const deltaGroundDist = (nextHeightAboveGround - prevHeightAboveGround) * Math.tan(pitchRad);
+            const deltaEast = deltaGroundDist * Math.sin(bearingRad);
+            const deltaNorth = deltaGroundDist * Math.cos(bearingRad);
+
+            const metersPerDegLat = CAMERA_CONSTANTS.METERS_PER_DEG_LAT;
+            const latRad = (curCenter.lat * Math.PI) / 180;
+            const metersPerDegLng = metersPerDegLat * Math.cos(latRad);
+
+            const nextCenterLat = Math.max(-85, Math.min(85, curCenter.lat + deltaNorth / metersPerDegLat));
+            const nextCenterLng = curCenter.lng + deltaEast / metersPerDegLng;
+
+            map.jumpTo({
+              center: [nextCenterLng, nextCenterLat],
+              zoom: nextZoom,
+            });
           }
+        } else {
+          // Fallback if camera transform elevation is unavailable: adjust zoom cleanly
+          const curZ = map.getZoom();
+          const altSpeed = isShift ? 2.5 : CAMERA_CONSTANTS.ALTITUDE_SPEED_PER_SEC;
+          const nextZ = curZ - altitudeDelta * altSpeed * dt;
+          map.setZoom(Math.max(1.0, Math.min(20.5, nextZ)));
         }
-
-        map.setZoom(Math.max(1.0, Math.min(20.5, nextZ)));
       }
 
       // 5. HORIZONTAL GROUND FLIGHT (Arrow Keys)

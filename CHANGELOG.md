@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `feat: separate vertical elevator altitude from glider line-of-sight zoom`
+- **What changed**:
+  - Rewrote the manual altitude handler in [`src/camera/useKeyboardFlight.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/useKeyboardFlight.ts).
+  - Previously, `Q`/`E` simply altered `map.setZoom`, which moved along the angled view line identically to `Z`/`X`.
+  - Now, `Q`/`E` (or `PageDown`/`PageUp`) behaves like a **helicopter elevator**: the camera's geographical position (`cameraLngLat`) remains stationary while altitude changes purely vertically. To maintain perspective without tilting or drifting, the ground intersection center is translated along the camera bearing by $\Delta \text{Alt} \cdot \tan(\text{pitch})$ and zoom is mathematically adjusted by $-\log_2(\text{nextDist} / \text{prevDist})$.
+  - Meanwhile, `Z`/`X` (or `+`/`-`) behaves like an **airplane / glider**: it flies directly down or up the angled line-of-sight glide slope towards the fixed ground focal target.
+- **Why**: Allows true vertical altitude adjustment (climbing or descending in place above terrain) completely distinct from gliding forward/backward into the terrain.
+
 ### `docs: update cartographic legend with full camera controls and altitude navigation`
 - Updated the Navigation & Gesture Guide in [`src/components/map/CartographicLegend.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/CartographicLegend.tsx) to document `Q`/`E` (change altitude / descend / ascend), `Z`/`X` or `+`/`-` (zoom), and `Shift` (2.5× flight speed multiplier).
 
