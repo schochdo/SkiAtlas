@@ -83,7 +83,7 @@ export const CartographicLegend: React.FC<CartographicLegendProps> = ({
           <div className="pt-2 border-t border-[#D6D0C2] text-xs text-[#5C5852] space-y-1">
             <div><strong className="font-semibold text-[#1C1B18]">Trackpad:</strong> Pinch to zoom · Right-drag to orbit · Shift+scroll to tilt</div>
             <div><strong className="font-semibold text-[#1C1B18]">Touch:</strong> Pinch to zoom · Two fingers to rotate &amp; tilt</div>
-            <div><strong className="font-semibold text-[#1C1B18]">Keyboard:</strong> Arrows to pan · A/D to orbit · W/S to tilt</div>
+            <div><strong className="font-semibold text-[#1C1B18]">Keyboard:</strong> Arrows to pan · A/D to orbit · W/S to tilt · Q/E to change altitude · Z/X or +/- to zoom (Shift for 2.5× speed)</div>
           </div>
         </div>
       )}

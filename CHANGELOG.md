@@ -6,6 +6,9 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `docs: update cartographic legend with full camera controls and altitude navigation`
+- Updated the Navigation & Gesture Guide in [`src/components/map/CartographicLegend.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/CartographicLegend.tsx) to document `Q`/`E` (change altitude / descend / ascend), `Z`/`X` or `+`/`-` (zoom), and `Shift` (2.5× flight speed multiplier).
+
 ### `fix: remove automatic zoom-based terrain exaggeration scaling`
 - **What changed**:
   - Completely removed the automatic zoom-based terrain relief scaling curve and `map.setTerrain` calls inside the map `zoom` listener in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
