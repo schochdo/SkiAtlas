@@ -67,9 +67,26 @@ export function useKeyboardFlight({
         animationFrameId = null;
       }
       lastTimestamp = null;
-      isElevationHeld = false;
       if (cameraStateMachine.getMode() === 'flight') {
         cameraStateMachine.setMode('idle');
+      }
+
+      // Safe terrain settlement on key release
+      if (isElevationHeld && map) {
+        isElevationHeld = false;
+        try {
+          const curCenter = map.getCenter();
+          const curPitch = map.getPitch();
+          const centerElev = map.queryTerrainElevation(curCenter);
+
+          // Only re-enable ground clamping if center is actually on terrain and pitch is not glancing the horizon
+          if (centerElev !== null && curPitch < 78) {
+            map.setCenterClampedToGround(true);
+          } else {
+            // Looking above the horizon or over off-terrain void: keep ground clamping disabled
+            map.setCenterClampedToGround(false);
+          }
+        } catch (_) {}
       }
     };
 
@@ -128,11 +145,12 @@ export function useKeyboardFlight({
       if (activeKeys.has('Equal') || activeKeys.has('NumpadAdd') || activeKeys.has('KeyZ')) zoomDelta += 1;
       if (activeKeys.has('Minus') || activeKeys.has('NumpadSubtract') || activeKeys.has('KeyX')) zoomDelta -= 1;
 
-      // 1. PITCH CONTROL
+      // 1. PITCH CONTROL WITH DYNAMIC ZOOM CEILING
       if (pitchDelta !== 0) {
         const curPitch = map.getPitch();
+        const curZoom = map.getZoom();
         const pitchSpeed = (isShift ? 2.0 : 1.0) * CAMERA_CONSTANTS.PITCH_SPEED_DEG_PER_SEC;
-        const nextPitch = clampPitch(curPitch + pitchDelta * pitchSpeed * dt);
+        const nextPitch = clampPitch(curPitch + pitchDelta * pitchSpeed * dt, curZoom);
         map.setPitch(nextPitch);
         callbacksRef.current.onPitchChange?.(Math.round(nextPitch));
       }
@@ -183,6 +201,13 @@ export function useKeyboardFlight({
       // Unlike zoom (which glides along the angled line-of-sight vector towards the ground target),
       // altitude changes camera elevation STRAIGHT UP and DOWN vertically without horizontal camera drift.
       if (altitudeDelta !== 0) {
+        if (!isElevationHeld) {
+          try {
+            map.setCenterClampedToGround(false);
+            isElevationHeld = true;
+          } catch (_) {}
+        }
+
         const tr = (map as any)._camera?.transform;
         const curCenter = map.getCenter();
         const curBearing = map.getBearing();

@@ -1269,24 +1269,14 @@ export default function App() {
       map.scrollZoom.enable({ around: 'center' });
     } catch (_) {}
 
-    // Neutralize MapLibre moveCenterOntoTerrain oscillation during zoom over sloped 3D relief
-    const neutralizeCameraBounce = () => {
-      try {
-        const cam = (map as any)._camera;
-        if (cam) {
-          cam.moveCenterOntoTerrain = () => {};
-        }
-      } catch (_) {}
-    };
-    neutralizeCameraBounce();
-    map.on('style.load', neutralizeCameraBounce);
-
-    // Tablet & Touchscreen Controls (two-finger pitch tilt, rotate & pinch-zoom)
+    // Tablet & Touchscreen Controls: Disambiguated Two-Finger Gesture Arbiter
+    // MapLibre's built-in touchPitch causes jitter and accidental pitch changes when pinching to zoom.
+    // We disable touchPitch and implement a dedicated two-finger touch arbiter:
+    // - Deadzone: 12px before locking gesture mode.
+    // - Pitch lock: if vertical displacement dominates (|dy| > 1.5 * |dd|) and rotation is small (< 8°).
+    // - Zoom/Rotate lock: otherwise, smooth pinch zoom and rotation with a 6° deadzone.
     try {
-      // Natural pinch-zoom anchors around the midpoint between fingers (not screen center)
-      map.touchZoomRotate.enable();
-      map.touchZoomRotate.enableRotation();
-      map.touchPitch.enable();
+      map.touchPitch.disable();
     } catch (_) {}
 
     // MapLibre GL JS fix: MapLibre's HandlerManager listens to 'mouseup' on document and dispatches 'mouseupWindow'.
@@ -1423,46 +1413,117 @@ export default function App() {
     container.addEventListener('gestureend', onGestureEnd as any, { passive: false });
     container.addEventListener('wheel', onWheel, { passive: false, capture: true });
 
-    // 4. Tablet Touch Gestures: Three-finger vertical swipe to elevate/pitch up & down
-    let touch3Active = false;
-    let touch3LastY = 0;
+    // Tablet & Mobile Touch Gestures: Two-finger intent arbiter (Pitch vs Zoom/Rotate)
+    // Disambiguates two-finger vertical dragging (pitch) from pinch-to-zoom and twist-to-rotate.
+    let gestureLock: 'pitch' | 'zoom-rotate' | null = null;
+    let t0_d0 = 0;
+    let t0_a0 = 0;
+    let t0_midX = 0;
+    let t0_midY = 0;
+    let t0_pitch = 0;
+    let t0_zoom = 0;
+    let t0_bearing = 0;
 
     const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 3) {
-        touch3Active = true;
-        touch3LastY = (e.touches[0].clientY + e.touches[1].clientY + e.touches[2].clientY) / 3;
+      if (e.touches.length === 2) {
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const dx = t2.clientX - t1.clientX;
+        const dy = t2.clientY - t1.clientY;
+        t0_d0 = Math.hypot(dx, dy);
+        t0_a0 = Math.atan2(dy, dx) * (180 / Math.PI);
+        t0_midX = (t1.clientX + t2.clientX) / 2;
+        t0_midY = (t1.clientY + t2.clientY) / 2;
+        t0_pitch = map.getPitch();
+        t0_zoom = map.getZoom();
+        t0_bearing = map.getBearing();
+        gestureLock = null;
       } else {
-        touch3Active = false;
+        gestureLock = null;
       }
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 3 && touch3Active) {
-        const curY = (e.touches[0].clientY + e.touches[1].clientY + e.touches[2].clientY) / 3;
-        const dy = curY - touch3LastY;
-        touch3LastY = curY;
+      if (e.touches.length === 2) {
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const dx = t2.clientX - t1.clientX;
+        const dy = t2.clientY - t1.clientY;
+        const curDist = Math.hypot(dx, dy);
+        const curAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+        const curMidX = (t1.clientX + t2.clientX) / 2;
+        const curMidY = (t1.clientY + t2.clientY) / 2;
 
-        // Swiping up (dy < 0): increase pitch towards 3D oblique perspective (elevate terrain/tilt down)
-        // Swiping down (dy > 0): decrease pitch towards top-down 2D map (elevate camera up)
-        const pitchDelta = -dy * 0.45;
-        const curPitch = map.getPitch();
-        const nextPitch = Math.max(0, Math.min(85, curPitch + pitchDelta));
-        map.setPitch(nextPitch);
-        setMapPitch(Math.round(nextPitch));
+        const dd = curDist - t0_d0;
+        const midDx = curMidX - t0_midX;
+        const midDy = curMidY - t0_midY;
+        let dAngle = curAngle - t0_a0;
+        if (dAngle > 180) dAngle -= 360;
+        if (dAngle < -180) dAngle += 360;
 
-        if (e.cancelable) e.preventDefault();
-        e.stopPropagation();
+        // Arbiter: evaluate once movement exceeds 12px deadzone
+        if (!gestureLock) {
+          const totalMovement = Math.hypot(midDx, midDy, dd);
+          if (totalMovement >= 12) {
+            if (Math.abs(midDy) > 1.5 * Math.abs(dd) && Math.abs(dAngle) < 8) {
+              gestureLock = 'pitch';
+              // Disable MapLibre's built-in touchZoomRotate so it doesn't fight pitch
+              try { map.touchZoomRotate.disable(); } catch (_) {}
+            } else {
+              gestureLock = 'zoom-rotate';
+            }
+          }
+        }
+
+        if (gestureLock === 'pitch') {
+          // Two-finger vertical drag modifies pitch smoothly
+          const z = map.getZoom();
+          const maxAllowedPitch = Math.max(0, Math.min(82, (z - 3.5) * 18));
+          // Swiping UP (midDy < 0) tilts camera down towards 3D ground (increases pitch)
+          // Swiping DOWN (midDy > 0) tilts camera up towards 2D top-down (decreases pitch)
+          const pitchChange = -midDy * 0.4;
+          const targetPitch = Math.max(0, Math.min(maxAllowedPitch, t0_pitch + pitchChange));
+          map.setPitch(targetPitch);
+          setMapPitch(Math.round(targetPitch));
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        } else if (gestureLock === 'zoom-rotate') {
+          // Pinch zoom around touch midpoint
+          if (t0_d0 > 0 && curDist > 0) {
+            const zoomChange = Math.log2(curDist / t0_d0);
+            const nextZoom = Math.max(1.2, Math.min(20.5, t0_zoom + zoomChange));
+            map.setZoom(nextZoom);
+          }
+          // Twist to rotate: apply once finger rotation exceeds 6° deadzone
+          // In screen coords, positive dAngle means clockwise finger rotation -> increase map bearing
+          if (Math.abs(dAngle) > 6) {
+            const effectiveAngle = dAngle > 0 ? dAngle - 6 : dAngle + 6;
+            const nextBearing = Math.round(t0_bearing + effectiveAngle);
+            map.setBearing(nextBearing);
+            setMapBearing(nextBearing);
+          }
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
       }
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (e.touches.length < 3 && touch3Active) {
-        touch3Active = false;
-        setMapPitch(Math.round(map.getPitch()));
+      if (e.touches.length < 2) {
+        if (gestureLock === 'pitch') {
+          setMapPitch(Math.round(map.getPitch()));
+          try {
+            map.touchZoomRotate.enable();
+            map.touchZoomRotate.enableRotation();
+          } catch (_) {}
+        } else if (gestureLock === 'zoom-rotate') {
+          setMapBearing(Math.round(map.getBearing()));
+        }
+        gestureLock = null;
       }
     };
 
-    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
     container.addEventListener('touchmove', onTouchMove, { passive: false });
     container.addEventListener('touchend', onTouchEnd, { passive: true });
     container.addEventListener('touchcancel', onTouchEnd, { passive: true });
@@ -1543,13 +1604,10 @@ export default function App() {
       }
       // Ensure globe always stays centered when in view:
       // When zooming out to globe level, smoothly constrain pitch toward 0° so globe never drops down
-      if (z < 5.0) {
-        const curPitch = map.getPitch();
-        const maxAllowedPitch = Math.max(0, (z - 2.5) * 24);
-        if (curPitch > maxAllowedPitch) {
-          map.setPitch(maxAllowedPitch);
-          setMapPitch(Math.round(maxAllowedPitch));
-        }
+      const maxAllowedPitch = Math.max(0, Math.min(82, (z - 3.5) * 18));
+      if (map.getPitch() > maxAllowedPitch) {
+        map.setPitch(maxAllowedPitch);
+        setMapPitch(Math.round(maxAllowedPitch));
       }
     };
     map.on('zoom', handleMapZoom);

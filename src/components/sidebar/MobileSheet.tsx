@@ -26,11 +26,13 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
 }) => {
   const touchStartY = useRef<number | null>(null);
   const touchCurrentY = useRef<number | null>(null);
+  const touchStartTime = useRef<number | null>(null);
   const isDragging = useRef<boolean>(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchCurrentY.current = e.touches[0].clientY;
+    touchStartTime.current = performance.now();
     isDragging.current = false;
   };
 
@@ -47,35 +49,39 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
     if (touchStartY.current === null || touchCurrentY.current === null) {
       touchStartY.current = null;
       touchCurrentY.current = null;
+      touchStartTime.current = null;
       isDragging.current = false;
       return;
     }
 
     const dy = touchCurrentY.current - touchStartY.current;
+    const dt = Math.max(1, performance.now() - (touchStartTime.current ?? performance.now()));
+    const velocity = dy / dt; // px/ms (negative = upward swipe, positive = downward swipe)
     const distance = Math.abs(dy);
+    const windowH = typeof window !== 'undefined' ? window.innerHeight : 800;
+    const heightThreshold = windowH * 0.35;
 
-    if (distance > 35) {
+    // Responsive 2-state drawer: snap between 'peek' and 'full' based on velocity (>0.4 px/ms) or 35% height threshold
+    if (Math.abs(velocity) > 0.4 || distance > heightThreshold) {
+      if (velocity < -0.4 || dy < -heightThreshold) {
+        // Swiped UP with speed or distance -> expand to full
+        onSetMobileSheetState('full');
+      } else if (velocity > 0.4 || dy > heightThreshold) {
+        // Swiped DOWN with speed or distance -> collapse to peek
+        onSetMobileSheetState('peek');
+      }
+    } else if (distance > 40) {
+      // Moderate swipe without extreme velocity
       if (dy < 0) {
-        // Swiped UP
-        if (mobileSheetState === 'peek') {
-          // Swipe up from peek expands to full (or half if short swipe)
-          onSetMobileSheetState(distance > 110 ? 'full' : 'half');
-        } else if (mobileSheetState === 'half') {
-          onSetMobileSheetState('full');
-        }
+        onSetMobileSheetState('full');
       } else {
-        // Swiped DOWN
-        if (mobileSheetState === 'full') {
-          // Swipe down from full drops to half or all the way to peek
-          onSetMobileSheetState(distance > 150 ? 'peek' : 'half');
-        } else if (mobileSheetState === 'half') {
-          onSetMobileSheetState('peek');
-        }
+        onSetMobileSheetState('peek');
       }
     }
 
     touchStartY.current = null;
     touchCurrentY.current = null;
+    touchStartTime.current = null;
     setTimeout(() => {
       isDragging.current = false;
     }, 60);
@@ -83,8 +89,8 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
 
   const handleHandleClick = () => {
     if (isDragging.current) return;
-    // Tap handle: peek -> full; half -> full; full -> peek
-    onSetMobileSheetState((prev) => (prev === 'peek' ? 'full' : prev === 'half' ? 'full' : 'peek'));
+    // Tap handle: toggle between collapsed peek and expanded full
+    onSetMobileSheetState((prev) => (prev === 'peek' ? 'full' : 'peek'));
   };
 
   const handlePeekClick = () => {
@@ -98,8 +104,6 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
       className={`md:hidden fixed inset-x-0 bottom-0 z-30 flex flex-col bg-[#F7F4ED] rounded-t-2xl border-t border-[#D6D0C2] shadow-[0_-4px_24px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom,0px)] transition-all duration-300 ease-in-out ${
         mobileSheetState === 'peek'
           ? 'h-[calc(5rem+env(safe-area-inset-bottom,0px))]'
-          : mobileSheetState === 'half'
-          ? 'h-[50dvh]'
           : 'h-[88dvh]'
       }`}
     >
@@ -113,8 +117,6 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
         title={
           mobileSheetState === 'peek'
             ? 'Tap or swipe up to expand to fullscreen'
-            : mobileSheetState === 'half'
-            ? 'Tap or swipe up for fullscreen, swipe down to collapse'
             : 'Tap or swipe down to collapse'
         }
       >
@@ -191,29 +193,6 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
               </span>
 
               <div className="flex items-center gap-1.5 shrink-0">
-                {mobileSheetState === 'half' ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSetMobileSheetState('full');
-                    }}
-                    className="p-1 text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
-                    title="Expand to Fullscreen"
-                  >
-                    <Maximize2 className="w-3.5 h-3.5" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSetMobileSheetState('half');
-                    }}
-                    className="p-1 text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
-                    title="Split view (half screen)"
-                  >
-                    <Minimize2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

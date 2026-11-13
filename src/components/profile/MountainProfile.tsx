@@ -51,25 +51,8 @@ export const MountainProfile: React.FC<MountainProfileProps> = ({
             </h2>
           </div>
           <div className="flex items-center gap-1 shrink-0 -mr-1 -mt-0.5">
-            {/* On mobile, show intuitive sheet resize buttons */}
+            {/* On mobile, show intuitive sheet collapse button */}
             <div className="md:hidden flex items-center gap-1 mr-1 pr-1 border-r border-[#D6D0C2]">
-              {mobileSheetState === 'half' ? (
-                <button
-                  onClick={() => onSetMobileSheetState('full')}
-                  className="p-1.5 text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
-                  title="Expand to Fullscreen"
-                >
-                  <Maximize2 className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => onSetMobileSheetState('half')}
-                  className="p-1.5 text-[#5C5852] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
-                  title="Split view (half screen)"
-                >
-                  <Minimize2 className="w-3.5 h-3.5" />
-                </button>
-              )}
               <button
                 onClick={() => onSetMobileSheetState('peek')}
                 className="p-1.5 text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"

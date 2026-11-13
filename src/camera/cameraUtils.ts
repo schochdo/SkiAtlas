@@ -12,10 +12,13 @@ export function normalizeBearing(bearing: number): number {
 }
 
 /**
- * Clamps pitch angle between 0 and 85 degrees
+ * Clamps pitch angle between 0 and dynamic max degrees based on current zoom level
  */
-export function clampPitch(pitch: number): number {
-  return Math.max(CAMERA_CONSTANTS.MIN_PITCH_DEG, Math.min(CAMERA_CONSTANTS.MAX_PITCH_DEG, pitch));
+export function clampPitch(pitch: number, zoom?: number): number {
+  const maxPitch = zoom !== undefined
+    ? Math.max(0, Math.min(82, (zoom - 3.5) * 18))
+    : CAMERA_CONSTANTS.MAX_PITCH_DEG;
+  return Math.max(CAMERA_CONSTANTS.MIN_PITCH_DEG, Math.min(maxPitch, pitch));
 }
 
 /**

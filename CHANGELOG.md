@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `refactor: camera flight settlement, dynamic pitch clamp, mobile gesture arbiter & 2-state drawer`
+- **What changed**:
+  - **Removed private `_camera` monkey-patches & safe settlement** ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), [`src/camera/useKeyboardFlight.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/useKeyboardFlight.ts)):
+    - Removed `cam.moveCenterOntoTerrain = () => {}` monkey-patching.
+    - Set `map.setCenterClampedToGround(false)` immediately when keyboard flight altitude movement initiates.
+    - On flight settlement (key release), safely queries `map.queryTerrainElevation(map.getCenter())`. Only re-enables `map.setCenterClampedToGround(true)` if `centerElev !== null` and `map.getPitch() < 78`. Keeps ground clamping disabled when looking above the horizon or over off-terrain void so the camera never snaps, jerks, or throws.
+  - **Dynamic zoom-based max pitch clamp** ([`src/camera/cameraUtils.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/cameraUtils.ts), [`src/camera/useKeyboardFlight.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/useKeyboardFlight.ts), [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)):
+    - Implemented `clampPitch(pitch, zoom)` dynamically clamping to `Math.max(0, Math.min(82, (zoom - 3.5) * 18))`.
+    - Integrated dynamic pitch clamping into `W`/`S` flight controls, map `zoom` handlers, and touch pitch controls, keeping low-zoom/globe views flat without horizon clipping.
+  - **Mobile two-finger gesture disambiguation arbiter** ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)):
+    - Disabled `map.touchPitch.disable()` to eliminate conflict and jitter with pinch zoom.
+    - Added a two-finger touch arbiter on the map container: records initial midpoint, distance, angle, and camera transform. Once touch movement exceeds a 12px deadzone, locks into `'pitch'` mode if vertical shift dominates ($|dy| > 1.5 \cdot |dd|$ and $|\Delta a| < 8^\circ$) or `'zoom-rotate'` mode otherwise.
+    - Added a 6° deadzone on twist rotation with clockwise fingers mapped intuitively to clockwise map rotation.
+  - **Simplified 2-state velocity drawer** ([`src/components/sidebar/MobileSheet.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/MobileSheet.tsx), [`src/components/profile/MountainProfile.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/profile/MountainProfile.tsx)):
+    - Collapsed intermediate 3-state (`peek` -> `half` -> `full`) into a 2-state drawer (`peek` vs `full`).
+    - Snaps immediately on touch release if swipe velocity $|v| > 0.4\text{ px/ms}$ or displacement exceeds a 35% viewport height threshold.
+- **Why**: Eliminates private API monkey-patches, prevents extreme-pitch settlement crashes, makes mobile touch interaction smooth and predictable without gesture contention, and eliminates sluggish intermediate half-drawer stalls.
+
 ### `feat: separate vertical elevator altitude from glider line-of-sight zoom`
 - **What changed**:
   - Rewrote the manual altitude handler in [`src/camera/useKeyboardFlight.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/useKeyboardFlight.ts).
