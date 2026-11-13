@@ -319,10 +319,15 @@ export default function App() {
   const [attributionOpen, setAttributionOpen] = useState(false);
 
   const handleTerrainExaggerationChange = (val: number) => {
-    setTerrainExaggeration(val);
+    const num = Number(val);
+    setTerrainExaggeration(num);
     if (mapRef.current && mapLoaded && show3DTerrain) {
       try {
-        mapRef.current.setTerrain({ source: 'terrain-dem', exaggeration: val });
+        if (num <= 0) {
+          mapRef.current.setTerrain(null);
+        } else {
+          mapRef.current.setTerrain({ source: 'terrain-dem', exaggeration: num });
+        }
       } catch (_) {}
     }
   };
@@ -1546,39 +1551,6 @@ export default function App() {
           setMapPitch(Math.round(maxAllowedPitch));
         }
       }
-
-      // ── Berann Zoom-Aware Terrain Relief Scaling ──────────────────────────
-      // Applies a smooth zoom curve to the user's chosen multiplier so that
-      // high exaggeration looks incredible at continental zoom (mountain ranges
-      // pop off plains) but tapers to natural-feeling relief at resort zoom
-      // (vector trails drape without vertical spike distortion).
-      // The user's raw slider value is preserved — this is a zoom-scaler overlay.
-      if (map.getTerrain?.()) {
-        const userMult = (map.getTerrain() as any)?.exaggeration ?? terrainExaggeration;
-        // Zoom scale factor: 1.0 at ≤7, interpolates to 0.57 at 13.5, 0.44 at ≥14.5
-        let zoomScale: number;
-        if (z <= 7) {
-          zoomScale = 1.0;
-        } else if (z >= 14.5) {
-          zoomScale = 0.44;
-        } else if (z <= 13.5) {
-          // 7 → 13.5: 1.0 → 0.57
-          zoomScale = 1.0 - ((z - 7) / 6.5) * 0.43;
-        } else {
-          // 13.5 → 14.5: 0.57 → 0.44
-          zoomScale = 0.57 - ((z - 13.5) / 1.0) * 0.13;
-        }
-        const scaledExagg = Math.max(0.0, userMult * zoomScale);
-        // Throttle: only fire setTerrain when change exceeds 0.02 to avoid render thrashing
-        const prev = (map as any).__berannLastExagg ?? -1;
-        if (Math.abs(scaledExagg - prev) >= 0.02) {
-          try {
-            map.setTerrain({ source: 'terrain-dem', exaggeration: scaledExagg });
-            (map as any).__berannLastExagg = scaledExagg;
-          } catch (_) {}
-        }
-      }
-      // ─────────────────────────────────────────────────────────────────────
     };
     map.on('zoom', handleMapZoom);
 
@@ -1700,8 +1672,10 @@ export default function App() {
 
       // Enable 3D Terrain mesh (calibrated mountain relief)
       try {
-        if (show3DTerrain) {
-          map.setTerrain({ source: 'terrain-dem', exaggeration: terrainExaggeration });
+        if (show3DTerrain && Number(terrainExaggeration) > 0) {
+          map.setTerrain({ source: 'terrain-dem', exaggeration: Number(terrainExaggeration) });
+        } else {
+          map.setTerrain(null);
         }
       } catch (e) {
         console.warn('SetTerrain error:', e);
@@ -2258,8 +2232,8 @@ export default function App() {
       } else {
         map.setProjection({ type: 'mercator' });
       }
-      if (show3DTerrain) {
-        try { map.setTerrain({ source: 'terrain-dem', exaggeration: terrainExaggeration }); } catch (_) {}
+      if (show3DTerrain && Number(terrainExaggeration) > 0) {
+        try { map.setTerrain({ source: 'terrain-dem', exaggeration: Number(terrainExaggeration) }); } catch (_) {}
       } else {
         try { map.setTerrain(null); } catch (_) {}
       }
@@ -2288,8 +2262,8 @@ export default function App() {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
     try {
-      if (show3DTerrain) {
-        map.setTerrain({ source: 'terrain-dem', exaggeration: terrainExaggeration });
+      if (show3DTerrain && Number(terrainExaggeration) > 0) {
+        map.setTerrain({ source: 'terrain-dem', exaggeration: Number(terrainExaggeration) });
       } else {
         map.setTerrain(null);
       }

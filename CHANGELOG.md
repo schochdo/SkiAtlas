@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: remove automatic zoom-based terrain exaggeration scaling`
+- **What changed**:
+  - Completely removed the automatic zoom-based terrain relief scaling curve and `map.setTerrain` calls inside the map `zoom` listener in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx).
+  - Bound `map.setTerrain` exclusively to user interaction via the Terrain Relief Multiplier slider and preset buttons (`0`, `0.7`, `1.0`, `2.0`), map/style initial load, projection toggles, and 3D terrain toggles.
+  - When `terrainExaggeration <= 0`, `map.setTerrain(null)` is called. For any value `> 0`, `Number(terrainExaggeration)` is passed directly.
+  - Verified no "Auto" terrain toggles exist in [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx).
+- **Why**: The zoom-interpolation listener was resetting terrain relief to 0 (flat) during map zoom transitions. Exaggeration is now strictly user-controlled.
+
 ### `refactor: lock in clean 3-bucket piste classifier with lift proximity`
 - **What changed**:
   - Replaced `classifyOsmPiste` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) with the exact 3-bucket classifier:
