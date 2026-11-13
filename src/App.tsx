@@ -1271,12 +1271,13 @@ export default function App() {
 
     // Tablet & Touchscreen Controls: Disambiguated Two-Finger Gesture Arbiter
     // MapLibre's built-in touchPitch causes jitter and accidental pitch changes when pinching to zoom.
-    // We disable touchPitch and implement a dedicated two-finger touch arbiter:
+    // We disable touchPitch and touchZoomRotate rotation, implementing a dedicated two-finger touch arbiter:
     // - Deadzone: 12px before locking gesture mode.
     // - Pitch lock: if vertical displacement dominates (|dy| > 1.5 * |dd|) and rotation is small (< 8°).
     // - Zoom/Rotate lock: otherwise, smooth pinch zoom and rotation with a 6° deadzone.
     try {
       map.touchPitch.disable();
+      map.touchZoomRotate.disableRotation();
     } catch (_) {}
 
     // MapLibre GL JS fix: MapLibre's HandlerManager listens to 'mouseup' on document and dispatches 'mouseupWindow'.
@@ -1488,15 +1489,17 @@ export default function App() {
           if (e.cancelable) e.preventDefault();
           e.stopPropagation();
         } else if (gestureLock === 'zoom-rotate') {
-          // Pinch zoom around touch midpoint
-          if (t0_d0 > 0 && curDist > 0) {
+          // Pinch zoom around touch midpoint (guarded against zero-distance / NaN)
+          if (t0_d0 > 1e-4 && curDist > 1e-4) {
             const zoomChange = Math.log2(curDist / t0_d0);
-            const nextZoom = Math.max(1.2, Math.min(20.5, t0_zoom + zoomChange));
-            map.setZoom(nextZoom);
+            if (isFinite(zoomChange)) {
+              const nextZoom = Math.max(1.2, Math.min(20.5, t0_zoom + zoomChange));
+              map.setZoom(nextZoom);
+            }
           }
           // Twist to rotate: apply once finger rotation exceeds 6° deadzone
           // In screen coords, positive dAngle means clockwise finger rotation -> increase map bearing
-          if (Math.abs(dAngle) > 6) {
+          if (Math.abs(dAngle) > 6 && isFinite(dAngle)) {
             const effectiveAngle = dAngle > 0 ? dAngle - 6 : dAngle + 6;
             const nextBearing = Math.round(t0_bearing + effectiveAngle);
             map.setBearing(nextBearing);
@@ -1514,7 +1517,7 @@ export default function App() {
           setMapPitch(Math.round(map.getPitch()));
           try {
             map.touchZoomRotate.enable();
-            map.touchZoomRotate.enableRotation();
+            map.touchZoomRotate.disableRotation();
           } catch (_) {}
         } else if (gestureLock === 'zoom-rotate') {
           setMapBearing(Math.round(map.getBearing()));

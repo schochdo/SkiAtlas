@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: camera flight & mobile touch audit pass`
+- **Audit & Edge-case Fixes**:
+  - **Input Guard**: Added `SELECT` to `isInputElementFocused()` in [`src/camera/cameraUtils.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/cameraUtils.ts) alongside `INPUT`, `TEXTAREA`, and `isContentEditable` to ensure keyboard navigation never fires while dropdowns or search bars are focused. Verified `window` `'blur'`, `'focus'`, and `document` `'visibilitychange'` listeners halt RAF loops and clear keys cleanly.
+  - **Native Touch Conflict**: Explicitly called `map.touchZoomRotate.disableRotation()` in addition to `map.touchPitch.disable()` in [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx) so native rotation does not fight our intent arbiter, and ensured rotation stays disabled upon gesture release.
+  - **Touch Math NaN/Division Guard**: Guarded pinch-zoom distance ratio with `t0_d0 > 1e-4 && curDist > 1e-4` and verified `isFinite(zoomChange)` and `isFinite(dAngle)` to protect against division-by-zero or NaN when touch points coincide.
+  - **Zero Monkey-Patches**: Confirmed zero occurrences of `moveCenterOntoTerrain` or `putCenterBackOnTerrain`. Verified safe settlement relies solely on public `queryTerrainElevation` and `setCenterClampedToGround` with `pitch < 78`.
+  - **Mercator Scaling & Public Camera Transform**: Verified altitude elevator and horizontal displacement calculate proper geographic and ground offsets with `dt` scaling.
+
 ### `refactor: camera flight settlement, dynamic pitch clamp, mobile gesture arbiter & 2-state drawer`
 - **What changed**:
   - **Removed private `_camera` monkey-patches & safe settlement** ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), [`src/camera/useKeyboardFlight.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/useKeyboardFlight.ts)):
