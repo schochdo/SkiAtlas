@@ -1,5 +1,6 @@
 import React from 'react';
-import { MountainSnow, Trees, Plane, Route } from 'lucide-react';
+import { MountainSnow, Trees, Route } from 'lucide-react';
+import { HelicopterIcon } from '../icons/HelicopterIcon';
 import type { EarthProjectionMode, PassNetwork } from '../../types';
 import { PASS_DISPLAY_NAMES } from '../../utils/classification';
 
@@ -134,7 +135,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           }`}
           title={`Toggle Guided Heli/Cat Operations (${categoryFilterCounts.heli_cat.toLocaleString()})`}
         >
-          <Plane className="w-4 h-4 shrink-0" />
+          <HelicopterIcon className="w-4 h-4 shrink-0" />
           <span className="text-[10.5px] font-bold leading-tight tracking-tight whitespace-nowrap">
             Heli/Cat
           </span>

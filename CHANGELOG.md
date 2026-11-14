@@ -6,6 +6,15 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `feat: replace plane icon with bespoke helicopter icon for heli/cat filter`
+- **What was wrong before**:
+  - The "Heli/Cat" category toggle button in [`src/components/header/FilterModal.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/FilterModal.tsx) used Lucide's generic commercial airplane icon (`Plane`), which miscommunicated backcountry heli-skiing and snowcat operations as commercial fixed-wing aviation.
+- **What changed**:
+  - Created a bespoke, editorial cartographic `HelicopterIcon` component in [`src/components/icons/HelicopterIcon.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/icons/HelicopterIcon.tsx) matching `lucide-react`'s exact geometric language (24x24 viewBox, stroke="currentColor", strokeWidth="2", rounded caps and joins).
+  - Modeled after iconic alpine mountain rescue and heli-skiing rotorcraft (Eurocopter AS350 AStar / Bell 206) with a balanced top rotor blade, streamlined cabin with windshield, upward-angled stabilizer tail fin, and landing skids with upturned tips.
+  - Replaced `<Plane className="w-4 h-4 shrink-0" />` with `<HelicopterIcon className="w-4 h-4 shrink-0" />` in [`src/components/header/FilterModal.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/FilterModal.tsx).
+
+
 ### `feat: drop ski touring routes toggle from layers menu`
 - **What was wrong before**:
   - In `src/components/map/BasemapMenu.tsx`, "Ski Touring Routes" was listed as an overlay toggle under the "Layers" tab alongside cartographic features (Summits, Fire Lookouts, Borders, Slope/Aspect).
