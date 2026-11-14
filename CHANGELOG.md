@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: hide ocean bathymetry & refine border/coastline strokes in locator map`
+- **What was wrong before**:
+  - **Ocean Bathymetry Shading**: The AWS Terrarium DEM hillshade layer was added above the `water` polygon fill layer, causing undersea trenches, ridges, and bathymetry artifacts to render in ocean waters across `World` and `Continent` modes.
+  - **Heavy Cluttered Borders & Coastlines**: Country boundary layers were rendered at static 1.5px–2.0px dark widths with maritime/coastal admin boundaries included, causing coastlines to be double-stroked and countries (especially in Europe) to collapse into thick black lines.
+  - **Premature State/Province Boundaries**: Sub-national boundary layers (`boundary_state`) rendered at zoom levels below 4.5, adding visual noise to continental overviews.
+  - **World Zoom Extent**: `World` mode was set to zoom 1.2, which was too close to display a true global continental overview.
+- **What changed**:
+  - **Bathymetry Masked by Water Layer** ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx)):
+    - Inserted `inset-hillshade` before the first `water` fill layer (`firstWaterId`), allowing opaque flat `#DCE5EC` water polygons to cleanly mask all ocean elevation data while land relief remains visible.
+    - Explicitly hid `water_shadow` and `bathymetry` layers.
+  - **Refined Administrative Boundaries & Coastlines**:
+    - Filtered out maritime/coastal lines (`['!=', ['get', 'maritime'], 1]`) across all boundary line layers so coastlines are not double-drawn with heavy black borders.
+    - Applied zoom-interpolated `line-width` (`['interpolate', ['linear'], ['zoom'], 1, 0.5, 4, 0.9, 7, 1.3]`) with softer ink color (`#6E6A63`) on country borders.
+    - Strictly hid internal state/province boundary layers when `zoom < 4.5` (`setLayerZoomRange(id, 4.5, 24)`).
+    - Reduced `waterway` and coastline stroke widths to `0.5px` with muted `#9EB2C0` color.
+  - **Calibrated Inset Zoom Levels**:
+    - Configured `World` mode to zoom `0.5` (with `Continent` at `3.0` and `Region` at `5.8`) and set `minZoom: 0` on the locator MapLibre instance for true global continental context.
+
 ### `refactor: streamline sidebar search, consolidate quick-matches, & declutter filter panel`
 - **What was wrong before**:
   - **Simultaneous Search + Filter Crowding**: When opening filters, the filter criteria panel rendered as an absolute overlay that left quick-match boxes, search input, and sort controls stacked in a crowded multi-tier header above the cards.

@@ -40,10 +40,10 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
 
   // Inset zoom level mapping strictly decoupled from main 3D map
   // Region: 5.8 (surrounding cities & state/international borders)
-  // Continent: 3.4 (continental context)
-  // World: 1.2 (global context)
+  // Continent: 3.0 (continental context)
+  // World: 0.5 (true global continental context)
   const getOverviewTargetZoom = useCallback((preset: 'regional' | 'continental' | 'global'): number => {
-    return preset === 'regional' ? 5.8 : preset === 'continental' ? 3.4 : 1.2;
+    return preset === 'regional' ? 5.8 : preset === 'continental' ? 3.0 : 0.5;
   }, []);
 
   // When selecting a new resort in the main application, auto-focus preset to regional
@@ -72,11 +72,11 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   useEffect(() => {
     if (mapZoom < 2.5 && !selectedResort) {
       setLocatorZoomPreset('global');
-      savedZoomRef.current = 1.2;
-      if (locatorMapRef.current && locatorMapRef.current.getZoom() > 2.0) {
+      savedZoomRef.current = 0.5;
+      if (locatorMapRef.current && locatorMapRef.current.getZoom() > 1.0) {
         locatorMapRef.current.easeTo({
           center: mapCenter,
-          zoom: 1.2,
+          zoom: 0.5,
           bearing: 0,
           pitch: 0,
           duration: 350,
@@ -230,6 +230,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
       style: cartoStyleUrl,
       center: mapCenter,
       zoom: initialZoom,
+      minZoom: 0,
       bearing: 0,
       pitch: 0,
       interactive: false,
@@ -256,7 +257,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         }
 
         const layers = lmap.getStyle().layers || [];
-        const firstSymbolId = layers.find((l) => l.type === 'symbol')?.id;
+        const firstWaterId = layers.find((l) => l.id.includes('water') && l.type === 'fill')?.id;
 
         if (!lmap.getLayer('inset-hillshade')) {
           lmap.addLayer(
@@ -271,8 +272,20 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
                 'hillshade-illumination-direction': 315,
               },
             },
-            firstSymbolId
+            firstWaterId
           );
+        }
+
+        // Set water fill to clean, flat muted slate (#DCE5EC) covering underwater bathymetry
+        if (lmap.getLayer('water')) {
+          lmap.setPaintProperty('water', 'fill-color', '#DCE5EC');
+          lmap.setPaintProperty('water', 'fill-opacity', 1.0);
+        }
+        if (lmap.getLayer('water_shadow')) {
+          lmap.setLayoutProperty('water_shadow', 'visibility', 'none');
+        }
+        if (lmap.getLayer('bathymetry')) {
+          lmap.setLayoutProperty('bathymetry', 'visibility', 'none');
         }
 
         // 2. Hide minor local street lines and POI icons; keep highways, water bodies, and borders
@@ -290,7 +303,9 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
             id.includes('bridge_service') ||
             id.includes('bridge_path') ||
             id.includes('roadname_minor') ||
-            id.includes('housenumber');
+            id.includes('housenumber') ||
+            id.includes('water_shadow') ||
+            id.includes('bathymetry');
 
           if (isMinorClutter) {
             try {
@@ -338,27 +353,115 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
           }
         }
 
-        // 3. Keep internal state/prefecture borders subtle (#8C857B at 0.5 opacity, 1px width)
-        // and emphasize international country borders (admin_level 2) at 1.5px
-        if (lmap.getLayer('boundary_state')) {
-          lmap.setPaintProperty('boundary_state', 'line-color', '#8C857B');
-          lmap.setPaintProperty('boundary_state', 'line-opacity', 0.5);
-          lmap.setPaintProperty('boundary_state', 'line-width', 1.0);
-        }
-        if (lmap.getLayer('boundary_county')) {
-          lmap.setPaintProperty('boundary_county', 'line-color', '#8C857B');
-          lmap.setPaintProperty('boundary_county', 'line-opacity', 0.35);
-          lmap.setPaintProperty('boundary_county', 'line-width', 0.8);
-        }
+        // 3. Fix thick border & coastline strokes
+        const maritimeFilter = ['!=', ['get', 'maritime'], 1];
+
+        // Country borders: filter maritime lines, zoom-interpolated line-width, soft ink #6E6A63
         if (lmap.getLayer('boundary_country_inner')) {
-          lmap.setPaintProperty('boundary_country_inner', 'line-color', '#2C2A27');
-          lmap.setPaintProperty('boundary_country_inner', 'line-width', 1.5);
+          try {
+            const curFilter = lmap.getFilter('boundary_country_inner');
+            const hasMaritime = curFilter && JSON.stringify(curFilter).includes('maritime');
+            if (!hasMaritime) {
+              const newFilter = curFilter ? ['all', curFilter, maritimeFilter] : maritimeFilter;
+              lmap.setFilter('boundary_country_inner', newFilter);
+            }
+          } catch (_) {}
+          lmap.setPaintProperty('boundary_country_inner', 'line-color', '#6E6A63');
           lmap.setPaintProperty('boundary_country_inner', 'line-opacity', 0.85);
+          lmap.setPaintProperty('boundary_country_inner', 'line-width', [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            1, 0.5,
+            4, 0.9,
+            7, 1.3,
+          ]);
         }
+
         if (lmap.getLayer('boundary_country_outline')) {
+          try {
+            const curFilter = lmap.getFilter('boundary_country_outline');
+            const hasMaritime = curFilter && JSON.stringify(curFilter).includes('maritime');
+            if (!hasMaritime) {
+              const newFilter = curFilter ? ['all', curFilter, maritimeFilter] : maritimeFilter;
+              lmap.setFilter('boundary_country_outline', newFilter);
+            }
+          } catch (_) {}
           lmap.setPaintProperty('boundary_country_outline', 'line-color', '#FAF8F3');
-          lmap.setPaintProperty('boundary_country_outline', 'line-width', 2.0);
-          lmap.setPaintProperty('boundary_country_outline', 'line-opacity', 0.5);
+          lmap.setPaintProperty('boundary_country_outline', 'line-opacity', 0.35);
+          lmap.setPaintProperty('boundary_country_outline', 'line-width', [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            1, 0.8,
+            4, 1.4,
+            7, 2.0,
+          ]);
+        }
+
+        // Internal state/province boundaries: hide when zoom < 4.5
+        if (lmap.getLayer('boundary_state')) {
+          try {
+            lmap.setLayerZoomRange('boundary_state', 4.5, 24);
+            const curFilter = lmap.getFilter('boundary_state');
+            const hasMaritime = curFilter && JSON.stringify(curFilter).includes('maritime');
+            if (!hasMaritime) {
+              const newFilter = curFilter ? ['all', curFilter, maritimeFilter] : maritimeFilter;
+              lmap.setFilter('boundary_state', newFilter);
+            }
+          } catch (_) {}
+          lmap.setPaintProperty('boundary_state', 'line-color', '#8C857B');
+          lmap.setPaintProperty('boundary_state', 'line-opacity', 0.45);
+          lmap.setPaintProperty('boundary_state', 'line-width', [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            4.5, 0.5,
+            7, 0.9,
+          ]);
+        }
+
+        if (lmap.getLayer('boundary_county')) {
+          try {
+            lmap.setLayerZoomRange('boundary_county', 8.0, 24);
+          } catch (_) {}
+          lmap.setPaintProperty('boundary_county', 'line-color', '#8C857B');
+          lmap.setPaintProperty('boundary_county', 'line-opacity', 0.3);
+          lmap.setPaintProperty('boundary_county', 'line-width', 0.5);
+        }
+
+        // General pass across all line layers for boundaries and waterways/coastlines
+        for (const layer of layers) {
+          const id = layer.id;
+          if (layer.type === 'line') {
+            if (id.includes('boundary') || id.includes('admin')) {
+              try {
+                const curFilter = lmap.getFilter(id);
+                const hasMaritime = curFilter && JSON.stringify(curFilter).includes('maritime');
+                if (!hasMaritime) {
+                  lmap.setFilter(id, curFilter ? ['all', curFilter, maritimeFilter] : maritimeFilter);
+                }
+              } catch (_) {}
+
+              if (id.includes('state') || id.includes('province') || id.includes('county') || id.includes('sub')) {
+                try {
+                  lmap.setLayerZoomRange(id, 4.5, 24);
+                } catch (_) {}
+              }
+            }
+
+            if (
+              id === 'waterway' ||
+              id.includes('water_outline') ||
+              id.includes('coastline') ||
+              id.includes('water_line')
+            ) {
+              try {
+                lmap.setPaintProperty(id, 'line-width', 0.5);
+                lmap.setPaintProperty(id, 'line-color', '#9EB2C0');
+              } catch (_) {}
+            }
+          }
         }
       } catch (err) {
         console.warn('Error configuring locator atlas layers:', err);
@@ -548,7 +651,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
                     ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
                     : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
                 }`}
-                title="Zoom to Continent (3.4)"
+                title="Zoom to Continent (3.0)"
               >
                 Continent
               </button>
@@ -560,7 +663,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
                     ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
                     : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
                 }`}
-                title="Zoom to World (1.2)"
+                title="Zoom to World (0.5)"
               >
                 World
               </button>
