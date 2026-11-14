@@ -279,7 +279,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         },
       });
 
-      // 2. Center Camera Position Target: 8px vermilion dot (#B84A39), 20px outer ring, 6px directional tick mark
+      // 2. Center Camera Position Target: Editorial vermilion navigation chevron (#B84A39) pointing along camera bearing with crisp center coordinate dot
       const markerEl = document.createElement('div');
       markerEl.className = 'locator-camera-marker';
       markerEl.style.width = '32px';
@@ -291,14 +291,15 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
 
       markerEl.innerHTML = `
         <svg width="32" height="32" viewBox="0 0 32 32" style="overflow: visible; display: block;" xmlns="http://www.w3.org/2000/svg">
-          <!-- 6px Directional Tick Mark pointing along camera bearing -->
+          <!-- Directional Camera Navigation Chevron pointing along camera bearing -->
           <g id="locator-direction-tick" transform="rotate(${mapBearing}, 16, 16)">
-            <line x1="16" y1="6" x2="16" y2="0" stroke="#B84A39" stroke-width="2" stroke-linecap="round" />
+            <!-- Archival white halo for high contrast against topographic terrain -->
+            <path d="M16 2 L26 26 L16 20.5 L6 26 Z" fill="none" stroke="#FAF8F3" stroke-width="3.5" stroke-linejoin="round" />
+            <!-- Vermilion Chevron with subtle translucent tint -->
+            <path d="M16 2 L26 26 L16 20.5 L6 26 Z" fill="#B84A39" fill-opacity="0.25" stroke="#B84A39" stroke-width="2" stroke-linejoin="round" />
           </g>
-          <!-- 20px Outer Ring -->
-          <circle cx="16" cy="16" r="10" fill="#B84A39" fill-opacity="0.10" stroke="#B84A39" stroke-width="1.5" />
-          <!-- 8px Center Vermilion Dot with crisp white halo -->
-          <circle cx="16" cy="16" r="4" fill="#B84A39" stroke="#FAF8F3" stroke-width="1.5" />
+          <!-- Center Vermilion Dot with crisp white halo marking exact camera coordinate -->
+          <circle cx="16" cy="16" r="3.5" fill="#B84A39" stroke="#FAF8F3" stroke-width="1.5" />
         </svg>
       `;
 

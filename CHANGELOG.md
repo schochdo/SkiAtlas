@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `feat: replace awkward line tick with cartographic navigation chevron on locator map`
+- **What was wrong before**:
+  - The camera location marker on the regional inset locator map ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx)) previously drew a static 20px circular outline with a single 6px line tick protruding outward along the camera bearing angle.
+  - At non-zero bearings (e.g. looking Southwest at 215°), this rendered as an awkward stray red stick sticking out of the circle, resembling a magnifying glass handle or glitch rather than a clear directional heading.
+- **What changed**:
+  - Replaced the circular outline and tick with a classic cartographic navigation chevron in vermilion (`#B84A39`) with a 3.5px archival white (`#FAF8F3`) halo border and 25% translucent fill.
+  - The chevron rotates smoothly around `(16, 16)` with the live 3D map's `mapBearing`, clearly indicating camera orientation.
+  - Kept a crisp 7px vermilion coordinate dot with 1.5px white halo nestled in the chevron's rear notch, pinpointing the exact camera ground coordinate without drift.
+
+
 ### `feat: reorder layers list placing borders & places above summits and fire lookouts`
 - **What was wrong before**:
   - In the map Layers menu ([`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx)), Geographic Reference (Borders & Places) was positioned at the bottom of the point features list below Mountain Summits and Fire Lookouts.
