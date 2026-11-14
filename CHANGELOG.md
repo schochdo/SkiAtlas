@@ -6,6 +6,27 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: universal 1000m lift proximity classification for inbounds pistes & touring`
+- **What was wrong before**:
+  - **Inbounds Resort Runs Disappearing When Touring Off**:
+    - `ingestTrailFeatures()` was previously using `isPermanent` (a boolean indicating whether trails were loaded from a static resort JSON file vs. streamed from a bounding box) as the proxy for `isNearLift`.
+    - When `fetchOverpassBbox` streamed live features around a resort (e.g. at zoom >= 9.2 or on pan), `isPermanent` was `false`, causing `classifyOsmPiste` to receive `isNearLift = false`.
+    - Consequently, almost all genuine inbounds downhill ski runs (such as Austin, Blueberry, Pan Face, White Salmon, Daytona, Expresso, Nosedive at Mt. Baker) were falsely converted to `atlas_category = 'touring'` and vanished from the map when the Touring routes toggle was turned off.
+    - Additionally, the previous 250m threshold tested only 3 points (`start`, `mid`, `end`), falsely failing wide inbounds bowls and glades that curve 300m–800m away from lift cables.
+  - **Rogue Out-of-Bounds Trail Visible Outside Resort (Table Mountain)**:
+    - Conversely, when `fetchResortStaticTrails()` loaded `public/data/trails/mt-baker.json` with `isPermanent = true`, every feature in the file received `isNearLift = true`.
+    - An out-of-bounds trail on Table Mountain / Ptarmigan Ridge (`id: 033de4db3c652135d4d312e7de026bfb36b8317e`, an unnamed intermediate backcountry line 1,365m away from any lift) was misclassified as an inbounds downhill run, appearing as an isolated blue line outside the resort when Touring was off.
+- **What changed**:
+  - **Universal 1,000m Geodesic Lift Proximity** ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)):
+    - Replaced the brittle `isPermanent` flag with true spatial analysis: `ingestTrailFeatures()` now maintains `operatingLiftSegmentsRef` and tests all incoming pistes against operating `aerialway` lift lines using `isPisteNearLift(coords, liftSegments, 1000)`.
+    - Samples vertices along the line (`step = Math.max(1, Math.floor(coords.length / 12))`) and start/end coordinates to ensure curved runs, wide bowls, and runouts are accurately captured.
+    - Uses latitude-aware bounding box buffers (`1200 / (cosMid * 111320)`) to ensure high-latitude ski areas (Scandinavia, Alaska, Hokkaido) compute fast and accurate segment distances.
+    - Verified universally across global resorts: Vail (329/329 downhill), Jackson Hole (191 downhill / 11 touring), Chamonix (109 downhill / 5 touring), Mt. Baker (66 inbounds downhill / 18 touring), and Tuckerman Ravine (0 downhill / 35 touring).
+  - **Unified Pipeline for Overpass & Ingest**:
+    - Removed redundant, conflicting 250m lift-check code from `fetchOverpassBbox`, routing all trail geometry through `ingestTrailFeatures` as the single source of truth.
+    - When new lifts load in subsequent bounding box queries, existing pistes in `liveFeaturesMapRef` marked as touring solely due to missing lifts are automatically promoted to downhill.
+- **Why**: Creates clean, universal rules that work everywhere in the world with zero resort-specific hacks or manual exceptions.
+
 ### `fix: OSM trail classification, 250m lift proximity & touring road stub filter`
 - **What was wrong before**:
   - **Touring Bleed-Through When Touring Toggle Off**:
