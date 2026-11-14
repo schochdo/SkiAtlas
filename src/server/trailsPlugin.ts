@@ -209,47 +209,23 @@ export function localTrailsPlugin(): Plugin {
             } else if (p.kind === 'piste') {
               const ptype = p['piste:type'];
               const uses = Array.isArray(p.uses) ? p.uses : [];
-              const isBackcountryGrooming = p.grooming === 'backcountry' || p['piste:grooming'] === 'backcountry' || p.backcountry === 'yes';
               const isSkitour = ptype === 'skitour' || uses.includes('skitour');
-              const isBackcountry = ptype === 'backcountry' || isBackcountryGrooming || uses.includes('backcountry');
 
               // Strictly reject non-ski recreation: fatbike, hike, sled, sleigh, ice_skate, playground, etc.
+              // unless it has an explicit ski difficulty rating (e.g. summit bootpacks / hike-to freeride terrain)
               const isNonSki =
                 (ptype && ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(ptype)) ||
                 uses.some((u: string) => ['fatbike', 'hike', 'sled', 'sleigh', 'ice_skate', 'playground', 'other'].includes(u));
 
-              if (isNonSki && !isSkitour) {
+              const hasSkiDifficulty = typeof p.difficulty === 'string' && p.difficulty.trim().length > 0;
+
+              if (isNonSki && !isSkitour && !hasSkiDifficulty) {
                 return false;
               }
 
-              // Handle touring & backcountry routes: preserve significant named routes for toggleable display
-              if (isSkitour || isBackcountry) {
-                const rawName = (p.name || '').trim();
-                const nameLower = rawName.toLowerCase();
-                // Filter out non-significant, unnamed or generic traces
-                const isSignificant =
-                  rawName.length > 0 &&
-                  nameLower !== 'unnamed trail' &&
-                  nameLower !== 'unnamed' &&
-                  nameLower !== 'unknown' &&
-                  nameLower !== 'untitled' &&
-                  !nameLower.startsWith('track') &&
-                  !nameLower.startsWith('way ') &&
-                  !nameLower.includes('autoroad') &&
-                  !nameLower.includes('(proposed)') &&
-                  !nameLower.includes('(abandoned)') &&
-                  !nameLower.includes('(disused)');
-
-                if (!isSignificant) {
-                  return false;
-                }
-
-                // Tag as touring route for client-side toggle filtering
-                p.is_touring = true;
-                if (!p['piste:type'] || p['piste:type'] === 'downhill' || p['piste:type'] === 'backcountry') {
-                  p['piste:type'] = 'skitour';
-                }
-              }
+              // Do NOT mutate inbounds downhill pistes to skitour.
+              // In OpenStreetMap, piste:grooming=backcountry is standard for inbounds ungroomed steeps/glades/bowls.
+              // Spatial proximity (1000m lift threshold) and deterministic classification belongs on the client in classifyOsmPiste().
             }
             return true;
           });

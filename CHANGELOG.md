@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: restore inbounds ungroomed steeps (Crested Butte) & reclassify summit bootpacks to downhill`
+- **What was wrong before**:
+  - **Inbounds Steeps Showing Only When Touring Was ON**:
+    - In `src/server/trailsPlugin.ts`, a server middleware checked if `p.grooming === 'backcountry'`.
+    - In OpenStreetMap, `piste:grooming=backcountry` is the standard tag for **ungroomed inbounds expert terrain** (steep chutes, glades, cliffs, and bowls).
+    - The server was forcibly mutating any trail with `grooming=backcountry` to `piste:type = 'skitour'` and `is_touring = true`, overwriting the database's authentic `piste:type: downhill` classification.
+    - Consequently, famous inbounds resort steeps (such as Banana, Rambo, The Peak, Headwall, Spellbound, Phoenix, and Third Bowl at Crested Butte) arrived at the client pre-mutated into `skitour`, causing them to disappear completely unless the Touring toggle was turned on.
+  - **"Peak Hike Access" Displaying as Nordic**:
+    - In OpenStreetMap, the hike-to bootpack to Crested Butte Peak was mapped as `piste:type=nordic` with `uses=["hike"]` and `difficulty="expert"`.
+    - `classifyOsmPiste` checked `types.includes('nordic')` and classified it as Nordic cross-country skiing, causing an expert downhill summit hike to render under the Nordic layer.
+- **What changed**:
+  - **Removed Destructive Server-Side Mutation** ([`src/server/trailsPlugin.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/server/trailsPlugin.ts)):
+    - Removed the block that mutated `grooming=backcountry` downhill pistes to `skitour` and `is_touring=true`. The server now faithfully returns the authoritative data stored in `trails.db`.
+  - **Summit Bootpack / Hike-To Access Classification** ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)):
+    - In `classifyOsmPiste()`, added a dedicated check for summit bootpacks and inbounds hike-to access routes: any trail with `uses: ["hike"]`, name containing `"hike access"` or `"bootpack"`, or alpine difficulty (`advanced`, `expert`, `extreme`) within 1,000m of a chairlift is classified as `'downhill'`.
+    - `Peak Hike Access` is now strictly classified as `'downhill'`, displaying when Downhill is active and never appearing under Nordic.
+
 ### `fix: shaded-relief inset atlas basemap, compact location target & focus outline hygiene`
 - **What was wrong before**:
   - The Inset Locator map stripped away water labels, road networks, and landcover fills, while scaling up place label fonts and thickening admin borders, resulting in a stark, barren wireframe map without elevation or topography.

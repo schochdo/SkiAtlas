@@ -264,7 +264,20 @@ function classifyOsmPiste(
     return checkRoadStub();
   }
 
-  // 3. NORDIC (All cross-country skiing, kept completely separate from AT ski touring)
+  // 3. HIKE-TO SUMMIT ACCESS & INBOUNDS BOOTPACKS
+  // Check if feature represents a hike-to summit bootpack or inbounds freeride access route
+  // (e.g. "Peak Hike Access" at Crested Butte tagged in OSM as piste:type=nordic with uses=["hike"] and expert difficulty).
+  const isHikeAccess =
+    (Array.isArray(tags.uses) && tags.uses.includes('hike')) ||
+    (tags.name && (tags.name.toLowerCase().includes('hike access') || tags.name.toLowerCase().includes('bootpack')));
+  const hasAlpineDifficulty = ['advanced', 'expert', 'extreme'].includes(
+    tags.difficulty || tags['piste:difficulty'] || ''
+  );
+  if (isHikeAccess && isNearLift && (hasAlpineDifficulty || types.includes('nordic') || types.includes('downhill'))) {
+    return 'downhill';
+  }
+
+  // 4. NORDIC (All cross-country skiing, kept completely separate from AT ski touring)
   if (types.includes('nordic') || types.includes('crosscountry') || rawType.includes('nordic')) {
     const hasName =
       isRealName(tags.name) ||
@@ -279,7 +292,7 @@ function classifyOsmPiste(
     return 'nordic';
   }
 
-  // 4. DOWNHILL vs. DOWNHILL TOURING (Separated by 1000m Lift Proximity & Patrolled Status)
+  // 5. DOWNHILL vs. DOWNHILL TOURING (Separated by 1000m Lift Proximity & Patrolled Status)
   if (types.includes('downhill') || types.includes('freeride') || types.includes('connection')) {
     // If explicitly tagged patrolled=no, or far from any operating lift (> 1000m), it is touring
     if (patrolled === 'no' || !isNearLift) {
