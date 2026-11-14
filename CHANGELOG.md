@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: shaded-relief inset atlas basemap, compact location target & focus outline hygiene`
+- **What was wrong before**:
+  - The Inset Locator map stripped away water labels, road networks, and landcover fills, while scaling up place label fonts and thickening admin borders, resulting in a stark, barren wireframe map without elevation or topography.
+  - The inset camera marker used an oversized 48px radial-gradient cone that felt intrusive and dominated the compact overview canvas.
+  - Quick-preset zoom buttons (`Region`, `Continent`, `World`) displayed a bright default browser focus outline ring upon click, disrupting the warm archival paper palette (`#FAF8F3`).
+- **What changed**:
+  - **AWS Terrarium Shaded-Relief Layer** ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx)):
+    - Integrated `raster-dem` source using AWS Terrarium elevation tiles (`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`).
+    - Added `inset-hillshade` layer with `hillshade-exaggeration: 0.45` and `hillshade-shadow-color: '#6E7F8D'`, positioned directly underneath country borders and labels so mountain topography (e.g. Japanese Alps, Rockies, European Alps) is immediately legible.
+  - **Balanced Cartographic Clutter Filtering**:
+    - Removed arbitrary text-scaling loops and boundary thickening.
+    - Preserves CARTO Voyager's native typographic hierarchy and features at 1.0x scale (highways, water bodies, parks, landcover).
+    - Selectively hides only minor local street lines (`road_minor`, `road_service`, `road_path`) and POI icons (`poi_stadium`, `poi_park`).
+    - Styles internal state/prefecture borders as subtle boundaries (`#8C857B` at 0.5 opacity, 1.0px width) and emphasizes international country borders at 1.5px (`#2C2A27`).
+  - **Compact Editorial Target & Focus Ring Hygiene**:
+    - Replaced the large 48px gradient cone with a crisp, compact 32px editorial target: an 8px vermilion dot (`#B84A39`) with paper-white halo, a 20px outer ring with subtle tint, and a 6px directional tick mark rotating with `mainMap.getBearing()`.
+    - Added `focus:outline-none focus:ring-0` across `Region`, `Continent`, `World`, trigger, and close buttons to eliminate browser chrome rings.
+
 ### `fix: universal 1000m lift proximity classification for inbounds pistes & touring`
 - **What was wrong before**:
   - **Inbounds Resort Runs Disappearing When Touring Off**:
