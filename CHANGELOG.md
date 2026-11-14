@@ -6,6 +6,24 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: restore place labels in inset locator & calibrate regional zoom to 5.8`
+- **What was wrong before**:
+  - In `RegionalLocator.tsx`, city, town, village, and state text labels were missing on the inset locator map.
+  - The `inset-hillshade` layer was inserted with `beforeLayerId` pointing to `boundary_country_outline`, allowing hillshade relief to render on top of or interfere with place symbols.
+  - Furthermore, CARTO Voyager sets restrictive default minimum zoom levels on place labels (`place_town` minzoom 8, `place_villages` minzoom 10, `place_city_r5/r6` minzoom 8), meaning regional anchor cities and ski towns (Mammoth Lakes, Bishop, Crested Butte, Reno, Fresno) were clipped out at zoom 6.5 or lower.
+  - The default `Region` mode zoom was set to 6.5, which framed the viewport too tightly to see key surrounding anchor cities for orientation.
+- **What changed**:
+  - **Hillshade Placement Underneath All Labels** ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx)):
+    - Found the first `symbol` layer (`layers.find((l) => l.type === 'symbol')?.id`) and passed it as `beforeId` to `lmap.addLayer(hillshadeLayer, firstSymbolId)`, guaranteeing that relief shading renders strictly beneath all text labels and cartographic symbols.
+  - **Place Label Restoration & Styling**:
+    - Ensured place and water symbol layers retain `layout.visibility = 'visible'` while hiding only minor street names and POI icons.
+    - Extended zoom thresholds using `lmap.setLayerZoomRange()`:
+      - Towns/villages (`place_town`, `place_villages`, `place_hamlet`, `place_suburbs`): minzoom lowered to 4.5, styled at 11px font size, `#1C1B18` text color with 2px `#FAF8F3` halo.
+      - Major cities (`place_city_*`, `place_capital_*`): minzoom lowered to 4.0, styled at 13px font size, `#1C1B18` text color with 2px `#FAF8F3` halo.
+      - States/countries (`place_state`, `place_country_*`, `place_continent`): styled at 12px uppercase, `#1C1B18` text color with 2px `#FAF8F3` halo.
+  - **Calibrated `Region` Preset Zoom to 5.8**:
+    - Adjusted `Region` mode target zoom from 6.5 to 5.8 in `getOverviewTargetZoom()`, resort autofocus effect, and tooltip, allowing regional anchor cities (e.g. Reno/Fresno for Mammoth, Grenoble/Lyon/Turin for the Alps, Denver/Grand Junction for Colorado) to sit comfortably inside the inset frame.
+
 ### `fix: restore inbounds ungroomed steeps (Crested Butte) & reclassify summit bootpacks to downhill`
 - **What was wrong before**:
   - **Inbounds Steeps Showing Only When Touring Was ON**:

@@ -39,11 +39,11 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   const lastResortIdRef = useRef<string | null>(selectedResort?.id ?? null);
 
   // Inset zoom level mapping strictly decoupled from main 3D map
-  // Region: 6.5 (surrounding cities & state/international borders)
+  // Region: 5.8 (surrounding cities & state/international borders)
   // Continent: 3.4 (continental context)
   // World: 1.2 (global context)
   const getOverviewTargetZoom = useCallback((preset: 'regional' | 'continental' | 'global'): number => {
-    return preset === 'regional' ? 6.5 : preset === 'continental' ? 3.4 : 1.2;
+    return preset === 'regional' ? 5.8 : preset === 'continental' ? 3.4 : 1.2;
   }, []);
 
   // When selecting a new resort in the main application, auto-focus preset to regional
@@ -52,7 +52,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     if (currentId && currentId !== lastResortIdRef.current) {
       lastResortIdRef.current = currentId;
       setLocatorZoomPreset('regional');
-      const targetZoom = 6.5;
+      const targetZoom = 5.8;
       savedZoomRef.current = targetZoom;
       if (locatorMapRef.current) {
         locatorMapRef.current.easeTo({
@@ -256,9 +256,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         }
 
         const layers = lmap.getStyle().layers || [];
-        const beforeLayerId =
-          lmap.getLayer('boundary_country_outline') ? 'boundary_country_outline' :
-          (layers.find((l) => l.type === 'symbol')?.id);
+        const firstSymbolId = layers.find((l) => l.type === 'symbol')?.id;
 
         if (!lmap.getLayer('inset-hillshade')) {
           lmap.addLayer(
@@ -273,7 +271,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
                 'hillshade-illumination-direction': 315,
               },
             },
-            beforeLayerId
+            firstSymbolId
           );
         }
 
@@ -298,6 +296,45 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
             try {
               lmap.setLayoutProperty(id, 'visibility', 'none');
             } catch (_) {}
+            continue;
+          }
+
+          // Restore and cartographically style place labels so cities, towns, and states remain legible
+          if (layer.type === 'symbol') {
+            try {
+              lmap.setLayoutProperty(id, 'visibility', 'visible');
+            } catch (_) {}
+
+            // Towns / villages (like Mammoth Lakes, Bishop, Crested Butte)
+            if (id.includes('town') || id.includes('village') || id.includes('hamlet') || id.includes('suburbs')) {
+              try {
+                lmap.setPaintProperty(id, 'text-color', '#1C1B18');
+                lmap.setPaintProperty(id, 'text-halo-color', '#FAF8F3');
+                lmap.setPaintProperty(id, 'text-halo-width', 2);
+                lmap.setLayoutProperty(id, 'text-size', 11);
+                lmap.setLayerZoomRange(id, 4.5, 16);
+              } catch (_) {}
+            }
+            // Major cities (like Reno, Fresno, Bakersfield, Denver, Salt Lake City)
+            else if (id.includes('city') || id.includes('capital')) {
+              try {
+                lmap.setPaintProperty(id, 'text-color', '#1C1B18');
+                lmap.setPaintProperty(id, 'text-halo-color', '#FAF8F3');
+                lmap.setPaintProperty(id, 'text-halo-width', 2);
+                lmap.setLayoutProperty(id, 'text-size', 13);
+                lmap.setLayerZoomRange(id, 4.0, 16);
+              } catch (_) {}
+            }
+            // States / countries (California, Nevada, Colorado)
+            else if (id.includes('country') || id.includes('state') || id.includes('continent')) {
+              try {
+                lmap.setPaintProperty(id, 'text-color', '#1C1B18');
+                lmap.setPaintProperty(id, 'text-halo-color', '#FAF8F3');
+                lmap.setPaintProperty(id, 'text-halo-width', 2);
+                lmap.setLayoutProperty(id, 'text-size', 12);
+                lmap.setLayoutProperty(id, 'text-transform', 'uppercase');
+              } catch (_) {}
+            }
           }
         }
 
@@ -499,7 +536,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
                     ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
                     : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
                 }`}
-                title="Zoom to Region (6.5)"
+                title="Zoom to Region (5.8)"
               >
                 Region
               </button>
