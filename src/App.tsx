@@ -3012,7 +3012,7 @@ export default function App() {
     <div
       className={`relative w-screen h-screen ${
         isFullscreen ? 'fixed inset-0 z-50 h-[100dvh] w-[100dvw]' : ''
-      } overflow-hidden bg-[#F7F4ED] text-[#1C1B18] font-sans select-none`}
+      } overflow-hidden bg-[#FAF8F3] text-[#1C1B18] font-sans select-none`}
     >
       {/* 3D MAP CANVAS (ALWAYS 100% INSET-0, NEVER BLANK ON START) */}
       <div
@@ -3033,7 +3033,7 @@ export default function App() {
 
       {/* MOBILE COMPACT FLOATING TOP BAR (< 768px) */}
       <div
-        className={`md:hidden fixed top-3 left-3 right-3 z-20 flex items-center gap-2 transition-opacity duration-200 select-none ${
+        className={`md:hidden fixed top-[calc(env(safe-area-inset-top,0px)+12px)] left-3 right-3 z-20 flex items-center gap-2 transition-opacity duration-200 select-none ${
           mobileSheetState === 'full' ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
@@ -3225,7 +3225,7 @@ export default function App() {
 
       {/* FLOATING TOP-LEFT MAP VIEWPORT CONTROLS */}
       <div
-        className={`absolute top-16 md:top-14 left-3 md:left-8 ${
+        className={`absolute top-[calc(env(safe-area-inset-top,0px)+64px)] md:top-[calc(env(safe-area-inset-top,0px)+56px)] left-3 md:left-8 ${
           leftDockOpen ? 'md:left-[420px]' : 'md:left-8'
         } z-20 flex items-start gap-2 transition-all duration-300 ease-in-out select-none`}
       >

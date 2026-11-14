@@ -6,6 +6,26 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: iPad safe-area-inset-top, theme-color tinting & conditional fullscreen toggle`
+- **What changed**:
+  - **Safari Theme Color & Apple Web App Tags** ([`index.html`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/index.html)):
+    - Ensured `viewport-fit=cover` is set on viewport meta tag.
+    - Added `<meta name="theme-color" content="#FAF8F3" />` so Safari address and tab bars blend seamlessly into our archival paper palette.
+    - Set `<meta name="apple-mobile-web-app-capable" content="yes" />`, `<meta name="apple-mobile-web-app-status-bar-style" content="default" />`, and `<meta name="apple-mobile-web-app-title" content="Snow Globe" />` for borderless standalone Home Screen app support on iOS and iPadOS.
+    - Updated body background to `#FAF8F3`.
+  - **Page Bounce Lock & Safe Area Inset Support** ([`src/index.css`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/index.css), [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), [`src/components/header/TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx), [`src/components/sidebar/LeftDock.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/LeftDock.tsx), [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx)):
+    - Set `overscroll-behavior: none;` and `background-color: #FAF8F3;` on `html, body, #root` so rubber-band scroll never reveals white seams or triggers iPadOS fullscreen exit.
+    - Added `env(safe-area-inset-top, 0px)` offsets to top-anchored headers and floating map controls:
+      - `TopNavBar`: `h-[calc(44px+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)]`.
+      - `LeftDock`: `top-[calc(44px+env(safe-area-inset-top,0px))]`.
+      - Mobile top bar: `top-[calc(env(safe-area-inset-top,0px)+12px)]`.
+      - Navigation & locator controls: `top-[calc(env(safe-area-inset-top,0px)+64px)] md:top-[calc(env(safe-area-inset-top,0px)+56px)]`.
+      - Basemap layer menu: `top-[calc(env(safe-area-inset-top,0px)+64px)] md:top-[calc(env(safe-area-inset-top,0px)+56px)]`.
+  - **Conditional Fullscreen Toggle on iOS/iPadOS** ([`src/components/header/TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx)):
+    - Detected iOS/iPadOS via `/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)`.
+    - Hid the HTML5 `requestFullscreen()` button on iOS and iPadOS touch devices where fullscreen mode triggers an intrusive floating exit `X` button and exits on scroll, leaving fullscreen accessible on desktop browsers while mobile/tablet users use Home Screen standalone mode.
+- **Why**: Prevents UI overlap with iPadOS status bar and Dynamic Island, harmonizes Safari chrome with the archival paper aesthetic, and prevents disruptive iPadOS fullscreen exit UI.
+
 ### `refactor: strictly read-only cartographic locator diagram with heading cone`
 - **What changed**:
   - **100% Read-Only Inset Map & Zero Camera Hijacking** ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx), [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)):

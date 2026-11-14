@@ -163,7 +163,7 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
       ref={basemapMenuRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`absolute top-16 md:top-14 right-3 md:right-4 ${
+      className={`absolute top-[calc(env(safe-area-inset-top,0px)+64px)] md:top-[calc(env(safe-area-inset-top,0px)+56px)] right-3 md:right-4 ${
         mapMenuOpen ? 'z-35' : 'z-20'
       } flex items-center select-none`}
     >
@@ -184,7 +184,7 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
               e.stopPropagation();
               setIsSticky(true);
             }}
-            className="absolute right-0 top-0 w-88 max-w-[calc(100vw-1.5rem)] bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150 max-h-[calc(100dvh-4.5rem)] overflow-y-auto"
+            className="absolute right-0 top-0 w-88 max-w-[calc(100vw-1.5rem)] bg-[#FAF8F3] border border-[#D6D0C2] rounded-md p-3.5 space-y-3 z-30 text-xs shadow-xl animate-in fade-in duration-150 max-h-[calc(100dvh-4.5rem-env(safe-area-inset-top,0px))] overflow-y-auto"
           >
             {/* Header: Segmented Tabs (Layers | Basemap) + Close button */}
             <div className="flex items-center justify-between border-b border-[#D6D0C2] pb-2.5 gap-2">

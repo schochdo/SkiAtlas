@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Maximize, Minimize, Globe, Map } from 'lucide-react';
 import type { EarthProjectionMode } from '../../types';
 
@@ -21,8 +21,16 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   earthProjection,
   onToggleProjection,
 }) => {
+  const isIOSOrIPadOS = useMemo(() => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+  }, []);
+
   return (
-    <header className="hidden md:flex absolute top-0 inset-x-0 z-40 h-11 items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
+    <header className="hidden md:flex absolute top-0 inset-x-0 z-40 h-[calc(44px+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
       <div className="flex items-center min-w-0">
         {/* Tracked Mountain Editorial Wordmark with Alpine Snow Globe Crest in the center */}
         <button
@@ -91,19 +99,22 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
           {unitsMetric ? '°C' : '°F'}
         </button>
 
-        {/* Fullscreen Toggle */}
-        <button
-          onClick={onToggleFullscreen}
-          className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer flex items-center justify-center select-none shadow-2xs focus:outline-hidden"
-          title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-          aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-        >
-          {isFullscreen ? (
-            <Minimize className="w-3.5 h-3.5 text-[#5C5852]" />
-          ) : (
-            <Maximize className="w-3.5 h-3.5 text-[#5C5852]" />
-          )}
-        </button>
+        {/* Fullscreen Toggle (Hidden on iPad / iOS devices where HTML5 fullscreen triggers the intrusive floating 'X') */}
+        {!isIOSOrIPadOS && (
+          <button
+            type="button"
+            onClick={onToggleFullscreen}
+            className="h-7 w-7 bg-[#FAF8F3] hover:bg-[#EFECE4] border border-[#D6D0C2] text-[#1C1B18] rounded-md transition-colors cursor-pointer flex items-center justify-center select-none shadow-2xs focus:outline-hidden"
+            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+          >
+            {isFullscreen ? (
+              <Minimize className="w-3.5 h-3.5 text-[#5C5852]" />
+            ) : (
+              <Maximize className="w-3.5 h-3.5 text-[#5C5852]" />
+            )}
+          </button>
+        )}
       </div>
     </header>
   );

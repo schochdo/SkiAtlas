@@ -34,13 +34,14 @@ html, body, #root {
   padding: 0;
   overflow: hidden;
   overscroll-behavior: none;
+  background-color: #FAF8F3;
   -webkit-text-size-adjust: 100%;
   touch-action: pan-x pan-y;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #F7F4ED;
+  background-color: #FAF8F3;
   color: #1C1B18;
 }
 

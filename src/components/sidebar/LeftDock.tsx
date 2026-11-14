@@ -13,7 +13,7 @@ export const LeftDock: React.FC<LeftDockProps> = ({
 }) => {
   return (
     <div
-      className={`hidden md:flex absolute top-11 bottom-0 left-0 z-30 flex-col transition-transform duration-300 ease-in-out pointer-events-none ${
+      className={`hidden md:flex absolute top-[calc(44px+env(safe-area-inset-top,0px))] bottom-0 left-0 z-30 flex-col transition-transform duration-300 ease-in-out pointer-events-none ${
         isOpen ? 'w-80 md:w-96 translate-x-0' : 'w-80 md:w-96 -translate-x-full'
       }`}
     >
