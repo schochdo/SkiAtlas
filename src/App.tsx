@@ -142,17 +142,32 @@ import {
 } from './layers';
 
 /**
+ * Calculates total geodesic line length in meters for a coordinate sequence.
+ */
+function calculateLineLengthMeters(coords: [number, number][]): number {
+  if (!coords || coords.length < 2) return 0;
+  let totalKm = 0;
+  for (let i = 0; i < coords.length - 1; i++) {
+    totalKm += haversineDistanceKm(coords[i][1], coords[i][0], coords[i + 1][1], coords[i + 1][0]);
+  }
+  return totalKm * 1000;
+}
+
+/**
  * Deterministic OSM piste classification.
  * Returns 'downhill' | 'touring' | 'nordic' | 'ignore'.
- * isInsideResortOrNearLift = true means the feature comes from a known resort bbox
- * or is confirmed near a lift/winter_sports boundary.
+ *
+ * isNearLift = true means the feature is within 250m (0.0025°) of an operating lift line segment.
+ * lineLengthMeters is used to eliminate disconnected road stubs under 350m without names.
  */
 function classifyOsmPiste(
   tags: Record<string, any> = {},
-  isLiftServed: boolean = false
+  isNearLift: boolean = false,
+  lineLengthMeters: number = Infinity
 ): 'downhill' | 'touring' | 'nordic' | 'ignore' {
   const rawType = (tags['piste:type'] || '').toLowerCase();
   const types = rawType.split(/[;+]/).map((s: string) => s.trim()).filter(Boolean);
+  const grooming = (tags['piste:grooming'] || tags['grooming'] || '').toLowerCase();
   const patrolled = (tags['patrolled'] || '').toLowerCase();
 
   // 1. Ignore winter walking, snowshoeing, sledding, fatbiking
@@ -160,24 +175,49 @@ function classifyOsmPiste(
     return 'ignore';
   }
 
-  // 2. DOWNHILL vs. DOWNHILL TOURING (Separated by Lift/Resort Proximity)
-  // Note: `piste:grooming=backcountry` in OSM just means "ungroomed" (like Highland Bowl or Third Bowl).
-  // If it's lift-served and not explicitly `patrolled=no`, it is a Resort Downhill run.
-  // If it's NOT lift-served (or is `patrolled=no`), it is a Backcountry Downhill Touring line.
-  if (types.includes('downhill') || types.includes('freeride') || types.includes('connection')) {
-    if (patrolled === 'no' || !isLiftServed) {
-      return 'touring';
+  const checkRoadStub = (): 'touring' | 'ignore' => {
+    const hasName = Boolean(tags.name || tags['name:en'] || tags['piste:name'] || tags['piste:name:en']);
+    const roadTag = (tags.highway || '').toLowerCase();
+    const isRoad = ['track', 'service', 'unclassified', 'residential'].includes(roadTag);
+    if (!hasName && isRoad && lineLengthMeters < 350) {
+      return 'ignore';
     }
-    return 'downhill';
+    return 'touring';
+  };
+
+  // 2. SKI TOURING (Uphill skin tracks & alpine touring routes)
+  // Checked BEFORE downhill so any trail tagged piste:type=skitour (including dual-tagged downhill;skitour)
+  // is strictly classified as 'touring' and NEVER 'downhill'.
+  if (types.includes('skitour')) {
+    return checkRoadStub();
   }
 
-  // 3. SKI TOURING (Uphill skin tracks & alpine touring routes)
-  if (types.includes('skitour')) {
-    return 'touring';
+  // 3. DOWNHILL vs. DOWNHILL TOURING (Separated by Lift Proximity & Backcountry Status)
+  if (types.includes('downhill') || types.includes('freeride') || types.includes('connection')) {
+    const isBackcountryGrooming = grooming === 'backcountry';
+    const hasName = Boolean(tags.name || tags['name:en'] || tags['piste:name'] || tags['piste:name:en']);
+
+    // Any downhill or freeride trail with piste:grooming=backcountry that is farther than 250m from a lift
+    // (or tagged patrolled=no) MUST be classified as 'touring', while named inbounds bowls/chutes within 250m of a lift remain 'downhill'.
+    if (patrolled === 'no' || !isNearLift) {
+      return checkRoadStub();
+    }
+
+    if (isBackcountryGrooming) {
+      if (isNearLift && hasName && patrolled !== 'no') {
+        return 'downhill';
+      }
+      return checkRoadStub();
+    }
+
+    return 'downhill';
   }
 
   // 4. NORDIC (All cross-country skiing, kept completely separate from AT ski touring)
   if (types.includes('nordic')) {
+    if (grooming.includes('backcountry')) {
+      return 'ignore';
+    }
     return 'nordic';
   }
 
@@ -476,6 +516,18 @@ export default function App() {
     (feature: any, clickedLngLat: [number, number], screenPoint: { x: number; y: number }) => void
   >(handleSelectTrail);
   handleSelectTrailRef.current = handleSelectTrail;
+
+  useEffect(() => {
+    if (
+      !showTouring &&
+      selectedTrail &&
+      (selectedTrail.feature?.properties?.atlas_category === 'touring' ||
+        selectedTrail.feature?.properties?.['piste:type'] === 'skitour' ||
+        selectedTrail.feature?.properties?.is_touring)
+    ) {
+      handleDeselectTrail();
+    }
+  }, [showTouring, selectedTrail, handleDeselectTrail]);
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -852,7 +904,17 @@ export default function App() {
           continue;
         }
       } else if (p?.kind === 'piste') {
-        const category = classifyOsmPiste(p, true); // static = always inbounds
+        let category = p.atlas_category;
+        if (!category) {
+          let coords: [number, number][] = [];
+          if (f.geometry?.type === 'LineString' && Array.isArray(f.geometry.coordinates)) {
+            coords = f.geometry.coordinates;
+          } else if (f.geometry?.type === 'Polygon' && Array.isArray(f.geometry.coordinates?.[0])) {
+            coords = f.geometry.coordinates[0];
+          }
+          const lengthMeters = calculateLineLengthMeters(coords);
+          category = classifyOsmPiste(p, isPermanent, lengthMeters);
+        }
         if (category === 'ignore') continue;
         p.atlas_category = category;
         // Also set piste:type for backward compat with any remaining filters
@@ -1013,7 +1075,7 @@ export default function App() {
 
       // 3. Fallback for wild backcountry terrain outside any known ski area
       try {
-        const q = `[out:json][timeout:20];(way["piste:type"](${south},${west},${north},${east});relation["piste:type"](${south},${west},${north},${east});way["landuse"="winter_sports"](${south},${west},${north},${east});relation["landuse"="winter_sports"](${south},${west},${north},${east});way["aerialway"](${south},${west},${north},${east}););out body;>;out skel qt;`;
+        const q = `[out:json][timeout:20];(way["piste:type"](${south},${west},${north},${east});relation["piste:type"](${south},${west},${north},${east});relation["route"="piste"](${south},${west},${north},${east});relation["route"="ski"](${south},${west},${north},${east});way["aerialway"](${south},${west},${north},${east}););out body;>;out skel qt;`;
         const overpassRes = await fetch('https://overpass-api.de/api/interpreter', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1031,48 +1093,120 @@ export default function App() {
               }
             }
 
-            // Build resort & lift bounding boxes (expanded 0.005°)
-            const EXPAND = 0.005;
-            const resortAndLiftBoxes: [number, number, number, number][] = [];
+            // Extract operating aerialway lift segments for tight 250m proximity checks
+            interface LiftSegment {
+              x1: number;
+              y1: number;
+              x2: number;
+              y2: number;
+              minX: number;
+              minY: number;
+              maxX: number;
+              maxY: number;
+            }
+            const liftSegments: LiftSegment[] = [];
+
             for (const el of opData.elements) {
-              const isResort = el.type === 'way' && el.tags?.landuse === 'winter_sports';
-              const isResortRel = el.type === 'relation' && el.tags?.landuse === 'winter_sports';
-              const isLift = el.type === 'way' && el.tags?.aerialway;
-              if ((isResort || isResortRel || isLift) && el.nodes && el.nodes.length > 0) {
-                let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+              if (el.type === 'way' && el.tags?.aerialway && el.nodes && el.nodes.length >= 2) {
+                const status = (el.tags.status || 'operating').toLowerCase();
+                const name = (el.tags.name || '').toLowerCase();
+                if (
+                  status !== 'operating' ||
+                  name.includes('proposed') ||
+                  name.includes('planned') ||
+                  name.includes('abandoned') ||
+                  name.includes('disused') ||
+                  name.includes('in project')
+                ) {
+                  continue;
+                }
+                const coords: [number, number][] = [];
                 for (const nid of el.nodes) {
                   const nd = nodeMap.get(nid);
-                  if (nd) {
-                    if (nd.lon < minLng) minLng = nd.lon;
-                    if (nd.lon > maxLng) maxLng = nd.lon;
-                    if (nd.lat < minLat) minLat = nd.lat;
-                    if (nd.lat > maxLat) maxLat = nd.lat;
-                  }
+                  if (nd) coords.push([nd.lon, nd.lat]);
                 }
-                if (minLng !== Infinity) {
-                  resortAndLiftBoxes.push([minLng - EXPAND, minLat - EXPAND, maxLng + EXPAND, maxLat + EXPAND]);
+                for (let i = 0; i < coords.length - 1; i++) {
+                  const [x1, y1] = coords[i];
+                  const [x2, y2] = coords[i + 1];
+                  liftSegments.push({
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                    minX: Math.min(x1, x2) - 0.0025,
+                    minY: Math.min(y1, y2) - 0.0025,
+                    maxX: Math.max(x1, x2) + 0.0025,
+                    maxY: Math.max(y1, y2) + 0.0025,
+                  });
                 }
               }
             }
 
-            function isPointNearResortOrLift(lng: number, lat: number, boxes: [number, number, number, number][]): boolean {
-              for (let i = 0; i < boxes.length; i++) {
-                const [mnLng, mnLat, mxLng, mxLat] = boxes[i];
-                if (lng >= mnLng && lng <= mxLng && lat >= mnLat && lat <= mxLat) return true;
+            const LIFT_PROXIMITY_DEG_SQ = 0.0025 * 0.0025; // 250 meters in degrees squared
+
+            function isPointNearAnyLift(px: number, py: number): boolean {
+              for (let i = 0; i < liftSegments.length; i++) {
+                const seg = liftSegments[i];
+                if (px < seg.minX || px > seg.maxX || py < seg.minY || py > seg.maxY) {
+                  continue;
+                }
+                const dx = seg.x2 - seg.x1;
+                const dy = seg.y2 - seg.y1;
+                const lenSq = dx * dx + dy * dy;
+                let dSq: number;
+                if (lenSq === 0) {
+                  const dpx = px - seg.x1;
+                  const dpy = py - seg.y1;
+                  dSq = dpx * dpx + dpy * dpy;
+                } else {
+                  const t = Math.max(0, Math.min(1, ((px - seg.x1) * dx + (py - seg.y1) * dy) / lenSq));
+                  const projX = seg.x1 + t * dx;
+                  const projY = seg.y1 + t * dy;
+                  const dpx = px - projX;
+                  const dpy = py - projY;
+                  dSq = dpx * dpx + dpy * dpy;
+                }
+                if (dSq <= LIFT_PROXIMITY_DEG_SQ) {
+                  return true;
+                }
               }
               return false;
             }
 
-            // Propagate parent relation tags to member ways
+            function checkTrailNearLift(coords: [number, number][]): boolean {
+              if (liftSegments.length === 0 || coords.length === 0) return false;
+              const start = coords[0];
+              const mid = coords[Math.floor(coords.length / 2)];
+              const end = coords[coords.length - 1];
+              return (
+                isPointNearAnyLift(start[0], start[1]) ||
+                isPointNearAnyLift(mid[0], mid[1]) ||
+                isPointNearAnyLift(end[0], end[1])
+              );
+            }
+
+            // Propagate parent relation tags to member ways (route=piste, route=ski, piste:type)
             const wayTagOverrides = new Map<number, Record<string, string>>();
             for (const el of opData.elements) {
-              if (el.type === 'relation' && (el.tags?.route === 'piste' || el.tags?.['piste:type'])) {
+              if (
+                el.type === 'relation' &&
+                (el.tags?.route === 'piste' || el.tags?.route === 'ski' || el.tags?.['piste:type'])
+              ) {
                 if (!el.members) continue;
                 const relTags = el.tags || {};
                 for (const member of el.members) {
                   if (member.type !== 'way') continue;
                   const existing = wayTagOverrides.get(member.ref) || {};
-                  for (const key of ['piste:type', 'piste:grooming', 'piste:difficulty', 'patrolled', 'name']) {
+                  for (const key of [
+                    'name',
+                    'name:en',
+                    'piste:name',
+                    'piste:name:en',
+                    'piste:type',
+                    'piste:grooming',
+                    'piste:difficulty',
+                    'patrolled',
+                  ]) {
                     if (!existing[key] && relTags[key]) {
                       existing[key] = relTags[key];
                     }
@@ -1109,25 +1243,27 @@ export default function App() {
               }
               if (coords.length < 2) continue;
 
-              const isClosed = coords.length > 2 && coords[0][0] === coords[coords.length - 1][0] && coords[0][1] === coords[coords.length - 1][1];
+              const isClosed =
+                coords.length > 2 &&
+                coords[0][0] === coords[coords.length - 1][0] &&
+                coords[0][1] === coords[coords.length - 1][1];
 
               // For pistes, determine proximity and classify
               let atlas_category: string | undefined;
               if (isPiste && !isAerialway) {
-                const midIdx = Math.floor(coords.length / 2);
-                const inResort = isPointNearResortOrLift(coords[0][0], coords[0][1], resortAndLiftBoxes)
-                  || isPointNearResortOrLift(coords[midIdx][0], coords[midIdx][1], resortAndLiftBoxes)
-                  || isPointNearResortOrLift(coords[coords.length - 1][0], coords[coords.length - 1][1], resortAndLiftBoxes);
-                atlas_category = classifyOsmPiste(tags, inResort);
+                const isNearLift = checkTrailNearLift(coords);
+                const lineLengthMeters = calculateLineLengthMeters(coords);
+                atlas_category = classifyOsmPiste(tags, isNearLift, lineLengthMeters);
                 if (atlas_category === 'ignore') continue;
               }
 
               const feat: any = {
                 type: 'Feature',
                 id: String(el.id),
-                geometry: isClosed && isPiste
-                  ? { type: 'Polygon', coordinates: [coords] }
-                  : { type: 'LineString', coordinates: coords },
+                geometry:
+                  isClosed && isPiste
+                    ? { type: 'Polygon', coordinates: [coords] }
+                    : { type: 'LineString', coordinates: coords },
                 properties: {
                   id: String(el.id),
                   name: tags['name:en'] || tags['piste:name:en'] || tags.name || tags['piste:name'] || '',
@@ -1138,6 +1274,7 @@ export default function App() {
                   'piste:grooming': tags['piste:grooming'] || '',
                   patrolled: tags.patrolled || '',
                   aerialway: tags.aerialway || undefined,
+                  highway: tags.highway || undefined,
                   atlas_category: atlas_category,
                 },
               };

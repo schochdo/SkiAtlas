@@ -176,7 +176,11 @@ export function syncTrailFilterAndVisibility(
   const allowedConditions: any[] = [];
 
   if (showDownhill) {
-    allowedConditions.push(['==', ['get', 'atlas_category'], 'downhill']);
+    allowedConditions.push([
+      'all',
+      ['==', ['get', 'atlas_category'], 'downhill'],
+      ['!=', ['get', 'atlas_category'], 'touring'],
+    ]);
     // Also include old-style features without atlas_category for backward compat
     allowedConditions.push([
       'all',
@@ -186,15 +190,22 @@ export function syncTrailFilterAndVisibility(
       ['!=', ['coalesce', ['get', 'is_touring'], false], true],
       ['!=', ['get', 'piste:type'], 'nordic'],
       ['!=', ['get', 'piste:type'], 'skitour'],
+      ['!', ['in', 'skitour', ['downcase', ['coalesce', ['get', 'piste:type'], '']]]],
     ]);
   }
 
   if (showNordic) {
-    allowedConditions.push(['==', ['get', 'atlas_category'], 'nordic']);
+    allowedConditions.push([
+      'all',
+      ['==', ['get', 'atlas_category'], 'nordic'],
+      ['!=', ['get', 'atlas_category'], 'touring'],
+    ]);
     allowedConditions.push([
       'all',
       ['!', ['has', 'atlas_category']],
       ['any', ['==', ['get', 'piste:type'], 'nordic'], ['==', ['get', 'resort_category'], 'nordic']],
+      ['!=', ['coalesce', ['get', 'is_touring'], false], true],
+      ['!=', ['get', 'piste:type'], 'skitour'],
     ]);
   }
 
@@ -202,6 +213,10 @@ export function syncTrailFilterAndVisibility(
     allowedConditions.push([
       'all',
       ['!=', ['get', 'kind'], 'lift'],
+      ['!=', ['get', 'atlas_category'], 'touring'],
+      ['!=', ['coalesce', ['get', 'is_touring'], false], true],
+      ['!=', ['get', 'piste:type'], 'skitour'],
+      ['!', ['in', 'skitour', ['downcase', ['coalesce', ['get', 'piste:type'], '']]]],
       ['any', ['==', ['get', 'piste:type'], 'downhill'], ['==', ['get', 'piste:type'], 'connection']],
     ]);
   }
@@ -227,22 +242,47 @@ export function syncTrailFilterAndVisibility(
   const isLineGeom = ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']];
   const isPolyGeom = ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']];
 
+  // When Touring toggle is OFF, strictly enforce zero touring bleed-through
+  const commonFilters: any[] = [['!=', ['get', 'kind'], 'lift'], isLineGeom, nonSkiExclusion];
+  if (!showTouring) {
+    commonFilters.push([
+      'all',
+      ['!=', ['coalesce', ['get', 'atlas_category'], ''], 'touring'],
+      ['!=', ['coalesce', ['get', 'resort_category'], ''], 'touring'],
+      ['!=', ['coalesce', ['get', 'is_touring'], false], true],
+      ['!=', ['coalesce', ['get', 'piste:type'], ''], 'skitour'],
+      ['!', ['in', 'skitour', ['downcase', ['coalesce', ['get', 'piste:type'], '']]]],
+    ]);
+  }
+
+  const polyCommonFilters: any[] = [isPolyGeom, nonSkiExclusion];
+  if (!showTouring) {
+    polyCommonFilters.push([
+      'all',
+      ['!=', ['coalesce', ['get', 'atlas_category'], ''], 'touring'],
+      ['!=', ['coalesce', ['get', 'resort_category'], ''], 'touring'],
+      ['!=', ['coalesce', ['get', 'is_touring'], false], true],
+      ['!=', ['coalesce', ['get', 'piste:type'], ''], 'skitour'],
+      ['!', ['in', 'skitour', ['downcase', ['coalesce', ['get', 'piste:type'], '']]]],
+    ]);
+  }
+
   let pisteFilter: any;
   if (allowedConditions.length === 0) {
     pisteFilter = ['==', '1', '0'];
   } else if (allowedConditions.length === 1) {
-    pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom, nonSkiExclusion, allowedConditions[0]];
+    pisteFilter = ['all', ...commonFilters, allowedConditions[0]];
   } else {
-    pisteFilter = ['all', ['!=', ['get', 'kind'], 'lift'], isLineGeom, nonSkiExclusion, ['any', ...allowedConditions]];
+    pisteFilter = ['all', ...commonFilters, ['any', ...allowedConditions]];
   }
 
   let polyPisteFilter: any;
   if (allowedConditions.length === 0) {
     polyPisteFilter = ['==', '1', '0'];
   } else if (allowedConditions.length === 1) {
-    polyPisteFilter = ['all', isPolyGeom, nonSkiExclusion, allowedConditions[0]];
+    polyPisteFilter = ['all', ...polyCommonFilters, allowedConditions[0]];
   } else {
-    polyPisteFilter = ['all', isPolyGeom, nonSkiExclusion, ['any', ...allowedConditions]];
+    polyPisteFilter = ['all', ...polyCommonFilters, ['any', ...allowedConditions]];
   }
 
   const labelFilter: any = [

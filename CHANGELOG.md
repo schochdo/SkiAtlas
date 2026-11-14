@@ -6,6 +6,32 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: OSM trail classification, 250m lift proximity & touring road stub filter`
+- **What was wrong before**:
+  - **Touring Bleed-Through When Touring Toggle Off**:
+    - In `classifyOsmPiste()`, downhill types (`downhill`, `freeride`, `connection`) were evaluated before `skitour`, causing dual-tagged trails (such as `piste:type=downhill;skitour` uphill skin tracks at resorts) to be misclassified as `downhill`.
+    - In `ingestTrailFeatures()`, `classifyOsmPiste(p, true)` was called unconditionally, overwriting any previous out-of-bounds classification from Overpass with `isLiftServed=true`, forcing wild backcountry routes into `atlas_category = 'downhill'`.
+    - MapLibre trail layer filters lacked a strict negative exclusion for touring lines when `showTouring` was `false`, permitting features with `piste:type=downhill;skitour` to bleed through.
+  - **Slackcountry Over-Inclusion (Mt. Baker Shuksan Arm / Table Mountain)**:
+    - Overpass proximity checks relied on broad 500m bounding boxes around `landuse=winter_sports` polygons, causing wild slackcountry terrain far from ski lifts to be classified as inbounds `downhill`.
+  - **Disconnected Road Stubs Cluttering Touring Layer**:
+    - Short disconnected logging road fragments tagged `highway=track`, `service`, `unclassified`, or `residential` without names were ingested as touring trails, while multi-segment relation tours risked dropping metadata.
+- **What changed**:
+  - **Prioritize `skitour` in `classifyOsmPiste`** ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)):
+    - Evaluated `types.includes('skitour')` before downhill checks, ensuring all uphill skin tracks and ski touring routes are strictly classified as `'touring'` and never `'downhill'`.
+  - **Tighten Lift Proximity to 250m Lift Segments**:
+    - Extracted line segments from operating `aerialway` lifts instead of giant `landuse=winter_sports` bounding boxes.
+    - Computed `isNearLift` by testing if the trail's midpoint or start/end coordinates are within 250 meters (0.0025°) of any operating lift line segment.
+    - Classified `piste:grooming=backcountry` or `patrolled=no` trails farther than 250m from a lift as `'touring'`, while named inbounds bowls/chutes within 250m of a lift remain `'downhill'`.
+  - **Preserve Classification in `ingestTrailFeatures`**:
+    - Checked `p.atlas_category` first; only re-classified unclassified features using geometry length and `isPermanent` flag, preventing Overpass out-of-bounds touring trails from being overridden to `downhill`.
+  - **Relation Propagation & Road Stub Filtering**:
+    - Propagated `name`, `name:en`, `piste:name`, `piste:name:en`, `piste:type`, `piste:grooming`, `piste:difficulty`, and `patrolled` from parent relations (`route=piste`, `route=ski`, `piste:type`) to member ways.
+    - Added `calculateLineLengthMeters()`: if a feature classifies as `'touring'`, returns `'ignore'` if it has no name, carries a road tag (`track`, `service`, `unclassified`, `residential`), and total line length is under 350 meters.
+  - **Airtight Zero Touring Bleed-Through Filter** ([`src/layers/layerThemeManager.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/layerThemeManager.ts)):
+    - Added strict negative exclusion rule when `!showTouring`: completely excludes any feature with `atlas_category === 'touring'`, `resort_category === 'touring'`, `is_touring === true`, `piste:type === 'skitour'`, or `'skitour'` contained in `piste:type`.
+    - Added auto-deselect in `src/App.tsx` when Touring toggle is turned off if the selected trail is touring.
+
 ### `fix: iPad safe-area-inset-top, theme-color tinting & conditional fullscreen toggle`
 - **What changed**:
   - **Safari Theme Color & Apple Web App Tags** ([`index.html`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/index.html)):
