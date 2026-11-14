@@ -3245,23 +3245,9 @@ export default function App() {
           selectedResort={selectedResort}
           mapCenter={mapCenter}
           mapZoom={mapZoom}
+          mapBearing={mapBearing}
           viewportBounds={viewportBounds}
           resorts={resorts}
-          onFlyTo={(center, zoom, pitch, bearing) => {
-            if (!mapRef.current) return;
-            safeFlyTo(mapRef.current, {
-              center,
-              ...(zoom !== undefined ? { zoom } : {}),
-              ...(pitch !== undefined ? { pitch } : {}),
-              ...(bearing !== undefined ? { bearing } : {}),
-              duration: 1000,
-              essential: true,
-            });
-          }}
-          onResetToGlobal={(e) => {
-            e.stopPropagation();
-            handleResetToGlobalExtent();
-          }}
         />
       </div>
 

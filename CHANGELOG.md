@@ -6,6 +6,33 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `refactor: strictly read-only cartographic locator diagram with heading cone`
+- **What changed**:
+  - **100% Read-Only Inset Map & Zero Camera Hijacking** ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx), [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)):
+    - Initialized inset MapLibre instance with `interactive: false` and `pointer-events-none` on container canvas, eliminating click, drag, scroll-zoom, double-click, and touch handlers.
+    - Removed click-to-center handlers that previously moved the main camera when clicking inside the inset.
+    - Deleted the entire bottom footer bar (`Click map to center main view` and `Reset Global`) and removed the `+ / -` micro zoom buttons from the canvas.
+    - Removed `onFlyTo` and `onResetToGlobal` props from `RegionalLocatorProps`, guaranteeing the inset map cannot alter the main 3D viewport.
+  - **Decoupled Preset Zoom Buttons**:
+    - `Region`, `Continent`, and `World` buttons control ONLY the zoom level of the read-only inset map:
+      - `Region`: Inset zoom = `6.5` (shows surrounding cities like Grenoble, Lyon, Geneva, Turin and state/international borders).
+      - `Continent`: Inset zoom = `3.4` (shows continental position).
+      - `World`: Inset zoom = `1.2` (shows global position).
+    - Inset remains strictly centered on `mainMap.getCenter()` and locked North-Up at `bearing: 0, pitch: 0`.
+  - **CARTO Vector Style & Stripped Park Clutter**:
+    - Integrated CARTO Voyager vector style (`https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json`).
+    - On map load, hides clutter layers (parks, nature reserves, POIs, minor roads, waterway labels) via `layout.visibility = 'none'` so green fills do not crowd out cities.
+    - Enlarged city, town, state, and country labels by `1.35x` (minimum 12px for cities, 13px bold for countries) with `'text-color': '#1C1B18'`, `'text-halo-color': '#FAF8F3'`, and `'text-halo-width': 2.2`.
+    - Emphasized international borders (`'line-color': '#2C2A27'`, `'line-width': 1.8`) and state boundaries (`'#5C5852'`, `1.2`).
+  - **Hollow Frame & 45° Camera Heading Cone**:
+    - Removed the dark translucent fill layer inside the dashed rectangle so it stops dimming underlying labels and terrain.
+    - Retained a subtle 1px dashed outline (`#2C2A27` at 0.45 opacity) visible only in `Region` mode and hidden in `Continent` and `World` modes.
+    - Added an SVG marker at `mainMap.getCenter()` rendering a crisp 45° directional view wedge/cone rotated to match `mainMap.getBearing()`, displaying live camera compass orientation directly on the North-Up locator.
+  - **Compact Header & Telemetry Sub-Header**:
+    - Header retained only title label, `Region | Continent | World` pills, and `×` close button.
+    - Compact telemetry sub-header displays `CAMERA VIEW · {Location} · {Coords}` (e.g. `CAMERA VIEW · Albiez-Montrond, Savoie · 45.2°N, 6.4°E`).
+- **Why**: Eliminates disruptive camera hijacking, prevents accidental map jumps, clarifies geographic orientation with heading cone frustum, and makes regional place labels readable and clutter-free.
+
 ### `feat: mobile full-bleed 3d map, floating 44px pill & un-stacked directory headers`
 - **What changed**:
   - **Full-Viewport Map on Mobile** ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), [`src/camera/cameraUtils.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/cameraUtils.ts), [`src/components/header/TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx), [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx)):

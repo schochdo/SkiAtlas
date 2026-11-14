@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import { Compass, X, RotateCcw } from 'lucide-react';
+import { Compass, X } from 'lucide-react';
 import type { SkiResort } from '../../types';
 import { formatCoords } from '../../utils/formatters';
 
@@ -11,10 +11,9 @@ interface RegionalLocatorProps {
   selectedResort: SkiResort | null;
   mapCenter: [number, number];
   mapZoom: number;
+  mapBearing: number;
   viewportBounds: [number, number, number, number] | null;
   resorts: SkiResort[];
-  onFlyTo: (center: [number, number], zoom?: number, pitch?: number, bearing?: number) => void;
-  onResetToGlobal: (e: React.MouseEvent) => void;
 }
 
 export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
@@ -24,10 +23,9 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   selectedResort,
   mapCenter,
   mapZoom,
+  mapBearing,
   viewportBounds,
   resorts,
-  onFlyTo,
-  onResetToGlobal,
 }) => {
   const [locatorZoomPreset, setLocatorZoomPreset] = useState<'regional' | 'continental' | 'global'>(() =>
     selectedResort || mapZoom >= 6.0 ? 'regional' : mapZoom < 3.0 ? 'global' : 'continental'
@@ -35,89 +33,60 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   const locatorMenuRef = useRef<HTMLDivElement | null>(null);
   const locatorContainerRef = useRef<HTMLDivElement | null>(null);
   const locatorMapRef = useRef<maplibregl.Map | null>(null);
+  const markerRef = useRef<maplibregl.Marker | null>(null);
+  const markerElRef = useRef<HTMLDivElement | null>(null);
   const savedZoomRef = useRef<number | null>(null);
   const lastResortIdRef = useRef<string | null>(selectedResort?.id ?? null);
 
-  // Helper to determine optimal overview map zoom presets
-  const getOverviewTargetZoom = useCallback((
-    preset: 'regional' | 'continental' | 'global'
-  ): number => {
-    return preset === 'regional' ? 5.5 : preset === 'continental' ? 3.0 : 1.1;
+  // Inset zoom level mapping strictly decoupled from main 3D map
+  // Region: 6.5 (surrounding cities & state/international borders)
+  // Continent: 3.4 (continental context)
+  // World: 1.2 (global context)
+  const getOverviewTargetZoom = useCallback((preset: 'regional' | 'continental' | 'global'): number => {
+    return preset === 'regional' ? 6.5 : preset === 'continental' ? 3.4 : 1.2;
   }, []);
 
-  // Helper to determine optimal overview map center based on live camera center
-  const getOverviewTargetCenter = useCallback((
-    center: [number, number],
-    preset: 'regional' | 'continental' | 'global'
-  ): [number, number] => {
-    const [targetLng, targetLat] = center;
-    const currentLocatorZoom = locatorMapRef.current
-      ? locatorMapRef.current.getZoom()
-      : (savedZoomRef.current ?? getOverviewTargetZoom(preset));
-
-    // When zoomed in to regional/local scale (either by preset or user zooming),
-    // strictly track the camera center directly so the camera indicator remains centered.
-    if (currentLocatorZoom >= 4.0 || preset === 'regional') {
-      return [targetLng, targetLat];
-    }
-
-    if (preset === 'continental') {
-      if (mapZoom >= 4) {
-        const balancedLat = Math.max(-45, Math.min(55, targetLat));
-        return [targetLng, balancedLat];
-      }
-      // When at global scope with nothing selected, continental preset targets primary ski continents
-      if (targetLng >= -170 && targetLng <= -50) return [-98, 40]; // North America
-      if (targetLng >= 120 && targetLng <= 150) return [138, 38]; // Japan
-      return [12, 48]; // Europe
-    }
-
-    // World / global view:
-    if (mapZoom >= 4) {
-      const balancedLat = Math.max(-25, Math.min(48, targetLat));
-      return [targetLng, balancedLat];
-    }
-    return [targetLng, targetLat];
-  }, [mapCenter, mapZoom, getOverviewTargetZoom]);
-
-  // Reset locator map on selecting a new ski area
+  // When selecting a new resort in the main application, auto-focus preset to regional
   useEffect(() => {
     const currentId = selectedResort?.id ?? null;
     if (currentId && currentId !== lastResortIdRef.current) {
       lastResortIdRef.current = currentId;
       setLocatorZoomPreset('regional');
-      const targetZoom = getOverviewTargetZoom('regional');
+      const targetZoom = 6.5;
       savedZoomRef.current = targetZoom;
       if (locatorMapRef.current) {
         locatorMapRef.current.easeTo({
           center: [selectedResort!.lng, selectedResort!.lat],
           zoom: targetZoom,
-          duration: 400,
+          bearing: 0,
+          pitch: 0,
+          duration: 350,
         });
       }
     } else {
       lastResortIdRef.current = currentId;
     }
-  }, [selectedResort, getOverviewTargetZoom]);
+  }, [selectedResort]);
 
-  // Reset to global overview when user explicitly resets to global world view
+  // When main map resets to global extent with no selection, auto-focus preset to global
   useEffect(() => {
     if (mapZoom < 2.5 && !selectedResort) {
       setLocatorZoomPreset('global');
-      savedZoomRef.current = 1.1;
+      savedZoomRef.current = 1.2;
       if (locatorMapRef.current && locatorMapRef.current.getZoom() > 2.0) {
         locatorMapRef.current.easeTo({
           center: mapCenter,
-          zoom: 1.1,
-          duration: 400,
+          zoom: 1.2,
+          bearing: 0,
+          pitch: 0,
+          duration: 350,
         });
       }
     }
   }, [mapZoom, selectedResort, mapCenter]);
 
-  // Geographic context for Regional Locator dynamically derived from live camera position
+  // Geographic context dynamically derived from live camera center
   const activeRegionContext = useMemo(() => {
-    // Find closest resort to live camera center
     if (resorts && resorts.length > 0) {
       const [lng, lat] = mapCenter;
       let closest: SkiResort | null = null;
@@ -150,27 +119,33 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
   }, [mapCenter, resorts]);
 
   const triggerLabel = useMemo(() => {
-    if (mapZoom >= 4 && activeRegionContext.region) {
-      return activeRegionContext.region;
-    }
-    if (mapZoom >= 4 && activeRegionContext.country) {
-      return activeRegionContext.country;
-    }
-    return 'Overview';
-  }, [activeRegionContext, mapZoom]);
+    if (selectedResort?.region) return selectedResort.region;
+    if (activeRegionContext.region) return activeRegionContext.region;
+    if (selectedResort?.country) return selectedResort.country;
+    if (activeRegionContext.country) return activeRegionContext.country;
+    return 'World Overview';
+  }, [selectedResort, activeRegionContext]);
 
-  const regionButtonLabel = useMemo(() => {
-    if (mapZoom >= 4 && activeRegionContext.region) {
-      return activeRegionContext.region;
+  const telemetryLocationString = useMemo(() => {
+    if (selectedResort) {
+      const parts = [selectedResort.name, selectedResort.region, selectedResort.country].filter(Boolean);
+      return parts.slice(0, 2).join(', ');
     }
-    if (mapZoom >= 4 && activeRegionContext.country) {
-      return activeRegionContext.country;
+    if (activeRegionContext.name) {
+      const parts = [activeRegionContext.name, activeRegionContext.region].filter(Boolean);
+      return parts.join(', ');
     }
-    return null;
-  }, [mapZoom, activeRegionContext]);
+    if (activeRegionContext.region || activeRegionContext.country) {
+      return [activeRegionContext.region, activeRegionContext.country].filter(Boolean).join(', ');
+    }
+    return 'World Overview';
+  }, [selectedResort, activeRegionContext]);
 
+  // Subtle 1px dashed outline visible ONLY in Region mode; hidden in Continent and World modes
   const getViewportGeoJson = useCallback((): any => {
-    if (!viewportBounds) return { type: 'FeatureCollection', features: [] };
+    if (locatorZoomPreset !== 'regional' || !viewportBounds) {
+      return { type: 'FeatureCollection', features: [] };
+    }
     const [w, s, e, n] = viewportBounds;
     const south = Math.max(-85, Math.min(85, s));
     const north = Math.max(-85, Math.min(85, n));
@@ -198,28 +173,9 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         },
       ],
     };
-  }, [viewportBounds]);
+  }, [viewportBounds, locatorZoomPreset]);
 
-  // Live camera center indicator GeoJSON
-  const getCameraCenterGeoJson = useCallback((): any => {
-    return {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [mapCenter[0], mapCenter[1]],
-          },
-          properties: {
-            name: activeRegionContext.name || activeRegionContext.region || 'Camera View',
-          },
-        },
-      ],
-    };
-  }, [mapCenter, activeRegionContext]);
-
-  // Handle outside click and Escape key to close locator menu
+  // Handle outside click and Escape key to close locator
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (locatorMenuRef.current && !locatorMenuRef.current.contains(event.target as Node)) {
@@ -243,9 +199,13 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     };
   }, [locatorOpen, onCloseLocator]);
 
-  // Initialize and manage secondary 2D MapLibre instance for Regional Locator
+  // Initialize and manage secondary 100% read-only 2D MapLibre instance
   useEffect(() => {
     if (!locatorOpen) {
+      if (markerRef.current) {
+        markerRef.current.remove();
+        markerRef.current = null;
+      }
       if (locatorMapRef.current) {
         locatorMapRef.current.remove();
         locatorMapRef.current = null;
@@ -255,123 +215,202 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
 
     if (!locatorContainerRef.current) return;
 
-    const initialCenter = getOverviewTargetCenter(mapCenter, locatorZoomPreset);
+    const cartoApiKey =
+      (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CARTO_API_KEY) ||
+      'cb1_27pq_1_05391dca080d5ca53cb5c122';
+    const cartoStyleUrl = cartoApiKey
+      ? `https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json?api_key=${cartoApiKey}`
+      : 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
+
     const initialZoom = savedZoomRef.current ?? getOverviewTargetZoom(locatorZoomPreset);
 
+    // Strictly read-only MapLibre instance: interactive: false, locked North-Up at bearing: 0, pitch: 0
     const lmap = new maplibregl.Map({
       container: locatorContainerRef.current,
-      style: {
-        version: 8,
-        sources: {
-          'esri-topo-base': {
-            type: 'raster',
-            tiles: [
-              'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-            ],
-            tileSize: 256,
-            attribution: '© Esri Topo',
-          },
-        },
-        layers: [
-          {
-            id: 'esri-base-layer',
-            type: 'raster',
-            source: 'esri-topo-base',
-            minzoom: 0,
-            maxzoom: 20,
-          },
-        ],
-      },
-      center: initialCenter,
+      style: cartoStyleUrl,
+      center: mapCenter,
       zoom: initialZoom,
+      bearing: 0,
+      pitch: 0,
+      interactive: false,
       attributionControl: false,
       renderWorldCopies: true,
       fadeDuration: 0,
     });
 
+    lmap.on('error', (e) => {
+      console.warn('RegionalLocator style notice:', e);
+    });
+
     lmap.on('load', () => {
-      // Add Viewport bounds layer
+      // 1. Strip park clutter, enlarge city/state/country labels, and emphasize borders
+      try {
+        const layers = lmap.getStyle().layers || [];
+        for (const layer of layers) {
+          const id = layer.id;
+          const type = layer.type;
+
+          // Strip clutter: parks, nature reserves, POIs, minor roads, waterway labels
+          const isClutter =
+            id.includes('park') ||
+            id.includes('poi') ||
+            id.includes('waterway_label') ||
+            id.includes('watername') ||
+            id.includes('roadname') ||
+            id.includes('road_') ||
+            id.includes('tunnel_') ||
+            id.includes('bridge_') ||
+            id.includes('aeroway');
+
+          if (isClutter) {
+            try {
+              lmap.setLayoutProperty(id, 'visibility', 'none');
+            } catch (_) {}
+            continue;
+          }
+
+          // Enlarge city, state, and country labels:
+          const isPlaceSymbol =
+            type === 'symbol' &&
+            (id.includes('place_city') ||
+              id.includes('place_town') ||
+              id.includes('place_state') ||
+              id.includes('place_country') ||
+              id.includes('place_capital') ||
+              id.includes('place_continent'));
+
+          if (isPlaceSymbol) {
+            try {
+              const isCountry = id.includes('place_country') || id.includes('place_continent');
+              const minSize = isCountry ? 13 : 12;
+              const currentSize = lmap.getLayoutProperty(id, 'text-size');
+              let newSize: any = minSize;
+
+              if (currentSize && typeof currentSize === 'object' && 'stops' in (currentSize as any)) {
+                const scaledStops = (currentSize as any).stops.map(([z, s]: [number, number]) => [
+                  z,
+                  Math.max(minSize, Math.round(s * 1.35)),
+                ]);
+                newSize = { stops: scaledStops };
+              } else if (typeof currentSize === 'number') {
+                newSize = Math.max(minSize, Math.round(currentSize * 1.35));
+              }
+
+              lmap.setLayoutProperty(id, 'text-size', newSize);
+              lmap.setPaintProperty(id, 'text-color', '#1C1B18');
+              lmap.setPaintProperty(id, 'text-halo-color', '#FAF8F3');
+              lmap.setPaintProperty(id, 'text-halo-width', 2.2);
+
+              if (isCountry) {
+                lmap.setLayoutProperty(id, 'text-font', ['Montserrat Bold', 'Open Sans Bold', 'Noto Sans Regular']);
+              }
+
+              // Enable secondary cities and towns to be visible in regional scale (zoom 6.5)
+              if (id.includes('place_town') || id.includes('place_city_r5') || id.includes('place_city_r6')) {
+                try {
+                  lmap.setLayerZoomRange(id, 5.5, 16);
+                } catch (_) {}
+              }
+            } catch (_) {}
+          }
+
+          // Emphasize international and state borders:
+          const isBoundary = type === 'line' && (id.includes('boundary') || id.includes('admin'));
+          if (isBoundary) {
+            try {
+              const isCountryBorder = id.includes('country');
+              if (isCountryBorder) {
+                lmap.setPaintProperty(id, 'line-color', '#2C2A27');
+                lmap.setPaintProperty(id, 'line-width', 1.8);
+              } else {
+                lmap.setPaintProperty(id, 'line-color', '#5C5852');
+                lmap.setPaintProperty(id, 'line-width', 1.2);
+              }
+            } catch (_) {}
+          }
+        }
+      } catch (err) {
+        console.warn('Error styling locator layers:', err);
+      }
+
+      // 2. Viewport bounds hollow frame: subtle 1px dashed outline visible only in Region mode
       lmap.addSource('locator-viewport', {
         type: 'geojson',
         data: getViewportGeoJson(),
       });
       lmap.addLayer({
-        id: 'locator-viewport-fill',
-        type: 'fill',
-        source: 'locator-viewport',
-        paint: {
-          'fill-color': '#2C4C64',
-          'fill-opacity': 0.15,
-        },
-      });
-      lmap.addLayer({
         id: 'locator-viewport-line',
         type: 'line',
         source: 'locator-viewport',
+        layout: {
+          visibility: locatorZoomPreset === 'regional' ? 'visible' : 'none',
+        },
         paint: {
-          'line-color': '#2C4C64',
-          'line-width': 1.5,
-          'line-dasharray': [2, 2],
+          'line-color': '#2C2A27',
+          'line-width': 1,
+          'line-opacity': 0.45,
+          'line-dasharray': [3, 2],
         },
       });
 
-      // Add live camera center indicator layer (unpinned)
-      lmap.addSource('locator-camera', {
-        type: 'geojson',
-        data: getCameraCenterGeoJson(),
-      });
-      lmap.addLayer({
-        id: 'locator-camera-outer',
-        type: 'circle',
-        source: 'locator-camera',
-        paint: {
-          'circle-radius': 7,
-          'circle-color': '#2C4C64',
-          'circle-opacity': 0.25,
-        },
-      });
-      lmap.addLayer({
-        id: 'locator-camera-dot',
-        type: 'circle',
-        source: 'locator-camera',
-        paint: {
-          'circle-radius': 3.5,
-          'circle-color': '#2C4C64',
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#FAF8F3',
-        },
-      });
+      // 3. Center Camera Position Dot + 45° Directional View Cone
+      const markerEl = document.createElement('div');
+      markerEl.className = 'locator-camera-marker';
+      markerEl.style.width = '48px';
+      markerEl.style.height = '48px';
+      markerEl.style.display = 'flex';
+      markerEl.style.alignItems = 'center';
+      markerEl.style.justifyContent = 'center';
+      markerEl.style.pointerEvents = 'none';
 
+      markerEl.innerHTML = `
+        <svg width="48" height="48" viewBox="0 0 48 48" style="overflow: visible; display: block;" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="locViewConeGrad" cx="24" cy="24" r="24" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#2C2A27" stop-opacity="0.38" />
+              <stop offset="70%" stop-color="#2C2A27" stop-opacity="0.18" />
+              <stop offset="100%" stop-color="#2C2A27" stop-opacity="0.04" />
+            </radialGradient>
+          </defs>
+          <!-- 45° Directional View Cone (Rotated by camera bearing) -->
+          <g id="locator-view-cone" transform="rotate(${mapBearing}, 24, 24)">
+            <path
+              d="M 24 24 L 14.82 1.83 A 24 24 0 0 1 33.18 1.83 Z"
+              fill="url(#locViewConeGrad)"
+              stroke="#2C2A27"
+              stroke-width="1.2"
+              stroke-opacity="0.75"
+              stroke-linejoin="round"
+            />
+          </g>
+          <!-- Center Camera Position Dot -->
+          <circle cx="24" cy="24" r="6" fill="#2C2A27" fill-opacity="0.15" />
+          <circle cx="24" cy="24" r="3.5" fill="#2C2A27" stroke="#FAF8F3" stroke-width="1.5" />
+          <circle cx="24" cy="24" r="1" fill="#FAF8F3" />
+        </svg>
+      `;
+
+      const marker = new maplibregl.Marker({
+        element: markerEl,
+        anchor: 'center',
+      })
+        .setLngLat(mapCenter)
+        .addTo(lmap);
+
+      markerRef.current = marker;
+      markerElRef.current = markerEl;
       locatorMapRef.current = lmap;
-      // Immediately restore center and zoom upon load completion
-      const targetCenter = getOverviewTargetCenter(mapCenter, locatorZoomPreset);
-      const targetZoom = savedZoomRef.current ?? getOverviewTargetZoom(locatorZoomPreset);
-      lmap.jumpTo({ center: targetCenter, zoom: targetZoom });
 
       setTimeout(() => {
         lmap.resize();
       }, 50);
     });
 
-    // Update preset pills when user zooms directly on locator map
-    const onZoomEnd = () => {
-      const z = lmap.getZoom();
-      savedZoomRef.current = z;
-      if (z >= 4.5) {
-        setLocatorZoomPreset('regional');
-      } else if (z >= 2.0) {
-        setLocatorZoomPreset('continental');
-      } else {
-        setLocatorZoomPreset('global');
-      }
-    };
-    lmap.on('zoomend', onZoomEnd);
-
-    lmap.on('click', (e) => {
-      onFlyTo([e.lngLat.lng, e.lngLat.lat]);
-    });
-
     return () => {
+      if (markerRef.current) {
+        markerRef.current.remove();
+        markerRef.current = null;
+      }
       if (locatorMapRef.current) {
         locatorMapRef.current.remove();
         locatorMapRef.current = null;
@@ -379,7 +418,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     };
   }, [locatorOpen]);
 
-  // Sync GeoJSON features in locator map
+  // Sync GeoJSON features in locator map (viewport dashed box)
   useEffect(() => {
     const lmap = locatorMapRef.current;
     if (!lmap || !locatorOpen || !lmap.isStyleLoaded()) return;
@@ -388,76 +427,59 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     if (vpSource) {
       vpSource.setData(getViewportGeoJson());
     }
+  }, [viewportBounds, locatorZoomPreset, locatorOpen, getViewportGeoJson]);
 
-    const cSource = lmap.getSource('locator-camera') as maplibregl.GeoJSONSource | undefined;
-    if (cSource) {
-      cSource.setData(getCameraCenterGeoJson());
+  // Sync camera position dot with live main map center
+  useEffect(() => {
+    if (markerRef.current) {
+      markerRef.current.setLngLat(mapCenter);
     }
-  }, [viewportBounds, mapCenter, locatorOpen, getViewportGeoJson, getCameraCenterGeoJson]);
+  }, [mapCenter]);
 
-  // Sync camera center indicator and map framing (strictly preserves current zoom level!)
+  // Sync camera heading cone rotation with live main map bearing
+  useEffect(() => {
+    if (!markerElRef.current) return;
+    const coneGroup = markerElRef.current.querySelector('#locator-view-cone');
+    if (coneGroup) {
+      coneGroup.setAttribute('transform', `rotate(${mapBearing}, 24, 24)`);
+    }
+  }, [mapBearing]);
+
+  // Sync locator map center with live camera center (locked North-Up at bearing: 0, pitch: 0)
   useEffect(() => {
     const lmap = locatorMapRef.current;
     if (!lmap || !locatorOpen) return;
 
-    const targetCenter = getOverviewTargetCenter(mapCenter, locatorZoomPreset);
-
-    // Only update center to track live camera; NEVER overwrite zoom during live camera pan or flight
     lmap.jumpTo({
-      center: targetCenter,
+      center: mapCenter,
+      bearing: 0,
+      pitch: 0,
     });
-  }, [mapCenter, locatorZoomPreset, locatorOpen, getOverviewTargetCenter]);
+  }, [mapCenter, locatorOpen]);
 
-  // Sync preset tab indicator with live main map zoom
-  useEffect(() => {
-    if (mapZoom >= 5.8) {
-      setLocatorZoomPreset('regional');
-    } else if (mapZoom < 3.2) {
-      setLocatorZoomPreset('global');
-    } else {
-      setLocatorZoomPreset('continental');
-    }
-  }, [mapZoom]);
-
+  // User preset selection controls ONLY inset zoom, NEVER modifying main map camera
   const handleSetLocatorPreset = (preset: 'regional' | 'continental' | 'global') => {
     setLocatorZoomPreset(preset);
     const targetZoom = getOverviewTargetZoom(preset);
     savedZoomRef.current = targetZoom;
-    const targetCenter = getOverviewTargetCenter(mapCenter, preset);
 
     if (locatorMapRef.current) {
       locatorMapRef.current.easeTo({
-        center: targetCenter,
+        center: mapCenter,
         zoom: targetZoom,
-        duration: 350,
+        bearing: 0,
+        pitch: 0,
+        duration: 300,
       });
+
+      if (locatorMapRef.current.getLayer('locator-viewport-line')) {
+        locatorMapRef.current.setLayoutProperty(
+          'locator-viewport-line',
+          'visibility',
+          preset === 'regional' ? 'visible' : 'none'
+        );
+      }
     }
-
-    // Simultaneously navigate the main map viewport to match the requested scale
-    if (preset === 'global') {
-      onResetToGlobal({ stopPropagation: () => {} } as any);
-    } else if (preset === 'continental') {
-      onFlyTo(targetCenter, 3.8, 0, 0);
-    } else if (preset === 'regional') {
-      const flyCenter = selectedResort ? ([selectedResort.lng, selectedResort.lat] as [number, number]) : targetCenter;
-      onFlyTo(flyCenter, 7.2, 0, 0);
-    }
-  };
-
-  const handleLocatorZoomIn = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!locatorMapRef.current) return;
-    const nextZoom = Math.min(locatorMapRef.current.getZoom() + 1, 14);
-    savedZoomRef.current = nextZoom;
-    locatorMapRef.current.zoomTo(nextZoom, { duration: 200 });
-  };
-
-  const handleLocatorZoomOut = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!locatorMapRef.current) return;
-    const nextZoom = Math.max(locatorMapRef.current.getZoom() - 1, 0.5);
-    savedZoomRef.current = nextZoom;
-    locatorMapRef.current.zoomTo(nextZoom, { duration: 200 });
   };
 
   return (
@@ -473,59 +495,62 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         title="Regional Overview & State/Country Context"
       >
         <Compass className="w-3.5 h-3.5 text-[#5C5852]" />
-        <span className="text-xs font-semibold max-w-[140px] truncate">
-          {triggerLabel}
-        </span>
+        <span className="text-xs font-semibold max-w-[140px] truncate">{triggerLabel}</span>
       </button>
 
       {locatorOpen && (
         <div className="absolute left-0 top-0 w-80 sm:w-88 bg-[#FAF8F3] border border-[#D6D0C2] rounded-md shadow-xl overflow-hidden z-30 origin-top-left transition-all duration-200 animate-in fade-in-0 zoom-in-95">
-          {/* Header */}
+          {/* Header: Title + Region | Continent | World pills + Close button */}
           <div className="px-3 py-2 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between">
             <div className="flex items-center gap-1.5 min-w-0 pr-2">
               <Compass className="w-3.5 h-3.5 text-[#5C5852] shrink-0" />
               <span className="text-xs font-bold text-[#1C1B18] tracking-tight truncate">
-                {triggerLabel || 'Regional Overview'}
+                {triggerLabel}
               </span>
             </div>
+
             {/* Quick Zoom Presets */}
             <div className="flex items-center gap-1 shrink-0">
               <button
+                type="button"
                 onClick={() => handleSetLocatorPreset('regional')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1C1B18] ${
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
                   locatorZoomPreset === 'regional'
                     ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
                     : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
                 }`}
-                title={`Zoom to Regional / State Level${regionButtonLabel ? ` (${regionButtonLabel})` : ''}`}
+                title="Zoom to Region (6.5)"
               >
                 Region
               </button>
               <button
+                type="button"
                 onClick={() => handleSetLocatorPreset('continental')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1C1B18] ${
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
                   locatorZoomPreset === 'continental'
                     ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
                     : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
                 }`}
-                title="Zoom to Continental Level"
+                title="Zoom to Continent (3.4)"
               >
                 Continent
               </button>
               <button
+                type="button"
                 onClick={() => handleSetLocatorPreset('global')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1C1B18] ${
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
                   locatorZoomPreset === 'global'
                     ? 'bg-[#1C1B18] text-[#FAF8F3] border-[#1C1B18]'
                     : 'bg-[#FAF8F3] text-[#5C5852] hover:text-[#1C1B18] border-[#D6D0C2]'
                 }`}
-                title="Zoom to Global Level"
+                title="Zoom to World (1.2)"
               >
                 World
               </button>
               <button
+                type="button"
                 onClick={onCloseLocator}
-                className="p-1 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer ml-1 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1C1B18]"
+                className="p-1 rounded text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EFECE4] transition-colors cursor-pointer ml-1"
                 title="Close (Esc)"
                 aria-label="Close"
               >
@@ -534,84 +559,26 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
             </div>
           </div>
 
-          {/* Location Context Banner: Live Camera Location and View Extent */}
-          <div className="px-3 py-2 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between">
-            <div className="min-w-0 pr-2">
-              <div className="text-[10px] uppercase font-bold text-[#736E67] tracking-wider leading-none flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#2C4C64] shrink-0" />
-                <span>Camera View</span>
-              </div>
-              <div className="font-bold text-xs text-[#1C1B18] break-words leading-tight mt-0.5">
-                {mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country)
-                  ? activeRegionContext.name
-                    ? `${activeRegionContext.name}${activeRegionContext.region ? `, ${activeRegionContext.region}` : ''}`
-                    : activeRegionContext.region && activeRegionContext.country
-                    ? `${activeRegionContext.region}, ${activeRegionContext.country}`
-                    : activeRegionContext.country
-                  : 'World Overview'}
-              </div>
+          {/* Telemetry Sub-Header: CAMERA VIEW · Location · Lat/Lng */}
+          <div className="px-3 py-1.5 bg-[#FAF8F3] border-b border-[#D6D0C2] flex items-center justify-between text-[10px] text-[#5C5852] font-medium tracking-tight">
+            <div className="flex items-center gap-1.5 min-w-0 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2C2A27] shrink-0" />
+              <span className="font-bold text-[#1C1B18] uppercase tracking-wider text-[9px] shrink-0">
+                CAMERA VIEW
+              </span>
+              <span className="text-[#8A847C] shrink-0">·</span>
+              <span className="truncate text-[#1C1B18] font-semibold">
+                {telemetryLocationString}
+              </span>
             </div>
-            <div className="text-right shrink-0">
-              {mapZoom >= 4 && (activeRegionContext.region || activeRegionContext.country) ? (
-                <div>
-                  <span className="text-[10px] font-bold text-[#1C1B18] block break-words leading-tight max-w-[130px]">
-                    {activeRegionContext.region ? `${activeRegionContext.region}, ` : ''}{activeRegionContext.country}
-                  </span>
-                  <span className="font-mono text-[9px] text-[#8A847C] block mt-0.5">
-                    {formatCoords(mapCenter[1], mapCenter[0])}
-                  </span>
-                </div>
-              ) : (
-                <div>
-                  <span className="text-[10px] font-medium text-[#8A847C] block">
-                    Global Extent
-                  </span>
-                  <span className="font-mono text-[9px] text-[#8A847C] block mt-0.5">
-                    {formatCoords(mapCenter[1], mapCenter[0])}
-                  </span>
-                </div>
-              )}
+            <div className="font-mono text-[9px] text-[#736E67] shrink-0 ml-2">
+              {formatCoords(mapCenter[1], mapCenter[0])}
             </div>
           </div>
 
-          {/* MapLibre 2D Simple Basemap Canvas */}
-          <div className="relative w-full h-48 bg-[#FAF8F3] overflow-hidden">
-            <div ref={locatorContainerRef} className="w-full h-full" />
-            {/* Micro Zoom Buttons on map */}
-            <div className="absolute bottom-2 right-2 flex flex-col bg-[#FAF8F3] border border-[#D6D0C2] rounded shadow-xs divide-y divide-[#D6D0C2] overflow-hidden z-10">
-              <button
-                onClick={handleLocatorZoomIn}
-                className="w-6 h-6 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] text-xs font-bold cursor-pointer"
-                title="Zoom In"
-              >
-                +
-              </button>
-              <button
-                onClick={handleLocatorZoomOut}
-                className="w-6 h-6 flex items-center justify-center text-[#1C1B18] hover:bg-[#EFECE4] text-xs font-bold cursor-pointer"
-                title="Zoom Out"
-              >
-                −
-              </button>
-            </div>
-          </div>
-
-          {/* Footnote / Reset */}
-          <div className="px-3 py-1.5 bg-[#FAF8F3] border-t border-[#D6D0C2] flex items-center justify-between text-[10px]">
-            <span className="text-[#8A847C] truncate">
-              Click map to center main view
-            </span>
-            <button
-              onClick={(e) => {
-                handleSetLocatorPreset('global');
-                onResetToGlobal(e);
-              }}
-              className="flex items-center gap-1 font-semibold text-[#5C5852] hover:text-[#1C1B18] cursor-pointer"
-              title="Reset main map to global extent"
-            >
-              <RotateCcw className="w-2.5 h-2.5" />
-              <span>Reset Global</span>
-            </button>
+          {/* Read-Only MapLibre Inset Map Canvas */}
+          <div className="relative w-full h-52 bg-[#FAF8F3] overflow-hidden select-none">
+            <div ref={locatorContainerRef} className="w-full h-full pointer-events-none" />
           </div>
         </div>
       )}
