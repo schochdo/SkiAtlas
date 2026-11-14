@@ -6,6 +6,17 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: prevent truncation on discipline filter toggle buttons`
+- **What was wrong before**:
+  - In `src/components/header/FilterModal.tsx`, the 4 discipline toggle buttons (`Downhill`, `Nordic`, `Heli/Cat`, `Touring`) used a horizontal icon + uppercase text layout (`flex items-center justify-center gap-1.5` with `uppercase tracking-wider`) inside a 4-column grid.
+  - In a constrained 300px sidebar or mobile sheet, each button has only ~65px width. With a 14px icon, 6px gap, and horizontal padding, longer text labels like `DOWNHILL` and `HELI/CAT` overflowed the button boundary and were cut off as `DOWN...` and `HELI/C...` due to `truncate`.
+- **What changed**:
+  - **Stacked Layout & Zero Truncation** ([`src/components/header/FilterModal.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/FilterModal.tsx)):
+    - Switched the button layout to vertical stacking (`flex flex-col items-center justify-center gap-1 text-center py-2 px-1`).
+    - Placed the monochrome 16px Lucide icon on top (`w-4 h-4 shrink-0`) and the label underneath with `text-[10.5px] font-bold leading-tight tracking-tight whitespace-nowrap`.
+    - Converted label styling to title-case (`Downhill`, `Nordic`, `Heli/Cat`, `Touring`) without artificial wide uppercase tracking.
+    - Completely eliminated ellipsis truncation across all viewport sizes while preserving clean touch targets and solid charcoal active states (`bg-[#2C2A27] text-[#FAF8F3]`).
+
 ### `fix: consolidate along-border country labels into paired annotations & prevent bending`
 - **What was wrong before**:
   - **Orphaned Single-Sided Labels**: Left and right country names along international borders were registered as two independent layers (`world-country-border-labels-left` and `world-country-border-labels-right`). MapLibre collision avoidance would often place one country's label while suppressing the other, resulting in orphaned single-sided labels along the boundary.

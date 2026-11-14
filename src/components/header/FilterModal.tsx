@@ -92,55 +92,67 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 }) => {
   return (
     <div className="space-y-3.5 text-[#1C1B18]">
-      {/* Category Segmented Controls (Monochrome Lucide icons, solid charcoal active states) */}
+      {/* Category Segmented Controls (Stacked icon + full legible title-case label, zero truncation) */}
       <div className="grid grid-cols-4 gap-1.5">
         <button
+          type="button"
           onClick={onToggleDownhill}
-          className={`py-2 px-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-1 rounded-md border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 text-center ${
             showDownhill
               ? 'bg-[#2C2A27] border-[#2C2A27] text-[#FAF8F3] shadow-2xs'
               : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#736E67] hover:text-[#1C1B18] hover:border-[#8A847C]'
           }`}
           title={`Toggle Downhill Ski Areas (${categoryFilterCounts.downhill.toLocaleString()})`}
         >
-          <MountainSnow className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">Downhill</span>
+          <MountainSnow className="w-4 h-4 shrink-0" />
+          <span className="text-[10.5px] font-bold leading-tight tracking-tight whitespace-nowrap">
+            Downhill
+          </span>
         </button>
         <button
+          type="button"
           onClick={onToggleNordic}
-          className={`py-2 px-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-1 rounded-md border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 text-center ${
             showNordic
               ? 'bg-[#2C2A27] border-[#2C2A27] text-[#FAF8F3] shadow-2xs'
               : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#736E67] hover:text-[#1C1B18] hover:border-[#8A847C]'
           }`}
           title={`Toggle Nordic Centers (${categoryFilterCounts.nordic.toLocaleString()})`}
         >
-          <Trees className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">Nordic</span>
+          <Trees className="w-4 h-4 shrink-0" />
+          <span className="text-[10.5px] font-bold leading-tight tracking-tight whitespace-nowrap">
+            Nordic
+          </span>
         </button>
         <button
+          type="button"
           onClick={onToggleHeliCat}
-          className={`py-2 px-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-1 rounded-md border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 text-center ${
             showHeliCat
               ? 'bg-[#2C2A27] border-[#2C2A27] text-[#FAF8F3] shadow-2xs'
               : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#736E67] hover:text-[#1C1B18] hover:border-[#8A847C]'
           }`}
           title={`Toggle Guided Heli/Cat Operations (${categoryFilterCounts.heli_cat.toLocaleString()})`}
         >
-          <Plane className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">Heli/Cat</span>
+          <Plane className="w-4 h-4 shrink-0" />
+          <span className="text-[10.5px] font-bold leading-tight tracking-tight whitespace-nowrap">
+            Heli/Cat
+          </span>
         </button>
         <button
+          type="button"
           onClick={onToggleTouring}
-          className={`py-2 px-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-1 rounded-md border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 text-center ${
             showTouring
               ? 'bg-[#2C2A27] border-[#2C2A27] text-[#FAF8F3] shadow-2xs'
               : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#736E67] hover:text-[#1C1B18] hover:border-[#8A847C]'
           }`}
           title={`Toggle Backcountry Ski Touring Routes & Zones (${(categoryFilterCounts.touring ?? 1).toLocaleString()})`}
         >
-          <Route className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">Touring</span>
+          <Route className="w-4 h-4 shrink-0" />
+          <span className="text-[10.5px] font-bold leading-tight tracking-tight whitespace-nowrap">
+            Touring
+          </span>
         </button>
       </div>
 
