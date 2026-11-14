@@ -6,6 +6,23 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: consolidate along-border country labels into paired annotations & prevent bending`
+- **What was wrong before**:
+  - **Orphaned Single-Sided Labels**: Left and right country names along international borders were registered as two independent layers (`world-country-border-labels-left` and `world-country-border-labels-right`). MapLibre collision avoidance would often place one country's label while suppressing the other, resulting in orphaned single-sided labels along the boundary.
+  - **Bent & Self-Colliding Text**: Border label layers used `'text-max-angle': 65`, which allowed letter sequences to bend sharply at acute angles around winding mountain ridges, causing letters to overlap and distort.
+  - **Excessive Repetition**: `'symbol-spacing'` was configured as low as 200px–350px, causing the same country names to repeat incessantly across the screen.
+  - **Unbounded Zoom Visibility**: Minzoom was set to 2.8 with no maxzoom, causing placement failures on jagged crests at regional scales and cluttering close-up ski run inspections.
+- **What changed**:
+  - **Consolidated Matched-Pair Label Layer** ([`src/layers/boundaryLayers.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/boundaryLayers.ts), [`src/layers/types.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/types.ts), [`src/layers/layerThemeManager.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/layers/layerThemeManager.ts)):
+    - Consolidated separate left/right border layers into a single matched-pair symbol layer (`world-country-border-labels`) using a two-line formatted text field: `['format', ['upcase', name_left], {}, '\n', {}, ['upcase', name_right], {}]`. Both countries now render together across the boundary line with `'text-line-height': 1.65` and `'text-offset': [0, 0]`, eliminating orphaned single-sided labels.
+  - **Strict Bending & Self-Collision Prevention**:
+    - Reduced `'text-max-angle'` to `20` (down from 65), set `'text-rotation-alignment': 'map'`, `'text-pitch-alignment': 'map'`, and `'text-keep-upright': true`.
+  - **Interpolated Spacing & Zoom Scope (z9–z14.5)**:
+    - Increased `'symbol-spacing'` with zoom interpolation: `['interpolate', ['linear'], ['zoom'], 8, 450, 11, 800, 14, 1300]`, limiting repetitions to 1–2 per view.
+    - Bound visibility to `minzoom: 9` and `maxzoom: 14.5` so labels never clutter close-up ski area terrain or fail placement at regional zoom.
+  - **Archival Paper Typography**:
+    - Styled with clean 10px text (`text-size: 10`), letter spacing `0.25`, paper white ink (`#FAF8F3`), and subtle dark halo (`rgba(28, 27, 24, 0.78)` at 1.25px width and 0.5px blur).
+
 ### `fix: hide ocean bathymetry & refine border/coastline strokes in locator map`
 - **What was wrong before**:
   - **Ocean Bathymetry Shading**: The AWS Terrarium DEM hillshade layer was added above the `water` polygon fill layer, causing undersea trenches, ridges, and bathymetry artifacts to render in ocean waters across `World` and `Continent` modes.

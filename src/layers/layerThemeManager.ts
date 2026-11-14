@@ -34,15 +34,20 @@ export function syncGeoReferenceTheme(
     map.setPaintProperty(LAYER_IDS.WORLD_STATE_BORDERS, 'line-color', isDark ? '#FAF8F3' : '#475569');
     map.setPaintProperty(LAYER_IDS.WORLD_STATE_BORDERS, 'line-opacity', isDark ? 0.35 : 0.25);
   }
+  if (map.getLayer(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS)) {
+    map.setLayoutProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS, 'visibility', refVisibility);
+    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS, 'text-color', '#FAF8F3');
+    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS, 'text-halo-color', 'rgba(28, 27, 24, 0.78)');
+  }
   if (map.getLayer(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_LEFT)) {
     map.setLayoutProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_LEFT, 'visibility', refVisibility);
-    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_LEFT, 'text-color', isDark ? '#FFFFFF' : '#0F172A');
-    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_LEFT, 'text-halo-color', isDark ? '#0F0E0D' : '#FAF8F3');
+    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_LEFT, 'text-color', '#FAF8F3');
+    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_LEFT, 'text-halo-color', 'rgba(28, 27, 24, 0.78)');
   }
   if (map.getLayer(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_RIGHT)) {
     map.setLayoutProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_RIGHT, 'visibility', refVisibility);
-    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_RIGHT, 'text-color', isDark ? '#FFFFFF' : '#0F172A');
-    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_RIGHT, 'text-halo-color', isDark ? '#0F0E0D' : '#FAF8F3');
+    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_RIGHT, 'text-color', '#FAF8F3');
+    map.setPaintProperty(LAYER_IDS.WORLD_COUNTRY_BORDER_LABELS_RIGHT, 'text-halo-color', 'rgba(28, 27, 24, 0.78)');
   }
   if (map.getLayer(LAYER_IDS.GEO_REFERENCE_MEGACITIES)) {
     map.setLayoutProperty(LAYER_IDS.GEO_REFERENCE_MEGACITIES, 'visibility', refVisibility);

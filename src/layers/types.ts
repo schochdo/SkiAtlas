@@ -38,6 +38,7 @@ export const LAYER_IDS = {
   // Boundaries & Reference
   WORLD_COUNTRY_BORDERS: 'world-country-borders',
   WORLD_STATE_BORDERS: 'world-state-borders',
+  WORLD_COUNTRY_BORDER_LABELS: 'world-country-border-labels',
   WORLD_COUNTRY_BORDER_LABELS_LEFT: 'world-country-border-labels-left',
   WORLD_COUNTRY_BORDER_LABELS_RIGHT: 'world-country-border-labels-right',
   GEO_REFERENCE_MEGACITIES: 'geo-reference-megacities',
