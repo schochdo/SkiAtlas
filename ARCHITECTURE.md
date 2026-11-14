@@ -81,7 +81,7 @@ SkiAtlas/
 │   │   │   └── MountainProfile.tsx← Mountain profile view: lifts/pistes/acres, vertical/summit/base, 7-day meteorology bars
 │   │   └── map/
 │   │       ├── NavigationControls.tsx ← Vertical [ + ] [ − ] [ ▲ ] zoom and true north snap
-│   │       ├── RegionalLocator.tsx    ← Collapsible 2D MapLibre overview inset (Esri Light Gray Canvas)
+│   │       ├── RegionalLocator.tsx    ← Collapsible 2D MapLibre overview inset (Esri World Topo Map)
 │   │       ├── BasemapMenu.tsx        ← Basemap selector & 3D terrain exaggeration slider
 │   │       ├── CartographicLegend.tsx ← Map key popover & alternating scale bar
 │   │       ├── CompassGimbal.tsx      ← Concentric rotary compass heading & 3D tilt horizon gimbal

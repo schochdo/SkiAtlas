@@ -6,6 +6,16 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `feat: adopt Esri World_Topo_Map raster basemap on regional locator inset`
+- **What was wrong before**:
+  - The Inset Locator Map previously relied on a custom CARTO Voyager vector style coupled with an AWS Terrarium DEM hillshade layer and extensive layer-traversal loops to hide roads, restyle borders, adjust water fills, and force symbol layer visibility.
+  - This required continuous maintenance and layer hacking to keep city, state, country, and terrain elements balanced across zoom levels.
+- **What changed**:
+  - **Single Pre-Rendered Raster Basemap** ([`src/components/map/RegionalLocator.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/RegionalLocator.tsx)):
+    - Replaced the CARTO style URL, AWS Terrarium DEM hillshade source/layer, and all post-load `getStyle().layers` loops with an inline MapLibre raster style specification powered by Esri `World_Topo_Map` (`https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}`).
+    - Provides professionally balanced shaded relief, hydrography, transport corridors, administrative borders, and multi-tier place labels out of the box with zero runtime overhead or layer manipulation.
+    - Retained the live Region viewport outline frame (`locator-viewport-line`), center camera directional target marker (`#B84A39`), and quick zoom presets (`Region` 5.8, `Continent` 3.0, `World` 0.5).
+
 ### `fix: prevent truncation on discipline filter toggle buttons`
 - **What was wrong before**:
   - In `src/components/header/FilterModal.tsx`, the 4 discipline toggle buttons (`Downhill`, `Nordic`, `Heli/Cat`, `Touring`) used a horizontal icon + uppercase text layout (`flex items-center justify-center gap-1.5` with `uppercase tracking-wider`) inside a 4-column grid.

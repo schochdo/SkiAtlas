@@ -215,19 +215,34 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
 
     if (!locatorContainerRef.current) return;
 
-    const cartoApiKey =
-      (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CARTO_API_KEY) ||
-      'cb1_27pq_1_05391dca080d5ca53cb5c122';
-    const cartoStyleUrl = cartoApiKey
-      ? `https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json?api_key=${cartoApiKey}`
-      : 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
-
     const initialZoom = savedZoomRef.current ?? getOverviewTargetZoom(locatorZoomPreset);
+
+    // Clean inline raster MapLibre style using Esri World_Topo_Map
+    const esriTopoStyle: maplibregl.StyleSpecification = {
+      version: 8,
+      sources: {
+        'esri-topo': {
+          type: 'raster',
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+          ],
+          tileSize: 256,
+          attribution: 'Esri',
+        },
+      },
+      layers: [
+        {
+          id: 'esri-topo-layer',
+          type: 'raster',
+          source: 'esri-topo',
+        },
+      ],
+    };
 
     // Strictly read-only MapLibre instance: interactive: false, locked North-Up at bearing: 0, pitch: 0
     const lmap = new maplibregl.Map({
       container: locatorContainerRef.current,
-      style: cartoStyleUrl,
+      style: esriTopoStyle,
       center: mapCenter,
       zoom: initialZoom,
       minZoom: 0,
@@ -244,230 +259,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
     });
 
     lmap.on('load', () => {
-      // 1. Add subtle AWS Terrarium hillshade relief underneath label layers
-      try {
-        if (!lmap.getSource('inset-dem')) {
-          lmap.addSource('inset-dem', {
-            type: 'raster-dem',
-            tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
-            encoding: 'terrarium',
-            tileSize: 256,
-            maxzoom: 15,
-          });
-        }
-
-        const layers = lmap.getStyle().layers || [];
-        const firstWaterId = layers.find((l) => l.id.includes('water') && l.type === 'fill')?.id;
-
-        if (!lmap.getLayer('inset-hillshade')) {
-          lmap.addLayer(
-            {
-              id: 'inset-hillshade',
-              type: 'hillshade',
-              source: 'inset-dem',
-              paint: {
-                'hillshade-exaggeration': 0.45,
-                'hillshade-shadow-color': '#6E7F8D',
-                'hillshade-highlight-color': '#FFFFFF',
-                'hillshade-illumination-direction': 315,
-              },
-            },
-            firstWaterId
-          );
-        }
-
-        // Set water fill to clean, flat muted slate (#DCE5EC) covering underwater bathymetry
-        if (lmap.getLayer('water')) {
-          lmap.setPaintProperty('water', 'fill-color', '#DCE5EC');
-          lmap.setPaintProperty('water', 'fill-opacity', 1.0);
-        }
-        if (lmap.getLayer('water_shadow')) {
-          lmap.setLayoutProperty('water_shadow', 'visibility', 'none');
-        }
-        if (lmap.getLayer('bathymetry')) {
-          lmap.setLayoutProperty('bathymetry', 'visibility', 'none');
-        }
-
-        // 2. Hide minor local street lines and POI icons; keep highways, water bodies, and borders
-        for (const layer of layers) {
-          const id = layer.id;
-          const isMinorClutter =
-            id.includes('poi') ||
-            id.includes('road_minor') ||
-            id.includes('road_service') ||
-            id.includes('road_path') ||
-            id.includes('tunnel_minor') ||
-            id.includes('tunnel_service') ||
-            id.includes('tunnel_path') ||
-            id.includes('bridge_minor') ||
-            id.includes('bridge_service') ||
-            id.includes('bridge_path') ||
-            id.includes('roadname_minor') ||
-            id.includes('housenumber') ||
-            id.includes('water_shadow') ||
-            id.includes('bathymetry');
-
-          if (isMinorClutter) {
-            try {
-              lmap.setLayoutProperty(id, 'visibility', 'none');
-            } catch (_) {}
-            continue;
-          }
-
-          // Restore and cartographically style place labels so cities, towns, and states remain legible
-          if (layer.type === 'symbol') {
-            try {
-              lmap.setLayoutProperty(id, 'visibility', 'visible');
-            } catch (_) {}
-
-            // Towns / villages (like Mammoth Lakes, Bishop, Crested Butte)
-            if (id.includes('town') || id.includes('village') || id.includes('hamlet') || id.includes('suburbs')) {
-              try {
-                lmap.setPaintProperty(id, 'text-color', '#1C1B18');
-                lmap.setPaintProperty(id, 'text-halo-color', '#FAF8F3');
-                lmap.setPaintProperty(id, 'text-halo-width', 2);
-                lmap.setLayoutProperty(id, 'text-size', 11);
-                lmap.setLayerZoomRange(id, 4.5, 16);
-              } catch (_) {}
-            }
-            // Major cities (like Reno, Fresno, Bakersfield, Denver, Salt Lake City)
-            else if (id.includes('city') || id.includes('capital')) {
-              try {
-                lmap.setPaintProperty(id, 'text-color', '#1C1B18');
-                lmap.setPaintProperty(id, 'text-halo-color', '#FAF8F3');
-                lmap.setPaintProperty(id, 'text-halo-width', 2);
-                lmap.setLayoutProperty(id, 'text-size', 13);
-                lmap.setLayerZoomRange(id, 4.0, 16);
-              } catch (_) {}
-            }
-            // States / countries (California, Nevada, Colorado)
-            else if (id.includes('country') || id.includes('state') || id.includes('continent')) {
-              try {
-                lmap.setPaintProperty(id, 'text-color', '#1C1B18');
-                lmap.setPaintProperty(id, 'text-halo-color', '#FAF8F3');
-                lmap.setPaintProperty(id, 'text-halo-width', 2);
-                lmap.setLayoutProperty(id, 'text-size', 12);
-                lmap.setLayoutProperty(id, 'text-transform', 'uppercase');
-              } catch (_) {}
-            }
-          }
-        }
-
-        // 3. Fix thick border & coastline strokes
-        const maritimeFilter = ['!=', ['get', 'maritime'], 1];
-
-        // Country borders: filter maritime lines, zoom-interpolated line-width, soft ink #6E6A63
-        if (lmap.getLayer('boundary_country_inner')) {
-          try {
-            const curFilter = lmap.getFilter('boundary_country_inner');
-            const hasMaritime = curFilter && JSON.stringify(curFilter).includes('maritime');
-            if (!hasMaritime) {
-              const newFilter = curFilter ? ['all', curFilter, maritimeFilter] : maritimeFilter;
-              lmap.setFilter('boundary_country_inner', newFilter);
-            }
-          } catch (_) {}
-          lmap.setPaintProperty('boundary_country_inner', 'line-color', '#6E6A63');
-          lmap.setPaintProperty('boundary_country_inner', 'line-opacity', 0.85);
-          lmap.setPaintProperty('boundary_country_inner', 'line-width', [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            1, 0.5,
-            4, 0.9,
-            7, 1.3,
-          ]);
-        }
-
-        if (lmap.getLayer('boundary_country_outline')) {
-          try {
-            const curFilter = lmap.getFilter('boundary_country_outline');
-            const hasMaritime = curFilter && JSON.stringify(curFilter).includes('maritime');
-            if (!hasMaritime) {
-              const newFilter = curFilter ? ['all', curFilter, maritimeFilter] : maritimeFilter;
-              lmap.setFilter('boundary_country_outline', newFilter);
-            }
-          } catch (_) {}
-          lmap.setPaintProperty('boundary_country_outline', 'line-color', '#FAF8F3');
-          lmap.setPaintProperty('boundary_country_outline', 'line-opacity', 0.35);
-          lmap.setPaintProperty('boundary_country_outline', 'line-width', [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            1, 0.8,
-            4, 1.4,
-            7, 2.0,
-          ]);
-        }
-
-        // Internal state/province boundaries: hide when zoom < 4.5
-        if (lmap.getLayer('boundary_state')) {
-          try {
-            lmap.setLayerZoomRange('boundary_state', 4.5, 24);
-            const curFilter = lmap.getFilter('boundary_state');
-            const hasMaritime = curFilter && JSON.stringify(curFilter).includes('maritime');
-            if (!hasMaritime) {
-              const newFilter = curFilter ? ['all', curFilter, maritimeFilter] : maritimeFilter;
-              lmap.setFilter('boundary_state', newFilter);
-            }
-          } catch (_) {}
-          lmap.setPaintProperty('boundary_state', 'line-color', '#8C857B');
-          lmap.setPaintProperty('boundary_state', 'line-opacity', 0.45);
-          lmap.setPaintProperty('boundary_state', 'line-width', [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            4.5, 0.5,
-            7, 0.9,
-          ]);
-        }
-
-        if (lmap.getLayer('boundary_county')) {
-          try {
-            lmap.setLayerZoomRange('boundary_county', 8.0, 24);
-          } catch (_) {}
-          lmap.setPaintProperty('boundary_county', 'line-color', '#8C857B');
-          lmap.setPaintProperty('boundary_county', 'line-opacity', 0.3);
-          lmap.setPaintProperty('boundary_county', 'line-width', 0.5);
-        }
-
-        // General pass across all line layers for boundaries and waterways/coastlines
-        for (const layer of layers) {
-          const id = layer.id;
-          if (layer.type === 'line') {
-            if (id.includes('boundary') || id.includes('admin')) {
-              try {
-                const curFilter = lmap.getFilter(id);
-                const hasMaritime = curFilter && JSON.stringify(curFilter).includes('maritime');
-                if (!hasMaritime) {
-                  lmap.setFilter(id, curFilter ? ['all', curFilter, maritimeFilter] : maritimeFilter);
-                }
-              } catch (_) {}
-
-              if (id.includes('state') || id.includes('province') || id.includes('county') || id.includes('sub')) {
-                try {
-                  lmap.setLayerZoomRange(id, 4.5, 24);
-                } catch (_) {}
-              }
-            }
-
-            if (
-              id === 'waterway' ||
-              id.includes('water_outline') ||
-              id.includes('coastline') ||
-              id.includes('water_line')
-            ) {
-              try {
-                lmap.setPaintProperty(id, 'line-width', 0.5);
-                lmap.setPaintProperty(id, 'line-color', '#9EB2C0');
-              } catch (_) {}
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Error configuring locator atlas layers:', err);
-      }
-
-      // 2. Viewport bounds hollow frame: subtle 1px dashed outline visible only in Region mode
+      // 1. Viewport bounds hollow frame: subtle 1px dashed outline visible only in Region mode
       lmap.addSource('locator-viewport', {
         type: 'geojson',
         data: getViewportGeoJson(),
@@ -487,7 +279,7 @@ export const RegionalLocator: React.FC<RegionalLocatorProps> = ({
         },
       });
 
-      // 3. Center Camera Position Target: 8px vermilion dot (#B84A39), 20px outer ring, 6px directional tick mark
+      // 2. Center Camera Position Target: 8px vermilion dot (#B84A39), 20px outer ring, 6px directional tick mark
       const markerEl = document.createElement('div');
       markerEl.className = 'locator-camera-marker';
       markerEl.style.width = '32px';
