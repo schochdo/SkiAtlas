@@ -25,7 +25,7 @@ import { CartographicLegend } from './components/map/CartographicLegend';
 import { CompassGimbal } from './components/map/CompassGimbal';
 import { AttributionBadge } from './components/map/AttributionBadge';
 import { TrailProfileCard } from './components/map/TrailProfileCard';
-import { analyzeTrailFeature } from './utils/trailAnalysis';
+import { analyzeTrailFeature, aggregateConnectedTrailFeatures } from './utils/trailAnalysis';
 import { createMapStyle } from './utils/mapStyles';
 import { registerTerrainAnalysisProtocols } from './utils/terrainAnalysis';
 import type {
@@ -577,7 +577,11 @@ export default function App() {
   const handleSelectTrail = useCallback(
     (feature: any, clickedLngLat: [number, number], screenPoint: { x: number; y: number }) => {
       if (!mapRef.current) return;
-      const analysis = analyzeTrailFeature(feature, mapRef.current, clickedLngLat);
+      const aggregated = aggregateConnectedTrailFeatures(
+        feature,
+        liveFeaturesMapRef.current.values()
+      );
+      const analysis = analyzeTrailFeature(aggregated, mapRef.current, clickedLngLat);
       setSelectedTrail(analysis);
       setSelectedTrailScreenPos(screenPoint);
 
@@ -588,8 +592,8 @@ export default function App() {
           features: [
             {
               type: 'Feature',
-              geometry: feature.geometry,
-              properties: feature.properties || {},
+              geometry: aggregated.geometry,
+              properties: aggregated.properties || {},
             },
           ],
         });

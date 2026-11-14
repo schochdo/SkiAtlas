@@ -42,6 +42,219 @@ function sampleElevation(
   return 0;
 }
 
+/**
+ * Normalizes a trail or lift name for robust grouping across OSM formatting discrepancies
+ * (e.g., en-dash vs hyphen, diacritics / accents, whitespace).
+ */
+export function normalizeTrailName(name: string): string {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove diacritics (é -> e, è -> e)
+    .replace(/[\u2010-\u2015\u2212]/g, '-') // normalize hyphens, en-dashes, em-dashes
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getLineCoordinates(feat: any): [number, number, number?][][] {
+  const geom = feat?.geometry;
+  if (!geom) return [];
+  if (geom.type === 'LineString' && Array.isArray(geom.coordinates)) {
+    return [geom.coordinates];
+  }
+  if (geom.type === 'MultiLineString' && Array.isArray(geom.coordinates)) {
+    return geom.coordinates;
+  }
+  return [];
+}
+
+function getFeatureEndpoints(lines: [number, number, number?][][]): [number, number][] {
+  const pts: [number, number][] = [];
+  for (const line of lines) {
+    if (line && line.length > 0) {
+      pts.push([line[0][0], line[0][1]]);
+      pts.push([line[line.length - 1][0], line[line.length - 1][1]]);
+    }
+  }
+  return pts;
+}
+
+function minDistanceBetweenEndpoints(ptsA: [number, number][], ptsB: [number, number][]): number {
+  let minD = Infinity;
+  for (const a of ptsA) {
+    for (const b of ptsB) {
+      const dLat = (b[1] - a[1]) * 111320;
+      const cosLat = Math.cos((((a[1] + b[1]) / 2) * Math.PI) / 180);
+      const dLng = (b[0] - a[0]) * 111320 * cosLat;
+      const d = Math.hypot(dLat, dLng);
+      if (d < minD) minD = d;
+    }
+  }
+  return minD;
+}
+
+/**
+ * Groups and stitches physically connected OSM way segments that belong to the same
+ * continuous ski lift (aerialway) or named trail run into a single composite GeoJSON feature.
+ *
+ * OSM mappers frequently split continuous lifts and pistes at intermediate stations,
+ * passing loops, road crossings, or bridges. This function performs a graph connectivity
+ * traversal starting from the clicked feature, discovering all adjoining segments that share
+ * the same normalized name and facility kind (lift vs piste).
+ */
+export function aggregateConnectedTrailFeatures(
+  selectedFeat: any,
+  allFeatures: Iterable<any>
+): any {
+  if (!selectedFeat || !selectedFeat.geometry) return selectedFeat;
+
+  const geomType = selectedFeat.geometry.type;
+  if (geomType !== 'LineString' && geomType !== 'MultiLineString') {
+    return selectedFeat;
+  }
+
+  const selectedLines = getLineCoordinates(selectedFeat);
+  if (!selectedLines.length) return selectedFeat;
+
+  const selectedProps = selectedFeat.properties || {};
+  const isLift = selectedProps.kind === 'lift' || !!selectedProps.aerialway;
+  const rawName = selectedProps.name || selectedProps['piste:name'] || selectedProps['name:en'] || '';
+  const normName = normalizeTrailName(rawName);
+
+  const isGeneric =
+    !normName ||
+    /^(untitled|unnamed|unknown|ski trail|mountain aerialway|lift)$/i.test(normName);
+
+  // If generic, only merge strictly touching segments (<= 15m)
+  // If named, allow up to 150m to bridge intermediate stations and road crossings
+  const maxGapMeters = isGeneric ? 15 : 150;
+
+  const startId = String(selectedFeat.id || selectedProps.id || '');
+  const visitedIds = new Set<string>();
+  if (startId) visitedIds.add(startId);
+
+  // Filter relevant candidates
+  interface Candidate {
+    feat: any;
+    id: string;
+    lines: [number, number, number?][][];
+    endpoints: [number, number][];
+  }
+
+  const candidates: Candidate[] = [];
+  for (const f of allFeatures) {
+    if (!f || f === selectedFeat) continue;
+    const fid = String(f.id || f.properties?.id || '');
+    if (startId && fid === startId) continue;
+
+    const fp = f.properties || {};
+    const fIsLift = fp.kind === 'lift' || !!fp.aerialway;
+    if (fIsLift !== isLift) continue;
+
+    const fRawName = fp.name || fp['piste:name'] || fp['name:en'] || '';
+    const fNormName = normalizeTrailName(fRawName);
+
+    let isMatch = false;
+    if (isGeneric) {
+      isMatch = !fNormName || /^(untitled|unnamed|unknown|ski trail|mountain aerialway|lift)$/i.test(fNormName);
+      if (isMatch && !isLift) {
+        // For unnamed pistes, difficulty must also match
+        const diffA = selectedProps.difficulty || selectedProps['piste:difficulty'] || '';
+        const diffB = fp.difficulty || fp['piste:difficulty'] || '';
+        if (diffA !== diffB) isMatch = false;
+      }
+    } else {
+      isMatch = fNormName === normName;
+    }
+
+    if (isMatch) {
+      const lines = getLineCoordinates(f);
+      if (lines.length) {
+        candidates.push({
+          feat: f,
+          id: fid,
+          lines,
+          endpoints: getFeatureEndpoints(lines),
+        });
+      }
+    }
+  }
+
+  if (candidates.length === 0) {
+    return selectedFeat;
+  }
+
+  // BFS connectivity traversal from clicked feature
+  const connectedFeatures: any[] = [selectedFeat];
+  const queue: Candidate[] = [
+    {
+      feat: selectedFeat,
+      id: startId,
+      lines: selectedLines,
+      endpoints: getFeatureEndpoints(selectedLines),
+    },
+  ];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (let i = candidates.length - 1; i >= 0; i--) {
+      const cand = candidates[i];
+      if (cand.id && visitedIds.has(cand.id)) {
+        candidates.splice(i, 1);
+        continue;
+      }
+
+      const d = minDistanceBetweenEndpoints(current.endpoints, cand.endpoints);
+      if (d <= maxGapMeters) {
+        if (cand.id) visitedIds.add(cand.id);
+        connectedFeatures.push(cand.feat);
+        queue.push(cand);
+        candidates.splice(i, 1);
+      }
+    }
+  }
+
+  if (connectedFeatures.length <= 1) {
+    return selectedFeat;
+  }
+
+  // Combine line geometries into a MultiLineString
+  const combinedLines: [number, number, number?][][] = [];
+  for (const f of connectedFeatures) {
+    const lines = getLineCoordinates(f);
+    for (const l of lines) {
+      if (l && l.length >= 2) {
+        combinedLines.push(l);
+      }
+    }
+  }
+
+  // Merge metadata properties, preserving selected feature's primary identity
+  const mergedProps: Record<string, any> = { ...selectedProps };
+  for (const f of connectedFeatures) {
+    const fp = f.properties || {};
+    for (const k of Object.keys(fp)) {
+      if (mergedProps[k] === undefined || mergedProps[k] === '') {
+        mergedProps[k] = fp[k];
+      }
+    }
+  }
+
+  mergedProps.is_aggregated = true;
+  mergedProps.segment_count = connectedFeatures.length;
+
+  return {
+    type: 'Feature',
+    id: selectedFeat.id || selectedProps.id,
+    geometry: {
+      type: 'MultiLineString',
+      coordinates: combinedLines,
+    },
+    properties: mergedProps,
+  };
+}
+
 export function analyzeTrailFeature(
   feature: any,
   map: maplibregl.Map,
@@ -57,30 +270,17 @@ export function analyzeTrailFeature(
   const isGeneric = !rawName.trim() || /^(untitled|unnamed|unknown)/i.test(rawName.trim());
   const name = isGeneric ? defaultName : rawName.trim();
 
-  let coords: [number, number, number?][] = [];
-
-  if (geom.type === 'LineString') {
-    coords = geom.coordinates || [];
-  } else if (geom.type === 'MultiLineString') {
-    // Find closest line string to clicked point
-    const lines: [number, number, number?][][] = geom.coordinates || [];
-    let bestDist = Infinity;
-    for (const line of lines) {
-      if (!line || !line.length) continue;
-      for (const pt of line) {
-        const d = haversineMeters([pt[0], pt[1]], clickedLngLat);
-        if (d < bestDist) {
-          bestDist = d;
-          coords = line;
-        }
-      }
-    }
-    if (!coords.length && lines.length) coords = lines[0];
-  } else if (geom.type === 'Polygon') {
-    coords = geom.coordinates?.[0] || [];
-  } else if (geom.type === 'MultiPolygon') {
-    coords = geom.coordinates?.[0]?.[0] || [];
-  }
+  // Extract all constituent coordinate lines for LineString, MultiLineString, and polygons
+  const lines: [number, number, number?][][] =
+    geom.type === 'LineString'
+      ? [geom.coordinates || []]
+      : geom.type === 'MultiLineString'
+      ? geom.coordinates || []
+      : geom.type === 'Polygon'
+      ? [geom.coordinates?.[0] || []]
+      : geom.type === 'MultiPolygon'
+      ? [geom.coordinates?.[0]?.[0] || []]
+      : [];
 
   let minElev = Infinity;
   let maxElev = -Infinity;
@@ -91,38 +291,41 @@ export function analyzeTrailFeature(
   let totalDist3D = 0;
   let maxSlopeDeg = 0;
 
-  const sampledPoints: { pt: [number, number]; z: number }[] = [];
+  for (const line of lines) {
+    if (!line || line.length === 0) continue;
+    let prevC: [number, number, number?] | null = null;
+    let prevZ = 0;
 
-  for (let i = 0; i < coords.length; i++) {
-    const c = coords[i];
-    const z = sampleElevation(map, c, exaggeration);
-    sampledPoints.push({ pt: [c[0], c[1]], z });
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      const z = sampleElevation(map, c, exaggeration);
 
-    if (z > maxElev) {
-      maxElev = z;
-      topCoord = [c[0], c[1]];
-    }
-    if (z < minElev && z > 0) {
-      minElev = z;
-      baseCoord = [c[0], c[1]];
-    }
+      if (z > maxElev) {
+        maxElev = z;
+        topCoord = [c[0], c[1]];
+      }
+      if (z < minElev && z > 0) {
+        minElev = z;
+        baseCoord = [c[0], c[1]];
+      }
 
-    if (i > 0) {
-      const prev = coords[i - 1];
-      const d2 = haversineMeters([prev[0], prev[1]], [c[0], c[1]]);
-      const prevZ = sampledPoints[i - 1].z;
-      const dz = Math.abs(z - prevZ);
-      const d3 = Math.hypot(d2, dz);
+      if (prevC) {
+        const d2 = haversineMeters([prevC[0], prevC[1]], [c[0], c[1]]);
+        const dz = Math.abs(z - prevZ);
+        const d3 = Math.hypot(d2, dz);
 
-      totalDist2D += d2;
-      totalDist3D += d3;
+        totalDist2D += d2;
+        totalDist3D += d3;
 
-      if (d2 > 5 && isFinite(dz)) {
-        const segDeg = (Math.atan2(dz, d2) * 180) / Math.PI;
-        if (segDeg > maxSlopeDeg && segDeg < 75) {
-          maxSlopeDeg = segDeg;
+        if (d2 > 5 && isFinite(dz)) {
+          const segDeg = (Math.atan2(dz, d2) * 180) / Math.PI;
+          if (segDeg > maxSlopeDeg && segDeg < 75) {
+            maxSlopeDeg = segDeg;
+          }
         }
       }
+      prevC = c;
+      prevZ = z;
     }
   }
 
@@ -177,5 +380,7 @@ export function analyzeTrailFeature(
     maxSlopeDeg: maxSlopeDeg > 0 ? Math.round(maxSlopeDeg) : undefined,
     aspect,
     anchorLngLat: clickedLngLat,
+    feature,
+    segmentCount: p.segment_count || (lines.length > 1 ? lines.length : undefined),
   };
 }

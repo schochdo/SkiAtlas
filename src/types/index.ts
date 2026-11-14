@@ -117,6 +117,8 @@ export interface TrailInspectionData {
   maxSlopeDeg?: number;
   aspect?: string;
   anchorLngLat: [number, number];
+  feature?: any;
+  segmentCount?: number;
 }
 
 export interface MajorPeak {

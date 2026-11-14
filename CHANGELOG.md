@@ -6,6 +6,32 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `feat: exclusive full-panel filter view with dedicated top header & smooth transition`
+- **What was wrong before**:
+  - Clicking the "Filters" button previously kept the top search bar visible while collapsing the quick-matches and sort bar underneath it, creating a stacked double-header layout with a secondary nested "Filter Criteria" bar.
+  - This accordion-like height collapse felt like an abrupt scale/zoom shift.
+- **What changed**:
+  - **Full-Panel Filter Takeover** ([`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx)):
+    - When filters are open (`isFiltersOpen === true`), the entire sidebar panel switches to the dedicated Filter Criteria view, completely hiding the search bar, quick-match results, and sort controls.
+    - Rendered the top header with a bold `FILTER CRITERIA` title, `Sliders` icon, active filter count badge, optional `Reset All`, and a clean bordered `Done` button on the right matching the requested design.
+    - Used a smooth crossfade transition (`animate-in fade-in duration-150`) with zero zoom or scale transforms.
+    - Clicking `Done` smoothly restores the full search, scope, sort, and resort cards view.
+
+### `feat: aggregate connected trail and lift segments on click selection`
+- **What was wrong before**:
+  - OpenStreetMap represents continuous ski lifts (aerialways, funiculars, gondolas) and ski runs as multiple split `way` elements due to intermediate stations, passing loops, road crossings, or bridges (e.g. *Funiculaire Vevey–Mont-Pèlerin* is split into 14 separate ways).
+  - Clicking any lift or trail on the map previously selected only that single clicked `way` feature, highlighting an isolated 50m–150m segment and producing inaccurate, truncated metrics (e.g. 50 ft of vertical drop instead of the full 1,360 ft ascent).
+- **What changed**:
+  - **Graph Connectivity Traversal & Segment Aggregation** ([`src/utils/trailAnalysis.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/trailAnalysis.ts), [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)):
+    - Implemented `aggregateConnectedTrailFeatures(selectedFeat, allFeatures)` which performs a BFS connectivity traversal from the clicked feature across all active loaded features.
+    - Groups adjoining segments that share the same normalized name (`normalizeTrailName`, stripping accents and normalizing hyphens) and facility kind (`lift` vs `piste`) within a 150m station/bridge threshold (or 15m for unnamed runs).
+    - Merges their geometries into a single composite `MultiLineString` GeoJSON feature with full property metadata.
+  - **Full-Route Terrain Analysis** ([`src/utils/trailAnalysis.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/utils/trailAnalysis.ts)):
+    - Enhanced `analyzeTrailFeature` to evaluate all lines within `MultiLineString` geometries, deriving true minimum/maximum elevations, full-line vertical drop/rise, cumulative 3D route distance, and fall-line aspect from true summit to base.
+    - Pushes the complete aggregated `MultiLineString` to `selected-trail-source` so the entire route lights up continuously on click.
+  - **Type Definitions** ([`src/types/index.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/types/index.ts)):
+    - Added `feature?: any` and `segmentCount?: number` to `TrailInspectionData`.
+
 ### `feat: adopt Esri World_Topo_Map raster basemap on regional locator inset`
 - **What was wrong before**:
   - The Inset Locator Map previously relied on a custom CARTO Voyager vector style coupled with an AWS Terrarium DEM hillshade layer and extensive layer-traversal loops to hide roads, restyle borders, adjust water fills, and force symbol layer visibility.
