@@ -1,6 +1,7 @@
 import React from 'react';
+import { MountainSnow, Trees, Plane, Route } from 'lucide-react';
 import type { EarthProjectionMode, PassNetwork } from '../../types';
-import { PASS_COLORS, PASS_DISPLAY_NAMES, PASS_SHORT_LABELS } from '../../utils/classification';
+import { PASS_DISPLAY_NAMES } from '../../utils/classification';
 
 export interface FilterPanelProps {
   activeFiltersCount: number;
@@ -37,45 +38,28 @@ export interface FilterPanelProps {
   onChangeMinNordicMi: (v: number) => void;
 }
 
-// Active pass styles with soft, desaturated background tint, low-contrast border, and matching colored dot
-const PASS_ACTIVE_STYLES: Record<PassNetwork, { bg: string; border: string; dot: string; text: string }> = {
-  Ikon: {
-    bg: 'bg-[#B84A39]/10',
-    border: 'border-[#B84A39]/30',
-    dot: '#B84A39',
-    text: 'text-[#8C2C1D]',
-  },
-  Epic: {
-    bg: 'bg-[#2E5A44]/10',
-    border: 'border-[#2E5A44]/30',
-    dot: '#2E5A44',
-    text: 'text-[#1E4331]',
-  },
-  'Mountain Collective': {
-    bg: 'bg-[#2B5B84]/10',
-    border: 'border-[#2B5B84]/30',
-    dot: '#2B5B84',
-    text: 'text-[#1F4567]',
-  },
-  Indy: {
-    bg: 'bg-[#C2842F]/12',
-    border: 'border-[#C2842F]/30',
-    dot: '#C2842F',
-    text: 'text-[#8F5B15]',
-  },
-  Independent: {
-    bg: 'bg-[#8A847C]/12',
-    border: 'border-[#8A847C]/30',
-    dot: '#8A847C',
-    text: 'text-[#4A463F]',
-  },
+// Display labels and authentic pass dot colors
+const PASS_DISPLAY_MAP: Record<PassNetwork, string> = {
+  Ikon: 'Ikon',
+  Epic: 'Epic',
+  Indy: 'Indy',
+  'Mountain Collective': 'Mtn Collective',
+  Independent: 'Unaffiliated',
 };
 
-// Generates visible blue active track fill (#2B5B84) from the thumb to the end (minimum threshold range)
+const PASS_DOT_COLORS: Record<PassNetwork, string> = {
+  Ikon: '#B84A39',
+  Epic: '#2E5A44',
+  'Mountain Collective': '#2B5B84',
+  Indy: '#C2842F',
+  Independent: '#8A847C',
+};
+
+// Generates charcoal ink active track fill (#2C2A27) from the thumb to the end (minimum threshold range)
 const getSliderTrackBackground = (val: number, max: number): string => {
-  if (val <= 0) return '#D6D3CD';
+  if (val <= 0) return '#D6D0C2';
   const pct = Math.min(100, Math.max(0, (val / max) * 100));
-  return `linear-gradient(to right, #D6D3CD 0%, #D6D3CD ${pct}%, #2B5B84 ${pct}%, #2B5B84 100%)`;
+  return `linear-gradient(to right, #D6D0C2 0%, #D6D0C2 ${pct}%, #2C2A27 ${pct}%, #2C2A27 100%)`;
 };
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({
@@ -92,7 +76,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   selectedPasses,
   onTogglePass,
   onSetAllPasses,
-  onClearPasses,
+  onClearPasses: _onClearPasses,
   minVerticalM,
   onChangeMinVerticalM,
   minVerticalFt,
@@ -108,97 +92,103 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 }) => {
   return (
     <div className="space-y-3.5 text-[#1C1B18]">
-      {/* Category Segmented Controls (Compact icons, clear active/inactive states) */}
+      {/* Category Segmented Controls (Monochrome Lucide icons, solid charcoal active states) */}
       <div className="grid grid-cols-4 gap-1.5">
         <button
           onClick={onToggleDownhill}
-          className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             showDownhill
-              ? 'bg-[#2B5B84]/15 border-[#2B5B84] text-[#2B5B84] shadow-2xs'
-              : 'bg-[#FAF8F3] border-[#D6D3CD] text-[#8A847C] opacity-75 hover:opacity-100 hover:text-[#5C5852]'
+              ? 'bg-[#2C2A27] border-[#2C2A27] text-[#FAF8F3] shadow-2xs'
+              : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#736E67] hover:text-[#1C1B18] hover:border-[#8A847C]'
           }`}
           title={`Toggle Downhill Ski Areas (${categoryFilterCounts.downhill.toLocaleString()})`}
         >
-          <span className={`text-xs ${showDownhill ? '' : 'opacity-50 grayscale'}`}>⛷️</span>
+          <MountainSnow className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">Downhill</span>
         </button>
         <button
           onClick={onToggleNordic}
-          className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             showNordic
-              ? 'bg-[#2E5A44]/15 border-[#2E5A44] text-[#2E5A44] shadow-2xs'
-              : 'bg-[#FAF8F3] border-[#D6D3CD] text-[#8A847C] opacity-75 hover:opacity-100 hover:text-[#5C5852]'
+              ? 'bg-[#2C2A27] border-[#2C2A27] text-[#FAF8F3] shadow-2xs'
+              : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#736E67] hover:text-[#1C1B18] hover:border-[#8A847C]'
           }`}
           title={`Toggle Nordic Centers (${categoryFilterCounts.nordic.toLocaleString()})`}
         >
-          <span className={`text-xs ${showNordic ? '' : 'opacity-50 grayscale'}`}>🎿</span>
+          <Trees className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">Nordic</span>
         </button>
         <button
           onClick={onToggleHeliCat}
-          className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             showHeliCat
-              ? 'bg-[#B84A39]/15 border-[#B84A39] text-[#B84A39] shadow-2xs'
-              : 'bg-[#FAF8F3] border-[#D6D3CD] text-[#8A847C] opacity-75 hover:opacity-100 hover:text-[#5C5852]'
+              ? 'bg-[#2C2A27] border-[#2C2A27] text-[#FAF8F3] shadow-2xs'
+              : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#736E67] hover:text-[#1C1B18] hover:border-[#8A847C]'
           }`}
           title={`Toggle Guided Heli/Cat Operations (${categoryFilterCounts.heli_cat.toLocaleString()})`}
         >
-          <span className={`text-xs ${showHeliCat ? '' : 'opacity-50 grayscale'}`}>🚁</span>
+          <Plane className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">Heli/Cat</span>
         </button>
         <button
           onClick={onToggleTouring}
-          className={`py-2 px-1 rounded-md text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+          className={`py-2 px-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             showTouring
-              ? 'bg-[#D97706]/15 border-[#D97706] text-[#B45309] shadow-2xs'
-              : 'bg-[#FAF8F3] border-[#D6D3CD] text-[#8A847C] opacity-75 hover:opacity-100 hover:text-[#5C5852]'
+              ? 'bg-[#2C2A27] border-[#2C2A27] text-[#FAF8F3] shadow-2xs'
+              : 'bg-[#FAF8F3] border-[#D6D0C2] text-[#736E67] hover:text-[#1C1B18] hover:border-[#8A847C]'
           }`}
           title={`Toggle Backcountry Ski Touring Routes & Zones (${(categoryFilterCounts.touring ?? 1).toLocaleString()})`}
         >
-          <span className={`text-xs ${showTouring ? '' : 'opacity-50 grayscale'}`}>🏔️</span>
+          <Route className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">Touring</span>
         </button>
       </div>
 
-      {/* Pass Networks (Low-contrast borders, soft tinted backgrounds for active, gray for inactive) */}
+      {/* Pass Networks (Neutral pills, highlight dot/border only when filtered, single subtle Reset) */}
       <div className="space-y-1.5 pt-1 border-t border-[#D6D0C2]">
         <div className="flex items-center justify-between">
           <span className="text-[12.5px] text-[#4A463F] font-semibold">Pass Networks</span>
-          <div className="flex items-center gap-2 text-[10px]">
+          {selectedPasses.length !== 5 && (
             <button
+              type="button"
               onClick={onSetAllPasses}
-              className="text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer font-medium"
+              className="text-[10px] text-[#736E67] hover:text-[#1C1B18] hover:underline cursor-pointer font-medium"
             >
-              All
+              Reset
             </button>
-            <span className="text-[#D6D0C2]">·</span>
-            <button
-              onClick={onClearPasses}
-              className="text-[#5C5852] hover:text-[#1C1B18] hover:underline cursor-pointer font-medium"
-            >
-              None
-            </button>
-          </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-1.5">
           {(['Ikon', 'Epic', 'Indy', 'Mountain Collective', 'Independent'] as PassNetwork[]).map((pass) => {
-            const active = selectedPasses.includes(pass);
-            const style = PASS_ACTIVE_STYLES[pass];
-            const label = PASS_SHORT_LABELS[pass] || pass;
+            const isAllActive = selectedPasses.length === 5;
+            const isSelected = selectedPasses.includes(pass);
+            const label = PASS_DISPLAY_MAP[pass];
+            const dotColor = PASS_DOT_COLORS[pass];
+
+            let buttonStyle = 'bg-[#F4F1EA] border-[#D8D3C8] text-[#5C5852] hover:text-[#1C1B18]';
+            let dotStyle = { backgroundColor: dotColor, opacity: 0.6 };
+
+            if (!isAllActive) {
+              if (isSelected) {
+                buttonStyle = 'bg-[#FAF8F3] border-[#2C2A27] text-[#1C1B18] shadow-2xs font-bold';
+                dotStyle = { backgroundColor: dotColor, opacity: 1 };
+              } else {
+                buttonStyle = 'bg-[#F4F1EA] border-[#E2DDD5] text-[#8A847C] opacity-45 hover:opacity-75';
+                dotStyle = { backgroundColor: '#C4BFB6', opacity: 0.5 };
+              }
+            }
+
             return (
               <button
                 key={pass}
+                type="button"
                 onClick={() => onTogglePass(pass)}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border transition-all cursor-pointer ${
-                  active
-                    ? `${style.bg} ${style.border} ${style.text} shadow-2xs`
-                    : 'bg-[#FAF8F3] border-[#E2DDD5] text-[#8A847C] hover:text-[#5C5852] hover:border-[#D6D0C2]'
-                }`}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border transition-all cursor-pointer ${buttonStyle}`}
                 title={PASS_DISPLAY_NAMES[pass] || `Filter by ${label}`}
               >
                 <span
-                  className={`w-2 h-2 rounded-full shrink-0 transition-opacity ${active ? 'opacity-100' : 'opacity-40'}`}
-                  style={{ backgroundColor: active ? style.dot : '#C4BFB6' }}
+                  className="w-2 h-2 rounded-full shrink-0 transition-opacity"
+                  style={dotStyle}
                 />
                 <span>{label}</span>
               </button>
@@ -235,11 +225,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 />
                 {/* 5 Major Anchor Ticks */}
                 <div className="relative w-full flex justify-between px-[6px] pointer-events-none -mt-0.5">
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
                 </div>
                 <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
                   <span>Any</span>
@@ -264,11 +254,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 />
                 {/* 5 Major Anchor Ticks */}
                 <div className="relative w-full flex justify-between px-[6px] pointer-events-none -mt-0.5">
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
                 </div>
                 <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
                   <span>Any</span>
@@ -308,11 +298,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 />
                 {/* 5 Major Anchor Ticks */}
                 <div className="relative w-full flex justify-between px-[6px] pointer-events-none -mt-0.5">
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
                 </div>
                 <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
                   <span>Any</span>
@@ -337,11 +327,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 />
                 {/* 5 Major Anchor Ticks */}
                 <div className="relative w-full flex justify-between px-[6px] pointer-events-none -mt-0.5">
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
-                  <span className="w-[1px] h-1 bg-[#A8A299]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                  <span className="w-[2px] h-1.5 bg-[#8A847C]" />
                 </div>
                 <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
                   <span>Any</span>
@@ -384,11 +374,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               />
               {/* 5 Major Anchor Ticks */}
               <div className="relative w-full flex justify-between px-[6px] pointer-events-none -mt-0.5">
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
               </div>
               <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
                 <span>Any</span>
@@ -413,11 +403,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               />
               {/* 5 Major Anchor Ticks */}
               <div className="relative w-full flex justify-between px-[6px] pointer-events-none -mt-0.5">
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
-                <span className="w-[1px] h-1 bg-[#A8A299]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
+                <span className="w-[2px] h-1.5 bg-[#8A847C]" />
               </div>
               <div className="flex justify-between text-[10px] text-[#8A847C] font-mono tabular-nums px-0.5 select-none -mt-0.5">
                 <span>Any</span>

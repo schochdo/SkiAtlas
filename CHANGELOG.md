@@ -6,6 +6,26 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `refactor: streamline sidebar search, consolidate quick-matches, & declutter filter panel`
+- **What was wrong before**:
+  - **Simultaneous Search + Filter Crowding**: When opening filters, the filter criteria panel rendered as an absolute overlay that left quick-match boxes, search input, and sort controls stacked in a crowded multi-tier header above the cards.
+  - **Stacked Quick-Match Boxes**: `FIRE LOOKOUTS` and `MOUNTAIN SUMMITS` rendered as two separate bordered cards with bright colored backgrounds (`#FAF5EE` and `#F2EFE8`), thick borders, and repeated `"enter or click to fly"` instructions.
+  - **Scope & Sort Heavy Borders & Blue Highlights**: The scope segmented buttons (`All | In View`) and sort pills (`A-Z`, `Vert`, `Acres`, `7d`) were rendered in nested bordered boxes with bright blue text (`#2B5B84`) on active snow sort.
+  - **Default Rainbow Tints & Emoji Buttons in Filters**: Discipline toggles used colorful emoji icons (`⛷️`, `🎿`, `🚁`, `🏔️`) with bright blue borders. Pass network pills all lit up in multi-colored tints (`#B84A39`, `#2E5A44`, `#2B5B84`, `#C2842F`) even when no pass filter was applied, and slider track fills and thumbs used bright SaaS blue (`#2B5B84`).
+- **What changed**:
+  - **Exclusive Filter Criteria Mode** ([`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx)):
+    - When `Filters` is clicked, the sidebar body renders exclusively the `FILTER CRITERIA` panel, completely hiding quick-matches, sort controls, and resort cards until `Done` is clicked.
+    - Top `Filters` toggle button displays a compact count badge (e.g. `Filters · 2`) when any non-default filter is active, styled in solid charcoal ink (`bg-[#2C2A27] text-[#FAF8F3]`) when the filter view is open.
+  - **Consolidated Unified Quick-Matches** ([`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx)):
+    - Merged fire lookouts and mountain summits into a single, borderless quick-match section right below the search input, separated by a clean 1px horizontal divider.
+    - Capped to the top 5 matches total, removed repeated sub-labels, and used crisp monochrome `△` (Lookout) and `▲` (Summit) icons with right-aligned tabular elevation.
+  - **Unified Scope & Sort Row** ([`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx)):
+    - Unified `[ All | In View ]` and `[ A-Z | Vert | Acres | 7d ]` on a single clean row sharing the `#EAE5D9` track, using solid charcoal ink (`bg-[#2C2A27] text-[#FAF8F3]`) for active states with zero blue highlights or heavy double borders.
+  - **Editorial Atlas Filter Palette** ([`src/components/header/FilterModal.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/FilterModal.tsx), [`src/index.css`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/index.css)):
+    - Replaced emojis with clean monochrome Lucide icons (`MountainSnow`, `Trees`, `Plane`, `Route`) and `#2C2A27` solid ink when active.
+    - Simplified pass networks (`Ikon`, `Epic`, `Indy`, `Mtn Collective`, `Unaffiliated`) to neutral pills (`bg-[#F4F1EA] border-[#D8D3C8] text-[#5C5852]`) without rainbow background tints; only highlighting the active pass dot/border with `#2C2A27` when filtered, with a single subtle `Reset` action.
+    - Range sliders restyled to `#2C2A27` charcoal track fill and thumb borders, with crisp 2px tick marks (`w-[2px] h-1.5 bg-[#8A847C]`).
+
 ### `fix: restore place labels in inset locator & calibrate regional zoom to 5.8`
 - **What was wrong before**:
   - In `RegionalLocator.tsx`, city, town, village, and state text labels were missing on the inset locator map.

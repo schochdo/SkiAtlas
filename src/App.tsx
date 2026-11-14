@@ -3407,6 +3407,7 @@ export default function App() {
             onCollapseSheet={() => setMobileSheetState('peek')}
             isFiltersOpen={mobileFiltersOpen}
             onToggleFilters={() => setMobileFiltersOpen((prev) => !prev)}
+            onCloseFilters={() => setMobileFiltersOpen(false)}
             activeFiltersCount={activeFiltersCount}
             onResetFilters={handleResetFilters}
             onToggleDownhill={() => setShowDownhill(!showDownhill)}

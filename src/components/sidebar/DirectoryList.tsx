@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Search, X, Sliders, ChevronDown } from 'lucide-react';
 import type { SkiResort, SortBy, SortOrder, DirectoryScope, MajorPeak, FireLookout, PassNetwork } from '../../types';
 import { ResortCard } from './ResortCard';
 import { FilterPanel } from '../header/FilterModal';
+
+interface QuickMatchItem {
+  id: string;
+  type: 'lookout' | 'summit';
+  name: string;
+  state?: string;
+  elevation_ft: number;
+  elevation_m: number;
+  raw: FireLookout | MajorPeak;
+}
 
 interface DirectoryListProps {
   searchQuery: string;
@@ -32,6 +42,7 @@ interface DirectoryListProps {
   onCollapseSheet?: () => void;
   isFiltersOpen?: boolean;
   onToggleFilters?: () => void;
+  onCloseFilters?: () => void;
   // Filter Props
   activeFiltersCount: number;
   onResetFilters: () => void;
@@ -73,7 +84,7 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
   filteredResortsCount,
   inViewResortsCount,
   displayedResorts,
-  selectedResort,
+  selectedResort: _selectedResort,
   selectedResortId,
   unitsMetric,
   matchingPeaks = [],
@@ -86,6 +97,7 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
   onCollapseSheet,
   isFiltersOpen: externalFiltersOpen,
   onToggleFilters,
+  onCloseFilters,
   activeFiltersCount,
   onResetFilters,
   onToggleDownhill,
@@ -112,6 +124,7 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
 }) => {
   const [internalFiltersOpen, setInternalFiltersOpen] = useState(false);
   const isFiltersOpen = externalFiltersOpen !== undefined ? externalFiltersOpen : internalFiltersOpen;
+
   const toggleFilters = () => {
     if (onToggleFilters) {
       onToggleFilters();
@@ -119,13 +132,55 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
       setInternalFiltersOpen((prev) => !prev);
     }
   };
-  const setIsFiltersOpen = (open: boolean) => {
-    if (onToggleFilters) {
-      if (open !== isFiltersOpen) onToggleFilters();
+
+  const handleCloseFilters = () => {
+    if (onCloseFilters) {
+      onCloseFilters();
+    } else if (onToggleFilters) {
+      if (isFiltersOpen) onToggleFilters();
     } else {
-      setInternalFiltersOpen(open);
+      setInternalFiltersOpen(false);
     }
   };
+
+  // Consolidate Fire Lookouts and Mountain Summits into top 5 quick matches
+  const combinedQuickMatches = useMemo<QuickMatchItem[]>(() => {
+    if (!searchQuery.trim()) return [];
+    const items: QuickMatchItem[] = [];
+
+    for (const l of matchingLookouts) {
+      items.push({
+        id: `lookout-${l.id}`,
+        type: 'lookout',
+        name: l.name,
+        state: l.state,
+        elevation_ft: l.elevation_ft || 0,
+        elevation_m: l.elevation_m || 0,
+        raw: l,
+      });
+    }
+
+    for (const p of matchingPeaks) {
+      items.push({
+        id: `peak-${p.id}`,
+        type: 'summit',
+        name: p.name,
+        elevation_ft: p.elevation_ft || 0,
+        elevation_m: p.elevation_m || 0,
+        raw: p,
+      });
+    }
+
+    const q = searchQuery.toLowerCase().trim();
+    items.sort((a, b) => {
+      const aStarts = a.name.toLowerCase().startsWith(q) ? 1 : 0;
+      const bStarts = b.name.toLowerCase().startsWith(q) ? 1 : 0;
+      if (aStarts !== bStarts) return bStarts - aStarts;
+      return b.elevation_ft - a.elevation_ft;
+    });
+
+    return items.slice(0, 5);
+  }, [matchingLookouts, matchingPeaks, searchQuery]);
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-[#F7F4ED] overflow-hidden relative">
@@ -145,10 +200,13 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
                   e.preventDefault();
                   if (displayedResorts.length > 0) {
                     onSelectResort(displayedResorts[0].id);
-                  } else if (matchingLookouts && matchingLookouts.length > 0 && onSelectLookout) {
-                    onSelectLookout(matchingLookouts[0]);
-                  } else if (matchingPeaks && matchingPeaks.length > 0 && onSelectPeak) {
-                    onSelectPeak(matchingPeaks[0]);
+                  } else if (combinedQuickMatches.length > 0) {
+                    const topMatch = combinedQuickMatches[0];
+                    if (topMatch.type === 'lookout' && onSelectLookout) {
+                      onSelectLookout(topMatch.raw as FireLookout);
+                    } else if (topMatch.type === 'summit' && onSelectPeak) {
+                      onSelectPeak(topMatch.raw as MajorPeak);
+                    }
                   }
                 }
               }}
@@ -171,18 +229,13 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
             onClick={toggleFilters}
             className={`h-8.5 px-2.5 rounded-md border flex items-center gap-1.5 text-xs font-bold transition-colors cursor-pointer shrink-0 select-none ${
               isFiltersOpen
-                ? 'bg-[#DDD9CF] border-[#2C2A27] text-[#1C1B18]'
-                : 'bg-[#E5E1D7] border-[#C4BEB1] text-[#1C1B18] hover:bg-[#DDD9CF]'
+                ? 'bg-[#2C2A27] border-[#2C2A27] text-[#FAF8F3]'
+                : 'bg-[#EAE5D9] border-[#D6D0C2] text-[#1C1B18] hover:bg-[#DDD9CF]'
             }`}
             aria-expanded={isFiltersOpen}
           >
             <Sliders className="w-3.5 h-3.5" />
-            <span>Filters</span>
-            {activeFiltersCount > 0 && (
-              <span className="bg-[#B84A39] text-[#FAF8F3] text-[10px] px-1.5 py-0.2 rounded-full font-bold tabular-nums">
-                {activeFiltersCount}
-              </span>
-            )}
+            <span>Filters{activeFiltersCount > 0 ? ` · ${activeFiltersCount}` : ''}</span>
           </button>
 
           {/* Optional Mobile Collapse Button */}
@@ -199,161 +252,139 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
           )}
         </div>
 
-        {/* Fire Lookouts Quick-Fly Matches */}
-        {matchingLookouts.length > 0 && onSelectLookout && (
-          <div className="p-2 bg-[#FAF5EE] border border-[#E2CEBC] rounded-md text-xs space-y-1 shadow-2xs">
-            <div className="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-[#A0522D]">
-              <span className="flex items-center gap-1.5">
-                <span className="text-[#D96B27] font-bold">⌂</span>
-                <span>Fire Lookouts</span>
-              </span>
-              <span className="text-[9px] font-normal text-[#8A847C] lowercase">Enter or click to fly</span>
+        {/* Consolidated Quick-Fly Matches (Lookouts & Summits) */}
+        {!isFiltersOpen && combinedQuickMatches.length > 0 && (
+          <div className="pt-1.5 pb-0.5 border-t border-[#D6D0C2] space-y-0.5">
+            <div className="px-1 text-[9.5px] font-bold uppercase tracking-wider text-[#736E67]">
+              Quick Matches
             </div>
-            <div className="space-y-0.5 max-h-32 overflow-y-auto">
-              {matchingLookouts.map((lookout) => (
-                <button
-                  key={lookout.id}
-                  onClick={() => onSelectLookout(lookout)}
-                  className="w-full text-left px-2 py-1 rounded hover:bg-[#FAF8F3] hover:text-[#1C1B18] text-[#3D3A36] flex items-center justify-between cursor-pointer transition-colors"
-                >
-                  <span className="font-semibold truncate flex items-center gap-1.5 min-w-0">
-                    <span className="text-[#D96B27] text-xs font-bold shrink-0">⌂</span>
-                    <span className="truncate">{lookout.name}</span>
-                    {lookout.state && (
-                      <span className="text-[9.5px] px-1 py-0.2 bg-[#EFECE4] text-[#736E67] font-bold rounded shrink-0">
-                        {lookout.state}
-                      </span>
-                    )}
+            {combinedQuickMatches.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  if (item.type === 'lookout' && onSelectLookout) {
+                    onSelectLookout(item.raw as FireLookout);
+                  } else if (item.type === 'summit' && onSelectPeak) {
+                    onSelectPeak(item.raw as MajorPeak);
+                  }
+                }}
+                className="w-full text-left px-2 py-1 rounded hover:bg-[#EAE5D9] text-[#1C1B18] flex items-center justify-between cursor-pointer transition-colors"
+              >
+                <span className="font-semibold text-xs truncate flex items-center gap-1.5 min-w-0">
+                  <span className="text-[#5C5852] font-mono text-xs shrink-0 select-none">
+                    {item.type === 'lookout' ? '△' : '▲'}
                   </span>
-                  <span className="text-[11px] text-[#8A847C] tabular-nums font-mono shrink-0 ml-2">
-                    {lookout.elevation_ft > 0
-                      ? unitsMetric
-                        ? `${lookout.elevation_m.toLocaleString()} m`
-                        : `${lookout.elevation_ft.toLocaleString()}'`
-                      : ''}
-                  </span>
-                </button>
-              ))}
-            </div>
+                  <span className="truncate">{item.name}</span>
+                  {item.state && (
+                    <span className="text-[9.5px] px-1 py-0.2 bg-[#E5E1D7] text-[#5C5852] font-bold rounded shrink-0">
+                      {item.state}
+                    </span>
+                  )}
+                </span>
+                <span className="text-[11px] text-[#736E67] tabular-nums font-mono shrink-0 ml-2">
+                  {item.elevation_ft > 0
+                    ? unitsMetric
+                      ? `${item.elevation_m.toLocaleString()} m`
+                      : `${item.elevation_ft.toLocaleString()}'`
+                    : ''}
+                </span>
+              </button>
+            ))}
           </div>
         )}
 
-        {/* Mountain Summits Quick-Fly Matches */}
-        {matchingPeaks.length > 0 && onSelectPeak && (
-          <div className="p-2 bg-[#F2EFE8] border border-[#D6D0C2] rounded-md text-xs space-y-1">
-            <div className="flex items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-[#736E67]">
-              <span>Mountain Summits</span>
-              <span className="text-[9px] font-normal text-[#8A847C] lowercase">Enter or click to fly</span>
+        {/* Combined Scope + Sort Controls (Hidden when in exclusive Filter Criteria mode) */}
+        {!isFiltersOpen && (
+          <div className="flex items-center gap-1.5 pt-0.5">
+            {/* Scope: All vs In View */}
+            <div className="flex items-center p-0.5 bg-[#EAE5D9] rounded-md border border-[#D6D0C2] shrink-0">
+              <button
+                type="button"
+                onClick={() => onScopeChange('all')}
+                className={`py-1 px-2 rounded text-[11px] font-bold transition-all cursor-pointer ${
+                  directoryScope === 'all'
+                    ? 'bg-[#2C2A27] text-[#FAF8F3]'
+                    : 'text-[#5C5852] hover:text-[#1C1B18]'
+                }`}
+                title={`All matching ski areas (${filteredResortsCount.toLocaleString()})`}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => onScopeChange('in_frame')}
+                className={`py-1 px-2 rounded text-[11px] font-bold transition-all cursor-pointer ${
+                  directoryScope === 'in_frame'
+                    ? 'bg-[#2C2A27] text-[#FAF8F3]'
+                    : 'text-[#5C5852] hover:text-[#1C1B18]'
+                }`}
+                title={`Ski areas currently in view frame (${inViewResortsCount.toLocaleString()})`}
+              >
+                In View
+              </button>
             </div>
-            <div className="space-y-0.5 max-h-32 overflow-y-auto">
-              {matchingPeaks.map((peak) => (
-                <button
-                  key={peak.id}
-                  onClick={() => onSelectPeak(peak)}
-                  className="w-full text-left px-2 py-1 rounded hover:bg-[#FAF8F3] hover:text-[#1C1B18] text-[#3D3A36] flex items-center justify-between cursor-pointer transition-colors"
-                >
-                  <span className="font-semibold truncate flex items-center gap-1.5">
-                    <span className="text-[#B84A39] text-xs">▲</span>
-                    <span>{peak.name}</span>
-                  </span>
-                  <span className="text-[11px] text-[#8A847C] tabular-nums font-mono shrink-0 ml-2">
-                    {unitsMetric ? `${peak.elevation_m.toLocaleString()} m` : `${peak.elevation_ft.toLocaleString()}'`}
-                  </span>
-                </button>
-              ))}
+
+            {/* Sort Controls */}
+            <div className="flex items-center gap-0.5 bg-[#EAE5D9] p-0.5 rounded-md border border-[#D6D0C2] flex-1 min-w-0">
+              <button
+                type="button"
+                onClick={() => onSortClick('name')}
+                className={`flex-1 py-1 px-1 rounded text-[11px] font-semibold text-center transition-colors cursor-pointer flex items-center justify-center truncate ${
+                  sortBy === 'name'
+                    ? 'bg-[#2C2A27] text-[#FAF8F3] font-bold'
+                    : 'text-[#5C5852] hover:text-[#1C1B18]'
+                }`}
+              >
+                <span>A-Z</span>
+                {sortBy === 'name' && <span className="text-[9px] ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+              </button>
+              <button
+                type="button"
+                onClick={() => onSortClick('vert')}
+                className={`flex-1 py-1 px-1 rounded text-[11px] font-semibold text-center transition-colors cursor-pointer flex items-center justify-center truncate ${
+                  sortBy === 'vert'
+                    ? 'bg-[#2C2A27] text-[#FAF8F3] font-bold'
+                    : 'text-[#5C5852] hover:text-[#1C1B18]'
+                }`}
+              >
+                <span>Vert</span>
+                {sortBy === 'vert' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+              </button>
+              <button
+                type="button"
+                onClick={() => onSortClick('acres')}
+                className={`flex-1 py-1 px-1 rounded text-[11px] font-semibold text-center transition-colors cursor-pointer flex items-center justify-center truncate ${
+                  sortBy === 'acres'
+                    ? 'bg-[#2C2A27] text-[#FAF8F3] font-bold'
+                    : 'text-[#5C5852] hover:text-[#1C1B18]'
+                }`}
+              >
+                <span>{showNordic && !showDownhill && !showHeliCat && !showTouring ? 'Network' : 'Acres'}</span>
+                {sortBy === 'acres' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+              </button>
+              <button
+                type="button"
+                onClick={() => onSortClick('snow')}
+                className={`flex-1 py-1 px-1 rounded text-[11px] font-semibold text-center transition-colors cursor-pointer flex items-center justify-center truncate ${
+                  sortBy === 'snow'
+                    ? 'bg-[#2C2A27] text-[#FAF8F3] font-bold'
+                    : 'text-[#5C5852] hover:text-[#1C1B18]'
+                }`}
+              >
+                <span>7d ❄</span>
+                {sortBy === 'snow' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
+              </button>
             </div>
           </div>
         )}
-
-        {/* Row 2: Combined Scope + Sort Row */}
-        <div className="flex items-center gap-1.5 pt-0.5">
-          {/* Scope Segmented Buttons: All vs In View */}
-          <div className="flex items-center p-0.5 bg-[#EFECE6] rounded-md border border-[#D6D3CD] shrink-0">
-            <button
-              type="button"
-              onClick={() => onScopeChange('all')}
-              className={`py-1 px-2 rounded-[4px] text-[11px] font-bold transition-all cursor-pointer ${
-                directoryScope === 'all'
-                  ? 'bg-[#FAF8F3] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
-                  : 'text-[#736E67] hover:text-[#1C1B18]'
-              }`}
-              title={`All matching ski areas (${filteredResortsCount.toLocaleString()})`}
-            >
-              All
-            </button>
-            <button
-              type="button"
-              onClick={() => onScopeChange('in_frame')}
-              className={`py-1 px-2 rounded-[4px] text-[11px] font-bold transition-all cursor-pointer ${
-                directoryScope === 'in_frame'
-                  ? 'bg-[#FAF8F3] text-[#1C1B18] shadow-2xs border border-[#A8A299]'
-                  : 'text-[#736E67] hover:text-[#1C1B18]'
-              }`}
-              title={`Ski areas currently in view frame (${inViewResortsCount.toLocaleString()})`}
-            >
-              In View
-            </button>
-          </div>
-
-          {/* Sort Pills */}
-          <div className="flex items-center gap-0.5 bg-[#FAF8F3] p-0.5 rounded-md border border-[#D6D3CD] flex-1 min-w-0">
-            <button
-              type="button"
-              onClick={() => onSortClick('name')}
-              className={`flex-1 py-1 px-1 rounded-[4px] text-[11px] font-semibold text-center transition-colors cursor-pointer flex items-center justify-center truncate ${
-                sortBy === 'name'
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299]'
-                  : 'text-[#5C5852] hover:text-[#1C1B18]'
-              }`}
-            >
-              <span>A-Z</span>
-              {sortBy === 'name' && <span className="text-[9px] ml-0.5">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-            </button>
-            <button
-              type="button"
-              onClick={() => onSortClick('vert')}
-              className={`flex-1 py-1 px-1 rounded-[4px] text-[11px] font-semibold text-center transition-colors cursor-pointer flex items-center justify-center truncate ${
-                sortBy === 'vert'
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299]'
-                  : 'text-[#5C5852] hover:text-[#1C1B18]'
-              }`}
-            >
-              <span>Vert</span>
-              {sortBy === 'vert' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
-            </button>
-            <button
-              type="button"
-              onClick={() => onSortClick('acres')}
-              className={`flex-1 py-1 px-1 rounded-[4px] text-[11px] font-semibold text-center transition-colors cursor-pointer flex items-center justify-center truncate ${
-                sortBy === 'acres'
-                  ? 'bg-[#EAE5D9] text-[#1C1B18] font-bold border border-[#A8A299]'
-                  : 'text-[#5C5852] hover:text-[#1C1B18]'
-              }`}
-            >
-              <span>{showNordic && !showDownhill && !showHeliCat && !showTouring ? 'Network' : 'Acres'}</span>
-              {sortBy === 'acres' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
-            </button>
-            <button
-              type="button"
-              onClick={() => onSortClick('snow')}
-              className={`flex-1 py-1 px-1 rounded-[4px] text-[11px] font-semibold text-center transition-colors cursor-pointer flex items-center justify-center truncate ${
-                sortBy === 'snow'
-                  ? 'bg-[#EAE5D9] text-[#2B5B84] font-bold border border-[#A8A299]'
-                  : 'text-[#5C5852] hover:text-[#1C1B18]'
-              }`}
-            >
-              <span>7d ❄</span>
-              {sortBy === 'snow' && <span className="text-[9px] ml-0.5">{sortOrder === 'desc' ? '▼' : '▲'}</span>}
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* Main List Area + Expanded Filters Overlay */}
+      {/* Main Body: Either Exclusive Filter Criteria Panel OR Directory Cards List */}
       <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col">
-        {/* Filters Overlay View */}
-        {isFiltersOpen && (
-          <div className="absolute inset-0 z-20 bg-[#F7F4ED] flex flex-col min-h-0 overflow-y-auto animate-in fade-in duration-150">
+        {isFiltersOpen ? (
+          <div className="flex-1 min-h-0 overflow-y-auto bg-[#F7F4ED] flex flex-col animate-in fade-in duration-150">
+            {/* Filter Criteria Header */}
             <div className="p-2.5 sm:p-3 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center justify-between sticky top-0 z-10 shadow-2xs">
               <div className="flex items-center gap-1.5">
                 <Sliders className="w-3.5 h-3.5 text-[#1C1B18]" />
@@ -378,13 +409,15 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
                 )}
                 <button
                   type="button"
-                  onClick={() => setIsFiltersOpen(false)}
+                  onClick={handleCloseFilters}
                   className="px-2.5 py-1 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] hover:bg-[#EAE5D9] border border-[#2C2A27] rounded cursor-pointer transition-colors"
                 >
                   Done
                 </button>
               </div>
             </div>
+
+            {/* Filter Panel Content */}
             <div className="p-3 pb-8">
               <FilterPanel
                 activeFiltersCount={activeFiltersCount}
@@ -419,81 +452,40 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
               />
             </div>
           </div>
-        )}
-
-        {/* Directory Cards List */}
-        <div className="flex-1 min-h-0 overflow-y-auto bg-[#F7F4ED] p-2.5 space-y-2">
-          {displayedResorts.length === 0 ? (
-            <div className="p-4 text-center text-xs text-[#8A847C] space-y-2.5">
-              <div>
-                {directoryScope === 'in_frame'
-                  ? '0 ski areas in current map view frame.'
-                  : `No ski areas match ${searchQuery ? `"${searchQuery}"` : 'current filters'}.`}
+        ) : (
+          /* Directory Cards List */
+          <div className="flex-1 min-h-0 overflow-y-auto bg-[#F7F4ED] p-2.5 space-y-2">
+            {displayedResorts.length === 0 ? (
+              <div className="p-4 text-center text-xs text-[#8A847C] space-y-2.5">
+                <div>
+                  {directoryScope === 'in_frame'
+                    ? '0 ski areas in current map view frame.'
+                    : `No ski areas match ${searchQuery ? `"${searchQuery}"` : 'current filters'}.`}
+                </div>
+                {directoryScope === 'in_frame' && filteredResortsCount > 0 && (
+                  <button
+                    onClick={() => onScopeChange('all')}
+                    className="inline-block px-3 py-1.5 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] border border-[#D6D0C2] hover:border-[#8A847C] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
+                  >
+                    View all {filteredResortsCount.toLocaleString()} matching areas →
+                  </button>
+                )}
               </div>
-              {directoryScope === 'in_frame' && filteredResortsCount > 0 && (
-                <button
-                  onClick={() => onScopeChange('all')}
-                  className="inline-block px-3 py-1.5 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] border border-[#D6D0C2] hover:border-[#8A847C] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
-                >
-                  View all {filteredResortsCount.toLocaleString()} matching areas →
-                </button>
-              )}
-              {matchingLookouts.length > 0 && onSelectLookout && (
-                <div className="pt-2.5 border-t border-[#D6D0C2]">
-                  <div className="text-[11px] font-medium text-[#5C5852] mb-1.5">
-                    Found fire lookout:
-                  </div>
-                  <button
-                    onClick={() => onSelectLookout(matchingLookouts[0])}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] border border-[#D6D0C2] hover:border-[#8A847C] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
-                  >
-                    <span className="text-[#D96B27] font-bold">⌂</span>
-                    <span>{matchingLookouts[0].name}</span>
-                    {matchingLookouts[0].state && (
-                      <span className="text-[10px] text-[#736E67]">({matchingLookouts[0].state})</span>
-                    )}
-                    {matchingLookouts[0].elevation_ft > 0 && (
-                      <span className="text-[10px] text-[#8A847C] font-mono">
-                        · {unitsMetric ? `${matchingLookouts[0].elevation_m.toLocaleString()} m` : `${matchingLookouts[0].elevation_ft.toLocaleString()}'`}
-                      </span>
-                    )}
-                    <span className="ml-1 text-[#8A847C]">→ Pan &amp; Zoom</span>
-                  </button>
-                </div>
-              )}
-              {matchingPeaks.length > 0 && onSelectPeak && (
-                <div className="pt-2.5 border-t border-[#D6D0C2]">
-                  <div className="text-[11px] font-medium text-[#5C5852] mb-1.5">
-                    Found mountain summit:
-                  </div>
-                  <button
-                    onClick={() => onSelectPeak(matchingPeaks[0])}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#1C1B18] bg-[#FAF8F3] border border-[#D6D0C2] hover:border-[#8A847C] rounded-md hover:bg-[#EAE5D9] transition-colors cursor-pointer"
-                  >
-                    <span className="text-[#B84A39]">▲</span>
-                    <span>{matchingPeaks[0].name}</span>
-                    <span className="text-[10px] text-[#8A847C] font-mono">
-                      ({unitsMetric ? `${matchingPeaks[0].elevation_m.toLocaleString()} m` : `${matchingPeaks[0].elevation_ft.toLocaleString()}'`})
-                    </span>
-                    <span className="ml-1 text-[#8A847C]">→ Pan &amp; Zoom</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            displayedResorts.map((r) => (
-              <ResortCard
-                key={r.id}
-                resort={r}
-                isSelected={r.id === selectedResortId}
-                unitsMetric={unitsMetric}
-                onSelect={onSelectResort}
-                onDeselect={onDeselectResort}
-                onViewProfile={onViewProfile}
-              />
-            ))
-          )}
-        </div>
+            ) : (
+              displayedResorts.map((r) => (
+                <ResortCard
+                  key={r.id}
+                  resort={r}
+                  isSelected={r.id === selectedResortId}
+                  unitsMetric={unitsMetric}
+                  onSelect={onSelectResort}
+                  onDeselect={onDeselectResort}
+                  onViewProfile={onViewProfile}
+                />
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
