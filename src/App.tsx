@@ -487,7 +487,7 @@ export default function App() {
       if (minAreaAcres !== 100) count++;
       if (minNordicMi !== 0) count++;
     }
-    if (!showDownhill || showNordic || showHeliCat || !showTouring) count++;
+    if (!showDownhill || showNordic || showHeliCat || showTouring) count++;
     return count;
   }, [selectedPasses, unitsMetric, minVerticalFt, minVerticalM, minAreaAcres, minAreaHa, minNordicMi, minNordicKm, showDownhill, showNordic, showHeliCat, showTouring]);
 
@@ -531,7 +531,7 @@ export default function App() {
     setShowDownhill(true);
     setShowNordic(false);
     setShowHeliCat(false);
-    setShowTouring(true);
+    setShowTouring(false);
   };
 
   // Filtered Resorts across entire world dataset

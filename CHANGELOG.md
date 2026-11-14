@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: calibrate default active filter baseline and reset state`
+- **What changed**:
+  - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), aligned `activeFiltersCount` computation with the default state (all 5 pass networks enabled, downhill only, 500 ft / 150 m min vertical, 100 ac / 50 ha min area, 0 nordic miles, touring off).
+  - Previously, `activeFiltersCount` checked `!showTouring` instead of `showTouring` as an active deviation, which caused the UI to report `1 active filter` immediately on page load when touring routes were defaulted to off.
+  - Updated `handleResetFilters()` to reset `showTouring` to `false` matching initial application load state.
+- **Why**: Ensures zero active filters are displayed on initial load and that resetting filters returns cleanly to the intended defaults.
+
 ### `fix: camera flight & mobile touch audit pass`
 - **Audit & Edge-case Fixes**:
   - **Input Guard**: Added `SELECT` to `isInputElementFocused()` in [`src/camera/cameraUtils.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/cameraUtils.ts) alongside `INPUT`, `TEXTAREA`, and `isContentEditable` to ensure keyboard navigation never fires while dropdowns or search bars are focused. Verified `window` `'blur'`, `'focus'`, and `document` `'visibilitychange'` listeners halt RAF loops and clear keys cleanly.
