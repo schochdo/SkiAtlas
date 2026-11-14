@@ -276,8 +276,44 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
               </div>
             ) : (
               <div className="space-y-3">
-                {/* MOUNTAIN SUMMITS (PEAKFINDER HORIZON LABELS) */}
+                {/* GEOGRAPHIC REFERENCE (BORDERS & PLACES) */}
                 <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
+                      Geographic Reference
+                    </span>
+                    <span
+                      className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
+                        showCountryOutlines
+                          ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299]'
+                          : 'bg-[#F2EFE8] text-[#8A847C] border-[#D6D0C2]'
+                      }`}
+                    >
+                      {showCountryOutlines ? 'Active' : 'Off'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onToggleCountryOutlines}
+                    className={`w-full flex items-center justify-between p-2 rounded-md border text-xs transition-all cursor-pointer ${
+                      showCountryOutlines
+                        ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
+                        : 'bg-[#F7F4ED] text-[#736E67] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
+                    }`}
+                    title="Toggle international political borders, provinces, and settlements with auto-contrast styling"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-3.5 h-3.5 text-[#2C4C64]" />
+                      <span>Borders & Places</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-[#5C5852]">
+                      {showCountryOutlines ? 'Visible' : 'Hidden'}
+                    </span>
+                  </button>
+                </div>
+
+                {/* MOUNTAIN SUMMITS (PEAKFINDER HORIZON LABELS) */}
+                <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
                       Horizon Summits
@@ -346,39 +382,6 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                       {showLookouts ? 'Visible' : 'Hidden'}
                     </span>
                   </button>
-                </div>
-
-                {/* GEOGRAPHIC REFERENCE (BORDERS & PLACES) */}
-                <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">
-                  <div className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
-                    Geographic Reference
-                  </div>
-                  <div className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={onToggleCountryOutlines}
-                      className={`w-full flex items-center justify-between p-2 rounded-md border text-xs transition-all cursor-pointer ${
-                        showCountryOutlines
-                          ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
-                          : 'bg-[#F7F4ED] text-[#736E67] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
-                      }`}
-                      title="Toggle international political borders, provinces, and settlements with auto-contrast styling"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Globe className="w-3.5 h-3.5 text-[#2C4C64]" />
-                        <span>Borders & Places</span>
-                      </div>
-                      <span
-                        className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
-                          showCountryOutlines
-                            ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299]'
-                            : 'bg-[#F2EFE8] text-[#8A847C] border-[#D6D0C2]'
-                        }`}
-                      >
-                        {showCountryOutlines ? 'Active' : 'Off'}
-                      </span>
-                    </button>
-                  </div>
                 </div>
 
                 {/* TERRAIN ANALYSIS OVERLAYS (SLOPE & ASPECT) */}

@@ -6,6 +6,15 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `feat: reorder layers list placing borders & places above summits and fire lookouts`
+- **What was wrong before**:
+  - In the map Layers menu ([`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx)), Geographic Reference (Borders & Places) was positioned at the bottom of the point features list below Mountain Summits and Fire Lookouts.
+  - Users frequently need foundational geographic reference (country and province boundaries, major places) before inspecting specific point topography.
+- **What changed**:
+  - Repositioned the "Geographic Reference (Borders & Places)" section to the top of the Layers list, above "Horizon Summits" and "Fire Lookouts & Towers".
+  - Aligned section header and toggle button styling with standardized `Active`/`Off` header badges and `Visible`/`Hidden` button indicators.
+
+
 ### `feat: replace plane icon with bespoke helicopter icon for heli/cat filter`
 - **What was wrong before**:
   - The "Heli/Cat" category toggle button in [`src/components/header/FilterModal.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/FilterModal.tsx) used Lucide's generic commercial airplane icon (`Plane`), which miscommunicated backcountry heli-skiing and snowcat operations as commercial fixed-wing aviation.
