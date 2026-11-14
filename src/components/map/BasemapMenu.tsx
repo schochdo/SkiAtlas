@@ -17,8 +17,6 @@ interface BasemapMenuProps {
   onToggleLookouts?: () => void;
   showCountryOutlines: boolean;
   onToggleCountryOutlines: () => void;
-  showTouring?: boolean;
-  onToggleTouring?: () => void;
   terrainExaggeration: number;
   onChangeTerrainExaggeration: (val: number) => void;
   terrainOverlay: TerrainOverlayMode;
@@ -41,8 +39,6 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
   onToggleLookouts,
   showCountryOutlines,
   onToggleCountryOutlines,
-  showTouring = true,
-  onToggleTouring,
   terrainExaggeration,
   onChangeTerrainExaggeration,
   terrainOverlay,
@@ -351,44 +347,6 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
                     </span>
                   </button>
                 </div>
-
-                {/* SKI TOURING & BACKCOUNTRY ROUTES */}
-                {onToggleTouring && (
-                  <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase text-[#8A847C] font-semibold tracking-wider">
-                        Ski Touring Routes
-                      </span>
-                      <span
-                        className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
-                          showTouring
-                            ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299]'
-                            : 'bg-[#F2EFE8] text-[#8A847C] border-[#D6D0C2]'
-                        }`}
-                      >
-                        {showTouring ? 'Active' : 'Off'}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={onToggleTouring}
-                      className={`w-full flex items-center justify-between p-2 rounded-md border text-xs transition-all cursor-pointer ${
-                        showTouring
-                          ? 'bg-[#EAE5D9] text-[#1C1B18] border-[#A8A299] shadow-2xs font-bold'
-                          : 'bg-[#F7F4ED] text-[#736E67] border-[#D6D0C2] hover:bg-[#EFECE4] hover:text-[#1C1B18] font-medium'
-                      }`}
-                      title="Toggle significant ski touring lines, backcountry couloirs, and classic routes (e.g. Tuckerman Ravine, Haute Route)"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">🏔️</span>
-                        <span>Touring Routes</span>
-                      </div>
-                      <span className="text-[10px] font-semibold text-[#5C5852]">
-                        {showTouring ? 'Visible' : 'Hidden'}
-                      </span>
-                    </button>
-                  </div>
-                )}
 
                 {/* GEOGRAPHIC REFERENCE (BORDERS & PLACES) */}
                 <div className="pt-2.5 border-t border-[#D6D0C2] space-y-2">

@@ -3497,8 +3497,6 @@ export default function App() {
         onToggleLookouts={() => setShowLookouts((prev) => !prev)}
         showCountryOutlines={showCountryOutlines}
         onToggleCountryOutlines={() => setShowCountryOutlines((prev) => !prev)}
-        showTouring={showTouring}
-        onToggleTouring={() => setShowTouring((prev) => !prev)}
         terrainExaggeration={terrainExaggeration}
         onChangeTerrainExaggeration={handleTerrainExaggerationChange}
         terrainOverlay={terrainOverlay}

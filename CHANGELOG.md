@@ -6,6 +6,14 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `feat: drop ski touring routes toggle from layers menu`
+- **What was wrong before**:
+  - In `src/components/map/BasemapMenu.tsx`, "Ski Touring Routes" was listed as an overlay toggle under the "Layers" tab alongside cartographic features (Summits, Fire Lookouts, Borders, Slope/Aspect).
+  - This created duplicate and conflicting control surfaces since Touring is already an activity discipline filter in the sidebar directory.
+- **What changed**:
+  - Removed the "Ski Touring Routes" section and its props from the Layers popover menu ([`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx), [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)).
+  - Reserved the "Layers" menu strictly for physical/cartographic map features (Horizon Summits, Fire Lookouts, Geographic Reference, Terrain Overlays, 3D Elevation Mesh).
+
 ### `fix: eliminate undefined ActiveSelectionBanner reference causing render crash`
 - **What was wrong before**:
   - In `src/components/sidebar/DirectoryList.tsx`, a legacy reference to `<ActiveSelectionBanner />` remained in the cards list block. Because `ActiveSelectionBanner` was deleted in an earlier cleanup, evaluating it threw an uncaught `ReferenceError`, preventing React from mounting the page.
