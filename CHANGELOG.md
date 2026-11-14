@@ -6,6 +6,10 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `feat: add npm run stop script to terminate local dev server`
+- Added `"stop": "pkill -f 'vite.*3000' || true"` to [`package.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/package.json).
+- Allows cleanly shutting down any running Vite dev server on port 3000 from the terminal via `npm run stop`.
+
 ### `fix: calibrate default active filter baseline and reset state`
 - **What changed**:
   - In [`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), aligned `activeFiltersCount` computation with the default state (all 5 pass networks enabled, downhill only, 500 ft / 150 m min vertical, 100 ac / 50 ha min area, 0 nordic miles, touring off).
