@@ -455,16 +455,6 @@ export const DirectoryList: React.FC<DirectoryListProps> = ({
 
           {/* Directory Cards List */}
           <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col">
-            {/* Active Selection Sticky Banner */}
-            {selectedResort && onDeselectResort && onViewProfile && (
-              <ActiveSelectionBanner
-                selectedResort={selectedResort}
-                unitsMetric={unitsMetric}
-                onViewProfile={onViewProfile}
-                onDeselect={onDeselectResort}
-              />
-            )}
-
             {/* Results Count Header */}
             <div className="px-3 py-1.5 text-[11px] text-[#736E67] font-medium border-b border-[#E5E1D7] bg-[#F7F4ED] flex items-center justify-between shrink-0">
               <span>{filteredResortsCount.toLocaleString()} ski areas</span>

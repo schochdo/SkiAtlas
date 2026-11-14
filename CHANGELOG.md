@@ -6,6 +6,13 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `fix: eliminate undefined ActiveSelectionBanner reference causing render crash`
+- **What was wrong before**:
+  - In `src/components/sidebar/DirectoryList.tsx`, a legacy reference to `<ActiveSelectionBanner />` remained in the cards list block. Because `ActiveSelectionBanner` was deleted in an earlier cleanup, evaluating it threw an uncaught `ReferenceError`, preventing React from mounting the page.
+- **What changed**:
+  - Removed the obsolete reference and verified zero TypeScript errors via `npm run lint` (`tsc --noEmit`).
+  - Relaunched the background Vite dev server on port 3000.
+
 ### `feat: exclusive full-panel filter view with dedicated top header & smooth transition`
 - **What was wrong before**:
   - Clicking the "Filters" button previously kept the top search bar visible while collapsing the quick-matches and sort bar underneath it, creating a stacked double-header layout with a secondary nested "Filter Criteria" bar.
