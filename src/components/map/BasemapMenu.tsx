@@ -163,14 +163,14 @@ export const BasemapMenu: React.FC<BasemapMenuProps> = ({
       ref={basemapMenuRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`absolute top-14 right-3 md:right-4 ${
+      className={`absolute top-16 md:top-14 right-3 md:right-4 ${
         mapMenuOpen ? 'z-35' : 'z-20'
       } flex items-center select-none`}
     >
       <div className="relative">
         <button
           onClick={handleButtonClick}
-          className="relative w-8 h-8 rounded-md border flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]"
+          className="hidden md:flex relative w-8 h-8 rounded-md border items-center justify-center transition-all duration-200 cursor-pointer shadow-xs bg-[#FAF8F3] text-[#1C1B18] border-[#D6D0C2] hover:bg-[#EFECE4]"
           title="Layers & Basemaps"
           aria-label="Layers & Basemaps"
           aria-expanded={mapMenuOpen}

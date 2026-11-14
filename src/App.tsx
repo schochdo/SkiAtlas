@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { Search, Sliders, Layers } from 'lucide-react';
 import * as maplibregl from 'maplibre-gl';
 import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
@@ -189,6 +190,7 @@ export default function App() {
   const [selectedResortId, setSelectedResortId] = useState<string | null>(null);
   const [panelView, setPanelView] = useState<'directory' | 'profile'>('directory');
   const [mobileSheetState, setMobileSheetState] = useState<'peek' | 'half' | 'full'>('peek');
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
   useEffect(() => {
@@ -534,6 +536,18 @@ export default function App() {
     setShowTouring(false);
   };
 
+  const handleOpenMobileSearch = () => {
+    setPanelView('directory');
+    setMobileFiltersOpen(false);
+    setMobileSheetState('full');
+  };
+
+  const handleOpenMobileFilters = () => {
+    setPanelView('directory');
+    setMobileFiltersOpen(true);
+    setMobileSheetState('full');
+  };
+
   // Filtered Resorts across entire world dataset
   const filteredResorts = useMemo(() => {
     return filterResortCatalog(
@@ -623,14 +637,15 @@ export default function App() {
 
     const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
     const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
-    const bottomPad = isMob ? 220 : 0;
+    const bottomPad = 0;
+    const topPad = isMob ? 0 : 60;
 
     safeFlyTo(mapRef.current, {
       center: peak.coordinates,
       zoom: 12.8,
       pitch: 56,
       bearing: -15,
-      padding: { top: 60, bottom: bottomPad, left: leftPad, right: 0 },
+      padding: { top: topPad, bottom: bottomPad, left: leftPad, right: 0 },
       duration: 2200,
       essential: true,
     });
@@ -769,14 +784,15 @@ export default function App() {
 
     const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
     const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
-    const bottomPad = isMob ? 220 : 0;
+    const bottomPad = 0;
+    const topPad = isMob ? 0 : 60;
 
     safeFlyTo(mapRef.current, {
       center: lookout.coordinates,
       zoom: 13.5,
       pitch: 58,
       bearing: -20,
-      padding: { top: 60, bottom: bottomPad, left: leftPad, right: 0 },
+      padding: { top: topPad, bottom: bottomPad, left: leftPad, right: 0 },
       duration: 2200,
       essential: true,
     });
@@ -1196,8 +1212,8 @@ export default function App() {
     const initialIsMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     const initialLeftPad = initialIsMobile ? 0 : (leftDockOpen ? 404 : 20);
     const initialRightPad = 0;
-    const initialTopPad = 44;
-    const initialBottomPad = initialIsMobile ? 80 : 0;
+    const initialTopPad = initialIsMobile ? 0 : 44;
+    const initialBottomPad = 0;
 
     const initialZoom = computeGlobeFitZoom(
       typeof window !== 'undefined' ? window.innerWidth : 1440,
@@ -1424,8 +1440,12 @@ export default function App() {
     let t0_pitch = 0;
     let t0_zoom = 0;
     let t0_bearing = 0;
+    let suppressPanUntil = 0;
+    let suppressPanTimer: any = null;
+    let lastTouchCount = 0;
 
     const onTouchStart = (e: TouchEvent) => {
+      lastTouchCount = e.touches.length;
       if (e.touches.length === 2) {
         const t1 = e.touches[0];
         const t2 = e.touches[1];
@@ -1445,6 +1465,11 @@ export default function App() {
     };
 
     const onTouchMove = (e: TouchEvent) => {
+      if (performance.now() < suppressPanUntil) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       if (e.touches.length === 2) {
         const t1 = e.touches[0];
         const t2 = e.touches[1];
@@ -1512,7 +1537,25 @@ export default function App() {
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (e.touches.length < 2) {
+      const remainingTouches = e.touches.length;
+      if (lastTouchCount === 2 && remainingTouches === 1) {
+        // Lifting 1 finger slightly before the other after a 2-finger pinch/tilt/rotate:
+        // Suppress single-finger pan for 120ms so the remaining touch does not jerk the map.
+        suppressPanUntil = performance.now() + 120;
+        try {
+          map.dragPan.disable();
+          (map as any)._touchPan?.reset?.();
+        } catch (_) {}
+        if (suppressPanTimer) clearTimeout(suppressPanTimer);
+        suppressPanTimer = setTimeout(() => {
+          try {
+            map.dragPan.enable();
+          } catch (_) {}
+        }, 120);
+      }
+      lastTouchCount = remainingTouches;
+
+      if (remainingTouches < 2) {
         if (gestureLock === 'pitch') {
           setMapPitch(Math.round(map.getPitch()));
           try {
@@ -1834,13 +1877,14 @@ export default function App() {
         if (!coords) return;
         const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
         const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
-        const bottomPad = isMob ? 220 : 0;
+        const bottomPad = 0;
+        const topPad = isMob ? 0 : 60;
         safeFlyTo(map, {
           center: coords,
           zoom: Math.max(map.getZoom(), 12.8),
           pitch: 56,
           bearing: -15,
-          padding: { top: 60, bottom: bottomPad, left: leftPad, right: 0 },
+          padding: { top: topPad, bottom: bottomPad, left: leftPad, right: 0 },
           duration: 1800,
           essential: true,
         });
@@ -1866,13 +1910,14 @@ export default function App() {
         if (!coords) return;
         const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
         const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
-        const bottomPad = isMob ? 220 : 0;
+        const bottomPad = 0;
+        const topPad = isMob ? 0 : 60;
         safeFlyTo(map, {
           center: coords,
           zoom: Math.max(map.getZoom(), 13.5),
           pitch: 58,
           bearing: -20,
-          padding: { top: 60, bottom: bottomPad, left: leftPad, right: 0 },
+          padding: { top: topPad, bottom: bottomPad, left: leftPad, right: 0 },
           duration: 1800,
           essential: true,
         });
@@ -2157,6 +2202,7 @@ export default function App() {
     });
 
     return () => {
+      if (suppressPanTimer) clearTimeout(suppressPanTimer);
       document.removeEventListener('gesturestart', onDocGesture as any);
       document.removeEventListener('gesturechange', onDocGesture as any);
       canvas.removeEventListener('contextmenu', onContextMenu);
@@ -2190,8 +2236,8 @@ export default function App() {
     const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
     const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
     const rightPad = 0;
-    const bottomPad = isMob ? (mobileSheetState === 'half' ? 220 : (mobileSheetState === 'peek' ? 80 : 0)) : 0;
-    const topPad = 44;
+    const bottomPad = 0;
+    const topPad = isMob ? 0 : 44;
 
     try {
       const curPad = mapRef.current.getPadding();
@@ -2672,7 +2718,7 @@ export default function App() {
     handleDeselectTrail();
     setSelectedResortId(id);
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setMobileSheetState((prev) => (prev === 'full' ? 'full' : 'half'));
+      setMobileSheetState((prev) => (prev === 'full' ? 'full' : 'peek'));
     }
     const resort = displayedResorts.find((r) => r.id === id) || resorts.find((r) => r.id === id);
     if (!resort || !mapRef.current) return;
@@ -2680,8 +2726,8 @@ export default function App() {
     const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
     const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
     const rightPad = 0;
-    const bottomPad = isMob ? 220 : 0;
-    const topPad = 60;
+    const bottomPad = 0;
+    const topPad = isMob ? 0 : 60;
 
     const isNordic = resort.category === 'nordic';
     const isHeliCat = resort.category === 'heli_cat';
@@ -2764,7 +2810,7 @@ export default function App() {
     const id = p.id || `global-${Math.round(coords[0] * 1000)}-${Math.round(coords[1] * 1000)}`;
     setSelectedResortId(id);
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setMobileSheetState((prev) => (prev === 'full' ? 'full' : 'half'));
+      setMobileSheetState((prev) => (prev === 'full' ? 'full' : 'peek'));
     }
 
     // If already in resorts master state, forward to handleSelectResort for unified weather and geometry
@@ -2777,8 +2823,8 @@ export default function App() {
     const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
     const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
     const rightPad = 0;
-    const bottomPad = isMob ? 220 : 0;
-    const topPad = 60;
+    const bottomPad = 0;
+    const topPad = isMob ? 0 : 60;
 
     const isNordic = p.category === 'nordic';
     const isHeliCat = p.category === 'heli_cat';
@@ -2875,9 +2921,10 @@ export default function App() {
     if (mapRef.current) {
       const isMob = typeof window !== 'undefined' && window.innerWidth < 768;
       const leftPad = isMob ? 0 : (leftDockOpen ? 404 : 20);
-      const bottomPad = isMob ? 80 : 0;
+      const bottomPad = 0;
+      const topPad = isMob ? 0 : 44;
       mapRef.current.easeTo({
-        padding: { left: leftPad, right: 0, top: 44, bottom: bottomPad },
+        padding: { left: leftPad, right: 0, top: topPad, bottom: bottomPad },
         duration: 300,
       });
     }
@@ -2984,6 +3031,47 @@ export default function App() {
         onToggleProjection={handleToggleProjection}
       />
 
+      {/* MOBILE COMPACT FLOATING TOP BAR (< 768px) */}
+      <div
+        className={`md:hidden fixed top-3 left-3 right-3 z-20 flex items-center gap-2 transition-opacity duration-200 select-none ${
+          mobileSheetState === 'full' ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+      >
+        <button
+          onClick={handleOpenMobileSearch}
+          className="flex-1 h-10 bg-[#FAF8F3] border border-[#2C2A27] rounded-md px-3 flex items-center gap-2 text-left text-xs font-medium text-[#5C5852] shadow-sm cursor-pointer select-none truncate hover:bg-[#EFECE4] transition-colors"
+          aria-label="Search ski areas, peaks, countries"
+        >
+          <Search className="w-4 h-4 text-[#8A847C] shrink-0" />
+          <span className="truncate text-[#1C1B18] font-semibold">
+            {searchQuery || 'Search alpine resorts, peaks...'}
+          </span>
+        </button>
+
+        <button
+          onClick={handleOpenMobileFilters}
+          className="h-10 px-3 bg-[#FAF8F3] border border-[#2C2A27] rounded-md flex items-center gap-1.5 text-xs font-bold text-[#1C1B18] shadow-sm cursor-pointer hover:bg-[#EFECE4] transition-colors shrink-0"
+          aria-label="Filter ski areas"
+        >
+          <Sliders className="w-3.5 h-3.5" />
+          <span>Filters</span>
+          {activeFiltersCount > 0 && (
+            <span className="bg-[#B84A39] text-[#FAF8F3] text-[10px] px-1.5 py-0.2 rounded-full font-bold tabular-nums">
+              {activeFiltersCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setMapMenuOpen((prev) => !prev)}
+          className="h-10 px-3 bg-[#FAF8F3] border border-[#2C2A27] rounded-md flex items-center gap-1.5 text-xs font-bold text-[#1C1B18] shadow-sm cursor-pointer hover:bg-[#EFECE4] transition-colors shrink-0"
+          aria-label="Toggle map layers and basemaps"
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Layers</span>
+        </button>
+      </div>
+
       {/* DESKTOP DIRECTORY DOCK */}
       <LeftDock isOpen={leftDockOpen} onToggle={() => setLeftDockOpen(!leftDockOpen)}>
         {panelView === 'profile' && selectedResort ? (
@@ -3058,8 +3146,10 @@ export default function App() {
         mobileSheetState={mobileSheetState}
         onSetMobileSheetState={setMobileSheetState}
         selectedResort={selectedResort}
+        selectedTrail={selectedTrail}
         panelView={panelView}
         filteredResortsCount={filteredResorts.length}
+        inViewResortsCount={inViewResorts.length}
         activeFiltersCount={activeFiltersCount}
         unitsMetric={unitsMetric}
       >
@@ -3097,6 +3187,9 @@ export default function App() {
             onSelectResort={handleSelectResort}
             onDeselectResort={handleDeselectResort}
             onViewProfile={() => setPanelView('profile')}
+            onCollapseSheet={() => setMobileSheetState('peek')}
+            isFiltersOpen={mobileFiltersOpen}
+            onToggleFilters={() => setMobileFiltersOpen((prev) => !prev)}
             activeFiltersCount={activeFiltersCount}
             onResetFilters={handleResetFilters}
             onToggleDownhill={() => setShowDownhill(!showDownhill)}
@@ -3132,7 +3225,7 @@ export default function App() {
 
       {/* FLOATING TOP-LEFT MAP VIEWPORT CONTROLS */}
       <div
-        className={`absolute top-14 left-3 md:left-8 ${
+        className={`absolute top-16 md:top-14 left-3 md:left-8 ${
           leftDockOpen ? 'md:left-[420px]' : 'md:left-8'
         } z-20 flex items-start gap-2 transition-all duration-300 ease-in-out select-none`}
       >

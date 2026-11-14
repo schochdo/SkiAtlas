@@ -22,7 +22,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   onToggleProjection,
 }) => {
   return (
-    <header className="absolute top-0 inset-x-0 z-40 h-11 flex items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
+    <header className="hidden md:flex absolute top-0 inset-x-0 z-40 h-11 items-center justify-between px-4 bg-[#F7F4ED] border-b border-[#D6D0C2]">
       <div className="flex items-center min-w-0">
         {/* Tracked Mountain Editorial Wordmark with Alpine Snow Globe Crest in the center */}
         <button

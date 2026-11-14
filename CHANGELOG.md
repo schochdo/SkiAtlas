@@ -6,6 +6,30 @@ All notable changes in reverse chronological order. Format: `[date] type: descri
 
 ## 2026-11-13
 
+### `feat: mobile full-bleed 3d map, floating 44px pill & un-stacked directory headers`
+- **What changed**:
+  - **Full-Viewport Map on Mobile** ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx), [`src/camera/cameraUtils.ts`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/camera/cameraUtils.ts), [`src/components/header/TopNavBar.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/header/TopNavBar.tsx), [`src/components/map/BasemapMenu.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/map/BasemapMenu.tsx)):
+    - Removed bottom map padding when the drawer is collapsed on mobile screens (`padding.bottom = 0`), reclaiming 80px–220px so the 3D globe and mountain terrain render full-bleed edge-to-edge.
+    - Hid the desktop `TopNavBar` on mobile screens (`hidden md:flex`) and added a compact floating top bar (`md:hidden fixed top-3 left-3 right-3 z-20 flex gap-2`) styled in our archival paper theme (`bg-[#FAF8F3] border border-[#2C2A27]`):
+      - Left: Compact search trigger/input (`h-10`) that displays the active query and expands the directory sheet on tap.
+      - Right: Compact `Filters` button (`h-10 px-3`) with active filter count pill, opening the filter panel directly inside the sheet, and `Layers` button toggling the basemap menu beneath the top bar (`top-16 md:top-14`).
+    - Adjusted `NavigationControls` container positioning to `top-16 md:top-14` to clear the floating top bar cleanly.
+  - **Compact 44px Floating Bottom Pill** ([`src/components/sidebar/MobileSheet.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/MobileSheet.tsx)):
+    - Replaced the edge-to-edge 80px peek bar with a compact, centered floating pill (`h-11 px-4 mb-[calc(env(safe-area-inset-bottom,0px)+12px)] bg-[#FAF8F3] border border-[#2C2A27] rounded-full`):
+      - When no feature is selected: displays `▲ {inViewCount} in view · Directory` (tapping expands to 88dvh).
+      - When a resort is selected: displays `{name} · {vertical} · {snow7d} [Details ↑]` on a single clean line.
+      - When a trail is selected: displays `{name} · {vertical} [Details ↑]`.
+    - Maintained snappy 2-state drawer transitions (`peek` vs `full`) based on swipe velocity (`|v| > 0.4 px/ms`) or displacement exceeding 35% viewport height.
+  - **Un-Stacked Mobile Directory Headers** ([`src/components/sidebar/DirectoryList.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/components/sidebar/DirectoryList.tsx)):
+    - Sticky compact top header inside the sheet:
+      - Row 1: Search input + `Filters` toggle button with active badge count + collapse chevron.
+      - Row 2: Combined Scope (`[ ALL MATCHING ] [ IN VIEW ]`) and Sort pills (`[ A-Z ] [ Vert ] [ Acres ] [ 7d ❄ ]`) on one row.
+      - Peak and lookout search matches render inline directly below search when active.
+    - Rendered `FilterPanel` (disciplines, pass networks, vertical/acreage sliders) as an absolute overlay view inside the sheet rather than collapsible accordions above resort cards, ensuring resort cards are immediately visible without scrolling.
+  - **2-to-1 Finger Lift Jerk Suppression** ([`src/App.tsx`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/src/App.tsx)):
+    - In mobile touch event handling, when `touches.length` drops from 2 to 1, single-finger pan is suppressed for 120ms (`map.dragPan.disable()`, `_touchPan?.reset()`, and `suppressPanUntil = performance.now() + 120`), eliminating phantom pan jerk when lifting one finger slightly before the other after a pinch, rotate, or pitch tilt gesture.
+- **Why**: Drastically improves mobile ergonomics, eliminates stacked header clutter, maximizes 3D map visibility, and prevents jarring touch jerks.
+
 ### `feat: add npm run stop script to terminate local dev server`
 - Added `"stop": "pkill -f 'vite.*3000' || true"` to [`package.json`](file:///Users/macstudio/Documents/Antigravity/SkiAtlas/package.json).
 - Allows cleanly shutting down any running Vite dev server on port 3000 from the terminal via `npm run stop`.

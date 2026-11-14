@@ -1,14 +1,15 @@
 import React, { useRef } from 'react';
-import { Search, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
-import type { SkiResort, MobileSheetState, PanelView } from '../../types';
+import type { SkiResort, MobileSheetState, PanelView, TrailInspectionData } from '../../types';
 import { formatVert, formatSnow } from '../../utils/formatters';
 
 interface MobileSheetProps {
   mobileSheetState: MobileSheetState;
   onSetMobileSheetState: (state: MobileSheetState | ((prev: MobileSheetState) => MobileSheetState)) => void;
   selectedResort: SkiResort | null;
+  selectedTrail?: TrailInspectionData | null;
   panelView: PanelView;
   filteredResortsCount: number;
+  inViewResortsCount: number;
   activeFiltersCount: number;
   unitsMetric: boolean;
   children: React.ReactNode;
@@ -18,9 +19,9 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
   mobileSheetState,
   onSetMobileSheetState,
   selectedResort,
-  panelView,
-  filteredResortsCount,
-  activeFiltersCount,
+  selectedTrail,
+  filteredResortsCount: _filteredResortsCount,
+  inViewResortsCount,
   unitsMetric,
   children,
 }) => {
@@ -62,19 +63,14 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
     const heightThreshold = windowH * 0.35;
 
     // Responsive 2-state drawer: snap between 'peek' and 'full' based on velocity (>0.4 px/ms) or 35% height threshold
-    if (Math.abs(velocity) > 0.4 || distance > heightThreshold) {
-      if (velocity < -0.4 || dy < -heightThreshold) {
-        // Swiped UP with speed or distance -> expand to full
+    if (mobileSheetState === 'peek') {
+      // Swiping up from peek expands to full
+      if (velocity < -0.4 || dy < -heightThreshold || dy < -30) {
         onSetMobileSheetState('full');
-      } else if (velocity > 0.4 || dy > heightThreshold) {
-        // Swiped DOWN with speed or distance -> collapse to peek
-        onSetMobileSheetState('peek');
       }
-    } else if (distance > 40) {
-      // Moderate swipe without extreme velocity
-      if (dy < 0) {
-        onSetMobileSheetState('full');
-      } else {
+    } else {
+      // Swiping down from full collapses to peek
+      if (velocity > 0.4 || dy > heightThreshold || dy > 50) {
         onSetMobileSheetState('peek');
       }
     }
@@ -89,23 +85,87 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
 
   const handleHandleClick = () => {
     if (isDragging.current) return;
-    // Tap handle: toggle between collapsed peek and expanded full
+    // Tap drag handle toggles sheet state
     onSetMobileSheetState((prev) => (prev === 'peek' ? 'full' : 'peek'));
   };
 
   const handlePeekClick = () => {
     if (isDragging.current) return;
-    // Single tap on collapsed peek bar directly expands to full
+    // Single tap on collapsed floating pill directly expands to full
     onSetMobileSheetState('full');
   };
 
+  if (mobileSheetState === 'peek') {
+    return (
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={handlePeekClick}
+        className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 z-30 h-11 px-4 mb-[calc(env(safe-area-inset-bottom,0px)+12px)] bg-[#FAF8F3] border border-[#2C2A27] rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.18)] flex items-center justify-between gap-3 cursor-pointer select-none max-w-[calc(100vw-24px)] whitespace-nowrap active:scale-98 transition-transform"
+        role="button"
+        aria-label={
+          selectedResort
+            ? `View details for ${selectedResort.name}`
+            : selectedTrail
+            ? `View details for ${selectedTrail.name}`
+            : `View ${inViewResortsCount.toLocaleString()} ski areas in view`
+        }
+      >
+        {selectedResort ? (
+          <div className="flex items-center gap-1.5 min-w-0 truncate">
+            <span className="font-bold text-xs text-[#1C1B18] truncate max-w-[130px] xs:max-w-[180px] sm:max-w-[240px]">
+              {selectedResort.name}
+            </span>
+            {(() => {
+              const parts = [
+                selectedResort.vertical_drop_ft && selectedResort.vertical_drop_ft > 0
+                  ? formatVert(selectedResort.vertical_drop_ft, unitsMetric)
+                  : null,
+                selectedResort.weather?.snowfall_7d_in
+                  ? `${formatSnow(selectedResort.weather.snowfall_7d_in, unitsMetric)} 7d`
+                  : null,
+              ].filter(Boolean);
+              return parts.length > 0 ? (
+                <span className="text-[11px] font-semibold text-[#5C5852] shrink-0">
+                  · {parts.join(' · ')}
+                </span>
+              ) : null;
+            })()}
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#B84A39] bg-[#EFECE4] border border-[#D6D0C2] px-1.5 py-0.5 rounded shrink-0 ml-1">
+              Details ↑
+            </span>
+          </div>
+        ) : selectedTrail ? (
+          <div className="flex items-center gap-1.5 min-w-0 truncate">
+            <span className="font-bold text-xs text-[#1C1B18] truncate max-w-[130px] xs:max-w-[180px] sm:max-w-[240px]">
+              {selectedTrail.name}
+            </span>
+            {selectedTrail.verticalDropFt && selectedTrail.verticalDropFt > 0 && (
+              <span className="text-[11px] font-semibold text-[#5C5852] shrink-0">
+                · {formatVert(selectedTrail.verticalDropFt, unitsMetric)}
+              </span>
+            )}
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#B84A39] bg-[#EFECE4] border border-[#D6D0C2] px-1.5 py-0.5 rounded shrink-0 ml-1">
+              Details ↑
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs font-bold text-[#1C1B18]">
+            <span className="text-[#B84A39] text-[10px]">▲</span>
+            <span>{inViewResortsCount.toLocaleString()} in view · Directory</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#5C5852] bg-[#EFECE4] px-1.5 py-0.5 rounded border border-[#D6D0C2] shrink-0 ml-1">
+              ↑
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`md:hidden fixed inset-x-0 bottom-0 z-30 flex flex-col bg-[#F7F4ED] rounded-t-2xl border-t border-[#D6D0C2] shadow-[0_-4px_24px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom,0px)] transition-all duration-300 ease-in-out ${
-        mobileSheetState === 'peek'
-          ? 'h-[calc(5rem+env(safe-area-inset-bottom,0px))]'
-          : 'h-[88dvh]'
-      }`}
+      className="md:hidden fixed inset-x-0 bottom-0 z-30 flex flex-col bg-[#F7F4ED] rounded-t-2xl border-t border-[#D6D0C2] shadow-[0_-4px_24px_rgba(0,0,0,0.2)] pb-[env(safe-area-inset-bottom,0px)] h-[88dvh] transition-all duration-300 ease-in-out"
     >
       {/* Pull tab / Drag handle pill with touch gesture support */}
       <div
@@ -113,106 +173,16 @@ export const MobileSheet: React.FC<MobileSheetProps> = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={handleHandleClick}
-        className="w-full py-2 flex items-center justify-center cursor-pointer shrink-0 select-none touch-none"
-        title={
-          mobileSheetState === 'peek'
-            ? 'Tap or swipe up to expand to fullscreen'
-            : 'Tap or swipe down to collapse'
-        }
+        className="w-full py-2.5 flex items-center justify-center cursor-pointer shrink-0 select-none touch-none"
+        title="Swipe down or tap to collapse"
       >
         <div className="w-10 h-1.5 rounded-full bg-[#C4BEB1] hover:bg-[#8A847C] transition-colors" />
       </div>
 
-      {mobileSheetState === 'peek' ? (
-        /* Mobile Peek Glance (Direct 1-tap expand) */
-        <div
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onClick={handlePeekClick}
-          className="flex items-center justify-between px-4 pb-3 cursor-pointer select-none flex-1"
-        >
-          {selectedResort ? (
-            <div className="min-w-0 flex-1 pr-3">
-              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 leading-snug">
-                <span className="font-bold text-sm text-[#1C1B18] break-words">
-                  {selectedResort.name}
-                </span>
-                <span className="text-[11px] font-semibold text-[#5C5852] shrink-0">
-                  · {selectedResort.country}
-                </span>
-              </div>
-              <div className="text-xs text-[#5C5852] font-medium break-words leading-tight mt-0.5">
-                {selectedResort.vertical_drop_ft && selectedResort.vertical_drop_ft > 0
-                  ? `${formatVert(selectedResort.vertical_drop_ft, unitsMetric)} vert · `
-                  : ''}
-                {selectedResort.weather?.snowfall_7d_in
-                  ? `${formatSnow(selectedResort.weather.snowfall_7d_in, unitsMetric)} 7d snow`
-                  : 'Tap for Mountain Profile'}
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-xs text-[#5C5852] min-w-0 flex-1 pr-2">
-              <Search className="w-4 h-4 text-[#8A847C] shrink-0" />
-              <span className="font-bold text-sm text-[#1C1B18] truncate">
-                {filteredResortsCount.toLocaleString()} ski areas
-              </span>
-              {activeFiltersCount > 0 && (
-                <span className="bg-[#EAE5D9] text-[#1C1B18] border border-[#A8A299] text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums shrink-0">
-                  {activeFiltersCount} active
-                </span>
-              )}
-            </div>
-          )}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onSetMobileSheetState('full');
-              }}
-              className="p-1.5 rounded-md bg-[#FAF8F3] border border-[#D6D0C2] text-[#1C1B18] hover:bg-[#EAE5D9] transition-colors cursor-pointer"
-              title="Expand to fullscreen"
-            >
-              <Maximize2 className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      ) : (
-        /* Mobile Half or Full Sheet */
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          {/* Sheet Control Strip (Shown in Directory view; Profile view integrates controls in its header) */}
-          {panelView === 'directory' && (
-            <div
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              className="px-3.5 py-1.5 border-b border-[#D6D0C2] bg-[#FAF8F3] flex items-center justify-between shrink-0 select-none"
-            >
-              <span className="text-xs font-bold text-[#1C1B18] uppercase tracking-wider truncate">
-                Mountain Directory ({filteredResortsCount.toLocaleString()})
-              </span>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSetMobileSheetState('peek');
-                  }}
-                  className="p-1 text-[#8A847C] hover:text-[#1C1B18] hover:bg-[#EAE5D9] rounded transition-colors cursor-pointer"
-                  title="Minimize to Peek"
-                >
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Scrollable Content inside sheet */}
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            {children}
-          </div>
-        </div>
-      )}
+      {/* Scrollable Content inside sheet */}
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col relative">
+        {children}
+      </div>
     </div>
   );
 };

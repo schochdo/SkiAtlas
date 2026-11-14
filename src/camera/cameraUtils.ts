@@ -116,8 +116,8 @@ export function computeGlobeFitZoom(
 ): number {
   const leftPad = isMobile ? 0 : (dockOpen ? 404 : 20);
   const rightPad = 0;
-  const topPad = 44;
-  const bottomPad = isMobile ? 80 : 0;
+  const topPad = isMobile ? 0 : 44;
+  const bottomPad = 0;
 
   const availW = Math.max(300, windowWidth - leftPad - rightPad);
   const availH = Math.max(300, windowHeight - topPad - bottomPad);
